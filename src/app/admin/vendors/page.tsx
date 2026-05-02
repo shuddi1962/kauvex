@@ -1,10 +1,11 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import AdminShell from "@/components/admin/admin-shell";
 import {
   Store, Search, Eye, CheckCircle2,
   Ban, TrendingUp, DollarSign, Package, Mail, X, Save,
+  Plus, Loader2, Trash2,
 } from "lucide-react";
 import { insforge } from "@/lib/insforge";
 
@@ -23,14 +24,15 @@ interface Vendor {
   joined: string;
 }
 
-const seedVendors: Omit<Vendor, "id">[] = [
-  { name: "Marine Supplies NG", owner: "Chidi Okafor", email: "chidi@marine.ng", phone: "+234 801 234 5678", products: 45, orders: 234, revenue: 8500000, rating: 4.7, commission: 12, status: "active", joined: "2023-06-15" },
-  { name: "SafeGuard Systems", owner: "Emeka Nwosu", email: "emeka@safeguard.com", phone: "+234 802 345 6789", products: 32, orders: 178, revenue: 6200000, rating: 4.5, commission: 10, status: "active", joined: "2023-08-20" },
-  { name: "Kitchen Pro Lagos", owner: "Amina Bello", email: "amina@kitchenpro.ng", phone: "+234 803 456 7890", products: 28, orders: 156, revenue: 4800000, rating: 4.2, commission: 15, status: "active", joined: "2023-10-01" },
-  { name: "Delta Boat Works", owner: "Tunde Adebayo", email: "tunde@deltaboats.com", phone: "+234 804 567 8901", products: 12, orders: 45, revenue: 15000000, rating: 4.9, commission: 8, status: "active", joined: "2023-05-10" },
-  { name: "Fire Safety Plus", owner: "Grace Eze", email: "grace@firesafety.ng", phone: "+234 805 678 9012", products: 18, orders: 89, revenue: 3200000, rating: 3.8, commission: 12, status: "pending", joined: "2024-03-01" },
-  { name: "Quick Electronics", owner: "Ibrahim Musa", email: "ibrahim@quickelec.com", phone: "+234 806 789 0123", products: 0, orders: 0, revenue: 0, rating: 0, commission: 12, status: "suspended", joined: "2024-01-15" },
-];
+interface VendorForm {
+  name: string;
+  owner: string;
+  email: string;
+  phone: string;
+  commission: number;
+}
+
+const emptyForm: VendorForm = { name: "", owner: "", email: "", phone: "", commission: 12 };
 
 export default function AdminVendorsPage() {
   const [tab, setTab] = useState<"vendors" | "payouts" | "settings">("vendors");
@@ -38,41 +40,133 @@ export default function AdminVendorsPage() {
   const [search, setSearch] = useState("");
   const [vendors, setVendors] = useState<Vendor[]>([]);
   const [loading, setLoading] = useState(true);
+  const [showAddForm, setShowAddForm] = useState(false);
+  const [saving, setSaving] = useState(false);
   const [viewVendor, setViewVendor] = useState<Vendor | null>(null);
+  const [form, setForm] = useState<VendorForm>(emptyForm);
   const [settings, setSettings] = useState({ default_commission: 12, min_payout: 10000, payout_frequency: "Monthly", auto_approve: false, vendor_shipping: true, vendor_seo: false, product_approval: true });
   const [savingSettings, setSavingSettings] = useState(false);
+  const [toast, setToast] = useState<{ type: "success" | "error"; message: string } | null>(null);
 
-  useEffect(() => { loadAll(); }, []);
-
-  const loadAll = async () => {
-    try {
-      const { data, error } = await insforge.database.from("vendors").select("*").order("name");
-      if (error) throw error;
-      if (data && data.length > 0) setVendors(data);
-      else {
-        for (const v of seedVendors) await insforge.database.from("vendors").insert(v);
-        const { data: seeded } = await insforge.database.from("vendors").select("*");
-        if (seeded) setVendors(seeded);
-      }
-      const { data: settingsData } = await insforge.database.from("settings").select("*").eq("key", "vendor_settings");
-      if (settingsData?.[0]?.value) setSettings(settingsData[0].value);
-    } catch {
-      setVendors(seedVendors.map((v, i) => ({ ...v, id: String(i + 1) })));
-    } finally { setLoading(false); }
+  const showToast = (type: "success" | "error", message: string) => {
+    setToast({ type, message });
+    setTimeout(() => setToast(null), 3000);
   };
+
+  const fetchVendors = useCallback(async () => {
+    setLoading(true);
+    try {
+      const { data: vendorUsers, error: vendorError } = await insforge.database
+        .from("profiles")
+        .select("id, name, email, phone, role, created_at")
+        .eq("role", "vendor");
+
+      if (vendorError) throw vendorError;
+
+      if (!vendorUsers || vendorUsers.length === 0) {
+        setVendors([]);
+        setLoading(false);
+        return;
+      }
+
+      const vendorIds = vendorUsers.map((v: any) => v.id);
+
+      const [productsRes, ordersRes] = await Promise.all([
+        insforge.database.from("products").select("vendor_id, regular_price, sale_price").in("vendor_id", vendorIds),
+        insforge.database.from("orders").select("vendor_id, total_amount, status").in("vendor_id", vendorIds),
+      ]);
+
+      const vendorData: Vendor[] = vendorUsers.map((u: any) => {
+        const vendorProducts = productsRes.data?.filter((p: any) => p.vendor_id === u.id) || [];
+        const vendorOrders = ordersRes.data?.filter((o: any) => o.vendor_id === u.id) || [];
+        const revenue = vendorOrders.reduce((sum: number, o: any) => sum + (o.total_amount || 0), 0);
+
+        return {
+          id: u.id,
+          name: u.name || "Unnamed Vendor",
+          owner: u.name || "Unknown",
+          email: u.email || "",
+          phone: u.phone || "",
+          products: vendorProducts.length,
+          orders: vendorOrders.length,
+          revenue,
+          rating: 0,
+          commission: settings.default_commission,
+          status: "active",
+          joined: u.created_at?.slice(0, 10) || new Date().toISOString().slice(0, 10),
+        };
+      });
+
+      setVendors(vendorData);
+    } catch (e: any) {
+      console.error("Fetch vendors error:", e);
+      showToast("error", e.message || "Failed to load vendors");
+    } finally {
+      setLoading(false);
+    }
+  }, [settings.default_commission]);
+
+  useEffect(() => { fetchVendors(); }, [fetchVendors]);
 
   const updateVendorStatus = async (id: string, status: string) => {
     try {
-      await insforge.database.from("vendors").update({ status }).eq("id", id);
+      await insforge.database.from("profiles").update({ status }).eq("id", id);
       setVendors((prev) => prev.map((v) => v.id === id ? { ...v, status } : v));
-    } catch (err) { console.error(err); }
+      showToast("success", `Vendor ${status === "active" ? "activated" : status === "suspended" ? "suspended" : "updated"}`);
+    } catch (e: any) {
+      showToast("error", e.message || "Failed to update vendor");
+    }
+  };
+
+  const handleAddVendor = async () => {
+    if (!form.name.trim() || !form.email.trim()) {
+      showToast("error", "Name and email are required");
+      return;
+    }
+    setSaving(true);
+    try {
+      const { data, error } = await insforge.database.from("profiles").insert([{
+        name: form.name.trim(),
+        email: form.email.trim(),
+        phone: form.phone,
+        role: "vendor",
+        status: "pending",
+        created_at: new Date().toISOString(),
+      }]).select();
+
+      if (error) throw error;
+      showToast("success", "Vendor added! They will receive an email to set their password.");
+      setForm(emptyForm);
+      setShowAddForm(false);
+      await fetchVendors();
+    } catch (e: any) {
+      showToast("error", e.message || "Failed to add vendor");
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const handleDeleteVendor = async (id: string) => {
+    if (!confirm("Delete this vendor? This action cannot be undone.")) return;
+    try {
+      await insforge.database.from("profiles").delete().eq("id", id);
+      showToast("success", "Vendor deleted");
+      await fetchVendors();
+    } catch (e: any) {
+      showToast("error", e.message || "Failed to delete vendor");
+    }
   };
 
   const saveSettings = async () => {
     setSavingSettings(true);
     try {
       await insforge.database.from("settings").upsert({ key: "vendor_settings", value: settings });
-    } catch (err) { console.error(err); } finally { setSavingSettings(false); }
+      showToast("success", "Settings saved");
+    } catch (e: any) {
+      showToast("error", e.message || "Failed to save settings");
+    } finally {
+      setSavingSettings(false);
+    }
   };
 
   const filtered = vendors.filter((v) => {
@@ -86,6 +180,12 @@ export default function AdminVendorsPage() {
 
   return (
     <AdminShell title="Vendor Management" subtitle="Manage marketplace vendors and commissions">
+      {toast && (
+        <div className={`fixed top-4 right-4 z-50 px-4 py-3 rounded-lg shadow-lg text-white text-sm ${toast.type === "success" ? "bg-green-600" : "bg-red-600"}`}>
+          {toast.message}
+        </div>
+      )}
+
       <div className="space-y-6">
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
           {[
@@ -118,10 +218,32 @@ export default function AdminVendorsPage() {
                     <input type="text" placeholder="Search vendors..." value={search} onChange={(e) => setSearch(e.target.value)} className="w-full h-10 pl-10 pr-4 text-sm rounded-lg border border-gray-200 focus:outline-none focus:border-blue" />
                     <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-text-4" />
                   </div>
+                  <button onClick={() => { setForm(emptyForm); setShowAddForm(!showAddForm); }} className="flex items-center gap-2 px-4 py-2 bg-blue text-white rounded-lg text-sm hover:bg-blue-700">
+                    <Plus size={16} /> {showAddForm ? "Cancel" : "Add Vendor"}
+                  </button>
                   {["all", "active", "pending", "suspended"].map((f) => (
                     <button key={f} onClick={() => setFilter(f)} className={`px-3 py-2 text-xs rounded-lg border capitalize ${filter === f ? "bg-blue text-white border-blue" : "bg-white border-gray-200 text-text-3"}`}>{f}</button>
                   ))}
                 </div>
+
+                {showAddForm && (
+                  <div className="bg-white rounded-xl p-5 border border-gray-200 space-y-3">
+                    <h4 className="font-semibold text-sm">Add New Vendor</h4>
+                    <div className="grid grid-cols-2 gap-3">
+                      <input placeholder="Vendor Name *" value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} className="h-10 px-3 text-sm border border-gray-200 rounded-lg" />
+                      <input placeholder="Owner Name *" value={form.owner} onChange={(e) => setForm({ ...form, owner: e.target.value })} className="h-10 px-3 text-sm border border-gray-200 rounded-lg" />
+                      <input placeholder="Email *" type="email" value={form.email} onChange={(e) => setForm({ ...form, email: e.target.value })} className="h-10 px-3 text-sm border border-gray-200 rounded-lg" />
+                      <input placeholder="Phone" value={form.phone} onChange={(e) => setForm({ ...form, phone: e.target.value })} className="h-10 px-3 text-sm border border-gray-200 rounded-lg" />
+                    </div>
+                    <div className="flex gap-2">
+                      <button onClick={handleAddVendor} disabled={saving} className="flex items-center gap-2 px-4 py-2 bg-blue text-white text-sm rounded-lg hover:bg-blue-700 disabled:opacity-50">
+                        {saving ? <Loader2 size={14} className="animate-spin" /> : <Save size={14} />} Save Vendor
+                      </button>
+                      <button onClick={() => setShowAddForm(false)} className="px-4 py-2 border border-gray-200 text-sm rounded-lg hover:bg-gray-50">Cancel</button>
+                    </div>
+                  </div>
+                )}
+
                 <div className="space-y-3">
                   {filtered.map((vendor) => (
                     <div key={vendor.id} className="bg-white rounded-xl p-5 border border-gray-100">
@@ -142,6 +264,7 @@ export default function AdminVendorsPage() {
                           {vendor.status === "active" && <button onClick={() => { if (confirm("Suspend this vendor?")) updateVendorStatus(vendor.id, "suspended"); }} className="p-1.5 hover:bg-red-50 rounded-lg"><Ban size={16} className="text-red" /></button>}
                           {vendor.status === "pending" && <button onClick={() => updateVendorStatus(vendor.id, "active")} className="p-1.5 hover:bg-green-50 rounded-lg"><CheckCircle2 size={16} className="text-green-600" /></button>}
                           {vendor.status === "suspended" && <button onClick={() => updateVendorStatus(vendor.id, "active")} className="p-1.5 hover:bg-green-50 rounded-lg"><CheckCircle2 size={16} className="text-green-600" /></button>}
+                          <button onClick={() => handleDeleteVendor(vendor.id)} className="p-1.5 hover:bg-red-50 rounded-lg"><Trash2 size={16} className="text-red" /></button>
                         </div>
                       </div>
                       <div className="grid grid-cols-2 sm:grid-cols-5 gap-3">
@@ -160,6 +283,9 @@ export default function AdminVendorsPage() {
                       </div>
                     </div>
                   ))}
+                  {filtered.length === 0 && (
+                    <div className="text-center py-8 text-text-4 text-sm">No vendors found</div>
+                  )}
                 </div>
               </>
             )}
@@ -183,6 +309,9 @@ export default function AdminVendorsPage() {
                       </div>
                     );
                   })}
+                  {vendors.filter((v) => v.status === "active" && v.revenue > 0).length === 0 && (
+                    <p className="text-sm text-text-4 text-center py-4">No pending payouts</p>
+                  )}
                 </div>
               </div>
             )}
@@ -231,7 +360,7 @@ export default function AdminVendorsPage() {
         <div className="fixed inset-0 z-50 bg-black/50 flex items-center justify-center p-4" onClick={() => setViewVendor(null)}>
           <div className="bg-white rounded-2xl w-full max-w-[500px]" onClick={(e) => e.stopPropagation()}>
             <div className="flex items-center justify-between p-5 border-b border-gray-100">
-              <h2 className="font-syne font-bold text-lg">{viewVendor.name}</h2>
+              <h2 className="font-bold text-lg">{viewVendor.name}</h2>
               <button onClick={() => setViewVendor(null)} className="p-2 rounded-lg hover:bg-gray-50 text-text-4"><X size={16} /></button>
             </div>
             <div className="p-5 space-y-3">

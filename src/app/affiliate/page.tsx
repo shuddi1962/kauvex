@@ -21,7 +21,7 @@ export default function AffiliatePage() {
             <Users className="w-6 h-6 text-green-300" />
             <span className="text-green-300 font-syne font-600 text-sm">Earn With Us</span>
           </div>
-          <h1 className="font-syne font-800 text-4xl sm:text-5xl mb-4">Roshanal Affiliate Program</h1>
+          <h1 className="font-syne font-800 text-4xl sm:text-5xl mb-4">KAUVEX Affiliate Program</h1>
           <p className="text-green-200 text-lg max-w-2xl mx-auto mb-8">
             Earn commission on every sale you refer. Share products you love and get paid when your audience buys.
           </p>
@@ -119,7 +119,7 @@ export default function AffiliatePage() {
       <section className="py-16 bg-gradient-to-r from-green-700 to-emerald-800">
         <div className="max-w-3xl mx-auto px-4 text-center text-white">
           <h2 className="font-syne font-800 text-3xl mb-4">Ready to Start Earning?</h2>
-          <p className="text-green-200 mb-8">Join thousands of affiliates already earning with Roshanal Global</p>
+          <p className="text-green-200 mb-8">Join thousands of affiliates already earning with KAUVEX</p>
           <Link href="/auth/register">
             <Button variant="cta" size="lg">Apply Now <ArrowRight className="w-4 h-4 ml-1" /></Button>
           </Link>

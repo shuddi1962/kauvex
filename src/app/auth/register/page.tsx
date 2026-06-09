@@ -102,10 +102,10 @@ export default function RegisterPage() {
               <Shield className="w-7 h-7 text-white" />
             </div>
             <h1 className="font-syne font-800 text-4xl mb-4">
-              Join Roshanal<br />Global Today
+              Join KAUVEX<br />Today
             </h1>
             <p className="text-blue-200 text-lg max-w-md">
-              Create your account and access thousands of professional security, marine, and safety products.
+              Create your account and access thousands of quality products across electronics, fashion, home, beauty, sports, and more.
             </p>
           </div>
           <div className="space-y-4 mt-8">
@@ -135,7 +135,7 @@ export default function RegisterPage() {
             <div className="w-12 h-12 bg-gradient-to-br from-blue-500 to-blue-700 rounded-xl flex items-center justify-center mx-auto mb-3">
               <Shield className="w-6 h-6 text-white" />
             </div>
-            <h2 className="font-syne font-700 text-xl text-text-1">Roshanal Global</h2>
+            <h2 className="font-syne font-700 text-xl text-text-1">KAUVEX</h2>
           </div>
 
           <div className="bg-white rounded-2xl shadow-sm border border-border p-8">

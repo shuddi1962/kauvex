@@ -11,7 +11,7 @@ const nigerianNames = [
 ];
 
 const nigerianCities = [
-  "Lagos", "Port Harcourt", "Abuja", "Enugu", "Kano", "Ibadan", "Benin City",
+  "Lagos", "London", "New York", "Dubai", "Abuja", "Enugu", "Kano", "Ibadan", "Benin City",
   "Warri", "Calabar", "Uyo", "Owerri", "Kaduna", "Jos", "Abeokuta",
 ];
 

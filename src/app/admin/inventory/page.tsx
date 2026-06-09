@@ -20,13 +20,13 @@ const seedInventory: Omit<InventoryItem, "id">[] = [
   { product_name: "Hikvision 4MP Dome Camera", sku: "RSH-CAM-001", brand: "Hikvision", phc_stock: 45, lagos_stock: 30, low_stock_threshold: 10 },
   { product_name: "Yamaha 40HP Outboard Engine", sku: "RSH-ENG-001", brand: "Yamaha", phc_stock: 8, lagos_stock: 3, low_stock_threshold: 5 },
   { product_name: "Marine GPS Navigator Pro", sku: "RSH-NAV-001", brand: "Garmin", phc_stock: 12, lagos_stock: 15, low_stock_threshold: 5 },
-  { product_name: "Life Jacket Premium Adult", sku: "RSH-SAF-001", brand: "Roshanal", phc_stock: 120, lagos_stock: 85, low_stock_threshold: 20 },
+  { product_name: "Life Jacket Premium Adult", sku: "RSH-SAF-001", brand: "KAUVEX", phc_stock: 120, lagos_stock: 85, low_stock_threshold: 20 },
   { product_name: "Dahua 8CH NVR Recorder", sku: "RSH-NVR-001", brand: "Dahua", phc_stock: 22, lagos_stock: 18, low_stock_threshold: 8 },
   { product_name: "Mercury 200HP Engine", sku: "RSH-ENG-002", brand: "Mercury", phc_stock: 2, lagos_stock: 1, low_stock_threshold: 3 },
-  { product_name: "Anchor Chain 10m Galvanized", sku: "RSH-MAR-001", brand: "Roshanal", phc_stock: 35, lagos_stock: 0, low_stock_threshold: 10 },
+  { product_name: "Anchor Chain 10m Galvanized", sku: "RSH-MAR-001", brand: "KAUVEX", phc_stock: 35, lagos_stock: 0, low_stock_threshold: 10 },
   { product_name: "Solar Panel 300W Mono", sku: "RSH-SOL-001", brand: "JA Solar", phc_stock: 50, lagos_stock: 42, low_stock_threshold: 15 },
   { product_name: "Fire Extinguisher 5kg", sku: "RSH-SAF-002", brand: "Naffco", phc_stock: 0, lagos_stock: 0, low_stock_threshold: 10 },
-  { product_name: "Boat Steering Console", sku: "RSH-MAR-002", brand: "Roshanal", phc_stock: 6, lagos_stock: 4, low_stock_threshold: 5 },
+  { product_name: "Boat Steering Console", sku: "RSH-MAR-002", brand: "KAUVEX", phc_stock: 6, lagos_stock: 4, low_stock_threshold: 5 },
 ];
 
 export default function AdminInventoryPage() {

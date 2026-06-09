@@ -80,11 +80,11 @@ const defaultImageBoxes: FooterImageBox[] = [
 ];
 
 const defaultSocialLinks = [
-  { id: "s1", platform: "Facebook", url: "https://facebook.com/roshanalglobal", icon: "facebook" },
-  { id: "s2", platform: "Twitter/X", url: "https://twitter.com/roshanalglobal", icon: "twitter" },
-  { id: "s3", platform: "Instagram", url: "https://instagram.com/roshanalglobal", icon: "instagram" },
-  { id: "s4", platform: "LinkedIn", url: "https://linkedin.com/company/roshanalglobal", icon: "linkedin" },
-  { id: "s5", platform: "YouTube", url: "https://youtube.com/roshanalglobal", icon: "youtube" },
+  { id: "s1", platform: "Facebook", url: "https://facebook.com/KAUVEXglobal", icon: "facebook" },
+  { id: "s2", platform: "Twitter/X", url: "https://twitter.com/KAUVEXglobal", icon: "twitter" },
+  { id: "s3", platform: "Instagram", url: "https://instagram.com/KAUVEXglobal", icon: "instagram" },
+  { id: "s4", platform: "LinkedIn", url: "https://linkedin.com/company/KAUVEXglobal", icon: "linkedin" },
+  { id: "s5", platform: "YouTube", url: "https://youtube.com/KAUVEXglobal", icon: "youtube" },
 ];
 
 export default function FooterBuilderPage() {
@@ -357,7 +357,7 @@ export default function FooterBuilderPage() {
                 <div>
                   <label className="text-[10px] font-semibold text-text-2 mb-1 block">Copyright Text</label>
                   <input
-                    defaultValue="© 2026 Roshanal Infotech Limited. All rights reserved."
+                    defaultValue="© 2026 KAUVEX Global Ltd. All rights reserved."
                     className="w-full h-8 px-2 text-[10px] rounded border border-border focus:outline-none focus:border-blue"
                   />
                 </div>

@@ -133,7 +133,7 @@ export default function AdminOrdersPage() {
       .total{text-align:right;font-size:18px;font-weight:bold;margin-top:10px}
       .meta{color:#666;font-size:13px}
       @media print{body{padding:20px}}</style></head><body>
-      <div class="header"><div><h1>Roshanal Global</h1><p class="meta">Order Invoice</p></div>
+      <div class="header"><div><h1>KAUVEX</h1><p class="meta">Order Invoice</p></div>
       <div style="text-align:right"><h2>${order.order_id}</h2><p class="meta">${order.date}</p></div></div>
       <p><strong>Customer:</strong> ${order.customer}</p>
       <p><strong>Email:</strong> ${order.email}</p>

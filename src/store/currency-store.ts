@@ -87,6 +87,6 @@ export const useCurrencyStore = create<CurrencyStore>()(
         })}`;
       },
     }),
-    { name: "roshanal-currency" }
+    { name: "kauvex-currency" }
   )
 );

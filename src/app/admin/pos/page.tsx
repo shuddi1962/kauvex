@@ -151,7 +151,7 @@ export default function POSPage() {
     const w = window.open("", "_blank");
     if (!w) return;
     w.document.write(`<html><head><title>Receipt ${txn.txn_id}</title><style>body{font-family:monospace;padding:20px;max-width:300px;margin:auto}h2{text-align:center;margin-bottom:5px}hr{border:none;border-top:1px dashed #333}table{width:100%}td{padding:3px 0}.right{text-align:right}.bold{font-weight:bold}.center{text-align:center}</style></head><body>`);
-    w.document.write(`<h2>ROSHANAL GLOBAL</h2><p class="center">POS Receipt</p><hr/>`);
+    w.document.write(`<h2>KAUVEX</h2><p class="center">POS Receipt</p><hr/>`);
     w.document.write(`<p>Txn: ${txn.txn_id}<br/>Date: ${new Date(txn.time).toLocaleString()}<br/>Customer: ${txn.customer}<br/>Method: ${txn.method}</p><hr/>`);
     w.document.write(`<table>`);
     if (txn.cart_items) txn.cart_items.forEach((item) => {

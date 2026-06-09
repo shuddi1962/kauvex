@@ -260,7 +260,7 @@ export default function AdminGiftCardsPage() {
                     <div className={`h-32 bg-gradient-to-br ${t.color} flex items-center justify-center`}>
                       <div className="text-center text-white">
                         <span className="text-4xl block mb-1">{t.emoji}</span>
-                        <span className="text-sm font-medium">Roshanal Gift Card</span>
+                        <span className="text-sm font-medium">KAUVEX Gift Card</span>
                       </div>
                     </div>
                     <div className="p-4">

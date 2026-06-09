@@ -27,10 +27,10 @@ interface StoreLocation {
 }
 
 const defaultLocations: StoreLocation[] = [
-  { name: "Port Harcourt HQ Warehouse", type: "warehouse", address: "42 Ada George Road", city: "Port Harcourt", state: "Rivers", phone: "+234 803 123 4567", email: "warehouse@roshanalglobal.com", hours: "Mon-Fri 8am-6pm, Sat 9am-3pm", manager: "Chidi Okoro", is_default: true, active: true, stock_count: 850 },
-  { name: "Lagos Showroom", type: "store", address: "15 Admiralty Way, Lekki Phase 1", city: "Lagos", state: "Lagos", phone: "+234 810 234 5678", email: "lagos@roshanalglobal.com", hours: "Mon-Sat 9am-7pm", manager: "Ada Okafor", is_default: false, active: true, stock_count: 320 },
-  { name: "Abuja Distribution Center", type: "warehouse", address: "Plot 22, Wuse Zone 5", city: "Abuja", state: "FCT", phone: "+234 813 345 6789", email: "abuja@roshanalglobal.com", hours: "Mon-Fri 8am-5pm", manager: "Emeka Nwachukwu", is_default: false, active: true, stock_count: 210 },
-  { name: "Warri Pickup Point", type: "pickup", address: "8 Effurun Roundabout", city: "Warri", state: "Delta", phone: "+234 802 456 7890", email: "warri@roshanalglobal.com", hours: "Mon-Sat 9am-5pm", manager: "Blessing Ade", is_default: false, active: false, stock_count: 0 },
+  { name: "Port Harcourt HQ Warehouse", type: "warehouse", address: "42 Ada George Road", city: "Port Harcourt", state: "Rivers", phone: "+234 803 123 4567", email: "warehouse@kauvex.com", hours: "Mon-Fri 8am-6pm, Sat 9am-3pm", manager: "Chidi Okoro", is_default: true, active: true, stock_count: 850 },
+  { name: "Lagos Showroom", type: "store", address: "15 Admiralty Way, Lekki Phase 1", city: "Lagos", state: "Lagos", phone: "+234 810 234 5678", email: "lagos@kauvex.com", hours: "Mon-Sat 9am-7pm", manager: "Ada Okafor", is_default: false, active: true, stock_count: 320 },
+  { name: "Abuja Distribution Center", type: "warehouse", address: "Plot 22, Wuse Zone 5", city: "Abuja", state: "FCT", phone: "+234 813 345 6789", email: "abuja@kauvex.com", hours: "Mon-Fri 8am-5pm", manager: "Emeka Nwachukwu", is_default: false, active: true, stock_count: 210 },
+  { name: "Warri Pickup Point", type: "pickup", address: "8 Effurun Roundabout", city: "Warri", state: "Delta", phone: "+234 802 456 7890", email: "warri@kauvex.com", hours: "Mon-Sat 9am-5pm", manager: "Blessing Ade", is_default: false, active: false, stock_count: 0 },
 ];
 
 const typeIcons: Record<string, typeof Warehouse> = { warehouse: Warehouse, store: MapPin, pickup: Package, office: Mail };

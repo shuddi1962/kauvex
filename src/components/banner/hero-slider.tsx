@@ -154,7 +154,7 @@ export default function HeroSlider({
               transition={{ delay: 0.3, duration: 0.5 }}
               className="text-blue-300 text-xs font-semibold mb-3 tracking-[0.2em] uppercase"
             >
-              Roshanal Global
+              KAUVEX
             </motion.p>
             <motion.h2
               initial={{ opacity: 0, y: 30 }}

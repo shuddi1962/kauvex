@@ -5,8 +5,8 @@ import Link from "next/link";
 import { Save, Bell, CreditCard, Shield, User } from "lucide-react";
 
 export default function VendorSettingsPage() {
-  const [profile, setProfile] = useState({ name: "Roshanal Vendor", email: "vendor@roshanal.com", phone: "+234 800 000 0002" });
-  const [bank, setBank] = useState({ bankName: "First Bank", accountNumber: "0123456789", accountName: "Roshanal Vendor Ltd" });
+  const [profile, setProfile] = useState({ name: "KAUVEX Vendor", email: "vendor@kauvex.com", phone: "+234 800 000 0002" });
+  const [bank, setBank] = useState({ bankName: "First Bank", accountNumber: "0123456789", accountName: "KAUVEX Vendor Ltd" });
   const [notifications, setNotifications] = useState({ orderEmail: true, orderSms: false, payoutEmail: true, reviewEmail: true, promotionEmail: false });
 
   return (
@@ -47,7 +47,7 @@ export default function VendorSettingsPage() {
             { key: "orderSms", label: "New order SMS notifications" },
             { key: "payoutEmail", label: "Payout confirmation emails" },
             { key: "reviewEmail", label: "New review notifications" },
-            { key: "promotionEmail", label: "Promotional emails from Roshanal" },
+            { key: "promotionEmail", label: "Promotional emails from KAUVEX" },
           ].map((n) => (
             <label key={n.key} className="flex items-center justify-between py-2">
               <span className="text-sm text-gray-700">{n.label}</span>

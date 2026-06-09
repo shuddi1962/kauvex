@@ -26,7 +26,7 @@ const defaultCampaigns: CampaignConfig[] = [
   {
     id: "welcome-10",
     type: "welcome",
-    title: "Welcome to Roshanal Global!",
+    title: "Welcome to KAUVEX!",
     subtitle: "Get 10% off your first order. Use code at checkout.",
     cta: "Shop Now",
     bgColor: "from-navy to-blue-900",
@@ -81,7 +81,7 @@ export default function CampaignPopup() {
   useEffect(() => {
     // Load dismissed popups from localStorage
     try {
-      const stored = localStorage.getItem("roshanal-dismissed-popups");
+      const stored = localStorage.getItem("kauvex-dismissed-popups");
       if (stored) setDismissed(new Set(JSON.parse(stored)));
     } catch {}
   }, []);
@@ -91,7 +91,7 @@ export default function CampaignPopup() {
     setDismissed((prev) => {
       const next = new Set(prev);
       next.add(id);
-      localStorage.setItem("roshanal-dismissed-popups", JSON.stringify(Array.from(next)));
+      localStorage.setItem("kauvex-dismissed-popups", JSON.stringify(Array.from(next)));
       return next;
     });
   }, []);

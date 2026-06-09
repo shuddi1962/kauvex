@@ -2,6 +2,7 @@
 
 import { useEffect } from "react";
 import { useAuthStore } from "@/store/auth-store";
+import { StorefrontProvider } from "@/lib/storefront-context";
 
 export default function AuthProvider({ children }: { children: React.ReactNode }) {
   const initialize = useAuthStore((s) => s.initialize);
@@ -10,5 +11,9 @@ export default function AuthProvider({ children }: { children: React.ReactNode }
     initialize();
   }, [initialize]);
 
-  return <>{children}</>;
+  return (
+    <StorefrontProvider>
+      {children}
+    </StorefrontProvider>
+  );
 }

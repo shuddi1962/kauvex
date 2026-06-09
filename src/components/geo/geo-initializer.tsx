@@ -5,7 +5,7 @@ import { useCurrencyStore } from "@/store/currency-store";
 import { detectLocation, fetchExchangeRates } from "@/lib/geo-currency";
 
 const RATE_REFRESH_MS = 60 * 60 * 1000; // 1 hour
-const MANUAL_CURRENCY_KEY = "roshanal-currency-manual";
+const MANUAL_CURRENCY_KEY = "kauvex-currency-manual";
 
 /**
  * Invisible client component that runs once on mount to:

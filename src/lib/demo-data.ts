@@ -57,10 +57,10 @@ function makeProduct(
     variants: [],
     badges: [],
     inventory: [
-      { locationId: "phc", locationName: "Port Harcourt", quantity: 25, lowStockThreshold: 5, backorderEnabled: false },
-      { locationId: "lagos", locationName: "Lagos", quantity: 12, lowStockThreshold: 5, backorderEnabled: false },
+      { locationId: "main", locationName: "Main Warehouse", quantity: 25, lowStockThreshold: 5, backorderEnabled: false },
+      { locationId: "regional", locationName: "Regional Warehouse", quantity: 12, lowStockThreshold: 5, backorderEnabled: false },
     ],
-    seo: { metaTitle: name, metaDescription: `Buy ${name} from Roshanal Global`, focusKeyword: name.toLowerCase(), altTexts: [] },
+    seo: { metaTitle: name,     metaDescription: `Buy ${name} from KAUVEX`, focusKeyword: name.toLowerCase(), altTexts: [] },
     specifications: {},
     tags: [],
     rating: 4 + Math.random(),

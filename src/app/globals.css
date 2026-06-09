@@ -5,12 +5,13 @@
 @tailwind utilities;
 
 :root {
-  --background: #F7F8FC;
-  --foreground: #0A0F1E;
-  --navy: #0C1A36;
+  --background: #FFFFFF;
+  --foreground: #0A1628;
+  --navy: #0A1628;
+  --orange: #FF6B00;
   --blue: #1641C4;
-  --red: #C8191C;
-  --border: #E2E6F0;
+  --red: #DC2626;
+  --border: #E5E7EB;
 }
 
 * {
@@ -53,7 +54,7 @@ code, .mono {
 @layer utilities {
   .text-balance { text-wrap: balance; }
   .shimmer-bg {
-    background: linear-gradient(90deg, #C8191C 0%, #E84849 50%, #C8191C 100%);
+    background: linear-gradient(90deg, #FF6B00 0%, #FF8533 50%, #FF6B00 100%);
     background-size: 200% 100%;
   }
 }

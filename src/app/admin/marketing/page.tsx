@@ -62,13 +62,13 @@ const seedCampaigns: Omit<Campaign, "id">[] = [
 
 const seedCoupons: Omit<Coupon, "id">[] = [
   { code: "WELCOME10", discount_type: "percentage", discount_label: "10% Off", usage_count: 234, usage_limit: null, status: "active", expires: "2026-12-31" },
-  { code: "ROSHANAL5", discount_type: "fixed", discount_label: "₦5,000 Off", usage_count: 89, usage_limit: 500, status: "active", expires: "2026-06-30", min_order: 50000 },
+  { code: "KAUVEX10", discount_type: "fixed", discount_label: "₦5,000 Off", usage_count: 89, usage_limit: 500, status: "active", expires: "2026-06-30", min_order: 50000 },
   { code: "FREESHIP", discount_type: "free_shipping", discount_label: "Free Shipping", usage_count: 567, usage_limit: 1000, status: "active", expires: "2026-05-31" },
   { code: "EASTER25", discount_type: "percentage", discount_label: "25% Off", usage_count: 45, usage_limit: 200, status: "expired", expires: "2026-04-01" },
 ];
 
 const seedSeoPages: Omit<SeoPage, "id">[] = [
-  { page: "/shop", title: "Shop All Products", meta_description: "Browse all products at Roshanal Global", score: 92, indexed: true, issues: 0 },
+  { page: "/shop", title: "Shop All Products", meta_description: "Browse all products at KAUVEX", score: 92, indexed: true, issues: 0 },
   { page: "/category/surveillance", title: "Surveillance & CCTV", score: 88, indexed: true, issues: 1 },
   { page: "/services/cctv-installation", title: "CCTV Installation Service", score: 85, indexed: true, issues: 0 },
   { page: "/services/boat-building", title: "Boat Building Service", score: 78, indexed: false, issues: 2 },

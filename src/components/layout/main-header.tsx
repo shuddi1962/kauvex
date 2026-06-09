@@ -26,15 +26,12 @@ export default function MainHeader() {
       <div className="w-full max-w-[1440px] mx-auto px-4 h-[68px] flex items-center gap-4 lg:gap-6">
         {/* Logo */}
         <Link href="/" className="flex items-center gap-2.5 shrink-0">
-          <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-blue to-blue-700 flex items-center justify-center shadow-sm">
-            <span className="text-white font-bold text-lg tracking-tight">RS</span>
+<div className="w-10 h-10 rounded-lg bg-gradient-to-br from-[#0A1628] to-[#FF6B00] flex items-center justify-center shadow-sm">
+             <span className="text-white font-bold text-lg tracking-tight">K</span>
           </div>
           <div className="hidden sm:block">
             <div className="font-bold text-[16px] text-text-1 leading-tight tracking-tight">
-              ROSHANAL GLOBAL
-            </div>
-            <div className="text-[9px] text-red font-semibold -mt-0.5 tracking-wide uppercase">
-              Infotech Limited
+              KAUVEX
             </div>
           </div>
         </Link>
@@ -44,7 +41,7 @@ export default function MainHeader() {
           <div className="flex items-center bg-gray-50 rounded-lg border border-gray-200 focus-within:border-blue focus-within:ring-2 focus-within:ring-blue/10 transition-all">
             <input
               type="text"
-              placeholder="Search products, brands, categories..."
+              placeholder="Search millions of products..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               className="w-full h-11 px-4 bg-transparent text-sm text-text-1 placeholder:text-text-4 focus:outline-none"
@@ -57,7 +54,7 @@ export default function MainHeader() {
                 <X size={16} className="text-text-4" />
               </button>
             )}
-            <button className="bg-blue hover:bg-blue-600 h-11 px-5 rounded-r-lg transition-colors flex items-center gap-2 shrink-0">
+            <button className="bg-[#FF6B00] hover:bg-[#e05f00] h-11 px-5 rounded-r-lg transition-colors flex items-center gap-2 shrink-0">
               <Search size={16} className="text-white" />
               <span className="text-white text-sm font-medium hidden md:inline">Search</span>
             </button>

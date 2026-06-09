@@ -734,8 +734,8 @@ export default function AdminProductsPage() {
                   <div className="bg-white rounded-xl border border-gray-200 p-5">
                     <SectionTitle>SEO Preview</SectionTitle>
                     <div className="p-3 rounded-lg border border-gray-100 bg-gray-50">
-                      <p className="text-blue text-sm font-medium truncate">{form.name || "Product Name"} — Roshanal Global</p>
-                      <p className="text-green-700 text-[11px]">roshanalglobal.com/product/{form.name ? form.name.toLowerCase().replace(/[^a-z0-9]+/g, "-") : "slug"}</p>
+                      <p className="text-blue text-sm font-medium truncate">{form.name || "Product Name"} — KAUVEX</p>
+                      <p className="text-green-700 text-[11px]">kauvex.com/product/{form.name ? form.name.toLowerCase().replace(/[^a-z0-9]+/g, "-") : "slug"}</p>
                       <p className="text-xs text-text-3 mt-1 line-clamp-2">{form.short_description || "Add a short description..."}</p>
                     </div>
                   </div>

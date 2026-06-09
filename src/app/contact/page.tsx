@@ -18,32 +18,32 @@ import { Button } from "@/components/ui/button";
 
 const branches = [
   {
-    name: "Port Harcourt (HQ)",
-    address: "14 Aba Road, Port Harcourt, Rivers State, Nigeria",
-    phone: "+234 800 ROSHANAL",
-    email: "phc@roshanalglobal.com",
+    name: "Lagos (HQ)",
+    address: "25 Broad Street, Lagos Island, Lagos State, Nigeria",
+    phone: "+234 800 KAUVEX",
+    email: "lagos@kauvex.com",
     hours: "Monday – Saturday: 8AM – 6PM WAT",
   },
   {
-    name: "Lagos Office",
-    address: "25 Broad Street, Lagos Island, Lagos State, Nigeria",
-    phone: "+234 800 ROSHANAL",
-    email: "lagos@roshanalglobal.com",
+    name: "Abuja Office",
+    address: "12 Aminu Kano Crescent, Wuse 2, Abuja, FCT, Nigeria",
+    phone: "+234 800 KAUVEX",
+    email: "abuja@kauvex.com",
     hours: "Monday – Saturday: 8AM – 6PM WAT",
   },
   {
     name: "Bayelsa Office",
     address: "12 Mbiama Road, Yenagoa, Bayelsa State, Nigeria",
-    phone: "+234 800 ROSHANAL",
-    email: "bayelsa@roshanalglobal.com",
+    phone: "+234 800 KAUVEX",
+    email: "bayelsa@kauvex.com",
     hours: "Monday – Saturday: 9AM – 5PM WAT",
   },
 ];
 
 const departments = [
-  { name: "Sales & Inquiries", email: "sales@roshanalglobal.com", icon: MessageCircle },
-  { name: "Technical Support", email: "support@roshanalglobal.com", icon: Globe },
-  { name: "B2B / Wholesale", email: "b2b@roshanalglobal.com", icon: Building2 },
+  { name: "Sales & Inquiries", email: "sales@kauvex.com", icon: MessageCircle },
+  { name: "Technical Support", email: "support@kauvex.com", icon: Globe },
+  { name: "B2B / Wholesale", email: "b2b@kauvex.com", icon: Building2 },
 ];
 
 export default function ContactPage() {
@@ -185,21 +185,21 @@ export default function ContactPage() {
                   <MapPin className="w-5 h-5 text-blue mt-0.5 flex-shrink-0" />
                   <div>
                     <p className="text-sm font-medium text-text-1">Main Office</p>
-                    <p className="text-sm text-text-3">14 Aba Road, Port Harcourt, Rivers State, Nigeria</p>
+                    <p className="text-sm text-text-3">25 Broad Street, Lagos Island, Lagos State, Nigeria</p>
                   </div>
                 </div>
                 <div className="flex items-start gap-3">
                   <Phone className="w-5 h-5 text-blue mt-0.5 flex-shrink-0" />
                   <div>
                     <p className="text-sm font-medium text-text-1">Phone</p>
-                    <p className="text-sm text-text-3">+234 800 ROSHANAL</p>
+                    <p className="text-sm text-text-3">+234 800 KAUVEX</p>
                   </div>
                 </div>
                 <div className="flex items-start gap-3">
                   <Mail className="w-5 h-5 text-blue mt-0.5 flex-shrink-0" />
                   <div>
                     <p className="text-sm font-medium text-text-1">Email</p>
-                    <p className="text-sm text-text-3">info@roshanalglobal.com</p>
+                    <p className="text-sm text-text-3">info@kauvex.com</p>
                   </div>
                 </div>
                 <div className="flex items-start gap-3">

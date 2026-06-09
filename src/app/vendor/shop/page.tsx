@@ -7,10 +7,10 @@ import { Store, Save, Image, Globe, MapPin, Phone, Mail } from "lucide-react";
 export default function VendorShopPage() {
   const [shop, setShop] = useState({
     name: "My Vendor Shop",
-    description: "Quality products at affordable prices. Serving customers across Nigeria with premium security and marine equipment.",
+    description: "Quality products at affordable prices. Serving customers across Nigeria with premium electronics, fashion, and home goods.",
     address: "15 Marina Road, Lagos Island, Lagos",
     phone: "+234 800 123 4567",
-    email: "vendor@roshanal.com",
+    email: "vendor@kauvex.com",
     website: "",
     logo: null as string | null,
     banner: null as string | null,

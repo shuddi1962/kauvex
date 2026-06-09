@@ -63,13 +63,13 @@ const defaultApiKeys: ApiProvider[] = [
   { name: "Open Exchange Rates", category: "Currency", connected: true, fields: { app_id: "oer_****...9a2b" }, fieldConfig: [{ key: "app_id", label: "App ID", placeholder: "Your OXR App ID" }] },
   { name: "ipapi.co", category: "Geo", connected: true, fields: { api_key: "" }, fieldConfig: [{ key: "api_key", label: "API Key (optional)", placeholder: "Free tier — leave blank for free" }] },
   { name: "Mapbox", category: "Maps", connected: true, fields: { access_token: "pk.****...4c8d" }, fieldConfig: [{ key: "access_token", label: "Access Token", placeholder: "pk.eyJ1Ijo..." }] },
-  { name: "Termii", category: "SMS", connected: true, fields: { api_key: "TLR****...1e2f", sender_id: "Roshanal" }, fieldConfig: [{ key: "api_key", label: "API Key", placeholder: "TLR..." }, { key: "sender_id", label: "Sender ID", placeholder: "Your registered sender ID" }] },
+  { name: "Termii", category: "SMS", connected: true, fields: { api_key: "TLR****...1e2f", sender_id: "KAUVEX" }, fieldConfig: [{ key: "api_key", label: "API Key", placeholder: "TLR..." }, { key: "sender_id", label: "Sender ID", placeholder: "Your registered sender ID" }] },
   { name: "OneSignal", category: "Push", connected: false, fields: { app_id: "", rest_api_key: "" }, fieldConfig: [{ key: "app_id", label: "App ID", placeholder: "OneSignal App ID" }, { key: "rest_api_key", label: "REST API Key", placeholder: "REST API Key from dashboard" }] },
   { name: "Apify", category: "Scraping", connected: true, fields: { api_token: "apify_****...6g7h" }, fieldConfig: [{ key: "api_token", label: "API Token", placeholder: "apify_api_..." }] },
   { name: "Kie.ai", category: "Video", connected: false, fields: { api_key: "", project_id: "" }, fieldConfig: [{ key: "api_key", label: "API Key", placeholder: "Kie.ai API key" }, { key: "project_id", label: "Project ID", placeholder: "Your project ID" }] },
   { name: "Google Analytics", category: "Analytics", connected: true, fields: { measurement_id: "G-XXXXXXXXXX", stream_id: "" }, fieldConfig: [{ key: "measurement_id", label: "Measurement ID", placeholder: "G-XXXXXXXXXX" }, { key: "stream_id", label: "Data Stream ID", placeholder: "Stream ID (optional)" }] },
   { name: "Google Indexing API", category: "SEO", connected: true, fields: { service_account_json: "Service Account configured" }, fieldConfig: [{ key: "service_account_json", label: "Service Account JSON", placeholder: "Paste service account JSON", type: "textarea" }] },
-  { name: "Bing Webmaster", category: "SEO", connected: false, fields: { api_key: "", site_url: "" }, fieldConfig: [{ key: "api_key", label: "API Key", placeholder: "Bing Webmaster API key" }, { key: "site_url", label: "Site URL", placeholder: "https://roshanalglobal.com" }] },
+  { name: "Bing Webmaster", category: "SEO", connected: false, fields: { api_key: "", site_url: "" }, fieldConfig: [{ key: "api_key", label: "API Key", placeholder: "Bing Webmaster API key" }, { key: "site_url", label: "Site URL", placeholder: "https://kauvex.com" }] },
 ];
 
 const defaultPaymentMethods = [
@@ -109,9 +109,9 @@ export default function SettingsPage() {
 
   // State for all settings
   const [general, setGeneral] = useState({
-    storeName: "Roshanal Global",
-    legalName: "Roshanal Global Infotech Limited",
-    tradingName: "Roshanal Global",
+    storeName: "KAUVEX",
+    legalName: "KAUVEX Global Ltd",
+    tradingName: "KAUVEX",
     rcNumber: "",
     vatRate: "7.5",
     ncdmbNumber: "",

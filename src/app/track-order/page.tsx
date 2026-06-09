@@ -27,11 +27,11 @@ const demoOrder = {
     { name: "Dahua 8-Channel NVR 4K Ultra HD", qty: 1, price: 195000 },
   ],
   total: 340000,
-  address: "14 Aba Road, Port Harcourt, Rivers State, Nigeria",
+    address: "25 Broad Street, Lagos Island, Lagos State, Nigeria",
   timeline: [
     { status: "Order Placed", date: "Apr 2, 2026 — 10:42 AM", description: "Your order has been placed successfully", completed: true },
     { status: "Payment Confirmed", date: "Apr 2, 2026 — 10:45 AM", description: "Payment of ₦340,000 confirmed via Paystack", completed: true },
-    { status: "Processing", date: "Apr 2, 2026 — 2:30 PM", description: "Order is being prepared at Port Harcourt warehouse", completed: true },
+    { status: "Processing", date: "Apr 2, 2026 — 2:30 PM", description: "Order is being prepared at our warehouse", completed: true },
     { status: "Packed", date: "Apr 3, 2026 — 9:15 AM", description: "Items packed and ready for dispatch", completed: true },
     { status: "Dispatched", date: "Apr 3, 2026 — 11:00 AM", description: "Shipped via GIG Logistics — Tracking: GIG-2026-0045891", completed: true },
     { status: "In Transit", date: "Apr 4, 2026 — 8:20 AM", description: "Package is in transit to your delivery address", completed: true, current: true },

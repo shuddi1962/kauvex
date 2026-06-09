@@ -47,7 +47,7 @@ const COUNTRIES = [
   { code: "RW", name: "Rwanda" },
 ] as const;
 
-const MANUAL_CURRENCY_KEY = "roshanal-currency-manual";
+const MANUAL_CURRENCY_KEY = "kauvex-currency-manual";
 
 // ---------------------------------------------------------------------------
 // Props
@@ -187,7 +187,7 @@ export default function LocationOverrideModal({
                   type="text"
                   value={city}
                   onChange={(e) => setCity(e.target.value)}
-                  placeholder="e.g. Port Harcourt"
+                  placeholder="e.g. London"
                   className="w-full rounded-xl border border-gray-200 bg-[#F7F8FC] px-4 py-2.5 text-sm text-gray-900 placeholder:text-gray-400 outline-none focus:border-[#1641C4] focus:ring-2 focus:ring-[#1641C4]/20 transition-all"
                   onKeyDown={(e) => {
                     if (e.key === "Enter") handleSave();

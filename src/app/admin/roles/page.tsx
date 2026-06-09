@@ -363,9 +363,9 @@ export default function RolesPage() {
                   <div className="flex gap-2">
                     <select className="flex-1 h-9 px-3 text-xs rounded-lg border border-border">
                       <option>Select staff member...</option>
-                      <option>John Okafor — john@roshanalglobal.com</option>
-                      <option>Amina Bello — amina@roshanalglobal.com</option>
-                      <option>David Nwankwo — david@roshanalglobal.com</option>
+                      <option>John Okafor — john@kauvex.com</option>
+                      <option>Amina Bello — amina@kauvex.com</option>
+                      <option>David Nwankwo — david@kauvex.com</option>
                     </select>
                     <Button size="sm"><Plus size={14} className="mr-1" /> Assign</Button>
                   </div>

@@ -5,7 +5,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { X } from "lucide-react";
 
 const WHATSAPP_NUMBER = "2348012345678";
-const DEFAULT_MESSAGE = "Hi Roshanal Global! I'd like to inquire about your products.";
+const DEFAULT_MESSAGE = "Hi KAUVEX! I'd like to inquire about your products.";
 
 export default function WhatsAppButton() {
   const [showTooltip, setShowTooltip] = useState(false);

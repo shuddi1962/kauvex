@@ -43,9 +43,9 @@ const helpContent: Record<string, { title: string; articles: { q: string; a: str
     title: "Orders & Shipping",
     articles: [
       { q: "How do I track my order?", a: "Go to Track Order in the header or visit /track-order. Enter your order ID (found in your confirmation email) to see real-time status." },
-      { q: "What shipping methods are available?", a: "Standard (3-5 days), Express (1-2 days), Same-Day (PHC only), and Store Pickup. Methods vary by location and product type." },
+      { q: "What shipping methods are available?", a: "Standard (3-5 days), Express (1-2 days), and Store Pickup. Methods vary by location and product type." },
       { q: "Can I change my delivery address after ordering?", a: "Contact support within 1 hour of placing your order. Once the order is packed or dispatched, the address cannot be changed." },
-      { q: "What carriers do you use?", a: "GIG Logistics, DHL, FedEx, Aramex, and our own delivery fleet for local orders in Port Harcourt and Lagos." },
+      { q: "What carriers do you use?", a: "GIG Logistics, DHL, FedEx, and Aramex for reliable delivery across Nigeria and internationally." },
     ],
   },
   returns: {
@@ -60,9 +60,9 @@ const helpContent: Record<string, { title: string; articles: { q: string; a: str
   payments: {
     title: "Payments",
     articles: [
-      { q: "What payment methods do you accept?", a: "Credit/Debit Card, Bank Transfer, USSD, Mobile Money, Crypto (Bitcoin, USDT), Roshanal Wallet, and Pay on Delivery (select areas)." },
+      { q: "What payment methods do you accept?", a: "Credit/Debit Card, Bank Transfer, USSD, Mobile Money, Crypto (Bitcoin, USDT), KAUVEX Wallet, and Pay on Delivery (select areas)." },
       { q: "Is my payment information secure?", a: "Yes. All payments are processed through PCI-DSS compliant gateways (Paystack, Flutterwave, Stripe). We never store your card details." },
-      { q: "How does the Roshanal Wallet work?", a: "Top up your wallet via bank transfer or card. Use wallet balance for faster checkout. You can also receive refunds and loyalty rewards in your wallet." },
+      { q: "How does the KAUVEX Wallet work?", a: "Top up your wallet via bank transfer or card. Use wallet balance for faster checkout. You can also receive refunds and loyalty rewards in your wallet." },
       { q: "Do you offer installment payments?", a: "We're working on integrating installment payment options. Currently, bulk/B2B orders can negotiate payment terms." },
     ],
   },
@@ -90,16 +90,16 @@ const helpContent: Record<string, { title: string; articles: { q: string; a: str
       { q: "How do I access wholesale pricing?", a: "Apply for a B2B account at /wholesale. Once approved, you'll see wholesale prices and can place bulk orders with NET payment terms." },
       { q: "What are the minimum order quantities?", a: "MOQs vary by product category. Generally, 5+ units qualify for wholesale pricing. Custom MOQs available for large accounts." },
       { q: "Do you offer NET payment terms?", a: "Approved B2B customers can access NET 30 and NET 60 payment terms based on credit assessment and order history." },
-      { q: "Can I get a custom quote for large projects?", a: "Absolutely. Use our Quote system at /quote or email b2b@roshanalglobal.com with your requirements. We handle large-scale deployments." },
+      { q: "Can I get a custom quote for large projects?", a: "Absolutely. Use our Quote system at /quote or email b2b@kauvex.com with your requirements. We handle large-scale deployments." },
     ],
   },
   contact: {
     title: "Contact Us",
     articles: [
-      { q: "How can I reach customer support?", a: "Live chat (bottom-right), email support@roshanalglobal.com, phone +234 800 ROSHANAL, or visit any of our branches." },
+      { q: "How can I reach customer support?", a: "Live chat (bottom-right), email support@kauvex.com, phone +234 800 KAUVEX, or visit any of our branches." },
       { q: "What are your support hours?", a: "Monday – Saturday, 8AM – 6PM WAT. AI chat assistant available 24/7 for common queries." },
-      { q: "Where are your offices located?", a: "Port Harcourt (HQ): 14 Aba Road. Lagos: 25 Broad Street. Bayelsa: 12 Mbiama Road. Visit /stores for maps." },
-      { q: "How do I report an issue?", a: "Email support@roshanalglobal.com with your order ID and description. For urgent issues, call our hotline." },
+      { q: "Where are your offices located?", a: "Lagos (HQ): 25 Broad Street, Lagos Island. Abuja: 12 Aminu Kano Crescent, Wuse 2. Bayelsa: 12 Mbiama Road. Visit /stores for maps." },
+      { q: "How do I report an issue?", a: "Email support@kauvex.com with your order ID and description. For urgent issues, call our hotline." },
     ],
   },
 };

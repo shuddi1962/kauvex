@@ -75,10 +75,10 @@ const COUNTRY_CURRENCY: Record<string, string> = {
 // ---------------------------------------------------------------------------
 
 const FALLBACK_LOCATION: GeoLocation = {
-  country: "Nigeria",
-  countryCode: "NG",
-  city: "Port Harcourt",
-  currency: "NGN",
+  country: "United Kingdom",
+  countryCode: "GB",
+  city: "London",
+  currency: "GBP",
 };
 
 const FALLBACK_RATES: ExchangeRates = {
@@ -96,7 +96,7 @@ const FALLBACK_RATES: ExchangeRates = {
  * Falls back to NGN for unknown codes.
  */
 export function getCountryCurrency(countryCode: string): string {
-  return COUNTRY_CURRENCY[countryCode.toUpperCase()] ?? "NGN";
+  return COUNTRY_CURRENCY[countryCode.toUpperCase()] ?? "USD";
 }
 
 /**
@@ -118,8 +118,8 @@ export async function detectLocation(): Promise<GeoLocation> {
 
     const data = await res.json();
 
-    const countryCode: string = data.country_code ?? "NG";
-    const country: string = data.country_name ?? "Nigeria";
+    const countryCode: string = data.country_code ?? "GB";
+    const country: string = data.country_name ?? "United Kingdom";
     const city: string = data.city ?? "Unknown";
     const currency = getCountryCurrency(countryCode);
 
@@ -153,7 +153,7 @@ export async function fetchExchangeRates(): Promise<ExchangeRates> {
     }
 
     return {
-      base: "NGN",
+  base: "USD",
       rates: data.rates as Record<string, number>,
       updatedAt: Date.now(),
     };

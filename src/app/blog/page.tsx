@@ -6,58 +6,58 @@ import { Search, Clock, User, Tag } from "lucide-react";
 
 const blogPosts = [
   {
-    id: "1", slug: "complete-guide-cctv-installation-nigeria",
-    title: "Complete Guide to CCTV Installation in Nigeria (2026)",
-    excerpt: "Everything you need to know about setting up a professional surveillance system for your home or business in Nigeria.",
-    category: "Security", author: "Roshanal Team", date: "Apr 1, 2026", readTime: "8 min read",
+    id: "1", slug: "top-smartphones-2026",
+    title: "Top 10 Smartphones to Buy in Nigeria in 2026",
+    excerpt: "Our expert picks for the best smartphones across all price ranges — from budget to flagship.",
+    category: "Electronics", author: "KAUVEX Team", date: "Apr 1, 2026", readTime: "8 min read",
     featured: true,
   },
   {
-    id: "2", slug: "choosing-right-boat-engine-horsepower",
-    title: "How to Choose the Right Boat Engine Horsepower",
-    excerpt: "A practical guide to selecting the perfect outboard engine for your vessel type, size, and usage requirements.",
-    category: "Marine", author: "Roshanal Team", date: "Mar 25, 2026", readTime: "6 min read",
+    id: "2", slug: "fashion-trends-nigeria-2026",
+    title: "Fashion Trends Taking Over Nigeria in 2026",
+    excerpt: "From streetwear to native styles — discover what's trending in Nigerian fashion this year.",
+    category: "Fashion", author: "KAUVEX Team", date: "Mar 25, 2026", readTime: "6 min read",
     featured: true,
   },
   {
-    id: "3", slug: "fire-alarm-system-types-comparison",
-    title: "Fire Alarm System Types: Conventional vs Addressable vs Wireless",
-    excerpt: "Compare different fire alarm technologies to determine which system is right for your building.",
-    category: "Safety", author: "Roshanal Team", date: "Mar 18, 2026", readTime: "7 min read",
+    id: "3", slug: "home-kitchen-essentials-guide",
+    title: "Home & Kitchen Essentials: A Complete Buying Guide",
+    excerpt: "Everything you need to set up your dream home — from appliances to decor must-haves.",
+    category: "Home & Kitchen", author: "KAUVEX Team", date: "Mar 18, 2026", readTime: "7 min read",
   },
   {
-    id: "4", slug: "top-10-security-cameras-2026",
-    title: "Top 10 Security Cameras for Businesses in 2026",
-    excerpt: "Our expert picks for the best commercial security cameras — from budget-friendly to enterprise-grade.",
-    category: "Security", author: "Roshanal Team", date: "Mar 12, 2026", readTime: "10 min read",
+    id: "4", slug: "skincare-routine-nigerian-weather",
+    title: "The Perfect Skincare Routine for Nigerian Weather",
+    excerpt: "Tips and product recommendations for maintaining healthy skin in Nigeria's tropical climate.",
+    category: "Beauty", author: "KAUVEX Team", date: "Mar 12, 2026", readTime: "10 min read",
   },
   {
-    id: "5", slug: "kitchen-installation-guide-nigeria",
-    title: "Kitchen Installation Guide: Indoor, Outdoor & Commercial",
-    excerpt: "Step-by-step guide to planning and installing kitchens for homes, restaurants, and commercial facilities.",
-    category: "Installation", author: "Roshanal Team", date: "Mar 5, 2026", readTime: "9 min read",
+    id: "5", slug: "fitness-equipment-home-gym",
+    title: "Best Fitness Equipment for Your Home Gym in 2026",
+    excerpt: "Build the perfect home workout space with our top picks for fitness gear and accessories.",
+    category: "Sports", author: "KAUVEX Team", date: "Mar 5, 2026", readTime: "9 min read",
   },
   {
-    id: "6", slug: "solar-power-system-sizing-calculation",
-    title: "How to Size Your Solar Power System: Complete Calculation Guide",
-    excerpt: "Learn how to calculate the right solar panel and battery setup for your home or office in Nigeria.",
-    category: "Solar & Power", author: "Roshanal Team", date: "Feb 28, 2026", readTime: "11 min read",
+    id: "6", slug: "laptop-buying-guide-nigeria",
+    title: "Laptop Buying Guide 2026: Find the Perfect Laptop for Your Needs",
+    excerpt: "From gaming to productivity — everything you need to know before buying a laptop in Nigeria.",
+    category: "Electronics", author: "KAUVEX Team", date: "Feb 28, 2026", readTime: "11 min read",
   },
   {
-    id: "7", slug: "access-control-biometric-vs-card",
-    title: "Biometric vs Card Access Control: Which is Better?",
-    excerpt: "Pros and cons of fingerprint, facial recognition, and card-based access control systems.",
-    category: "Security", author: "Roshanal Team", date: "Feb 20, 2026", readTime: "5 min read",
+    id: "7", slug: "affordable-fashion-brands-nigeria",
+    title: "Top 10 Affordable Fashion Brands in Nigeria",
+    excerpt: "Stylish looks that won't break the bank — discover budget-friendly fashion brands.",
+    category: "Fashion", author: "KAUVEX Team", date: "Feb 20, 2026", readTime: "5 min read",
   },
   {
-    id: "8", slug: "boat-building-process-explained",
-    title: "The Boat Building Process: From Design to Launch",
-    excerpt: "An inside look at how custom boats are built — materials, construction stages, and timeline.",
-    category: "Marine", author: "Roshanal Team", date: "Feb 14, 2026", readTime: "12 min read",
+    id: "8", slug: "kitchen-gadgets-every-home-needs",
+    title: "10 Kitchen Gadgets Every Nigerian Home Needs",
+    excerpt: "Smart kitchen tools and appliances that make cooking easier and more enjoyable.",
+    category: "Home & Kitchen", author: "KAUVEX Team", date: "Feb 14, 2026", readTime: "12 min read",
   },
 ];
 
-const categories = ["All", "Security", "Marine", "Safety", "Installation", "Solar & Power"];
+const categories = ["All", "Electronics", "Fashion", "Home & Kitchen", "Beauty", "Sports"];
 
 export default function BlogPage() {
   const [activeCategory, setActiveCategory] = useState("All");
@@ -82,8 +82,8 @@ export default function BlogPage() {
       {/* Hero */}
       <section className="bg-gradient-to-r from-navy to-blue-800 text-white py-12">
         <div className="max-w-7xl mx-auto px-4">
-          <h1 className="font-syne font-800 text-3xl mb-3">Roshanal Blog</h1>
-          <p className="text-blue-200 mb-6">Expert insights on security, marine, safety, and technology</p>
+          <h1 className="font-syne font-800 text-3xl mb-3">KAUVEX Blog</h1>
+          <p className="text-blue-200 mb-6">Expert insights on electronics, fashion, technology, and lifestyle</p>
           <div className="relative max-w-md">
             <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-text-4" />
             <input

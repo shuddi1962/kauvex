@@ -35,16 +35,16 @@ import ProductCard from "@/components/product/product-card";
 
 // Demo reviews
 const demoReviews = [
-  { id: "1", author: "Chidi Nwosu", rating: 5, date: "2026-03-12", title: "Excellent quality", body: "Very satisfied with the build quality. Arrived well packaged and works as described. Roshanal team was very helpful during setup.", helpful: 14, verified: true },
-  { id: "2", author: "Amaka Obi", rating: 4, date: "2026-02-28", title: "Good product, fast shipping", body: "Product is solid. Delivery from Port Harcourt was within 2 days. Minor issue with instructions but customer support helped.", helpful: 8, verified: true },
+  { id: "1", author: "Chidi Nwosu", rating: 5, date: "2026-03-12", title: "Excellent quality", body: "Very satisfied with the build quality. Arrived well packaged and works as described. KAUVEX team was very helpful during setup.", helpful: 14, verified: true },
+  { id: "2", author: "Amaka Obi", rating: 4, date: "2026-02-28", title: "Good product, fast shipping", body: "Product is solid. Delivery from Lagos was within 2 days. Minor issue with instructions but customer support helped.", helpful: 8, verified: true },
   { id: "3", author: "Ibrahim Yusuf", rating: 5, date: "2026-02-15", title: "Professional grade equipment", body: "Using this for our office security system. Installation was straightforward. Highly recommend for commercial use.", helpful: 22, verified: true },
   { id: "4", author: "Grace Adeyemi", rating: 3, date: "2026-01-20", title: "Decent but pricey", body: "Quality is fine but a bit expensive compared to what you find in Computer Village. That said, the warranty support is worth the premium.", helpful: 5, verified: false },
 ];
 
 const demoQA = [
-  { id: "1", question: "Does this come with a warranty?", askedBy: "Customer", date: "2026-03-01", answer: "Yes, all our products come with a minimum 12-month manufacturer warranty. Extended warranty options are available at checkout.", answeredBy: "Roshanal Support", answerDate: "2026-03-01" },
-  { id: "2", question: "Can I get this installed by your team?", askedBy: "Customer", date: "2026-02-20", answer: "Absolutely! We offer professional installation services across Port Harcourt, Lagos, and Abuja. Book a slot from the services page or add installation at checkout.", answeredBy: "Roshanal Support", answerDate: "2026-02-21" },
-  { id: "3", question: "Is this compatible with existing systems?", askedBy: "Customer", date: "2026-02-10", answer: "Yes, this product follows industry standards and is compatible with most existing setups. Contact our tech team for specific compatibility questions.", answeredBy: "Roshanal Support", answerDate: "2026-02-10" },
+  { id: "1", question: "Does this come with a warranty?", askedBy: "Customer", date: "2026-03-01", answer: "Yes, all our products come with a minimum 12-month manufacturer warranty. Extended warranty options are available at checkout.", answeredBy: "KAUVEX Support", answerDate: "2026-03-01" },
+  { id: "2", question: "Can I get this installed by your team?", askedBy: "Customer", date: "2026-02-20", answer: "Absolutely! We offer professional installation services across Lagos, Lagos, and Abuja. Book a slot from the services page or add installation at checkout.", answeredBy: "KAUVEX Support", answerDate: "2026-02-21" },
+  { id: "3", question: "Is this compatible with existing systems?", askedBy: "Customer", date: "2026-02-10", answer: "Yes, this product follows industry standards and is compatible with most existing setups. Contact our tech team for specific compatibility questions.", answeredBy: "KAUVEX Support", answerDate: "2026-02-10" },
 ];
 
 export default function ProductDetailPage({ params }: { params: { slug: string } }) {
@@ -357,7 +357,7 @@ export default function ProductDetailPage({ params }: { params: { slug: string }
               </h4>
               <div className="space-y-2">
                 <div className="flex items-center justify-between text-xs">
-                  <span className="text-text-3">Port Harcourt</span>
+                  <span className="text-text-3">Lagos</span>
                   <span className="font-semibold text-success">1-2 business days</span>
                 </div>
                 <div className="flex items-center justify-between text-xs">
@@ -603,7 +603,7 @@ export default function ProductDetailPage({ params }: { params: { slug: string }
                 <h3 className="font-syne font-bold text-lg mb-4">Shipping Information</h3>
                 <div className="space-y-4">
                   {[
-                    { zone: "Port Harcourt Metro", time: "Same day / Next day", cost: "Free over ₦50,000", icon: Zap },
+                    { zone: "Lagos Metro", time: "Same day / Next day", cost: "Free over ₦50,000", icon: Zap },
                     { zone: "Rivers State", time: "1-2 business days", cost: "₦2,500", icon: Truck },
                     { zone: "Lagos / Abuja / Enugu", time: "2-4 business days", cost: "₦4,500", icon: Truck },
                     { zone: "Other Major Cities", time: "3-5 business days", cost: "₦6,000", icon: Package },
@@ -646,7 +646,7 @@ export default function ProductDetailPage({ params }: { params: { slug: string }
                         "Extended warranty available (24 or 36 months)",
                         "Covers manufacturing defects and component failure",
                         "Free repair or replacement within warranty period",
-                        "Warranty valid at all Roshanal service centers",
+                        "Warranty valid at all KAUVEX service centers",
                       ].map((item) => (
                         <li key={item} className="flex items-start gap-2 text-sm text-text-2">
                           <Check size={14} className="text-success mt-0.5 shrink-0" /> {item}

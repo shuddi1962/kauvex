@@ -7,31 +7,55 @@ import CookieConsent from "@/components/geo/cookie-consent";
 import ServiceWorkerRegister from "@/components/pwa/sw-register";
 
 export const metadata: Metadata = {
+  metadataBase: new URL("https://kauvex.com"),
   title: {
-    default: "Roshanal Global — Security Systems, Marine, Safety & Professional Services",
-    template: "%s | Roshanal Global",
+    default: "KAUVEX — Everything. Everywhere. Delivered.",
+    template: "%s | KAUVEX",
   },
   description:
-    "Your trusted partner for CCTV, fire alarm, access control, marine accessories, boat engines, boat building, safety equipment, kitchen installation, dredging services, and more. Shipping worldwide from Port Harcourt, Nigeria.",
+    "Shop millions of products from verified sellers worldwide. Electronics, fashion, home, beauty, sports, automotive and more. Fast shipping. Buyer protection guaranteed.",
   keywords: [
-    "CCTV", "security systems", "fire alarm", "access control", "marine accessories",
-    "boat engines", "boat building", "safety equipment", "dredging", "kitchen installation",
-    "Yamaha engines", "Hikvision", "Port Harcourt", "Nigeria", "surveillance",
+    "online shopping", "marketplace", "electronics", "fashion", "home & living",
+    "beauty", "sports", "automotive", "digital products", "global shipping",
   ],
   openGraph: {
-    title: "Roshanal Global — Security, Marine & Professional Services",
-    description: "Premium security, marine, safety & professional services. Worldwide shipping.",
+    title: "KAUVEX — Everything. Everywhere. Delivered.",
+    description: "Shop millions of products from verified sellers worldwide. Fast shipping. Buyer protection guaranteed.",
     type: "website",
     locale: "en_US",
-    siteName: "Roshanal Global",
+    siteName: "KAUVEX",
+    images: [{ url: "/og-image.png", width: 1200, height: 630 }],
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "KAUVEX — Everything. Everywhere. Delivered.",
+    description: "Shop millions of products from verified sellers worldwide.",
   },
   manifest: "/manifest.json",
   other: {
     "mobile-web-app-capable": "yes",
     "apple-mobile-web-app-capable": "yes",
     "apple-mobile-web-app-status-bar-style": "black-translucent",
-    "apple-mobile-web-app-title": "Roshanal",
+    "apple-mobile-web-app-title": "KAUVEX",
   },
+};
+
+const jsonLd = {
+  "@context": "https://schema.org",
+  "@type": "Organization",
+  name: "KAUVEX",
+  url: "https://kauvex.com",
+  logo: "https://kauvex.com/logo.png",
+  sameAs: [
+    "https://facebook.com/kauvex",
+    "https://twitter.com/kauvex",
+    "https://instagram.com/kauvex",
+    "https://youtube.com/@kauvex",
+    "https://linkedin.com/company/kauvex",
+  ],
+  description: "Everything. Everywhere. Delivered. Shop millions of products from verified sellers worldwide.",
+  slogan: "Everything. Everywhere. Delivered.",
+  areaServed: "Worldwide",
 };
 
 export default function RootLayout({
@@ -42,8 +66,12 @@ export default function RootLayout({
   return (
     <html lang="en">
       <head>
-        <meta name="theme-color" content="#0C1A36" />
+        <meta name="theme-color" content="#0A1628" />
         <link rel="apple-touch-icon" href="/icons/icon-192x192.png" />
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+        />
       </head>
       <body className="antialiased bg-off-white text-text-1">
         <AuthProvider>

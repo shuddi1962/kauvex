@@ -18,7 +18,7 @@ import { useCurrencyStore } from "@/store/currency-store";
 export default function AffiliateDashboardPage() {
   const [copied, setCopied] = useState(false);
   const { formatNGN } = useCurrencyStore();
-  const referralLink = "https://roshanalglobal.com/ref/JOHN2026";
+  const referralLink = "https://kauvex.com/ref/JOHN2026";
 
   const handleCopy = () => {
     navigator.clipboard.writeText(referralLink);

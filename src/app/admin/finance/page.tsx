@@ -161,7 +161,7 @@ export default function FinancePage() {
     const win = window.open("", "_blank");
     if (!win) return;
     win.document.write(`<html><head><title>${inv.invoice_id}</title><style>body{font-family:Arial;padding:40px;max-width:700px;margin:0 auto}h1{font-size:22px}.meta{color:#666;font-size:13px}.total{font-size:20px;font-weight:bold;text-align:right;margin-top:20px}@media print{body{padding:20px}}</style></head><body>
-      <h1>Roshanal Global</h1><p class="meta">Invoice</p>
+      <h1>KAUVEX</h1><p class="meta">Invoice</p>
       <hr/><h2>${inv.invoice_id}</h2>
       <p><strong>Customer:</strong> ${inv.customer}</p>
       <p><strong>Issued:</strong> ${inv.issued_date} | <strong>Due:</strong> ${inv.due_date}</p>

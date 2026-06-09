@@ -88,7 +88,7 @@ export default function ShopPage() {
                     >
                       {cat.name}
                       <span className={`text-[10px] ${selectedCategory === cat.slug ? "text-white/70" : "text-text-4"}`}>
-                        {cat.productCount}
+                        &rsaquo;
                       </span>
                     </button>
                   ))}

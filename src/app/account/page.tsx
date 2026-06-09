@@ -117,7 +117,7 @@ export default function AccountOverview() {
         <Link href="/account/wallet" className="bg-white rounded-xl border border-border p-5 hover:border-blue/30 transition-colors group">
           <Wallet className="w-5 h-5 text-text-3 group-hover:text-blue mb-3" />
           <h3 className="font-syne font-600 text-sm text-text-1 mb-1">Top Up Wallet</h3>
-          <p className="text-xs text-text-3">Add funds to your Roshanal wallet</p>
+          <p className="text-xs text-text-3">Add funds to your KAUVEX Wallet</p>
         </Link>
         <Link href="/track-order" className="bg-white rounded-xl border border-border p-5 hover:border-blue/30 transition-colors group">
           <Clock className="w-5 h-5 text-text-3 group-hover:text-blue mb-3" />

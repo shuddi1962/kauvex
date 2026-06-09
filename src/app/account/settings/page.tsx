@@ -153,7 +153,7 @@ export default function SettingsPage() {
             <div className="space-y-3">
               <div className="flex items-center justify-between p-3 rounded-lg border border-blue bg-blue-50">
                 <div>
-                  <p className="text-sm font-medium text-text-1">Chrome on Windows · Port Harcourt</p>
+                  <p className="text-sm font-medium text-text-1">Chrome on Windows · Lagos</p>
                   <p className="text-xs text-text-4">Current session · Last active now</p>
                 </div>
                 <span className="text-xs text-blue font-medium">This device</span>

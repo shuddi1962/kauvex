@@ -415,8 +415,8 @@ export default function ProductCreatePage() {
                 {/* Preview */}
                 <div className="p-4 bg-gray-50 rounded-lg">
                   <p className="text-[10px] text-text-4 mb-1">Search Preview</p>
-                  <p className="text-blue text-sm font-medium">{metaTitle || name || "Product Name"} | Roshanal Global</p>
-                  <p className="text-[10px] text-green-700 font-mono">roshanalglobal.com/product/{slug || "product-slug"}</p>
+                  <p className="text-blue text-sm font-medium">{metaTitle || name || "Product Name"} | KAUVEX</p>
+                  <p className="text-[10px] text-green-700 font-mono">kauvex.com/product/{slug || "product-slug"}</p>
                   <p className="text-xs text-text-3 mt-0.5 line-clamp-2">{metaDesc || shortDesc || "Product description will appear here..."}</p>
                 </div>
               </div>

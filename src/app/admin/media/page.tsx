@@ -35,16 +35,16 @@ const formatSize = (bytes: number) => {
 };
 
 const defaultFiles: MediaFile[] = [
-  { name: "hero-banner-main.jpg", url: "/images/hero-banner.jpg", type: "image/jpeg", size: 245000, width: 1920, height: 600, folder: "banners", alt_text: "Roshanal Global hero banner", uploaded_at: "2026-03-15" },
+  { name: "hero-banner-main.jpg", url: "/images/hero-banner.jpg", type: "image/jpeg", size: 245000, width: 1920, height: 600, folder: "banners", alt_text: "KAUVEX hero banner", uploaded_at: "2026-03-15" },
   { name: "hikvision-4mp.jpg", url: "/images/products/hikvision-4mp.jpg", type: "image/jpeg", size: 180000, width: 800, height: 800, folder: "products", alt_text: "Hikvision 4MP camera", uploaded_at: "2026-03-20" },
   { name: "yamaha-40hp.jpg", url: "/images/products/yamaha-40hp.jpg", type: "image/jpeg", size: 220000, width: 800, height: 800, folder: "products", alt_text: "Yamaha 40HP outboard engine", uploaded_at: "2026-03-18" },
   { name: "fire-alarm-panel.jpg", url: "/images/products/fire-alarm.jpg", type: "image/jpeg", size: 150000, width: 800, height: 800, folder: "products", alt_text: "Fire alarm control panel", uploaded_at: "2026-03-22" },
-  { name: "logo.svg", url: "/images/logo.svg", type: "image/svg+xml", size: 12000, folder: "brand", alt_text: "Roshanal Global logo", uploaded_at: "2026-01-10" },
+  { name: "logo.svg", url: "/images/logo.svg", type: "image/svg+xml", size: 12000, folder: "brand", alt_text: "KAUVEX logo", uploaded_at: "2026-01-10" },
   { name: "favicon.ico", url: "/favicon.ico", type: "image/x-icon", size: 4200, folder: "brand", alt_text: "Favicon", uploaded_at: "2026-01-10" },
   { name: "category-cctv.jpg", url: "/images/categories/cctv.jpg", type: "image/jpeg", size: 195000, width: 1200, height: 400, folder: "categories", alt_text: "CCTV category banner", uploaded_at: "2026-02-28" },
   { name: "category-marine.jpg", url: "/images/categories/marine.jpg", type: "image/jpeg", size: 210000, width: 1200, height: 400, folder: "categories", alt_text: "Marine equipment category", uploaded_at: "2026-02-28" },
   { name: "promo-easter.jpg", url: "/images/promos/easter.jpg", type: "image/jpeg", size: 320000, width: 1080, height: 1080, folder: "promos", alt_text: "Easter sale promo", uploaded_at: "2026-03-25" },
-  { name: "about-team.jpg", url: "/images/about-team.jpg", type: "image/jpeg", size: 280000, width: 1600, height: 900, folder: "pages", alt_text: "Roshanal Global team photo", uploaded_at: "2026-02-15" },
+  { name: "about-team.jpg", url: "/images/about-team.jpg", type: "image/jpeg", size: 280000, width: 1600, height: 900, folder: "pages", alt_text: "KAUVEX team photo", uploaded_at: "2026-02-15" },
   { name: "shipping-policy.pdf", url: "/docs/shipping-policy.pdf", type: "application/pdf", size: 450000, folder: "documents", alt_text: "Shipping policy document", uploaded_at: "2026-01-20" },
   { name: "product-demo.mp4", url: "/videos/product-demo.mp4", type: "video/mp4", size: 15000000, folder: "videos", alt_text: "Product demonstration video", uploaded_at: "2026-03-10" },
 ];

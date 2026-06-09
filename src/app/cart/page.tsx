@@ -27,9 +27,9 @@ import { products } from "@/lib/demo-data";
 import ProductCard from "@/components/product/product-card";
 
 const branches = [
-  { id: "phc", name: "Port Harcourt" },
   { id: "lagos", name: "Lagos" },
   { id: "abuja", name: "Abuja" },
+  { id: "phc", name: "Portharcourt" },
 ];
 
 export default function CartPage() {
@@ -56,7 +56,7 @@ export default function CartPage() {
     if (couponCode.toUpperCase() === "WELCOME10") {
       setCouponDiscount(subtotal * 0.1);
       setCouponApplied(true);
-    } else if (couponCode.toUpperCase() === "ROSHANAL5") {
+    } else if (couponCode.toUpperCase() === "KAUVEX10") {
       setCouponDiscount(subtotal * 0.05);
       setCouponApplied(true);
     } else {
@@ -310,7 +310,7 @@ export default function CartPage() {
                 </div>
                 {couponError && <p className="text-[10px] text-red mt-1">{couponError}</p>}
                 {couponApplied && <p className="text-[10px] text-success mt-1">Coupon applied! You save {formatPrice(discount)}</p>}
-                <p className="text-[9px] text-text-4 mt-1">Try: WELCOME10 or ROSHANAL5</p>
+                <p className="text-[9px] text-text-4 mt-1">Try: WELCOME10 or KAUVEX10</p>
               </div>
 
               {/* Gift Wrap */}

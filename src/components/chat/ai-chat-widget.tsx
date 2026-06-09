@@ -31,7 +31,7 @@ const initialMessages: ChatMessage[] = [
   {
     id: "1",
     role: "assistant",
-    content: "Hi there! I'm Sarah from Roshanal Global. How can I help you today? I can assist with product recommendations, order tracking, returns, and more!",
+    content: "Hi there! I'm Sarah from KAUVEX. How can I help you today? I can assist with product recommendations, order tracking, returns, and more!",
     timestamp: new Date(),
     persona: "Sarah Adeyemi",
   },
@@ -72,7 +72,7 @@ export default function AIChatWidget() {
         "Great question! Based on your needs, I'd recommend checking our security systems category. Would you like me to show you some options?",
         "I can see your order status right away. Let me pull up the details.",
         "Of course! I can help you with that. Let me walk you through the process.",
-        "That's a popular product! We currently have it in stock at our Port Harcourt and Lagos branches.",
+        "That's a popular product! We currently have it in stock and ready for delivery.",
       ];
 
       const assistantMsg: ChatMessage = {

@@ -1,19 +1,19 @@
 "use client";
 
-import { MapPin, Phone, Mail, Clock, ChevronDown } from "lucide-react";
+import { MapPin, Clock, ChevronDown } from "lucide-react";
 import { useCurrencyStore } from "@/store/currency-store";
 import { useState } from "react";
 import Link from "next/link";
 import LocationOverrideModal from "@/components/geo/location-override-modal";
 
-const currencies = ["NGN", "USD", "GBP", "EUR", "GHS", "CAD", "AUD", "ZAR", "KES", "JPY", "CNY"];
+const currencies = ["USD", "NGN", "GBP", "EUR", "GHS", "CAD", "AUD", "ZAR", "KES", "JPY", "CNY"];
 
 const topLinks = [
-  { label: "About", href: "/about" },
-  { label: "Blog", href: "/blog" },
-  { label: "Affiliates", href: "/affiliate" },
+  { label: "Sell on KAUVEX", href: "/sell" },
   { label: "B2B/Wholesale", href: "/wholesale" },
+  { label: "Affiliate Program", href: "/affiliate" },
   { label: "Track Order", href: "/track-order" },
+  { label: "Help", href: "/help" },
 ];
 
 export default function Topbar() {
@@ -31,16 +31,7 @@ export default function Topbar() {
             <span>Find a Store</span>
           </Link>
           <span className="text-white/20">|</span>
-          <a href="tel:+234800ROSHANAL" className="flex items-center gap-1 hover:text-white transition-colors">
-            <Phone size={10} />
-            <span>+234 800 ROSHANAL</span>
-          </a>
-          <span className="text-white/20">|</span>
-          <a href="mailto:info@roshanalglobal.com" className="flex items-center gap-1 hover:text-white transition-colors">
-            <Mail size={10} />
-            <span>info@roshanalglobal.com</span>
-          </a>
-          <span className="text-white/20">|</span>
+
           <span className="flex items-center gap-1">
             <Clock size={10} />
             <span>Mon-Sat 8AM-6PM WAT</span>
@@ -70,7 +61,7 @@ export default function Topbar() {
                 {currencies.map((c) => (
                   <button
                     key={c}
-                    onClick={() => { setCurrency(c); setCurrencyOpen(false); localStorage.setItem("roshanal-currency-manual", "true"); }}
+                    onClick={() => { setCurrency(c); setCurrencyOpen(false); localStorage.setItem("kauvex-currency-manual", "true"); }}
                     className={`block w-full text-left px-3 py-1.5 text-xs hover:bg-blue-50 transition-colors ${
                       c === currency ? "text-blue font-bold" : "text-text-2"
                     }`}

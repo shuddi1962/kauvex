@@ -139,7 +139,7 @@ export function searchAll(query: string): SearchResults {
 
 // --- Recent searches (localStorage) ---
 
-const RECENT_SEARCHES_KEY = "roshanal-recent-searches";
+const RECENT_SEARCHES_KEY = "kauvex-recent-searches";
 const MAX_RECENT = 5;
 
 export function getRecentSearches(): string[] {

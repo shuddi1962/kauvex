@@ -65,7 +65,7 @@ export default function VendorLoginPage() {
             <Store className="w-8 h-8 text-white" />
           </div>
           <h1 className="font-syne font-800 text-2xl text-white mb-1">Vendor Portal</h1>
-          <p className="text-purple-300 text-sm">Manage your shop on Roshanal Global</p>
+          <p className="text-purple-300 text-sm">Manage your shop on KAUVEX</p>
         </div>
 
         <div className="bg-white rounded-2xl shadow-2xl border border-border p-8">
@@ -143,7 +143,7 @@ export default function VendorLoginPage() {
 
           <div className="mt-6 pt-4 border-t border-border space-y-3">
             <p className="text-center text-sm text-text-3">
-              Want to sell on Roshanal Global?{" "}
+              Want to sell on KAUVEX?{" "}
               <Link href="/vendor/register" className="text-purple-600 font-semibold hover:underline">
                 Apply Now
               </Link>

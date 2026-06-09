@@ -175,7 +175,7 @@ export default function AdminShell({ children, title, subtitle }: AdminShellProp
             </div>
             {!sidebarCollapsed && (
               <div className="min-w-0">
-                <div className="font-bold text-xs text-white leading-tight tracking-tight">ROSHANAL</div>
+                <div className="font-bold text-xs text-white leading-tight tracking-tight">KAUVEX</div>
                 <div className="text-[9px] text-red font-medium">Admin Panel</div>
               </div>
             )}
@@ -274,7 +274,7 @@ export default function AdminShell({ children, title, subtitle }: AdminShellProp
               </div>
               <div className="hidden md:block">
                 <p className="text-sm font-semibold text-text-1 leading-tight">Super Admin</p>
-                <p className="text-[10px] text-text-4">admin@roshanalglobal.com</p>
+                <p className="text-[10px] text-text-4">admin@kauvex.com</p>
               </div>
               <ChevronDown size={14} className="text-text-4 hidden md:block" />
             </div>

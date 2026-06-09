@@ -55,11 +55,11 @@ interface SchemaItem {
 }
 
 const defaultPageAudits: PageAudit[] = [
-  { url: "/", title: "Homepage", score: 92, issues: 1, title_tag: "Roshanal Global — Security Systems, Marine, Safety", meta_desc: true, h1: true, images_alt: "23/24", canonical: true },
-  { url: "/shop", title: "Shop", score: 78, issues: 3, title_tag: "Shop All Products | Roshanal Global", meta_desc: true, h1: true, images_alt: "18/24", canonical: true },
-  { url: "/categories/cctv-cameras", title: "CCTV Cameras", score: 85, issues: 2, title_tag: "CCTV Cameras & Surveillance | Roshanal Global", meta_desc: true, h1: true, images_alt: "12/12", canonical: false },
+  { url: "/", title: "Homepage", score: 92, issues: 1, title_tag: "KAUVEX — Security Systems, Marine, Safety", meta_desc: true, h1: true, images_alt: "23/24", canonical: true },
+  { url: "/shop", title: "Shop", score: 78, issues: 3, title_tag: "Shop All Products | KAUVEX", meta_desc: true, h1: true, images_alt: "18/24", canonical: true },
+  { url: "/categories/cctv-cameras", title: "CCTV Cameras", score: 85, issues: 2, title_tag: "CCTV Cameras & Surveillance | KAUVEX", meta_desc: true, h1: true, images_alt: "12/12", canonical: false },
   { url: "/product/hikvision-4mp", title: "Hikvision 4MP Camera", score: 68, issues: 4, title_tag: "Missing", meta_desc: false, h1: true, images_alt: "3/5", canonical: false },
-  { url: "/about", title: "About Us", score: 55, issues: 5, title_tag: "About | Roshanal", meta_desc: false, h1: false, images_alt: "2/6", canonical: false },
+  { url: "/about", title: "About Us", score: 55, issues: 5, title_tag: "About | KAUVEX", meta_desc: false, h1: false, images_alt: "2/6", canonical: false },
 ];
 
 const defaultKeywords: Keyword[] = [

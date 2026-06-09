@@ -112,7 +112,7 @@ export default function QuickViewModal({ product, isOpen, onClose }: QuickViewMo
 
                 {/* Short description */}
                 <p className="text-sm text-text-3 leading-relaxed mb-4 line-clamp-3">
-                  {product.shortDescription || "Premium quality product from Roshanal Global. Available for immediate delivery."}
+                  {product.shortDescription || "Premium quality product from KAUVEX. Available for immediate delivery."}
                 </p>
 
                 {/* Stock status */}

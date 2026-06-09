@@ -3,11 +3,10 @@
 import { usePathname } from "next/navigation";
 import { useState, useEffect } from "react";
 import { ChevronUp } from "lucide-react";
-import Topbar from "./topbar";
-import NoticeBar from "./notice-bar";
-import MainHeader from "./main-header";
-import Navigation from "./navigation";
-import Footer from "./footer";
+import TopBar from "@/components/home/top-bar";
+import MainHeader from "@/components/home/main-header";
+import CategoryNav from "@/components/home/category-nav";
+import Footer from "@/components/home/footer";
 import ToastContainer from "@/components/notifications/toast-container";
 import SocialProofPopup from "@/components/notifications/social-proof-popup";
 import AIChatWidget from "@/components/chat/ai-chat-widget";
@@ -44,19 +43,18 @@ export default function ClientLayout({ children }: { children: React.ReactNode }
 
   return (
     <>
-      {/* 5-Layer Header */}
+      {/* KAUVEX Header */}
       <header>
-        <Topbar />
-        <NoticeBar />
+        <TopBar />
         <MainHeader />
-        <Navigation />
+        <CategoryNav />
       </header>
 
       {/* Sticky Header (appears on scroll) */}
       {isSticky && (
         <div className="header-sticky">
           <MainHeader />
-          <Navigation />
+          <CategoryNav />
         </div>
       )}
 

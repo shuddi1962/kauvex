@@ -77,6 +77,6 @@ export const useCartStore = create<CartStore>()(
         return get().items.reduce((count, item) => count + item.quantity, 0);
       },
     }),
-    { name: "roshanal-cart" }
+    { name: "kauvex-cart" }
   )
 );

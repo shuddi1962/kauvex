@@ -46,7 +46,7 @@ const nigerianStates = [
 const shippingMethods = [
   { id: "standard", name: "Standard Delivery", time: "3-5 business days", cost: 4500, icon: Truck },
   { id: "express", name: "Express Delivery", time: "1-2 business days", cost: 8500, icon: Package },
-  { id: "same-day", name: "Same-Day (PH only)", time: "Same day by 6 PM", cost: 12000, icon: Map },
+  { id: "same-day", name: "Same-Day (select cities)", time: "Same day by 6 PM", cost: 12000, icon: Map },
   { id: "pickup", name: "Store Pickup", time: "Ready in 2 hours", cost: 0, icon: Building2 },
 ];
 
@@ -54,15 +54,15 @@ const paymentMethods = [
   { id: "card", name: "Debit / Credit Card", description: "Visa, Mastercard, Verve", icon: CreditCard },
   { id: "bank-transfer", name: "Bank Transfer", description: "Direct transfer to our account", icon: Banknote },
   { id: "ussd", name: "USSD", description: "Pay with any bank USSD code", icon: Phone },
-  { id: "wallet", name: "Roshanal Wallet", description: "Pay from your wallet balance", icon: Smartphone },
+  { id: "wallet", name: "KAUVEX Wallet", description: "Pay from your wallet balance", icon: Smartphone },
   { id: "paystack", name: "Paystack", description: "Multiple payment options", icon: Shield },
   { id: "pay-on-delivery", name: "Pay on Delivery", description: "Cash or POS on delivery", icon: Banknote },
 ];
 
 const warehouses = [
-  { id: "phc-main", name: "Port Harcourt Main", address: "12 Aba Road, Port Harcourt", stock: "In Stock", eta: "Same day" },
-  { id: "phc-diobu", name: "Port Harcourt Diobu", address: "45 Ikwerre Road, Diobu", stock: "In Stock", eta: "Next day" },
-  { id: "lagos-ikeja", name: "Lagos Ikeja", address: "22 Allen Avenue, Ikeja", stock: "Limited", eta: "2-3 days" },
+  { id: "lagos-main", name: "Lagos Main", address: "22 Allen Avenue, Ikeja", stock: "In Stock", eta: "Same day" },
+  { id: "lagos-vi", name: "Lagos VI", address: "15 Admiralty Way, Lekki Phase 1", stock: "In Stock", eta: "Next day" },
+  { id: "abuja-wuse", name: "Abuja Wuse", address: "12 Aminu Kano Crescent, Wuse 2", stock: "Limited", eta: "2-3 days" },
 ];
 
 export default function CheckoutPage() {
@@ -75,7 +75,7 @@ export default function CheckoutPage() {
   const [currentStep, setCurrentStep] = useState(1);
   const [selectedShipping, setSelectedShipping] = useState("standard");
   const [selectedPayment, setSelectedPayment] = useState("card");
-  const [selectedWarehouse, setSelectedWarehouse] = useState("phc-main");
+  const [selectedWarehouse, setSelectedWarehouse] = useState("lagos-main");
 
   const [delivery, setDelivery] = useState({
     fullName: "", email: "", phone: "", address: "", city: "", state: "Rivers", lga: "", country: "Nigeria", postalCode: "",
@@ -217,7 +217,7 @@ export default function CheckoutPage() {
                       value={delivery.city}
                       onChange={(e) => setDelivery({ ...delivery, city: e.target.value })}
                       className="w-full h-10 px-3 text-sm rounded-lg border border-border focus:outline-none focus:border-blue"
-                      placeholder="Port Harcourt"
+                      placeholder="Lagos"
                     />
                   </div>
                   <div>

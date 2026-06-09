@@ -33,7 +33,7 @@ export default function VendorAnalyticsPage() {
         .select("total_amount, items, created_at")
         .eq("vendor_id", user.id);
 
-      const soldCount = orders?.reduce((sum, o) => {
+      const soldCount = orders?.reduce((sum: number, o: any) => {
         const items = Array.isArray(o.items) ? o.items : [];
         return sum + items.reduce((s: number, i: any) => s + (i.quantity || 1), 0);
       }, 0) || 0;

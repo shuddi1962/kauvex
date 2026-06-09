@@ -2,8 +2,6 @@
 
 import Link from "next/link";
 import {
-  MapPin,
-  Phone,
   Mail,
   Clock,
   ArrowRight,
@@ -25,18 +23,17 @@ const footerColumns = [
       { label: "Deals & Offers", url: "/deals" },
       { label: "Brands", url: "/brands" },
       { label: "Gift Cards", url: "/shop" },
-      { label: "Boat Engines", url: "/category/boat-engines" },
+
     ],
   },
   {
-    title: "Services",
+    title: "Sell",
     links: [
-      { label: "CCTV Installation", url: "/services/cctv-installation" },
-      { label: "Fire Alarm", url: "/services/fire-alarm" },
-      { label: "Kitchen Installation", url: "/services/kitchen-installation" },
-      { label: "Boat Building", url: "/services/boat-building" },
-      { label: "Dredging Services", url: "/services/dredging" },
-      { label: "Maintenance", url: "/services/maintenance" },
+      { label: "Sell on KAUVEX", url: "/sell" },
+      { label: "Vendor Dashboard", url: "/vendor/dashboard" },
+      { label: "B2B/Wholesale", url: "/wholesale" },
+      { label: "Affiliate Program", url: "/affiliate" },
+      { label: "Advertising", url: "/advertise" },
     ],
   },
   {
@@ -71,7 +68,7 @@ const socialLinks = [
   { icon: Play, url: "#", label: "YouTube" },
 ];
 
-const paymentLogos = ["Visa", "Mastercard", "Verve", "Paystack", "Flutterwave", "Stripe", "Bitcoin", "USDT", "Bank Transfer"];
+const paymentLogos = ["Visa", "Mastercard", "PayPal", "Stripe", "Paystack", "Flutterwave", "Apple Pay", "Google Pay"];
 
 export default function Footer() {
   const [email, setEmail] = useState("");
@@ -111,40 +108,29 @@ export default function Footer() {
           {/* Brand Column */}
           <div className="col-span-2 md:col-span-3 lg:col-span-2">
             <Link href="/" className="flex items-center gap-2.5 mb-5">
-              <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-blue to-blue-600 flex items-center justify-center">
-                <span className="text-white font-bold text-lg">RS</span>
+              <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-[#0A1628] to-[#FF6B00] flex items-center justify-center">
+                <span className="text-white font-bold text-lg">K</span>
               </div>
               <div>
                 <div className="font-bold text-[16px] text-white leading-tight tracking-tight">
-                  ROSHANAL GLOBAL
-                </div>
-                <div className="text-[9px] text-red font-semibold -mt-0.5 uppercase">
-                  Infotech Limited
+                  KAUVEX
                 </div>
               </div>
             </Link>
             <p className="text-sm text-white/40 leading-relaxed mb-5">
-              Your trusted partner for security systems, marine accessories, safety equipment,
-              and professional installation services. Serving clients globally from Port Harcourt, Nigeria.
+              Your global marketplace for electronics, fashion, home essentials, and more.
+              Shop millions of products from trusted sellers worldwide with fast shipping and easy returns.
             </p>
             <div className="space-y-2.5 text-sm text-white/50">
-              <div className="flex items-center gap-2.5">
-                <MapPin size={14} className="text-blue-400 shrink-0" />
-                <span>14 Aba Road, Port Harcourt, Rivers State</span>
+                <div className="flex items-center gap-2.5">
+                  <Mail size={14} className="text-blue-400 shrink-0" />
+                  <span>info@kauvex.com</span>
+                </div>
+                <div className="flex items-center gap-2.5">
+                  <Clock size={14} className="text-blue-400 shrink-0" />
+                  <span>24/7 Customer Support</span>
+                </div>
               </div>
-              <div className="flex items-center gap-2.5">
-                <Phone size={14} className="text-blue-400 shrink-0" />
-                <span>+234 800 ROSHANAL</span>
-              </div>
-              <div className="flex items-center gap-2.5">
-                <Mail size={14} className="text-blue-400 shrink-0" />
-                <span>info@roshanalglobal.com</span>
-              </div>
-              <div className="flex items-center gap-2.5">
-                <Clock size={14} className="text-blue-400 shrink-0" />
-                <span>Mon-Sat 8AM-6PM WAT</span>
-              </div>
-            </div>
 
             {/* Social Links */}
             <div className="flex items-center gap-2 mt-6">
@@ -191,7 +177,7 @@ export default function Footer() {
       <div className="border-t border-white/10">
         <div className="w-full max-w-[1440px] mx-auto px-4 py-4 flex flex-col md:flex-row items-center justify-between gap-3">
           <p className="text-xs text-white/30">
-            © {new Date().getFullYear()} Roshanal Infotech Limited. All rights reserved.
+            © {new Date().getFullYear()} KAUVEX Global Ltd. All rights reserved.
           </p>
           <div className="flex items-center gap-4">
             <Link href="/about" className="text-xs text-white/30 hover:text-white/60 transition-colors">Privacy Policy</Link>

@@ -26,12 +26,12 @@ const departments = ["Management", "Sales", "Operations", "Support", "Marketing"
 const roles = ["Super Admin", "Admin", "Manager", "Sales Rep", "Support Agent", "Warehouse Staff", "Accountant", "Content Manager", "Viewer"];
 
 const defaultStaff: StaffMember[] = [
-  { name: "Roshanal Admin", email: "admin@roshanalglobal.com", phone: "+234 803 123 4567", role: "Super Admin", department: "Management", status: "active", avatar: "", last_login: "2026-04-12" },
-  { name: "Ada Okafor", email: "ada@roshanalglobal.com", phone: "+234 810 234 5678", role: "Sales Rep", department: "Sales", status: "active", avatar: "", last_login: "2026-04-11" },
-  { name: "Emeka Nwachukwu", email: "emeka@roshanalglobal.com", phone: "+234 813 345 6789", role: "Warehouse Staff", department: "Warehouse", status: "active", avatar: "", last_login: "2026-04-10" },
-  { name: "Blessing Ade", email: "blessing@roshanalglobal.com", phone: "+234 802 456 7890", role: "Support Agent", department: "Support", status: "active", avatar: "", last_login: "2026-04-12" },
-  { name: "Chidi Okoro", email: "chidi@roshanalglobal.com", phone: "+234 811 567 8901", role: "Manager", department: "Operations", status: "active", avatar: "", last_login: "2026-04-09" },
-  { name: "Ngozi Eze", email: "ngozi@roshanalglobal.com", phone: "+234 814 678 9012", role: "Content Manager", department: "Marketing", status: "suspended", avatar: "", last_login: "2026-03-20" },
+  { name: "KAUVEX Admin", email: "admin@kauvex.com", phone: "+234 803 123 4567", role: "Super Admin", department: "Management", status: "active", avatar: "", last_login: "2026-04-12" },
+  { name: "Ada Okafor", email: "ada@kauvex.com", phone: "+234 810 234 5678", role: "Sales Rep", department: "Sales", status: "active", avatar: "", last_login: "2026-04-11" },
+  { name: "Emeka Nwachukwu", email: "emeka@kauvex.com", phone: "+234 813 345 6789", role: "Warehouse Staff", department: "Warehouse", status: "active", avatar: "", last_login: "2026-04-10" },
+  { name: "Blessing Ade", email: "blessing@kauvex.com", phone: "+234 802 456 7890", role: "Support Agent", department: "Support", status: "active", avatar: "", last_login: "2026-04-12" },
+  { name: "Chidi Okoro", email: "chidi@kauvex.com", phone: "+234 811 567 8901", role: "Manager", department: "Operations", status: "active", avatar: "", last_login: "2026-04-09" },
+  { name: "Ngozi Eze", email: "ngozi@kauvex.com", phone: "+234 814 678 9012", role: "Content Manager", department: "Marketing", status: "suspended", avatar: "", last_login: "2026-03-20" },
 ];
 
 export default function StaffPage() {
@@ -281,7 +281,7 @@ export default function StaffPage() {
                   <label className="text-sm font-medium text-text-2 block mb-1.5">Email *</label>
                   <div className="relative">
                     <Mail size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-text-4" />
-                    <input value={form.email} onChange={e => setForm({ ...form, email: e.target.value })} type="email" placeholder="email@roshanalglobal.com" className="w-full h-10 pl-9 pr-3 rounded-lg border border-gray-200 text-sm focus:outline-none focus:border-blue" />
+                    <input value={form.email} onChange={e => setForm({ ...form, email: e.target.value })} type="email" placeholder="email@kauvex.com" className="w-full h-10 pl-9 pr-3 rounded-lg border border-gray-200 text-sm focus:outline-none focus:border-blue" />
                   </div>
                 </div>
                 <div>

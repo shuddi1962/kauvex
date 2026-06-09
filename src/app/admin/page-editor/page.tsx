@@ -43,13 +43,13 @@ const generateId = () => Math.random().toString(36).substring(2, 10);
 
 const defaultPages: SitePage[] = [
   { title: "About Us", slug: "about", status: "published", blocks: [
-    { id: generateId(), type: "heading", content: { text: "About Roshanal Global", level: "h1", align: "center" } },
-    { id: generateId(), type: "text", content: { text: "Roshanal Global Infotech Limited is Nigeria's leading supplier of security systems, marine equipment, fire safety, and industrial solutions. Based in Port Harcourt, Rivers State, we serve businesses and individuals across West Africa.", align: "left" } },
+    { id: generateId(), type: "heading", content: { text: "About KAUVEX", level: "h1", align: "center" } },
+    { id: generateId(), type: "text", content: { text: "KAUVEX Global Ltd is Nigeria's leading supplier of security systems, marine equipment, fire safety, and industrial solutions. Based in Port Harcourt, Rivers State, we serve businesses and individuals across West Africa.", align: "left" } },
     { id: generateId(), type: "banner", content: { title: "Our Mission", subtitle: "To provide world-class security and marine solutions with exceptional service delivery.", buttonText: "Contact Us", buttonLink: "/contact", bgColor: "#1641C4" } },
   ]},
   { title: "Contact Us", slug: "contact", status: "published", blocks: [
     { id: generateId(), type: "heading", content: { text: "Get in Touch", level: "h1", align: "center" } },
-    { id: generateId(), type: "two_columns", content: { left: "Email: info@roshanalglobal.com\nPhone: +234 803 123 4567\nAddress: 42 Ada George Road, Port Harcourt", right: "Business Hours:\nMonday - Friday: 8am - 6pm\nSaturday: 9am - 3pm\nSunday: Closed" } },
+    { id: generateId(), type: "two_columns", content: { left: "Email: info@kauvex.com\nPhone: +234 803 123 4567\nAddress: 42 Ada George Road, Port Harcourt", right: "Business Hours:\nMonday - Friday: 8am - 6pm\nSaturday: 9am - 3pm\nSunday: Closed" } },
   ]},
   { title: "FAQ", slug: "faq", status: "draft", blocks: [
     { id: generateId(), type: "heading", content: { text: "Frequently Asked Questions", level: "h1", align: "center" } },

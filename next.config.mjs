@@ -20,7 +20,7 @@ const nextConfig = {
 
   // Environment variables available at build time
   env: {
-    NEXT_PUBLIC_SITE_NAME: process.env.NEXT_PUBLIC_SITE_NAME || "Roshanal Global",
+    NEXT_PUBLIC_SITE_NAME: process.env.NEXT_PUBLIC_SITE_NAME || "KAUVEX",
   },
 
   // Headers for security and PWA

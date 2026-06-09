@@ -9,17 +9,17 @@ const faqCategories = [
   {
     name: "General",
     faqs: [
-      { q: "What is Roshanal Global?", a: "Roshanal Global (Roshanal Infotech Limited) is a leading commerce platform for security systems, marine products, boat engines, safety equipment, and professional installation services. Based in Port Harcourt, Nigeria, we serve clients worldwide." },
-      { q: "Where are you located?", a: "Our headquarters is at 14 Aba Road, Port Harcourt, Rivers State, Nigeria. We also have offices in Lagos and Bayelsa." },
+      { q: "What is KAUVEX?", a: "KAUVEX is a leading marketplace for quality products across electronics, fashion, home, beauty, sports, and more. We serve customers worldwide with a seamless shopping experience." },
+      { q: "Where are you located?", a: "Our headquarters is in Lagos, Nigeria. We also have offices in Abuja and Bayelsa." },
       { q: "Do you ship internationally?", a: "Yes, we ship to over 20 countries worldwide. International shipping rates and delivery estimates are calculated at checkout." },
-      { q: "What brands do you carry?", a: "We carry top brands including Hikvision, Dahua, Bosch, Honeywell, Yamaha, Mercury, Suzuki Marine, ZKTeco, Axis, TP-Link, Cisco, and Caterpillar." },
+      { q: "What brands do you carry?", a: "We carry top brands including Apple, Samsung, Sony, Nike, Adidas, LG, Dyson, Puma, and many more across all categories." },
     ],
   },
   {
     name: "Orders & Shipping",
     faqs: [
       { q: "How do I track my order?", a: "Visit the Track Order page from the top navigation or go to /track-order. Enter your order ID to see real-time tracking with timeline updates." },
-      { q: "How long does delivery take?", a: "Standard: 3-5 business days. Express: 1-2 business days. Same-day available in Port Harcourt. International: 7-14 business days depending on destination." },
+      { q: "How long does delivery take?", a: "Standard: 3-5 business days. Express: 1-2 business days. International: 7-14 business days depending on destination." },
       { q: "Can I choose which branch fulfills my order?", a: "Yes. During checkout, you can select the fulfillment branch. The system auto-selects the nearest branch with stock, but you can override this." },
       { q: "Is free shipping available?", a: "Orders over ₦100,000 qualify for free standard shipping within Nigeria. Free shipping promotions are also available during sales events." },
     ],
@@ -27,7 +27,7 @@ const faqCategories = [
   {
     name: "Payments & Pricing",
     faqs: [
-      { q: "What payment methods do you accept?", a: "Credit/Debit Cards, Bank Transfer, USSD, Mobile Money, Cryptocurrency (Bitcoin, USDT via NowPayments), Roshanal Wallet, and Pay on Delivery (select areas)." },
+      { q: "What payment methods do you accept?", a: "Credit/Debit Cards, Bank Transfer, USSD, Mobile Money, Cryptocurrency (Bitcoin, USDT), KAUVEX Wallet, and Pay on Delivery (select areas)." },
       { q: "Why do I see prices in a different currency?", a: "We auto-detect your location and display prices in your local currency. The NGN equivalent is always shown below. You can change currency from the top navigation." },
       { q: "Are all payments processed in Naira?", a: "Yes. Regardless of the display currency, all payments are processed in Nigerian Naira (NGN). Your bank handles the conversion." },
       { q: "Do you offer bulk/wholesale pricing?", a: "Yes. Apply for a B2B account at /wholesale to access wholesale pricing, volume discounts, and NET payment terms." },
@@ -36,19 +36,19 @@ const faqCategories = [
   {
     name: "Products & Warranty",
     faqs: [
-      { q: "Are your products genuine?", a: "100% genuine. We are authorized distributors for all brands we carry. Every product comes with manufacturer warranty and authenticity verification." },
+      { q: "Are your products genuine?", a: "100% genuine. We work with authorized distributors and verified sellers. Every product comes with manufacturer warranty or seller guarantee." },
       { q: "How does the warranty work?", a: "Register your product in My Account after purchase. Warranty covers manufacturing defects. Duration varies by product (typically 1-3 years). Visit /services/maintenance for warranty claims." },
       { q: "Can you source products not listed?", a: "Yes. Use our Quote & Sourcing system at /quote. Describe what you need and we'll source it from our global supplier network, usually within 3-7 days." },
-      { q: "Do you sell boat engines separately?", a: "Yes. We carry Yamaha, Mercury, and Suzuki Marine outboard engines from 15HP to 350HP. Browse our boat engines category for the full range." },
+      { q: "Do you have a mobile app?", a: "Yes! Our mobile app is available for iOS and Android. Download it for a faster shopping experience, push notifications, and exclusive app-only deals." },
     ],
   },
   {
     name: "Services & Installation",
     faqs: [
-      { q: "What installation services do you offer?", a: "CCTV installation, fire alarm systems, access control, kitchen installation (indoor/outdoor/commercial), dredging services, and general maintenance." },
-      { q: "How do I book a service?", a: "Visit /services, select your service type, fill in the booking form with your requirements, and our team will contact you within 24 hours with a quote." },
-      { q: "Do you build boats?", a: "Yes! We build custom boats and marine vessels — fishing boats, speed boats, pontoons, cabin cruisers, catamarans, tugboats, barges, patrol boats, and more. Configure your boat at /services/boat-building." },
-      { q: "Do you offer maintenance plans?", a: "Yes. Annual maintenance contracts include regular servicing, priority support, and discounted repairs. Visit /services/maintenance for details." },
+      { q: "How do I track my order?", a: "Visit the Track Order page from the top navigation or go to /track-order. Enter your order ID to see real-time tracking with timeline updates." },
+      { q: "Can I return an item?", a: "Most items can be returned within 14 days of delivery if unused and in original packaging. Visit our Returns page to initiate a return." },
+      { q: "How do I contact customer support?", a: "You can reach us via live chat, email at support@kauvex.com, or call us during business hours. Visit our Contact page for more details." },
+      { q: "Do you offer volume discounts?", a: "Yes. Apply for a B2B account at /wholesale to access wholesale pricing, volume discounts, and NET payment terms." },
     ],
   },
   {

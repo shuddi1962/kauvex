@@ -64,7 +64,7 @@ export default function AdminLoginPage() {
           <div className="w-16 h-16 bg-gradient-to-br from-blue-400 to-blue-700 rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-lg shadow-blue/30">
             <ShieldCheck className="w-8 h-8 text-white" />
           </div>
-          <h1 className="font-syne font-800 text-2xl text-white mb-1">Roshanal Admin</h1>
+          <h1 className="font-syne font-800 text-2xl text-white mb-1">KAUVEX Admin</h1>
           <p className="text-blue-300 text-sm">Staff & administrator access only</p>
         </div>
 
@@ -93,7 +93,7 @@ export default function AdminLoginPage() {
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   className="w-full pl-10 pr-4 py-2.5 border border-border rounded-lg text-sm text-text-1 placeholder:text-text-4 focus:outline-none focus:ring-2 focus:ring-blue/20 focus:border-blue transition-colors"
-                  placeholder="admin@roshanalglobal.com"
+                  placeholder="admin@kauvex.com"
                   required
                 />
               </div>

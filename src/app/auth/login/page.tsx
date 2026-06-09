@@ -62,10 +62,10 @@ export default function LoginPage() {
               <Shield className="w-7 h-7 text-white" />
             </div>
             <h1 className="font-syne font-800 text-4xl mb-4">
-              Welcome Back to<br />Roshanal Global
+              Welcome Back to<br />KAUVEX
             </h1>
             <p className="text-blue-200 text-lg max-w-md">
-              Your trusted partner for security systems, marine products, safety equipment, and professional services worldwide.
+              Your trusted marketplace for quality products across electronics, fashion, home, beauty, sports, and more.
             </p>
           </div>
           <div className="space-y-4 mt-8">
@@ -94,7 +94,7 @@ export default function LoginPage() {
             <div className="w-12 h-12 bg-gradient-to-br from-blue-500 to-blue-700 rounded-xl flex items-center justify-center mx-auto mb-3">
               <Shield className="w-6 h-6 text-white" />
             </div>
-            <h2 className="font-syne font-700 text-xl text-text-1">Roshanal Global</h2>
+            <h2 className="font-syne font-700 text-xl text-text-1">KAUVEX</h2>
           </div>
 
           <div className="bg-white rounded-2xl shadow-sm border border-border p-8">

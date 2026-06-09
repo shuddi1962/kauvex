@@ -32,7 +32,7 @@ export default function BlogPostPage({ params }: { params: { slug: string } }) {
             {title}
           </h1>
           <div className="flex flex-wrap items-center gap-4 text-sm text-text-3">
-            <span className="flex items-center gap-1"><User className="w-3.5 h-3.5" /> Roshanal Team</span>
+            <span className="flex items-center gap-1"><User className="w-3.5 h-3.5" /> KAUVEX Team</span>
             <span className="flex items-center gap-1"><Calendar className="w-3.5 h-3.5" /> Apr 1, 2026</span>
             <span className="flex items-center gap-1"><Clock className="w-3.5 h-3.5" /> 8 min read</span>
           </div>
@@ -81,11 +81,11 @@ export default function BlogPostPage({ params }: { params: { slug: string } }) {
             <div className="bg-blue-50 rounded-xl p-6 my-8">
               <h3 className="font-syne font-700 text-text-1 mb-2">Need Professional Help?</h3>
               <p className="text-sm text-text-3 mb-4">
-                Roshanal Global offers professional CCTV installation services across Nigeria.
-                Get a free site survey and quote.
+                KAUVEX offers professional installation services across the globe.
+                Get a free consultation and quote.
               </p>
-              <Link href="/services/cctv-installation">
-                <Button variant="default" size="sm">Book Installation</Button>
+              <Link href="/contact">
+                <Button variant="default" size="sm">Contact Us</Button>
               </Link>
             </div>
 

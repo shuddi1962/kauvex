@@ -7,6 +7,7 @@ import TopBar from "@/components/home/top-bar";
 import MainHeader from "@/components/home/main-header";
 import CategoryNav from "@/components/home/category-nav";
 import Footer from "@/components/home/footer";
+import { StorefrontProvider } from "@/lib/storefront-context";
 import ToastContainer from "@/components/notifications/toast-container";
 import SocialProofPopup from "@/components/notifications/social-proof-popup";
 import AIChatWidget from "@/components/chat/ai-chat-widget";
@@ -42,7 +43,7 @@ export default function ClientLayout({ children }: { children: React.ReactNode }
   }
 
   return (
-    <>
+    <StorefrontProvider>
       {/* KAUVEX Header */}
       <header>
         <TopBar />
@@ -79,6 +80,6 @@ export default function ClientLayout({ children }: { children: React.ReactNode }
       <AIChatWidget />
       <WhatsAppButton />
       <CampaignPopup />
-    </>
+    </StorefrontProvider>
   );
 }

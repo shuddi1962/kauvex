@@ -5,7 +5,7 @@ import { useParams, useRouter } from "next/navigation";
 import AdminShell from "@/components/admin/admin-shell";
 import {
   Globe, MapPin, Home, CreditCard, Truck, Store, Save,
-  ArrowLeft, ChevronDown, ToggleLeft, ToggleRight, X, Image,
+  ArrowLeft, ChevronDown, ToggleLeft, ToggleRight, Image,
 } from "lucide-react";
 import { insforge } from "@/lib/insforge";
 

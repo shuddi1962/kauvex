@@ -9,6 +9,7 @@ import { useCartStore } from "@/store/cart-store";
 import { useUIStore } from "@/store/ui-store";
 import { cn } from "@/lib/utils";
 import { insforge } from "@/lib/insforge";
+import Price from "@/components/ui/Price";
 
 interface FeaturedProduct {
   id: string;
@@ -222,15 +223,13 @@ export default function FeaturedProducts() {
                     <span className="text-[10px] text-text-4 ml-0.5">({product.reviews})</span>
                   </div>
 
-                  <div className="mt-2 flex items-baseline gap-2">
-                    <span className="font-bold text-base text-text-1">
-                      ${product.price.toFixed(2)}
-                    </span>
-                    {onSale && (
-                      <span className="text-xs text-text-4 line-through">
-                        ${product.originalPrice!.toFixed(2)}
-                      </span>
-                    )}
+                  <div className="mt-2">
+                    <Price
+                      usdPrice={product.price}
+                      showOriginal={onSale}
+                      originalUsdPrice={onSale ? product.originalPrice! : undefined}
+                      size="sm"
+                    />
                   </div>
 
                   <div className="mt-2 flex items-center gap-1.5">

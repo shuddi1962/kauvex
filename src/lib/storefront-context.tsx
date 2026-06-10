@@ -1,6 +1,8 @@
 "use client";
 
 import React, { createContext, useContext, useState, useEffect, ReactNode } from "react";
+import { insforge } from "@/lib/insforge";
+import { useCurrencyStore } from "@/store/currency-store";
 
 export interface Storefront {
   id: string;
@@ -20,8 +22,6 @@ export interface Storefront {
   metaDescription?: string;
 }
 
-const STOREFRONT_COOKIE_KEY = "kauvex-storefront";
-
 const defaultStorefront: Storefront = {
   id: "default",
   name: "Global",
@@ -40,44 +40,23 @@ const defaultStorefront: Storefront = {
   metaDescription: "Shop millions of products from verified sellers worldwide.",
 };
 
-const seedStorefronts: Storefront[] = [
-  defaultStorefront,
-  {
-    id: "uk", name: "United Kingdom", slug: "uk",
-    domainType: "subdomain", activeDomain: "uk.kauvex.com",
-    currencyCode: "GBP", currencySymbol: "£", languageCode: "en",
-    countryCode: "GB", taxRate: 20, taxLabel: "VAT", taxInclusive: true,
-    isDefault: false, metaTitle: "KAUVEX UK"
-  },
-  {
-    id: "ca", name: "Canada", slug: "ca",
-    domainType: "subdomain", activeDomain: "ca.kauvex.com",
-    currencyCode: "CAD", currencySymbol: "CA$", languageCode: "en",
-    countryCode: "CA", taxRate: 13, taxLabel: "HST", taxInclusive: false,
-    isDefault: false, metaTitle: "KAUVEX Canada"
-  },
-  {
-    id: "au", name: "Australia", slug: "au",
-    domainType: "subdomain", activeDomain: "au.kauvex.com",
-    currencyCode: "AUD", currencySymbol: "A$", languageCode: "en",
-    countryCode: "AU", taxRate: 10, taxLabel: "GST", taxInclusive: true,
-    isDefault: false, metaTitle: "KAUVEX Australia"
-  },
-  {
-    id: "ng", name: "Nigeria", slug: "ng",
-    domainType: "subdomain", activeDomain: "ng.kauvex.com",
-    currencyCode: "NGN", currencySymbol: "₦", languageCode: "en",
-    countryCode: "NG", taxRate: 7.5, taxLabel: "VAT", taxInclusive: true,
-    isDefault: false, metaTitle: "KAUVEX Nigeria"
-  },
-  {
-    id: "de", name: "Deutschland", slug: "de",
-    domainType: "subdomain", activeDomain: "de.kauvex.com",
-    currencyCode: "EUR", currencySymbol: "€", languageCode: "de",
-    countryCode: "DE", taxRate: 19, taxLabel: "MwSt", taxInclusive: true,
-    isDefault: false, metaTitle: "KAUVEX Deutschland"
-  },
-];
+const EXCHANGE_RATES: Record<string, number> = {
+  USD: 1, GBP: 0.79, CAD: 1.36, AUD: 1.52, NGN: 1540, EUR: 0.92, JPY: 149, CNY: 7.24,
+};
+
+function detectStorefrontByHost(storefronts: Storefront[]): Storefront | null {
+  if (typeof window === "undefined") return null;
+  const host = window.location.hostname.replace(/^www\./, "");
+  for (const sf of storefronts) {
+    if (sf.activeDomain && host === sf.activeDomain.replace(/^www\./, "")) return sf;
+  }
+  if (host.endsWith(".kauvex.com")) {
+    const slug = host.split(".")[0];
+    const found = storefronts.find(s => s.slug === slug);
+    if (found) return found;
+  }
+  return null;
+}
 
 const StorefrontContext = createContext<{
   storefront: Storefront;
@@ -85,42 +64,86 @@ const StorefrontContext = createContext<{
   setStorefront: (storefront: Storefront) => void;
   getStorefrontByDomain: (domain: string) => Storefront | undefined;
   exchangeRate: number;
+  loading: boolean;
 }>({
   storefront: defaultStorefront,
-  storefronts: seedStorefronts,
+  storefronts: [],
   setStorefront: () => {},
   getStorefrontByDomain: () => undefined,
   exchangeRate: 1,
+  loading: true,
 });
 
 export function StorefrontProvider({ children }: { children: ReactNode }) {
   const [storefront, setStorefrontState] = useState<Storefront>(defaultStorefront);
+  const [storefronts, setStorefronts] = useState<Storefront[]>([]);
   const [exchangeRate, setExchangeRate] = useState(1);
+  const [loading, setLoading] = useState(true);
+  const setCurrency = useCurrencyStore(s => s.setCurrency);
 
   useEffect(() => {
-    const stored = localStorage.getItem(STOREFRONT_COOKIE_KEY);
-    if (stored) {
-      try {
-        const parsed = JSON.parse(stored);
-        const found = seedStorefronts.find(s => s.id === parsed.id);
-        if (found) setStorefrontState(found);
-      } catch {}
-    }
+    (async () => {
+      const { data, error } = await insforge.database
+        .from("storefronts")
+        .select("*")
+        .order("is_default", { ascending: false });
+      let list: Storefront[] = [];
+      if (!error && data && data.length > 0) {
+        list = data.map((s: any) => ({
+          id: s.id,
+          name: s.name,
+          slug: s.slug,
+          domainType: s.domain_type,
+          activeDomain: s.active_domain,
+          currencyCode: s.currency_code,
+          currencySymbol: s.currency_symbol,
+          languageCode: s.language_code,
+          countryCode: s.country_code || "",
+          taxRate: s.tax_rate,
+          taxLabel: s.tax_label || "VAT",
+          taxInclusive: s.tax_inclusive || false,
+          isDefault: s.is_default || false,
+          metaTitle: s.meta_title,
+          metaDescription: s.meta_description,
+        }));
+      }
+      setStorefronts(list);
+      if (list.length > 0) {
+        const stored = localStorage.getItem("kauvex-storefront");
+        if (stored) {
+          try {
+            const parsed = JSON.parse(stored);
+            const match = list.find(s => s.id === parsed.id);
+            if (match) { applyStorefront(match); setLoading(false); return; }
+          } catch {}
+        }
+        const byHost = detectStorefrontByHost(list);
+        if (byHost) { applyStorefront(byHost); setLoading(false); return; }
+        const def = list.find(s => s.isDefault) || list[0];
+        applyStorefront(def);
+      }
+      setLoading(false);
+    })();
   }, []);
 
-  const setStorefront = (sf: Storefront) => {
+  const applyStorefront = (sf: Storefront) => {
     setStorefrontState(sf);
-    localStorage.setItem(STOREFRONT_COOKIE_KEY, JSON.stringify({ id: sf.id }));
-    const rates: Record<string, number> = { USD: 1, GBP: 0.79, CAD: 1.36, AUD: 1.52, NGN: 1540, EUR: 0.92 };
-    setExchangeRate(rates[sf.currencyCode] || 1);
+    localStorage.setItem("kauvex-storefront", JSON.stringify({ id: sf.id }));
+    const rate = EXCHANGE_RATES[sf.currencyCode] || 1;
+    setExchangeRate(rate);
+    setCurrency(sf.currencyCode);
+  };
+
+  const setStorefront = (sf: Storefront) => {
+    applyStorefront(sf);
   };
 
   const getStorefrontByDomain = (domain: string): Storefront | undefined => {
-    return seedStorefronts.find(s => s.activeDomain === domain);
+    return storefronts.find(s => s.activeDomain === domain);
   };
 
   return (
-    <StorefrontContext.Provider value={{ storefront, storefronts: seedStorefronts, setStorefront, getStorefrontByDomain, exchangeRate }}>
+    <StorefrontContext.Provider value={{ storefront, storefronts, setStorefront, getStorefrontByDomain, exchangeRate, loading }}>
       {children}
     </StorefrontContext.Provider>
   );

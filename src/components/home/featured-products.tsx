@@ -1,15 +1,16 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Link from "next/link";
 import Image from "next/image";
-import { ShoppingCart, Heart, Star, Eye, ArrowRight } from "lucide-react";
+import { ShoppingCart, Heart, Star, Eye, ArrowRight, Loader2 } from "lucide-react";
 import { motion } from "framer-motion";
 import { useCartStore } from "@/store/cart-store";
 import { useUIStore } from "@/store/ui-store";
 import { cn } from "@/lib/utils";
+import { insforge } from "@/lib/insforge";
 
-interface DemoProduct {
+interface FeaturedProduct {
   id: string;
   name: string;
   slug: string;
@@ -21,103 +22,85 @@ interface DemoProduct {
   badge: string | null;
 }
 
-const demoProducts: DemoProduct[] = [
+const fallbackProducts: FeaturedProduct[] = [
   {
-    id: "demo-1",
-    name: "Wireless Bluetooth Noise-Cancelling Headphones",
-    slug: "wireless-bluetooth-headphones",
-    price: 89.99,
-    originalPrice: 149.99,
-    rating: 4.5,
-    reviews: 2847,
-    image: "https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=600&h=600&fit=crop",
-    badge: "Sale",
+    id: "demo-1", name: "Wireless Bluetooth Noise-Cancelling Headphones", slug: "wireless-bluetooth-headphones",
+    price: 89.99, originalPrice: 149.99, rating: 4.5, reviews: 2847,
+    image: "https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=600&h=600&fit=crop", badge: "Sale",
   },
   {
-    id: "demo-2",
-    name: "Smart Watch Pro Series with Heart Rate Monitor",
-    slug: "smart-watch-pro",
-    price: 199.99,
-    originalPrice: null,
-    rating: 4.7,
-    reviews: 1523,
-    image: "https://images.unsplash.com/photo-1546868871-af0de0ae72fc?w=600&h=600&fit=crop",
-    badge: "Featured",
+    id: "demo-2", name: "Smart Watch Pro Series with Heart Rate Monitor", slug: "smart-watch-pro",
+    price: 199.99, originalPrice: null, rating: 4.7, reviews: 1523,
+    image: "https://images.unsplash.com/photo-1546868871-af0de0ae72fc?w=600&h=600&fit=crop", badge: "Featured",
   },
   {
-    id: "demo-3",
-    name: "Premium Leather Crossbody Bag for Women",
-    slug: "premium-leather-crossbody-bag",
-    price: 59.99,
-    originalPrice: 89.99,
-    rating: 4.3,
-    reviews: 967,
-    image: "https://images.unsplash.com/photo-1548036328-c9fa89d128fa?w=600&h=600&fit=crop",
-    badge: "Sale",
+    id: "demo-3", name: "Premium Leather Crossbody Bag for Women", slug: "premium-leather-crossbody-bag",
+    price: 59.99, originalPrice: 89.99, rating: 4.3, reviews: 967,
+    image: "https://images.unsplash.com/photo-1548036328-c9fa89d128fa?w=600&h=600&fit=crop", badge: "Sale",
   },
   {
-    id: "demo-4",
-    name: "4K Ultra HD Smart TV 55-inch with HDR",
-    slug: "4k-ultra-hd-smart-tv",
-    price: 499.99,
-    originalPrice: 699.99,
-    rating: 4.6,
-    reviews: 3201,
-    image: "https://images.unsplash.com/photo-1593359677879-a4bb92f829d1?w=600&h=600&fit=crop",
-    badge: "Hot",
+    id: "demo-4", name: "4K Ultra HD Smart TV 55-inch with HDR", slug: "4k-ultra-hd-smart-tv",
+    price: 499.99, originalPrice: 699.99, rating: 4.6, reviews: 3201,
+    image: "https://images.unsplash.com/photo-1593359677879-a4bb92f829d1?w=600&h=600&fit=crop", badge: "Hot",
   },
   {
-    id: "demo-5",
-    name: "Mechanical Gaming Keyboard RGB Backlit",
-    slug: "mechanical-gaming-keyboard",
-    price: 74.99,
-    originalPrice: null,
-    rating: 4.4,
-    reviews: 1876,
-    image: "https://images.unsplash.com/photo-1618384887929-16ec33fab9ef?w=600&h=600&fit=crop",
-    badge: null,
+    id: "demo-5", name: "Mechanical Gaming Keyboard RGB Backlit", slug: "mechanical-gaming-keyboard",
+    price: 74.99, originalPrice: null, rating: 4.4, reviews: 1876,
+    image: "https://images.unsplash.com/photo-1618384887929-16ec33fab9ef?w=600&h=600&fit=crop", badge: null,
   },
   {
-    id: "demo-6",
-    name: "Designer Running Shoes Lightweight Mesh",
-    slug: "designer-running-shoes",
-    price: 129.99,
-    originalPrice: 179.99,
-    rating: 4.5,
-    reviews: 2456,
-    image: "https://images.unsplash.com/photo-1542291026-7eec264c27ff?w=600&h=600&fit=crop",
-    badge: "Sale",
+    id: "demo-6", name: "Designer Running Shoes Lightweight Mesh", slug: "designer-running-shoes",
+    price: 129.99, originalPrice: 179.99, rating: 4.5, reviews: 2456,
+    image: "https://images.unsplash.com/photo-1542291026-7eec264c27ff?w=600&h=600&fit=crop", badge: "Sale",
   },
   {
-    id: "demo-7",
-    name: "Portable Bluetooth Speaker Waterproof IPX7",
-    slug: "portable-bluetooth-speaker",
-    price: 39.99,
-    originalPrice: null,
-    rating: 4.2,
-    reviews: 4321,
-    image: "https://images.unsplash.com/photo-1608043152269-423dbba4e7e1?w=600&h=600&fit=crop",
-    badge: null,
+    id: "demo-7", name: "Portable Bluetooth Speaker Waterproof IPX7", slug: "portable-bluetooth-speaker",
+    price: 39.99, originalPrice: null, rating: 4.2, reviews: 4321,
+    image: "https://images.unsplash.com/photo-1608043152269-423dbba4e7e1?w=600&h=600&fit=crop", badge: null,
   },
   {
-    id: "demo-8",
-    name: "Stainless Steel Smart Water Bottle with Temp Display",
-    slug: "smart-water-bottle",
-    price: 34.99,
-    originalPrice: 49.99,
-    rating: 4.1,
-    reviews: 789,
-    image: "https://images.unsplash.com/photo-1602143407151-7111542de6e8?w=600&h=600&fit=crop",
-    badge: "New",
+    id: "demo-8", name: "Stainless Steel Smart Water Bottle with Temp Display", slug: "smart-water-bottle",
+    price: 34.99, originalPrice: 49.99, rating: 4.1, reviews: 789,
+    image: "https://images.unsplash.com/photo-1602143407151-7111542de6e8?w=600&h=600&fit=crop", badge: "New",
   },
 ];
 
 export default function FeaturedProducts() {
   const { addItem } = useCartStore();
   const { toggleWishlist, wishlistItems } = useUIStore();
+  const [products, setProducts] = useState<FeaturedProduct[]>(fallbackProducts);
+  const [loading, setLoading] = useState(true);
   const [visibleCount, setVisibleCount] = useState(8);
 
-  const displayed = demoProducts.slice(0, visibleCount);
+  useEffect(() => {
+    (async () => {
+      const { data, error } = await insforge.database
+        .from("products")
+        .select("id, name, slug, regular_price, sale_price, rating, review_count, images, featured, status")
+        .eq("status", "published")
+        .eq("featured", true)
+        .order("created_at", { ascending: false });
+      if (!error && data && data.length > 0) {
+        setProducts(
+          data.map((p: any) => ({
+            id: p.id,
+            name: p.name,
+            slug: p.slug,
+            price: p.sale_price || p.regular_price,
+            originalPrice: p.sale_price ? p.regular_price : null,
+            rating: p.rating || 0,
+            reviews: p.review_count || 0,
+            image: (p.images?.[0]) || fallbackProducts.find(f => f.id === "demo-1")?.image || "",
+            badge: p.sale_price ? "Sale" : "Featured",
+          }))
+        );
+      }
+      setLoading(false);
+    })();
+  }, []);
+
+  const displayed = products.slice(0, visibleCount);
+  const hasMore = visibleCount < products.length;
 
   return (
     <section className="py-10 sm:py-14 bg-gray-50/50">
@@ -135,6 +118,11 @@ export default function FeaturedProducts() {
           </Link>
         </div>
 
+        {loading ? (
+          <div className="flex items-center justify-center py-20">
+            <Loader2 size={32} className="animate-spin text-[#FF6B00]" />
+          </div>
+        ) : (
         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-4">
           {displayed.map((product, i) => {
             const isWishlisted = wishlistItems.includes(product.id);
@@ -254,6 +242,18 @@ export default function FeaturedProducts() {
             );
           })}
         </div>
+        )}
+
+        {hasMore && (
+          <div className="flex justify-center mt-8">
+            <button
+              onClick={() => setVisibleCount(prev => prev + 4)}
+              className="h-11 px-8 bg-white border-2 border-[#FF6B00] text-[#FF6B00] font-bold text-sm rounded-xl hover:bg-[#FF6B00] hover:text-white transition-all"
+            >
+              Load More Products
+            </button>
+          </div>
+        )}
       </div>
     </section>
   );

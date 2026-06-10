@@ -1,11 +1,42 @@
 "use client";
 
+import { useState, useEffect } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { ArrowRight } from "lucide-react";
-import { KAUVEX_CATEGORIES } from "@/lib/categories";
+import { insforge } from "@/lib/insforge";
+import { KAUVEX_CATEGORIES, KauvexCategory } from "@/lib/categories";
 
 export default function CategoryGrid() {
+  const [categories, setCategories] = useState<KauvexCategory[]>([]);
+
+  useEffect(() => {
+    (async () => {
+      const { data, error } = await insforge.database
+        .from("categories")
+        .select("id, name, slug, description, icon, image")
+        .eq("status", "active")
+        .order("sort_order", { ascending: true });
+      if (!error && data && data.length > 0) {
+        setCategories(
+          data.map((c: any) => ({
+            id: c.id,
+            name: c.name,
+            slug: c.slug,
+            description: c.description || "",
+            icon: c.icon || "📦",
+            image: c.image || "",
+            subcategories: [],
+          }))
+        );
+      } else {
+        setCategories(KAUVEX_CATEGORIES);
+      }
+    })();
+  }, []);
+
+  const display = categories.length > 0 ? categories : KAUVEX_CATEGORIES;
+
   return (
     <section className="py-10 sm:py-14">
       <div className="w-full max-w-[1440px] mx-auto px-4">
@@ -23,20 +54,22 @@ export default function CategoryGrid() {
         </div>
 
         <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3 sm:gap-4">
-          {KAUVEX_CATEGORIES.map((cat) => (
+          {display.map((cat) => (
             <Link
               key={cat.id}
               href={`/category/${cat.slug}`}
               className="group bg-white rounded-xl border border-border overflow-hidden hover:shadow-medium transition-all duration-300"
             >
               <div className="relative aspect-[4/3] overflow-hidden bg-gray-50">
-                <Image
-                  src={cat.image}
-                  alt={cat.name}
-                  fill
-                  className="object-cover group-hover:scale-110 transition-transform duration-500"
-                  unoptimized
-                />
+                {cat.image && (
+                  <Image
+                    src={cat.image}
+                    alt={cat.name}
+                    fill
+                    className="object-cover group-hover:scale-110 transition-transform duration-500"
+                    unoptimized
+                  />
+                )}
                 <div className="absolute inset-0 bg-gradient-to-t from-[#0A1628]/60 via-transparent to-transparent" />
               </div>
               <div className="p-3 sm:p-4">

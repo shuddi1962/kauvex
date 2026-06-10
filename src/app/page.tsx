@@ -1,5 +1,6 @@
 "use client";
 
+import { useState, useEffect } from "react";
 import HeroBanner from "@/components/home/hero-banner";
 import CategoryGrid from "@/components/home/category-grid";
 import FeaturedProducts from "@/components/home/featured-products";
@@ -13,6 +14,38 @@ const trustFeatures = [
   { icon: Headphones, title: "24/7 Support", desc: "AI + human agents" },
   { icon: CreditCard, title: "Secure Payments", desc: "256-bit SSL encryption" },
 ];
+
+function FlashSaleTimer() {
+  const [time, setTime] = useState({ h: 23, m: 59, s: 59 });
+
+  useEffect(() => {
+    const tick = () => {
+      const now = new Date();
+      const midnight = new Date(now);
+      midnight.setUTCHours(23, 59, 59, 999);
+      let diff = Math.floor((midnight.getTime() - now.getTime()) / 1000);
+      if (diff < 0) diff = 86399;
+      setTime({
+        h: Math.floor(diff / 3600),
+        m: Math.floor((diff % 3600) / 60),
+        s: diff % 60,
+      });
+    };
+    tick();
+    const interval = setInterval(tick, 1000);
+    return () => clearInterval(interval);
+  }, []);
+
+  const pad = (n: number) => n.toString().padStart(2, "0");
+
+  return (
+    <div className="flex items-center gap-2 bg-white/20 rounded-lg px-4 py-2">
+      <span className="font-mono text-white font-bold text-xl">
+        {pad(time.h)}:{pad(time.m)}:{pad(time.s)}
+      </span>
+    </div>
+  );
+}
 
 export default function HomePage() {
   return (
@@ -53,9 +86,7 @@ export default function HomePage() {
         <div className="w-full max-w-[1440px] mx-auto px-4 flex items-center justify-between">
           <div className="flex items-center gap-4">
             <span className="text-white font-bold text-lg">⚡ FLASH SALE</span>
-            <div className="flex items-center gap-2 bg-white/20 rounded-lg px-4 py-2">
-              <span className="font-mono text-white font-bold text-xl">23:59:59</span>
-            </div>
+            <FlashSaleTimer />
           </div>
           <Link href="/deals" className="text-white font-semibold text-sm flex items-center gap-1 hover:underline">
             View All <ArrowRight size={14} />

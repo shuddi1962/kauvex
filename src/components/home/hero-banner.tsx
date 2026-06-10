@@ -5,6 +5,7 @@ import { ChevronLeft, ChevronRight } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import Link from "next/link";
 import Image from "next/image";
+import { insforge } from "@/lib/insforge";
 
 interface HeroSlide {
   id: string;
@@ -15,9 +16,9 @@ interface HeroSlide {
   image: string;
 }
 
-const slides: HeroSlide[] = [
+const defaultSlides: HeroSlide[] = [
   {
-    id: "1",
+    id: "default-1",
     title: "Global Marketplace for Everything You Need",
     subtitle: "Shop millions of products from verified sellers worldwide. Electronics, fashion, home essentials and more.",
     cta: "Start Shopping",
@@ -25,7 +26,7 @@ const slides: HeroSlide[] = [
     image: "https://images.unsplash.com/photo-1556742049-0cfed4f6a45d?w=1920&h=800&fit=crop&q=80",
   },
   {
-    id: "2",
+    id: "default-2",
     title: "Flash Sale — Up to 60% Off Electronics",
     subtitle: "Limited time deals on smartphones, laptops, audio gear and smart home devices from top brands.",
     cta: "Shop Deals",
@@ -33,7 +34,7 @@ const slides: HeroSlide[] = [
     image: "https://images.unsplash.com/photo-1468495244123-6c6c332eeece?w=1920&h=800&fit=crop&q=80",
   },
   {
-    id: "3",
+    id: "default-3",
     title: "Sell Globally with KAUVEX",
     subtitle: "Join thousands of sellers reaching buyers across 100+ countries. Zero setup fees, powerful tools.",
     cta: "Start Selling",
@@ -43,16 +44,39 @@ const slides: HeroSlide[] = [
 ];
 
 export default function HeroBanner() {
+  const [slides, setSlides] = useState<HeroSlide[]>(defaultSlides);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [isPaused, setIsPaused] = useState(false);
 
+  useEffect(() => {
+    (async () => {
+      const { data, error } = await insforge.database
+        .from("storefront_banners")
+        .select("id, image_url, headline, subtext, cta_text, cta_url, sort_order")
+        .eq("status", "active")
+        .order("sort_order", { ascending: true });
+      if (!error && data && data.length > 0) {
+        setSlides(
+          data.map((b: any) => ({
+            id: b.id,
+            title: b.headline || "Welcome to KAUVEX",
+            subtitle: b.subtext || "Shop millions of products from verified sellers worldwide.",
+            cta: b.cta_text || "Shop Now",
+            ctaLink: b.cta_url || "/shop",
+            image: b.image_url,
+          }))
+        );
+      }
+    })();
+  }, []);
+
   const goToNext = useCallback(() => {
     setCurrentIndex((prev) => (prev + 1) % slides.length);
-  }, []);
+  }, [slides.length]);
 
   const goToPrev = useCallback(() => {
     setCurrentIndex((prev) => (prev - 1 + slides.length) % slides.length);
-  }, []);
+  }, [slides.length]);
 
   useEffect(() => {
     if (isPaused) return;

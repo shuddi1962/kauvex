@@ -1,9 +1,10 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Link from "next/link";
 import AdminShell from "@/components/admin/admin-shell";
-import { Plus, Edit2, Globe, ExternalLink, ToggleLeft, ToggleRight, Search } from "lucide-react";
+import { Plus, Edit2, Globe, ExternalLink, ToggleLeft, ToggleRight, Search, X } from "lucide-react";
+import { insforge } from "@/lib/insforge";
 
 interface Storefront {
   id: string;
@@ -21,23 +22,75 @@ interface Storefront {
   metaTitle?: string;
 }
 
-const seedStorefronts: Storefront[] = [
-  { id: "default", name: "Global", slug: "global", domainType: "subdomain", activeDomain: "kauvex.com", currencyCode: "USD", currencySymbol: "$", languageCode: "en", countryCode: "US", taxRate: 0, isDefault: true, active: true, metaTitle: "KAUVEX" },
-  { id: "uk", name: "United Kingdom", slug: "uk", domainType: "subdomain", activeDomain: "uk.kauvex.com", currencyCode: "GBP", currencySymbol: "£", languageCode: "en", countryCode: "GB", taxRate: 20, isDefault: false, active: true, metaTitle: "KAUVEX UK" },
-  { id: "ca", name: "Canada", slug: "ca", domainType: "subdomain", activeDomain: "ca.kauvex.com", currencyCode: "CAD", currencySymbol: "CA$", languageCode: "en", countryCode: "CA", taxRate: 13, isDefault: false, active: true, metaTitle: "KAUVEX Canada" },
-  { id: "au", name: "Australia", slug: "au", domainType: "subdomain", activeDomain: "au.kauvex.com", currencyCode: "AUD", currencySymbol: "A$", languageCode: "en", countryCode: "AU", taxRate: 10, isDefault: false, active: false, metaTitle: "KAUVEX Australia" },
-  { id: "ng", name: "Nigeria", slug: "ng", domainType: "subdomain", activeDomain: "ng.kauvex.com", currencyCode: "NGN", currencySymbol: "₦", languageCode: "en", countryCode: "NG", taxRate: 7.5, isDefault: false, active: true, metaTitle: "KAUVEX Nigeria" },
-  { id: "de", name: "Deutschland", slug: "de", domainType: "subdomain", activeDomain: "de.kauvex.com", currencyCode: "EUR", currencySymbol: "€", languageCode: "de", countryCode: "DE", taxRate: 19, isDefault: false, active: true, metaTitle: "KAUVEX Deutschland" },
-];
-
 const flags: Record<string, string> = { US: "🇺🇸", GB: "🇬🇧", CA: "🇨🇦", AU: "🇦🇺", NG: "🇳🇬", DE: "🇩🇪" };
 
 export default function AdminStorefrontsPage() {
-  const [storefronts, setStorefronts] = useState(seedStorefronts);
+  const [storefronts, setStorefronts] = useState<Storefront[]>([]);
   const [searchQuery, setSearchQuery] = useState("");
+  const [showModal, setShowModal] = useState(false);
+  const [newSf, setNewSf] = useState({ name: "", slug: "", currencyCode: "USD", currencySymbol: "$", languageCode: "en", countryCode: "US", taxRate: 0 });
+  const [saving, setSaving] = useState(false);
 
-  const toggleActive = (id: string) => {
-    setStorefronts(prev => prev.map(sf => sf.id === id ? { ...sf, active: !sf.active } : sf));
+  useEffect(() => {
+    loadStorefronts();
+  }, []);
+
+  const loadStorefronts = async () => {
+    const { data, error } = await insforge.database
+      .from("storefronts")
+      .select("*")
+      .order("is_default", { ascending: false })
+      .order("name");
+    if (!error && data) {
+      setStorefronts(data.map((s: any) => ({
+        id: s.id,
+        name: s.name,
+        slug: s.slug,
+        domainType: s.domain_type,
+        activeDomain: s.active_domain,
+        currencyCode: s.currency_code,
+        currencySymbol: s.currency_symbol,
+        languageCode: s.language_code,
+        countryCode: s.country_code || "",
+        taxRate: s.tax_rate,
+        isDefault: s.is_default,
+        active: s.status === "active",
+        metaTitle: s.meta_title,
+      })));
+    }
+  };
+
+  const toggleActive = async (id: string) => {
+    const sf = storefronts.find(s => s.id === id);
+    if (!sf) return;
+    const newStatus = sf.active ? "inactive" : "active";
+    await insforge.database.from("storefronts").update({ status: newStatus }).eq("id", id);
+    setStorefronts(prev => prev.map(s => s.id === id ? { ...s, active: !s.active } : s));
+  };
+
+  const createStorefront = async () => {
+    if (!newSf.name || !newSf.slug) return;
+    setSaving(true);
+    const domain = `${newSf.slug}.kauvex.com`;
+    const { error } = await insforge.database.from("storefronts").insert([{
+      name: newSf.name,
+      slug: newSf.slug,
+      domain_type: "subdomain",
+      subdomain: newSf.slug,
+      active_domain: domain,
+      currency_code: newSf.currencyCode,
+      currency_symbol: newSf.currencySymbol,
+      language_code: newSf.languageCode,
+      country_code: newSf.countryCode,
+      tax_rate: newSf.taxRate,
+      status: "active",
+    }]);
+    setSaving(false);
+    if (!error) {
+      setShowModal(false);
+      setNewSf({ name: "", slug: "", currencyCode: "USD", currencySymbol: "$", languageCode: "en", countryCode: "US", taxRate: 0 });
+      loadStorefronts();
+    }
   };
 
   const filtered = storefronts.filter(sf =>
@@ -83,7 +136,7 @@ export default function AdminStorefrontsPage() {
               className="w-full h-9 pl-9 pr-3 text-sm rounded-lg bg-gray-50 border border-gray-200 focus:outline-none focus:border-blue focus:ring-1 focus:ring-blue/20"
             />
           </div>
-          <button className="h-9 px-4 bg-blue text-white text-sm font-semibold rounded-lg hover:bg-blue-600 flex items-center gap-2">
+          <button onClick={() => setShowModal(true)} className="h-9 px-4 bg-blue text-white text-sm font-semibold rounded-lg hover:bg-blue-600 flex items-center gap-2">
             <Plus size={14} /> Add Storefront
           </button>
         </div>
@@ -169,6 +222,59 @@ export default function AdminStorefrontsPage() {
           </tbody>
         </table>
       </div>
+      {/* Add Storefront Modal */}
+      {showModal && (
+        <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4" onClick={() => setShowModal(false)}>
+          <div className="bg-white rounded-xl max-w-lg w-full p-6" onClick={e => e.stopPropagation()}>
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="font-bold text-lg text-text-1">New Storefront</h3>
+              <button onClick={() => setShowModal(false)} className="p-1 hover:bg-gray-100 rounded-lg"><X size={18} /></button>
+            </div>
+            <div className="space-y-4">
+              <div>
+                <label className="text-xs font-semibold text-text-2 block mb-1">Name *</label>
+                <input value={newSf.name} onChange={e => setNewSf({ ...newSf, name: e.target.value, slug: e.target.value.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, "") })} className="w-full h-10 px-3 rounded-lg border border-gray-200 text-sm" placeholder="e.g. France" />
+              </div>
+              <div>
+                <label className="text-xs font-semibold text-text-2 block mb-1">Slug *</label>
+                <input value={newSf.slug} onChange={e => setNewSf({ ...newSf, slug: e.target.value.toLowerCase().replace(/[^a-z0-9-]+/g, "") })} className="w-full h-10 px-3 rounded-lg border border-gray-200 text-sm" placeholder="e.g. fr" />
+                <p className="text-[10px] text-text-4 mt-1">Will become: <strong>{newSf.slug || "?"}.kauvex.com</strong></p>
+              </div>
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="text-xs font-semibold text-text-2 block mb-1">Currency</label>
+                  <select value={newSf.currencyCode} onChange={e => setNewSf({ ...newSf, currencyCode: e.target.value })} className="w-full h-10 px-3 rounded-lg border border-gray-200 text-sm bg-white">
+                    <option value="USD">USD ($)</option>
+                    <option value="EUR">EUR (€)</option>
+                    <option value="GBP">GBP (£)</option>
+                    <option value="CAD">CAD (CA$)</option>
+                    <option value="AUD">AUD (A$)</option>
+                    <option value="NGN">NGN (₦)</option>
+                  </select>
+                </div>
+                <div>
+                  <label className="text-xs font-semibold text-text-2 block mb-1">Country</label>
+                  <select value={newSf.countryCode} onChange={e => setNewSf({ ...newSf, countryCode: e.target.value })} className="w-full h-10 px-3 rounded-lg border border-gray-200 text-sm bg-white">
+                    <option value="US">United States</option>
+                    <option value="GB">United Kingdom</option>
+                    <option value="CA">Canada</option>
+                    <option value="AU">Australia</option>
+                    <option value="NG">Nigeria</option>
+                    <option value="DE">Germany</option>
+                    <option value="FR">France</option>
+                  </select>
+                </div>
+              </div>
+              <div className="flex justify-end gap-3 pt-2">
+                <button onClick={() => setShowModal(false)} className="h-10 px-5 text-sm font-medium text-text-3 hover:bg-gray-100 rounded-lg">Cancel</button>
+                <button onClick={createStorefront} disabled={saving || !newSf.name || !newSf.slug} className="h-10 px-5 bg-blue text-white text-sm font-semibold rounded-lg hover:bg-blue-600 disabled:opacity-50">
+                  {saving ? "Creating..." : "Create Storefront"}
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </AdminShell>
   );
 }

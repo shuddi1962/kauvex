@@ -1,12 +1,13 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useParams, useRouter } from "next/navigation";
 import AdminShell from "@/components/admin/admin-shell";
 import {
   Globe, MapPin, Home, CreditCard, Truck, Store, Save,
   ArrowLeft, ChevronDown, ToggleLeft, ToggleRight, X, Image,
 } from "lucide-react";
+import { insforge } from "@/lib/insforge";
 
 interface StorefrontForm {
   id: string;
@@ -27,56 +28,13 @@ interface StorefrontForm {
   metaDescription: string;
 }
 
-const seedData: Record<string, StorefrontForm> = {
-  default: {
-    id: "default", name: "Global", slug: "global",
-    domainType: "subdomain", activeDomain: "kauvex.com",
-    currencyCode: "USD", currencySymbol: "$", languageCode: "en",
-    countryCode: "US", taxRate: 0, taxLabel: "VAT", taxInclusive: false,
-    isDefault: true, active: true,
-    metaTitle: "KAUVEX — Everything. Everywhere. Delivered.",
-    metaDescription: "Shop millions of products from verified sellers worldwide.",
-  },
-  uk: {
-    id: "uk", name: "United Kingdom", slug: "uk",
-    domainType: "subdomain", activeDomain: "uk.kauvex.com",
-    currencyCode: "GBP", currencySymbol: "£", languageCode: "en",
-    countryCode: "GB", taxRate: 20, taxLabel: "VAT", taxInclusive: true,
-    isDefault: false, active: true,
-    metaTitle: "KAUVEX UK", metaDescription: "",
-  },
-  ca: {
-    id: "ca", name: "Canada", slug: "ca",
-    domainType: "subdomain", activeDomain: "ca.kauvex.com",
-    currencyCode: "CAD", currencySymbol: "CA$", languageCode: "en",
-    countryCode: "CA", taxRate: 13, taxLabel: "HST", taxInclusive: false,
-    isDefault: false, active: true,
-    metaTitle: "KAUVEX Canada", metaDescription: "",
-  },
-  au: {
-    id: "au", name: "Australia", slug: "au",
-    domainType: "subdomain", activeDomain: "au.kauvex.com",
-    currencyCode: "AUD", currencySymbol: "A$", languageCode: "en",
-    countryCode: "AU", taxRate: 10, taxLabel: "GST", taxInclusive: true,
-    isDefault: false, active: false,
-    metaTitle: "KAUVEX Australia", metaDescription: "",
-  },
-  ng: {
-    id: "ng", name: "Nigeria", slug: "ng",
-    domainType: "subdomain", activeDomain: "ng.kauvex.com",
-    currencyCode: "NGN", currencySymbol: "₦", languageCode: "en",
-    countryCode: "NG", taxRate: 7.5, taxLabel: "VAT", taxInclusive: true,
-    isDefault: false, active: true,
-    metaTitle: "KAUVEX Nigeria", metaDescription: "",
-  },
-  de: {
-    id: "de", name: "Deutschland", slug: "de",
-    domainType: "subdomain", activeDomain: "de.kauvex.com",
-    currencyCode: "EUR", currencySymbol: "€", languageCode: "de",
-    countryCode: "DE", taxRate: 19, taxLabel: "MwSt", taxInclusive: true,
-    isDefault: false, active: true,
-    metaTitle: "KAUVEX Deutschland", metaDescription: "",
-  },
+const defaultForm: StorefrontForm = {
+  id: "", name: "", slug: "",
+  domainType: "subdomain", activeDomain: "",
+  currencyCode: "USD", currencySymbol: "$", languageCode: "en",
+  countryCode: "US", taxRate: 0, taxLabel: "VAT", taxInclusive: false,
+  isDefault: false, active: true,
+  metaTitle: "", metaDescription: "",
 };
 
 const currencies = [
@@ -131,15 +89,68 @@ export default function EditStorefrontPage() {
 
   const [tab, setTab] = useState<Tab>("general");
   const [saved, setSaved] = useState(false);
-  const [form, setForm] = useState<StorefrontForm>(() => seedData[id] || seedData.default);
+  const [loading, setLoading] = useState(true);
+  const [form, setForm] = useState<StorefrontForm>(defaultForm);
+
+  useEffect(() => {
+    if (!id) return;
+    (async () => {
+      const { data, error } = await insforge.database
+        .from("storefronts")
+        .select("*")
+        .eq("id", id)
+        .single();
+      if (!error && data) {
+        setForm({
+          id: data.id,
+          name: data.name,
+          slug: data.slug,
+          domainType: data.domain_type,
+          activeDomain: data.active_domain,
+          currencyCode: data.currency_code,
+          currencySymbol: data.currency_symbol,
+          languageCode: data.language_code,
+          countryCode: data.country_code || "",
+          taxRate: data.tax_rate,
+          taxLabel: data.tax_label || "VAT",
+          taxInclusive: data.tax_inclusive || false,
+          isDefault: data.is_default || false,
+          active: data.status === "active",
+          metaTitle: data.meta_title || "",
+          metaDescription: data.meta_description || "",
+        });
+      }
+      setLoading(false);
+    })();
+  }, [id]);
 
   const update = <K extends keyof StorefrontForm>(key: K, value: StorefrontForm[K]) => {
     setForm(prev => ({ ...prev, [key]: value }));
   };
 
-  const handleSave = () => {
-    setSaved(true);
-    setTimeout(() => setSaved(false), 2000);
+  const handleSave = async () => {
+    const payload: any = {
+      name: form.name,
+      slug: form.slug,
+      domain_type: form.domainType,
+      active_domain: form.activeDomain,
+      currency_code: form.currencyCode,
+      currency_symbol: form.currencySymbol,
+      language_code: form.languageCode,
+      country_code: form.countryCode,
+      tax_rate: form.taxRate,
+      tax_label: form.taxLabel,
+      tax_inclusive: form.taxInclusive,
+      is_default: form.isDefault,
+      status: form.active ? "active" : "inactive",
+      meta_title: form.metaTitle,
+      meta_description: form.metaDescription,
+    };
+    const { error } = await insforge.database.from("storefronts").update(payload).eq("id", id);
+    if (!error) {
+      setSaved(true);
+      setTimeout(() => setSaved(false), 2000);
+    }
   };
 
   const tabs: { key: Tab; label: string; icon: React.ElementType }[] = [
@@ -156,6 +167,14 @@ export default function EditStorefrontPage() {
       ? `${form.slug}.kauvex.com`
       : form.activeDomain || "custom-domain.com";
 
+  if (loading) {
+    return (
+      <AdminShell title="Loading..." subtitle="Fetching storefront data">
+        <div className="flex items-center justify-center py-20"><div className="animate-spin w-8 h-8 border-2 border-blue border-t-transparent rounded-full" /></div>
+      </AdminShell>
+    );
+  }
+
   return (
     <AdminShell title={`Edit: ${form.name}`} subtitle="Configure storefront settings">
       {/* Header Actions */}
@@ -168,7 +187,7 @@ export default function EditStorefrontPage() {
             <ArrowLeft size={16} />
           </button>
           <div>
-            <h2 className="font-bold text-lg text-text-1">{form.name}</h2>
+            <h2 className="font-bold text-lg text-text-1">{form.name || "Untitled"}</h2>
             <p className="text-xs text-text-4">{domainLabel}</p>
           </div>
         </div>

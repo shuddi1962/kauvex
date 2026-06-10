@@ -127,6 +127,7 @@ const sidebarSections = [
     items: [
       { label: "Vendors", icon: Store, href: "/admin/vendors" },
       { label: "Vendor Ads", icon: Megaphone, href: "/admin/vendor-ads" },
+      { label: "Storefronts", icon: Globe, href: "/admin/storefronts" },
       { label: "Boat Configurator", icon: Anchor, href: "/admin/boat-configurator" },
     ],
   },

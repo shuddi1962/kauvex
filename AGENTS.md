@@ -47,13 +47,16 @@ alwaysApply: true
 - [x] Part 13: Affiliate updated (rebranded page, commission table, schema)
 
 ## Supabase
-- Project URL: https://xkhvojjogoeuvrifekwr.supabase.co
+- Project URL: https://stbgamqenraauqpgtbkv.supabase.co
 - Client files: /src/lib/supabase/client.ts (browser)
                 /src/lib/supabase/server.ts (server)
                 /src/lib/supabase/admin.ts (admin ops)
                 /src/lib/supabase/middleware.ts (session)
 - Schema: supabase/migrations/00001_initial_schema.sql
 - Tables: profiles, categories, subcategories, brands, products, product_inventory, vendors, orders, order_items, reviews, storefronts, cj_products, disputes, exchange_rates, storefront_banners, affiliate_links
+- Storage buckets: avatars, banners, brands, categories, cj-products, disputes, media, products, vendors
+- Compatibility shim: /src/lib/insforge.ts (maps `insforge.*` calls to `supabase.*`)
+- Supabase CLI: linked to project ref `stbgamqenraauqpgtbkv`
 
 ## Future AWS Migration Note
 When ready to migrate from Supabase to AWS:

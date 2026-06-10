@@ -37,11 +37,10 @@ export const useAuthStore = create<AuthStore>((set) => ({
     try {
       const { data } = await insforge.auth.getCurrentUser();
       if (data?.user) {
-        const profile = data.user.profile as Record<string, string> | undefined;
-        let role = profile?.role || "customer";
+        const meta = data.user.user_metadata as Record<string, string> | undefined;
+        let role = meta?.role || "customer";
 
-        // Fetch role from profiles table if not in auth profile
-        if (!profile?.role) {
+        if (!meta?.role) {
           try {
             const { data: profileRows } = await insforge.database
               .from("profiles")
@@ -60,9 +59,9 @@ export const useAuthStore = create<AuthStore>((set) => ({
           user: {
             id: data.user.id,
             email: data.user.email,
-            name: profile?.name,
-            avatar: profile?.avatar_url,
-            phone: profile?.phone,
+            name: meta?.name,
+            avatar: meta?.avatar_url,
+            phone: meta?.phone,
             role,
           },
           loading: false,
@@ -85,11 +84,10 @@ export const useAuthStore = create<AuthStore>((set) => ({
     }
 
     if (data?.user) {
-      const profile = data.user.profile as Record<string, string> | undefined;
-      let role = profile?.role || "customer";
+      const meta = data.user.user_metadata as Record<string, string> | undefined;
+      let role = meta?.role || "customer";
 
-      // Fetch role from profiles table if not in auth profile
-      if (!profile?.role) {
+      if (!meta?.role) {
         try {
           const { data: profileRows } = await insforge.database
             .from("profiles")
@@ -108,9 +106,9 @@ export const useAuthStore = create<AuthStore>((set) => ({
         user: {
           id: data.user.id,
           email: data.user.email,
-          name: profile?.name,
-          avatar: profile?.avatar_url,
-          phone: profile?.phone,
+          name: meta?.name,
+          avatar: meta?.avatar_url,
+          phone: meta?.phone,
           role,
         },
         loading: false,
@@ -135,9 +133,6 @@ export const useAuthStore = create<AuthStore>((set) => ({
     }
 
     if (data?.user) {
-      // Set additional profile fields
-      await insforge.auth.setProfile({ phone, role: "customer" });
-
       // Create profile row in our profiles table
       await insforge.database.from("profiles").insert([
         {

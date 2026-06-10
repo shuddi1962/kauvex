@@ -1,23 +1,24 @@
-import { createClient } from "@insforge/sdk";
+import { createClient } from '@supabase/supabase-js';
 
-const insforge = createClient({
-  baseUrl: "https://hhmgiq73.us-east.insforge.app",
-  anonKey: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3OC0xMjM0LTU2NzgtOTBhYi1jZGVmMTIzNDU2NzgiLCJlbWFpbCI6ImFub25AaW5zZm9yZ2UuY29tIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzUzODE1NTN9.xryltleRFkmNcEse-Sk63iDhuukaXbMxwv0G_HvFFiw",
-});
+const supabase = createClient(
+  process.env.NEXT_PUBLIC_SUPABASE_URL || 'https://stbgamqenraauqpgtbkv.supabase.co',
+  process.env.SUPABASE_SERVICE_ROLE_KEY
+);
 
 const users = [
-  { email: "admin@roshanalglobal.com", password: "Admin@2026!", name: "Super Admin", role: "super-admin" },
-  { email: "customer@roshanalglobal.com", password: "Customer@2026!", name: "John Okafor", role: "customer" },
-  { email: "vendor@roshanalglobal.com", password: "Vendor@2026!", name: "Lagos Traders", role: "vendor" },
+  { email: "admin@kauvex.com", password: "Admin@2026!", name: "Super Admin", role: "super-admin" },
+  { email: "customer@kauvex.com", password: "Customer@2026!", name: "John Okafor", role: "customer" },
+  { email: "vendor@kauvex.com", password: "Vendor@2026!", name: "Lagos Traders", role: "vendor" },
 ];
 
 for (const user of users) {
-  console.log(`\nRegistering ${user.role}: ${user.email}...`);
+  console.log(`\nCreating ${user.role}: ${user.email}...`);
 
-  const { data, error } = await insforge.auth.signUp({
+  const { data, error } = await supabase.auth.admin.createUser({
     email: user.email,
     password: user.password,
-    name: user.name,
+    email_confirm: true,
+    user_metadata: { name: user.name, role: user.role },
   });
 
   if (error) {
@@ -25,14 +26,20 @@ for (const user of users) {
     continue;
   }
 
-  console.log(`  Registered! User ID: ${data?.user?.id}`);
-  console.log(`  Requires verification: ${data?.requireEmailVerification}`);
+  console.log(`  Created! User ID: ${data?.user?.id}`);
 
   if (data?.user?.id) {
-    // If we got an access token (no verification required), set profile
-    if (data.accessToken) {
-      await insforge.auth.setProfile({ role: user.role, phone: "+234 800 000 0000" });
-    }
+    const { error: profileError } = await supabase
+      .from("profiles")
+      .upsert({
+        id: data.user.id,
+        email: user.email,
+        full_name: user.name,
+        role: user.role,
+        phone: "+234 800 000 0000",
+      });
+    if (profileError) console.log(`  Profile insert error: ${profileError.message}`);
+    else console.log(`  Profile created`);
   }
 }
 

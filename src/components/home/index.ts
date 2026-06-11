@@ -5,3 +5,7 @@ export { default as TrendingSection } from "./TrendingSection";
 export { default as FeaturedVendorsSection } from "./FeaturedVendorsSection";
 export { default as NewsletterSection } from "./NewsletterSection";
 export { default as CategoriesSection } from "./CategoriesSection";
+export { default as BestSellersSection } from "./BestSellersSection";
+export { default as NewArrivalsSection } from "./NewArrivalsSection";
+export { default as FeaturedBrandsSection } from "./FeaturedBrandsSection";
+export { default as TestimonialsSection } from "./TestimonialsSection";

@@ -20,6 +20,7 @@ import {
   Banknote,
   Smartphone,
   Globe,
+  Gift,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useCartStore } from "@/store/cart-store";
@@ -76,6 +77,11 @@ export default function CheckoutPage() {
   const [selectedShipping, setSelectedShipping] = useState("standard");
   const [selectedPayment, setSelectedPayment] = useState("card");
   const [selectedWarehouse, setSelectedWarehouse] = useState("lagos-main");
+  const [giftCode, setGiftCode] = useState("");
+  const [giftData, setGiftData] = useState<any>(null);
+  const [giftLoading, setGiftLoading] = useState(false);
+  const [giftApplied, setGiftApplied] = useState(false);
+  const [giftError, setGiftError] = useState("");
 
   const [delivery, setDelivery] = useState({
     fullName: "", email: "", phone: "", address: "", city: "", state: "Rivers", lga: "", country: "Nigeria", postalCode: "",
@@ -87,6 +93,37 @@ export default function CheckoutPage() {
 
   const goNext = () => setCurrentStep(Math.min(7, currentStep + 1));
   const goBack = () => setCurrentStep(Math.max(1, currentStep - 1));
+
+  const applyGiftCode = async () => {
+    if (!giftCode.trim()) return;
+    setGiftLoading(true);
+    setGiftError("");
+    try {
+      const res = await fetch(`/api/gift-certificates?code=${encodeURIComponent(giftCode.trim())}`);
+      const json = await res.json();
+      if (json.error) {
+        setGiftError(json.error);
+        return;
+      }
+      if (json.data?.status !== "active") {
+        setGiftError(json.data?.message || "This code is no longer valid");
+        return;
+      }
+      setGiftData(json.data);
+      setGiftApplied(true);
+    } catch {
+      setGiftError("Failed to verify code. Please try again.");
+    } finally {
+      setGiftLoading(false);
+    }
+  };
+
+  const removeGiftCode = () => {
+    setGiftCode("");
+    setGiftData(null);
+    setGiftApplied(false);
+    setGiftError("");
+  };
 
   if (!mounted) {
     return (
@@ -367,6 +404,34 @@ export default function CheckoutPage() {
                       </label>
                     );
                   })}
+                </div>
+
+                {/* Gift Certificate / Promo Code */}
+                <div className="mt-5 p-4 bg-gradient-to-r from-purple-50 to-pink-50 border border-purple-200 rounded-xl">
+                  <div className="flex items-center gap-2 mb-2">
+                    <Gift size={16} className="text-purple-600" />
+                    <h4 className="text-xs font-bold text-purple-800">Have a gift certificate or promo code?</h4>
+                  </div>
+                  <div className="flex gap-2">
+                    <input
+                      placeholder="Enter code"
+                      value={giftCode}
+                      onChange={(e) => setGiftCode(e.target.value)}
+                      className="flex-1 h-10 px-3 text-sm border border-purple-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-400"
+                    />
+                    <Button size="sm" variant="outline" onClick={applyGiftCode} disabled={!giftCode.trim() || giftLoading} className="shrink-0 border-purple-300 text-purple-700 hover:bg-purple-50">
+                      {giftLoading ? "Checking..." : giftApplied ? "Applied" : "Apply"}
+                    </Button>
+                  </div>
+                  {giftError && <p className="text-xs text-red-600 mt-1">{giftError}</p>}
+                  {giftApplied && giftData && (
+                    <div className="mt-2 bg-green-50 border border-green-200 rounded-lg p-2 flex items-center justify-between">
+                      <span className="text-xs text-green-700">
+                        Gift certificate applied: -{formatPrice(giftData.remaining_balance)}
+                      </span>
+                      <button onClick={removeGiftCode} className="text-xs text-red-500 hover:underline">Remove</button>
+                    </div>
+                  )}
                 </div>
 
                 {selectedPayment === "card" && (

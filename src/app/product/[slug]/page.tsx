@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import {
@@ -24,6 +24,13 @@ import {
   AlertTriangle,
   Zap,
   RotateCcw,
+  Bell,
+  Phone,
+  Gift,
+  Trophy,
+  Store,
+  Tag,
+  Percent,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -330,6 +337,17 @@ export default function ProductDetailPage({ params }: { params: { slug: string }
             >
               <Zap size={16} className="mr-2" /> Buy Now
             </Button>
+
+            {/* Back-in-Stock Notification */}
+            {totalStock === 0 && (
+              <BackInStockForm productId={product.id} productName={product.name} />
+            )}
+
+            {/* Request a Callback */}
+            <CallRequestForm productId={product.id} productName={product.name} />
+
+            {/* Loyalty Points Earn */}
+            <LoyaltyEarnDisplay price={displayPrice} quantity={quantity} />
 
             {/* Delivery Estimate */}
             <div className="grid grid-cols-3 gap-3">
@@ -701,7 +719,347 @@ export default function ProductDetailPage({ params }: { params: { slug: string }
             </div>
           </div>
         )}
+
+        {/* Product Bundles Section */}
+        <ProductBundlesSection productId={product.id} formatPrice={formatPrice} />
+
+        {/* Other Sellers / Buy Box */}
+        <OtherSellersSection productId={product.id} formatPrice={formatPrice} />
       </div>
+    </div>
+  );
+}
+
+// ============================================================
+// Back-in-Stock Notification Component
+// ============================================================
+function BackInStockForm({ productId, productName }: { productId: string; productName: string }) {
+  const [email, setEmail] = useState("");
+  const [submitted, setSubmitted] = useState(false);
+  const [loading, setLoading] = useState(false);
+
+  const handleSubmit = async () => {
+    if (!email || !email.includes("@")) return;
+    setLoading(true);
+    try {
+      await fetch("/api/back-in-stock", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email, product_id: productId }),
+      });
+      setSubmitted(true);
+    } catch {
+      // silently handle
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  if (submitted) {
+    return (
+      <div className="bg-blue-50 border border-blue-200 rounded-xl p-4 flex items-center gap-3">
+        <Bell size={18} className="text-blue shrink-0" />
+        <div>
+          <p className="text-sm font-bold text-blue-800">You&apos;re on the list!</p>
+          <p className="text-xs text-blue-600">We&apos;ll email you when {productName} is back in stock.</p>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="bg-amber-50 border border-amber-200 rounded-xl p-4">
+      <div className="flex items-center gap-2 mb-2">
+        <Bell size={16} className="text-amber-600" />
+        <p className="text-sm font-bold text-amber-800">Out of Stock — Notify Me</p>
+      </div>
+      <p className="text-xs text-amber-600 mb-3">This product is currently out of stock. Enter your email and we&apos;ll notify you when it&apos;s available again.</p>
+      <div className="flex gap-2">
+        <input
+          type="email"
+          placeholder="your@email.com"
+          value={email}
+          onChange={(e) => setEmail(e.target.value)}
+          className="flex-1 h-10 px-3 text-sm border border-amber-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-amber-400"
+        />
+        <Button size="sm" onClick={handleSubmit} disabled={loading} className="shrink-0 bg-amber-600 hover:bg-amber-700">
+          {loading ? "Sending..." : "Notify Me"}
+        </Button>
+      </div>
+    </div>
+  );
+}
+
+// ============================================================
+// Call Request Component
+// ============================================================
+function CallRequestForm({ productId, productName }: { productId: string; productName: string }) {
+  const [open, setOpen] = useState(false);
+  const [form, setForm] = useState({ name: "", phone: "", time: "" });
+  const [submitted, setSubmitted] = useState(false);
+  const [loading, setLoading] = useState(false);
+
+  const handleSubmit = async () => {
+    if (!form.name || !form.phone) return;
+    setLoading(true);
+    try {
+      await fetch("/api/call-requests", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          name: form.name,
+          phone: form.phone,
+          preferred_time: form.time,
+          product_id: productId,
+        }),
+      });
+      setSubmitted(true);
+    } catch {
+      // silently handle
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  if (submitted) {
+    return (
+      <div className="bg-blue-50 border border-blue-200 rounded-xl p-4 flex items-center gap-3">
+        <Phone size={18} className="text-blue shrink-0" />
+        <div>
+          <p className="text-sm font-bold text-blue-800">Callback Requested!</p>
+          <p className="text-xs text-blue-600">We&apos;ll call you back shortly about {productName}.</p>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="bg-white rounded-xl border border-border overflow-hidden">
+      <button
+        onClick={() => setOpen(!open)}
+        className="w-full flex items-center justify-between p-3 hover:bg-off-white transition-colors"
+      >
+        <div className="flex items-center gap-2">
+          <Phone size={16} className="text-blue" />
+          <span className="text-xs font-bold text-text-2">Request a Callback</span>
+        </div>
+        <ChevronRight size={14} className={`text-text-4 transition-transform ${open ? "rotate-90" : ""}`} />
+      </button>
+      {open && (
+        <div className="px-3 pb-3 space-y-2 border-t border-border pt-3">
+          <input
+            placeholder="Your name"
+            value={form.name}
+            onChange={(e) => setForm({ ...form, name: e.target.value })}
+            className="w-full h-9 px-3 text-sm border border-border rounded-lg"
+          />
+          <input
+            placeholder="Phone number"
+            value={form.phone}
+            onChange={(e) => setForm({ ...form, phone: e.target.value })}
+            className="w-full h-9 px-3 text-sm border border-border rounded-lg"
+          />
+          <input
+            placeholder="Preferred time (optional)"
+            value={form.time}
+            onChange={(e) => setForm({ ...form, time: e.target.value })}
+            className="w-full h-9 px-3 text-sm border border-border rounded-lg"
+          />
+          <Button size="sm" className="w-full" onClick={handleSubmit} disabled={loading}>
+            {loading ? "Sending..." : "Request Callback"}
+          </Button>
+        </div>
+      )}
+    </div>
+  );
+}
+
+// ============================================================
+// Loyalty Points Display
+// ============================================================
+function LoyaltyEarnDisplay({ price, quantity }: { price: number; quantity: number }) {
+  const pointsPerDollar = 1;
+  const earnedPoints = Math.floor(price * quantity * pointsPerDollar);
+  if (earnedPoints <= 0) return null;
+
+  return (
+    <div className="bg-gradient-to-r from-purple-50 to-purple-100/50 rounded-xl p-3 flex items-center gap-3 border border-purple-200">
+      <div className="w-9 h-9 rounded-lg bg-purple-100 flex items-center justify-center shrink-0">
+        <Trophy size={18} className="text-purple-600" />
+      </div>
+      <div>
+        <p className="text-xs font-bold text-purple-800">
+          Earn <span className="text-purple-600 text-sm">{earnedPoints.toLocaleString()}</span> loyalty points
+        </p>
+        <p className="text-[10px] text-purple-600">Redeem for discounts on future purchases</p>
+      </div>
+    </div>
+  );
+}
+
+// ============================================================
+// Product Bundles Section
+// ============================================================
+function ProductBundlesSection({ productId, formatPrice }: { productId: string; formatPrice: (n: number) => string }) {
+  const [bundles, setBundles] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchBundles = async () => {
+      try {
+        const res = await fetch(`/api/bundles?product_id=${productId}`);
+        const json = await res.json();
+        setBundles(json.data || []);
+      } catch {
+        setBundles([]);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchBundles();
+  }, [productId]);
+
+  if (loading || bundles.length === 0) return null;
+
+  return (
+    <div className="mt-8">
+      <h2 className="font-syne font-bold text-xl mb-4 flex items-center gap-2">
+        <Percent size={20} className="text-blue" /> Bundle & Save
+      </h2>
+      <div className="space-y-3">
+        {bundles.slice(0, 3).map((bundle: any) => (
+          <Link
+            key={bundle.id}
+            href={`/bundles/${bundle.slug}`}
+            className="block bg-white rounded-xl border border-border p-4 hover:border-blue/50 transition-colors"
+          >
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-lg bg-blue-50 flex items-center justify-center shrink-0">
+                  <Tag size={18} className="text-blue" />
+                </div>
+                <div>
+                  <p className="text-sm font-bold text-text-1">{bundle.name}</p>
+                  <p className="text-xs text-text-4">{bundle.description}</p>
+                </div>
+              </div>
+              <Badge variant="sale" className="shrink-0">
+                {bundle.discount_type === "percentage"
+                  ? `-${bundle.discount_value}%`
+                  : `-${formatPrice(bundle.discount_value)}`}
+              </Badge>
+            </div>
+          </Link>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+// ============================================================
+// Other Sellers / Buy Box Section
+// ============================================================
+function OtherSellersSection({ productId, formatPrice }: { productId: string; formatPrice: (n: number) => string }) {
+  const [offers, setOffers] = useState<any>(null);
+  const [loading, setLoading] = useState(true);
+  const [expanded, setExpanded] = useState(false);
+
+  useEffect(() => {
+    const fetchOffers = async () => {
+      try {
+        const res = await fetch(`/api/buybox/${productId}`);
+        const json = await res.json();
+        setOffers(json);
+      } catch {
+        setOffers(null);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchOffers();
+  }, [productId]);
+
+  if (loading || !offers || (!offers.winner && offers.other_sellers?.length === 0)) return null;
+
+  const otherSellers = offers.other_sellers || [];
+
+  return (
+    <div className="mt-8">
+      <h2 className="font-syne font-bold text-xl mb-4 flex items-center gap-2">
+        <Store size={20} className="text-blue" /> Other Sellers
+      </h2>
+
+      {offers.winner && (
+        <div className="bg-blue-50 border border-blue-200 rounded-xl p-4 mb-3">
+          <div className="flex items-center justify-between">
+            <div>
+              <div className="flex items-center gap-2 mb-1">
+                <Badge variant="default" className="text-[10px] bg-blue text-white">Best Price</Badge>
+                <span className="text-sm font-bold text-text-1">{offers.winner.seller_name || "Kauvex"}</span>
+              </div>
+              <div className="flex items-center gap-3 text-xs text-text-3">
+                <span>{formatPrice(offers.winner.price)}</span>
+                <span>•</span>
+                <span>{offers.winner.shipping_days} day shipping</span>
+                <span>•</span>
+                <span className="flex items-center gap-1">
+                  <Star size={12} className="fill-yellow-400 text-yellow-400" />
+                  {offers.winner.rating || "N/A"}
+                </span>
+              </div>
+            </div>
+            <span className="text-xs text-blue font-semibold">
+              {offers.winner.fulfillment_type === "fbk" ? "Fulfilled by Kauvex" : "Sold by merchant"}
+            </span>
+          </div>
+        </div>
+      )}
+
+      {otherSellers.length > 0 && (
+        <>
+          <button
+            onClick={() => setExpanded(!expanded)}
+            className="w-full flex items-center justify-between p-3 bg-white rounded-xl border border-border hover:bg-off-white transition-colors"
+          >
+            <span className="text-sm font-bold text-text-2">
+              {otherSellers.length} other seller{otherSellers.length !== 1 ? "s" : ""} available
+            </span>
+            <ChevronRight size={14} className={`text-text-4 transition-transform ${expanded ? "rotate-90" : ""}`} />
+          </button>
+          {expanded && (
+            <div className="mt-2 space-y-2">
+              {otherSellers.map((seller: any) => (
+                <div key={seller.id} className="bg-white rounded-xl border border-border p-3 flex items-center justify-between">
+                  <div>
+                    <p className="text-sm font-bold text-text-1">{seller.seller_name || "Unknown Vendor"}</p>
+                    <div className="flex items-center gap-2 text-xs text-text-4 mt-0.5">
+                      <span>{formatPrice(seller.price)}</span>
+                      <span>•</span>
+                      <span>{seller.shipping_days} days</span>
+                      {seller.condition !== "new" && (
+                        <>
+                          <span>•</span>
+                          <span className="capitalize">{seller.condition}</span>
+                        </>
+                      )}
+                    </div>
+                  </div>
+                  <div className="text-right">
+                    <span className={`text-[10px] px-2 py-0.5 rounded ${
+                      seller.fulfillment_type === "fbk" ? "bg-blue-50 text-blue" : "bg-off-white text-text-4"
+                    }`}>
+                      {seller.fulfillment_type === "fbk" ? "FBK" : "Merchant"}
+                    </span>
+                    {seller.inventory > 0 && seller.inventory < 5 && (
+                      <p className="text-[9px] text-amber-600 mt-1">{seller.inventory} left</p>
+                    )}
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+        </>
+      )}
     </div>
   );
 }

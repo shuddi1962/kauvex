@@ -5,6 +5,7 @@ import ClientLayout from "@/components/layout/client-layout";
 import GeoInitializer from "@/components/geo/geo-initializer";
 import CookieConsent from "@/components/geo/cookie-consent";
 import ServiceWorkerRegister from "@/components/pwa/sw-register";
+import AgeVerificationGate from "@/components/popups/age-verification-gate";
 
 export const metadata: Metadata = {
   metadataBase: new URL("https://kauvex.com"),
@@ -78,6 +79,7 @@ export default function RootLayout({
           <GeoInitializer />
           <ClientLayout>{children}</ClientLayout>
           <CookieConsent />
+          <AgeVerificationGate />
           <ServiceWorkerRegister />
         </AuthProvider>
       </body>

@@ -97,6 +97,16 @@ product_bundles, gift_certificates, call_requests, consent_logs, audit_logs
 - [x] Phase 4 (Logistics): Complete
 - [x] Phase 5 (Platform): Complete
 
+## Recent Enhancements (June 2026)
+- Product detail page: Back-in-Stock notification, Call Request, Loyalty Points display, Product Bundles, Buy Box Other Sellers
+- Age verification modal for restricted storefronts
+- Gift certificate purchase page + redemption at checkout
+- Digital downloads in account section
+- Vendor settings page rewritten with DB persistence, bank details, notifications
+- Vendor shipping page rewritten with DB persistence, regional zone selector
+- Admin bundles management page (create/manage product bundles)
+- New homepage sections: BestSellers, NewArrivals, FeaturedBrands, Testimonials
+
 ## Database Migration Instructions
 1. Apply SQL migration: `cd supabase && supabase migration up`
 2. Generate Prisma client: `npx prisma generate`

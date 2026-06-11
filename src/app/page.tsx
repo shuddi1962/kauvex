@@ -5,6 +5,11 @@ import HeroBanner from "@/components/home/hero-banner";
 import CategoryGrid from "@/components/home/category-grid";
 import FeaturedProducts from "@/components/home/featured-products";
 import SellBanner from "@/components/home/sell-banner";
+import BestSellersSection from "@/components/home/BestSellersSection";
+import NewArrivalsSection from "@/components/home/NewArrivalsSection";
+import FeaturedBrandsSection from "@/components/home/FeaturedBrandsSection";
+import TestimonialsSection from "@/components/home/TestimonialsSection";
+import NewsletterSection from "@/components/home/NewsletterSection";
 import { ArrowRight, Truck, Shield, Headphones, CreditCard } from "lucide-react";
 import Link from "next/link";
 
@@ -93,6 +98,21 @@ export default function HomePage() {
           </Link>
         </div>
       </section>
+
+      {/* Best Sellers */}
+      <BestSellersSection />
+
+      {/* New Arrivals */}
+      <NewArrivalsSection />
+
+      {/* Featured Brands */}
+      <FeaturedBrandsSection />
+
+      {/* Testimonials */}
+      <TestimonialsSection />
+
+      {/* Newsletter */}
+      <NewsletterSection title="Stay in the Loop" subtitle="Get exclusive deals, new arrivals, and insider updates delivered to your inbox." buttonText="Subscribe" />
 
       {/* Sell on KAUVEX Banner */}
       <SellBanner />

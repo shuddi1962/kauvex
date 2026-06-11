@@ -1,4 +1,4 @@
-import { NextRequest } from 'next/server'
+import { NextRequest, NextResponse } from 'next/server'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { successResponse, errorResponse, getAuthUser, requireVendor } from '@/lib/api-helpers'
 import { z } from 'zod'
@@ -101,7 +101,7 @@ async function validateBodyWithSchema<T extends z.ZodType>(
     return { data: parsed, error: null }
   } catch (err) {
     if (err instanceof z.ZodError) {
-      return { data: null, error: errorResponse('Validation failed', 422, err.errors) }
+      return { data: null, error: errorResponse('Validation failed', 422, err.issues) }
     }
     return { data: null, error: errorResponse('Invalid JSON body', 400) }
   }

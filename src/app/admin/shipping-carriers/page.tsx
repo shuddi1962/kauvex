@@ -45,7 +45,7 @@ export default function ShippingCarriersPage() {
   const [search, setSearch] = useState("");
   const [showModal, setShowModal] = useState(false);
   const [editing, setEditing] = useState<Carrier | null>(null);
-  const [form, setForm] = useState({ name: "", code: "", type: "standard", coverage: "", supports_tracking: false, supports_labels: false, api_connected: false, status: "active" as const });
+  const [form, setForm] = useState({ name: "", code: "", type: "standard", coverage: "", supports_tracking: false, supports_labels: false, api_connected: false, status: "active" as "active" | "inactive" });
   const [deleteConfirm, setDeleteConfirm] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
 

@@ -26,7 +26,7 @@ async function getVendorOrderIds(vendorId: string): Promise<string[]> {
     .select('order_id')
     .in('product_id', productIds)
 
-  const orderIds = [...new Set((orderItems ?? []).map((oi: any) => oi.order_id))]
+  const orderIds = Array.from(new Set((orderItems ?? []).map((oi: any) => oi.order_id)))
   return orderIds
 }
 

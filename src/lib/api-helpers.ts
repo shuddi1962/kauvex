@@ -32,15 +32,17 @@ function getSupabaseClient() {
 
 export async function getAuthUser(request: Request) {
   const authHeader = request.headers.get("authorization");
-  if (!authHeader?.startsWith("Bearer ")) return { user: null, error: errorResponse("Missing or invalid Authorization header", 401) };
+  if (!authHeader?.startsWith("Bearer ")) return { user: null, profile: null, error: errorResponse("Missing or invalid Authorization header", 401) };
 
   const token = authHeader.slice(7);
   const sb = getSupabaseClient();
   const { data, error } = await sb.auth.getUser(token);
 
-  if (error || !data.user) return { user: null, error: errorResponse("Invalid or expired token", 401) };
+  if (error || !data.user) return { user: null, profile: null, error: errorResponse("Invalid or expired token", 401) };
 
-  return { user: data.user, error: null };
+  const { data: profile } = await sb.from("profiles").select("*").eq("id", data.user.id).single();
+
+  return { user: data.user, profile, error: null };
 }
 
 export async function requireAdmin(request: Request) {
@@ -85,7 +87,7 @@ export async function validateBody<T extends z.ZodType>(
     return { data: parsed, error: null };
   } catch (err) {
     if (err instanceof z.ZodError) {
-      return { data: null, error: errorResponse("Validation failed", 422, err.errors) };
+      return { data: null, error: errorResponse("Validation failed", 422, err.issues) };
     }
     return { data: null, error: errorResponse("Invalid JSON body", 400) };
   }

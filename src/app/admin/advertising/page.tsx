@@ -101,7 +101,7 @@ export default function AdminAdvertisingPage() {
   const avgCTR = totalImpressions > 0 ? ((totalClicks / totalImpressions) * 100).toFixed(2) : "0.00";
   const totalRevenue = campaigns.reduce((s, c) => s + Math.round(c.spent * c.roas), 0);
 
-  const revenueChartData = chartPeriod === "daily" ? dailyRevData : chartPeriod === "weekly" ? weeklyRevData : monthlyRevData;
+  const revenueChartData: Record<string, unknown>[] = chartPeriod === "daily" ? dailyRevData as any : chartPeriod === "weekly" ? weeklyRevData as any : monthlyRevData as any;
 
   const filteredCampaigns = campaigns.filter((c) => {
     if (filterStatus !== "all" && c.status !== filterStatus) return false;
@@ -138,12 +138,13 @@ export default function AdminAdvertisingPage() {
 
   const formatNumber = (n: number) => n >= 1e3 ? `${(n / 1e3).toFixed(1)}K` : n.toLocaleString();
 
-  const chartTooltipFormatter = (value: number, name: string) => {
-    if (name === "revenue") return [formatNaira(value), "Revenue"];
-    if (name === "spend") return [formatNaira(value), "Spend"];
-    if (name === "impressions") return [formatNumber(value), "Impressions"];
-    if (name === "clicks") return [formatNumber(value), "Clicks"];
-    return [value, name];
+  const chartTooltipFormatter = (value: unknown, _name: unknown): any => {
+    const n = Number(value);
+    if (_name === "revenue") return [formatNaira(n), "Revenue"];
+    if (_name === "spend") return [formatNaira(n), "Spend"];
+    if (_name === "impressions") return [formatNumber(n), "Impressions"];
+    if (_name === "clicks") return [formatNumber(n), "Clicks"];
+    return [n, _name];
   };
 
   return (

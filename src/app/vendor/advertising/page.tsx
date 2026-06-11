@@ -205,7 +205,7 @@ export default function VendorAdvertisingPage() {
                           <ResponsiveContainer width="100%" height="100%">
                             <LineChart data={campaign.sparkline.map((v, i) => ({ day: i + 1, value: v }))}>
                               <Line type="monotone" dataKey="value" stroke="#0A1628" strokeWidth={2} dot={false} />
-                              <Tooltip contentStyle={{ borderRadius: 8, fontSize: 12 }} formatter={(value: number) => [formatNumber(value), "Impressions"]} />
+                              <Tooltip contentStyle={{ borderRadius: 8, fontSize: 12 }} formatter={(value: unknown) => [formatNumber(Number(value)), "Impressions"]} />
                             </LineChart>
                           </ResponsiveContainer>
                         </div>

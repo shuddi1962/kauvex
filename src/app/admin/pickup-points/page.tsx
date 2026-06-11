@@ -94,7 +94,7 @@ export default function PickupPointsPage() {
           { label: "Total Pickup Points", value: points.length },
           { label: "Active", value: points.filter(p => p.status === "active").length, color: "text-green-600" },
           { label: "Inactive", value: points.filter(p => p.status === "inactive").length, color: "text-text-4" },
-          { label: "Countries", value: [...new Set(points.map(p => p.country))].length },
+          { label: "Countries", value: Array.from(new Set(points.map(p => p.country))).length },
         ].map(s => (
           <div key={s.label} className="bg-white rounded-xl border border-gray-200 p-4">
             <p className={`font-bold text-2xl ${s.color || "text-text-1"}`}>{s.value}</p>

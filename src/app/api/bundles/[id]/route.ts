@@ -88,7 +88,7 @@ export async function PUT(
     return successResponse(bundle)
   } catch (err) {
     if (err instanceof z.ZodError) {
-      return errorResponse('Validation failed', 422, err.errors)
+      return errorResponse('Validation failed', 422, err.issues)
     }
     return errorResponse('Internal server error', 500)
   }

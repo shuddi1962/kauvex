@@ -15,12 +15,12 @@ const updateProductSchema = z.object({
   sale_price: z.number().optional(),
   cost_price: z.number().optional(),
   images: z.array(z.string()).optional(),
-  variants: z.array(z.record(z.unknown())).optional(),
-  specifications: z.record(z.unknown()).optional(),
+  variants: z.array(z.record(z.string(), z.unknown())).optional(),
+  specifications: z.record(z.string(), z.unknown()).optional(),
   tags: z.array(z.string()).optional(),
   featured: z.boolean().optional(),
   status: z.enum(["draft", "published", "archived"]).optional(),
-  seo: z.record(z.unknown()).optional(),
+  seo: z.record(z.string(), z.unknown()).optional(),
 });
 
 export async function GET(

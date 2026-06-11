@@ -20,7 +20,7 @@ export const productSchema = z.object({
     sku: z.string().optional(),
     stock: z.number().int().nonnegative().default(0),
   })).default([]),
-  specifications: z.record(z.string()).default({}),
+  specifications: z.record(z.string(), z.string()).default({}),
   tags: z.array(z.string()).default([]),
   featured: z.boolean().default(false),
   status: z.enum(["draft", "published", "archived"]).default("draft"),

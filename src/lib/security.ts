@@ -1,4 +1,6 @@
-import { authenticator } from "otplib";
+import { TOTP } from "otplib";
+
+const totp = new TOTP();
 import { z } from "zod";
 import { insforge } from "./insforge";
 
@@ -60,12 +62,13 @@ export function validateFileUpload(
 }
 
 export function generateTOTPSecret(): string {
-  return authenticator.generateSecret();
+  return totp.generateSecret();
 }
 
-export function verifyTOTP(token: string, secret: string): boolean {
+export async function verifyTOTP(token: string, secret: string): Promise<boolean> {
   try {
-    return authenticator.verify({ token, secret });
+    const result = await totp.verify(token, { secret });
+    return result.valid;
   } catch {
     return false;
   }

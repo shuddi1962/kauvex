@@ -17,11 +17,12 @@ const createProductSchema = z.object({
   sale_price: z.number().optional(),
   cost_price: z.number().optional(),
   images: z.array(z.string()).default([]),
-  variants: z.array(z.record(z.unknown())).default([]),
-  specifications: z.record(z.unknown()).default({}),
+  variants: z.array(z.record(z.string(), z.unknown())).default([]),
+  specifications: z.record(z.string(), z.unknown()).default({}),
   tags: z.array(z.string()).default([]),
+  vendor_id: z.string().uuid().optional(),
   status: z.enum(["draft", "published", "archived"]).default("draft"),
-  seo: z.record(z.unknown()).default({}),
+  seo: z.record(z.string(), z.unknown()).default({}),
 });
 
 export async function GET(request: NextRequest) {

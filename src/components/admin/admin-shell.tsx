@@ -46,6 +46,7 @@ import {
   UserPlus,
   Warehouse,
   PenTool,
+  Smartphone,
 } from "lucide-react";
 
 const sidebarSections = [
@@ -78,6 +79,7 @@ const sidebarSections = [
     title: "Marketing",
     items: [
       { label: "Campaigns", icon: Megaphone, href: "/admin/marketing" },
+      { label: "Advertising", icon: Megaphone, href: "/admin/advertising" },
       { label: "Banners", icon: Image, href: "/admin/banners" },
       { label: "Popups & Ads", icon: Megaphone, href: "/admin/popups" },
       { label: "SEO Tools", icon: Search, href: "/admin/seo" },
@@ -100,7 +102,10 @@ const sidebarSections = [
     items: [
       { label: "Delivery", icon: Truck, href: "/admin/delivery" },
       { label: "Shipping Zones", icon: MapPin, href: "/admin/shipping" },
+      { label: "Shipping Carriers", icon: Truck, href: "/admin/shipping-carriers" },
       { label: "Locations", icon: Warehouse, href: "/admin/locations" },
+      { label: "Warehouses", icon: Warehouse, href: "/admin/warehouses" },
+      { label: "Pickup Points", icon: MapPin, href: "/admin/pickup-points" },
       { label: "Warranty", icon: Shield, href: "/admin/warranty" },
       { label: "Field Team", icon: Wrench, href: "/admin/field-team" },
     ],
@@ -128,6 +133,7 @@ const sidebarSections = [
       { label: "Vendors", icon: Store, href: "/admin/vendors" },
       { label: "Vendor Ads", icon: Megaphone, href: "/admin/vendor-ads" },
       { label: "Storefronts", icon: Globe, href: "/admin/storefronts" },
+      { label: "FBK Management", icon: Package, href: "/admin/fbk" },
       { label: "Boat Configurator", icon: Anchor, href: "/admin/boat-configurator" },
     ],
   },
@@ -139,6 +145,7 @@ const sidebarSections = [
       { label: "Roles", icon: Shield, href: "/admin/roles" },
       { label: "Analytics", icon: BarChart3, href: "/admin/analytics" },
       { label: "Feature Flags", icon: Plug, href: "/admin/features" },
+      { label: "Mobile App", icon: Smartphone, href: "/admin/mobile" },
       { label: "Site Doctor", icon: AlertTriangle, href: "/admin/site-doctor" },
     ],
   },

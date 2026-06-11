@@ -34,6 +34,7 @@ const vendorNav = [
   { label: "Shop Settings", icon: Store, href: "/vendor/shop" },
   { label: "Shipping", icon: Truck, href: "/vendor/shipping" },
   { label: "Promotions", icon: Megaphone, href: "/vendor/promotions" },
+  { label: "Advertising", icon: Megaphone, href: "/vendor/advertising" },
   { label: "Analytics", icon: BarChart3, href: "/vendor/analytics" },
   { label: "Settings", icon: Settings, href: "/vendor/settings" },
 ];

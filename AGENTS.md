@@ -4,69 +4,100 @@ globs: *
 alwaysApply: true
 ---
 
-# KAUVEX GLOBAL MARKETPLACE
+# KAUVEX COMMERCE CLOUD (KCC)
+# Version: 2.0
 
-## Project Identity
-- Platform: Next.js 14 + TypeScript + Tailwind CSS
-- Brand: KAUVEX — "Everything. Everywhere. Delivered."
-- Primary: #0A1628 (navy) | Accent: #FF6B00 (orange)
+## Platform
+- Name: KAUVEX — "Everything. Everywhere. Delivered."
+- Framework: Next.js 14 App Router + TypeScript
+- Styling: Tailwind CSS + shadcn/ui
+- ORM: Prisma
+- Database: PostgreSQL (Supabase)
+- Auth: Supabase Auth
+- Storage: Supabase Storage
+- Hosting: Vercel
+- Colors: Navy #0A1628 | Orange #FF6B00
 - Font: Inter
 
 ## Architecture
-- Frontend: Next.js 14 App Router (src/ directory)
-- Backend: Supabase (PostgreSQL)
-- Auth: Supabase Auth
-- Storage: Supabase Storage
-- Realtime: Supabase Realtime
-- Hosting: Vercel (frontend)
+- Multi-storefront: path | subdomain | custom domain
+- Multi-vendor: unlimited vendors with plan tiers
+- Multi-warehouse: FBK + merchant fulfilled
+- Centralized: one DB, one admin, one vendor login
 
-## Multi-Storefront
-- Storefronts configured in admin panel
-- Domain type: subdomain OR custom domain (admin choice)
-- Storefront context set by middleware on each request
-- Default storefront: kauvex.com
+## Key Directories
+- /prisma/schema.prisma — Full database schema (150+ models)
+- /prisma/seeds/roles.ts — RBAC seed script
+- /lib/permissions.ts — RBAC permission system
+- /lib/storefront-context.tsx — Storefront context provider
+- /lib/storefront-resolver.ts — Server-side storefront resolution
+- /lib/buybox.ts — Buy box engine with weighted scoring
+- /lib/search-engine.ts — Client search utilities
+- /lib/security.ts — Rate limiting, 2FA, audit logging, validation
+- /lib/ai/ — AI feature modules (descriptions, SEO, recommendations)
+- /lib/shipping/ — Carrier integrations
+- /lib/cart-recovery.ts — Abandoned cart recovery engine
+- /lib/bundles.ts — Product bundle management
+- /lib/catalog-mode.ts — Catalog mode for B2B storefronts
+- /lib/vendor-metrics.ts — Vendor health scoring
+- /lib/api-helpers.ts — REST API response utilities
+- /lib/validators/ — Zod validation schemas
+- /components/home/ — Homepage section components (8 sections)
+- /components/search/ — Voice search + barcode scanner
+- /app/admin/ — Admin panel routes (warehouses, FBK, ads, mobile, audit log)
+- /app/admin/analytics/ — Analytics dashboards (realtime, search, BI)
+- /app/vendor/ — Vendor panel routes
+- /app/vendor/store-builder/ — Store builder with plan-gated features
+- /app/vendor/fbk/ — FBK enrollment and management
+- /app/vendor/advertising/ — Ad campaign manager
+- /app/api/v1/ — REST API v1 (17 route groups)
 
-## Dropshipping
-- Provider: CJDropshipping (planned)
-- API credentials: stored in API key vault
-- New DB tables prefix: cj_
+## Default Storefronts
+1. kauvex.com — Global USD (DEFAULT)
+2. kauvex.com/uk — UK GBP
+3. kauvex.com/ca — Canada CAD
+4. kauvex.com/au — Australia AUD
+5. kauvex.com/ng — Nigeria NGN
+
+## New Database Tables (via Supabase migration)
+All new tables are defined in supabase/migrations/00002_kcc_phase1_new_tables.sql.
+Run `supabase migration up` to apply.
+
+Key tables: vendor_stores, warehouses, warehouse_inventory, shipments, shipping_carriers,
+ad_campaigns, ad_metrics, shared_catalog_products, vendor_offers, buy_box_winners,
+roles, permissions, api_keys, webhooks, analytics_events, daily_metrics, homepage_sections,
+loyalty_programs, white_label_clients, vendor_plans, vendor_payouts, abandoned_carts,
+product_bundles, gift_certificates, call_requests, consent_logs, audit_logs
+
+## CS-Cart Addon Equivalents (Native Builds)
+- Live Search: PostgreSQL full-text search + autocomplete
+- Abandoned Cart Recovery: 3-stage email sequence
+- Product Bundles: Discounted multi-product bundles
+- Catalog Mode: View-only storefronts for B2B
+- Back-in-Stock Notifications: Email alerts on restock
+- Product Comparison: Side-by-side (max 4)
+- Gift Certificates: Digital gift codes
+- Call Requests: Customer callback system
+- Vendor Payouts: Batch payout processing
+- Google Merchant Feed: XML export
+- Digital Downloads: Expiring download links
+- Seller Performance: Account health scoring (ODR, cancellation, late shipment)
+- Reward Points: Loyalty program with tiers
+- Product Video: Gallery video support
+- Age Verification: Modal for restricted products
+- Vendor Staff Management: Role-based staff access
+- API Keys: Full REST API with key auth
+- Webhooks: Event-driven integrations
 
 ## Build Status
-- [x] Part 1: Rebrand complete (Roshanal → KAUVEX)
-- [x] Part 2: Categories replaced (10 general categories, 60+ subcategories)
-- [x] Part 3: Homepage redesigned (8 new components)
-- [x] Part 4: Product page redesigned (image gallery, variants, shipping, reviews, Q&A, related products)
-- [x] Part 5: CJDropshipping integrated (API client + admin dashboard, schema ready)
-- [x] Part 6: Multi-storefront built (context provider, 6 seed storefronts, admin pages, domain detection)
-- [x] Part 7: Vendor system enhanced (multi-step registration, public storefront, tier badges)
-- [x] Part 8: Buyer protection built (customer dispute flow + admin dispute centre, schema ready)
-- [x] Part 9: Search upgraded (dedicated /search route, autocomplete, advanced filters)
-- [x] Part 10: Currency engine updated (Price.tsx component, storefront-aware conversion)
-- [x] Part 11: Admin panel updated (all sections present: Marketplace, Analytics, Marketing)
-- [x] Part 12: SEO updated (layout, OG tags, Twitter card, JSON-LD structured data)
-- [x] Part 13: Affiliate updated (rebranded page, commission table, schema)
+- [x] Phase 0 (Pre-flight): Complete
+- [x] Phase 1 (MVP Core): Complete
+- [x] Phase 2 (Homepage+): Complete
+- [x] Phase 3 (Search+AI): Complete
+- [x] Phase 4 (Logistics): Complete
+- [x] Phase 5 (Platform): Complete
 
-## Supabase
-- Project URL: https://stbgamqenraauqpgtbkv.supabase.co
-- Client files: /src/lib/supabase/client.ts (browser)
-                /src/lib/supabase/server.ts (server)
-                /src/lib/supabase/admin.ts (admin ops)
-                /src/lib/supabase/middleware.ts (session)
-- Schema: supabase/migrations/00001_initial_schema.sql
-- Tables: profiles, categories, subcategories, brands, products, product_inventory, vendors, orders, order_items, reviews, storefronts, cj_products, disputes, exchange_rates, storefront_banners, affiliate_links
-- Storage buckets: avatars, banners, brands, categories, cj-products, disputes, media, products, vendors
-- Compatibility shim: /src/lib/insforge.ts (maps `insforge.*` calls to `supabase.*`)
-- Supabase CLI: linked to project ref `stbgamqenraauqpgtbkv`
-
-## Future AWS Migration Note
-When ready to migrate from Supabase to AWS:
-- Supabase PostgreSQL → AWS RDS PostgreSQL (same SQL dialect)
-- Supabase Storage → AWS S3 (update bucket URLs and SDK calls)
-- Supabase Auth → AWS Cognito or NextAuth with RDS
-- Frontend stays on Vercel OR moves to AWS Amplify
-
-## Important Notes
-- Tailwind CSS 3.4 (do not upgrade to v4)
-- All product prices stored in USD internally
-- Display prices use storefront currency
-- localStorage keys use "kauvex-" prefix
+## Database Migration Instructions
+1. Apply SQL migration: `cd supabase && supabase migration up`
+2. Generate Prisma client: `npx prisma generate`
+3. Seed roles: POST to `/api/setup/seed-roles` with Bearer token matching SEED_SECRET env var

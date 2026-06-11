@@ -99,8 +99,10 @@ export async function middleware(request: NextRequest) {
     response.cookies.set(cookie.name, cookie.value);
   });
 
-  const isAdminRoute = pathname.startsWith("/admin");
-  const isVendorRoute = pathname.startsWith("/vendor");
+  const isAdminLoginRoute = pathname.startsWith("/admin/login");
+  const isAdminRoute = pathname.startsWith("/admin") && !isAdminLoginRoute;
+  const isVendorLoginRoute = pathname.startsWith("/vendor/login");
+  const isVendorRoute = pathname.startsWith("/vendor") && !isVendorLoginRoute;
 
   if (isAdminRoute || isVendorRoute) {
     const { createServerClient } = await import("@supabase/ssr");

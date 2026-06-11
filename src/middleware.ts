@@ -129,7 +129,7 @@ export async function middleware(request: NextRequest) {
         .eq("id", user.id)
         .single();
 
-      if (!profile || profile.role !== "admin") {
+      if (!profile || !["super-admin", "admin", "finance-admin", "support-admin"].includes(profile.role)) {
         return NextResponse.redirect(new URL("/", request.url));
       }
     }

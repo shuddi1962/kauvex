@@ -52,7 +52,7 @@ export async function requireAdmin(request: Request) {
   const sb = getSupabaseClient();
   const { data: profile } = await sb.from("profiles").select("role").eq("id", user!.id).single();
 
-  if (!profile || !["super-admin", "store-manager"].includes(profile.role)) {
+  if (!profile || !["super-admin", "admin", "finance-admin", "support-admin"].includes(profile.role)) {
     return { user: null, profile: null, error: errorResponse("Admin access required", 403) };
   }
 

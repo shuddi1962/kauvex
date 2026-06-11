@@ -1,7 +1,7 @@
 "use client";
 
-import { useState } from "react";
-import { useRouter } from "next/navigation";
+import { useState, Suspense } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import {
   Eye,
@@ -16,8 +16,9 @@ import {
 import { Button } from "@/components/ui/button";
 import { useAuthStore } from "@/store/auth-store";
 
-export default function LoginPage() {
+function LoginForm() {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const { signIn, signInWithOAuth, error, clearError } = useAuthStore();
   const [showPassword, setShowPassword] = useState(false);
   const [email, setEmail] = useState("");
@@ -31,7 +32,17 @@ export default function LoginPage() {
     setIsSubmitting(true);
     try {
       await signIn(email, password);
-      router.push("/account");
+
+      const { user } = useAuthStore.getState();
+      const redirect = searchParams.get("redirect") || "/account";
+
+      if (user?.role === "super-admin" || user?.role === "admin" || user?.role === "finance-admin" || user?.role === "support-admin") {
+        router.push("/admin");
+      } else if (user?.role === "vendor") {
+        router.push("/vendor/dashboard");
+      } else {
+        router.push(redirect);
+      }
     } catch {
       // error is set in the store
     } finally {
@@ -249,5 +260,13 @@ export default function LoginPage() {
         </div>
       </div>
     </div>
+  );
+}
+
+export default function LoginPage() {
+  return (
+    <Suspense fallback={null}>
+      <LoginForm />
+    </Suspense>
   );
 }

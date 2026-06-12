@@ -16,7 +16,7 @@ interface MenuItem {
   badge_text?: string;
   is_mega?: boolean;
   column_count?: number;
-  children: MenuItem[];
+  children?: MenuItem[];
 }
 
 const staticCategories = [
@@ -119,7 +119,7 @@ export default function MegaMenu() {
     fetchMenu();
   }, []);
 
-  const menuItems = dbMenuItems.length > 0 ? dbMenuItems : staticCategories;
+  const menuItems: MenuItem[] = dbMenuItems.length > 0 ? dbMenuItems : staticCategories as MenuItem[];
 
   useEffect(() => {
     const handleClickOutside = (e: MouseEvent) => {
@@ -145,8 +145,9 @@ export default function MegaMenu() {
       <div className="w-full max-w-[1440px] mx-auto px-4">
         <nav className="flex items-center gap-0">
           {menuItems.map((item) => {
-            const hasChildren = item.children && item.children.length > 0;
-            const isMega = item.is_mega || (hasChildren && item.children.length > 4);
+            const children = item.children ?? [];
+            const hasChildren = children.length > 0;
+            const isMega = item.is_mega || (hasChildren && children.length > 4);
 
             return (
               <div
@@ -177,7 +178,7 @@ export default function MegaMenu() {
                   >
                     {isMega ? (
                       <div className="grid grid-cols-3 gap-0 p-6">
-                        {item.children.map((child) => (
+                        {children.map((child) => (
                           <div key={child.label}>
                             <Link href={child.href || "#"} className="block group">
                               {child.image_url && (
@@ -195,7 +196,7 @@ export default function MegaMenu() {
                             </Link>
                             {child.children && child.children.length > 0 && (
                               <div className="mt-1.5 space-y-0.5">
-                                {child.children.map((sub) => (
+                                {child.children.map((sub: MenuItem) => (
                                   <Link key={sub.label} href={sub.href || "#"} className="block text-[11px] text-text-4 hover:text-orange transition-colors py-0.5">
                                     {sub.label}
                                   </Link>
@@ -207,7 +208,7 @@ export default function MegaMenu() {
                       </div>
                     ) : (
                       <div className="py-2">
-                        {item.children.map((child) => (
+                        {children.map((child) => (
                           <Link key={child.label} href={child.href || "#"} className="block px-4 py-2 text-xs text-text-2 hover:bg-orange-50 hover:text-orange transition-colors">
                             {child.label}
                           </Link>

@@ -269,25 +269,37 @@ ALTER TABLE public.vendors ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.reviews ENABLE ROW LEVEL SECURITY;
 
 -- RLS Policies: Profiles
+DROP POLICY IF EXISTS "profiles_select_own" ON public.profiles;
 CREATE POLICY "profiles_select_own" ON public.profiles FOR SELECT USING (auth.uid() = id);
-CREATE POLICY "profiles_update_own" ON public.profiles FOR UPDATE USING (auth.uid() = id);
 
+DROP POLICY IF EXISTS "profiles_update_own" ON public.profiles;
+CREATE POLICY "profiles_update_own" ON public.profiles FOR UPDATE USING (auth.uid() = id);
 -- RLS Policies: Products
+DROP POLICY IF EXISTS "products_select_all" ON public.products;
 CREATE POLICY "products_select_all" ON public.products FOR SELECT USING (status = 'published');
+DROP POLICY IF EXISTS "products_select_admin" ON public.products;
 CREATE POLICY "products_select_admin" ON public.products FOR SELECT USING (auth.role() = 'service_role');
+DROP POLICY IF EXISTS "products_insert_vendor" ON public.products;
 CREATE POLICY "products_insert_vendor" ON public.products FOR INSERT WITH CHECK (auth.role() = 'service_role');
+DROP POLICY IF EXISTS "products_update_vendor" ON public.products;
 CREATE POLICY "products_update_vendor" ON public.products FOR UPDATE USING (auth.role() = 'service_role');
 
 -- RLS Policies: Categories
+DROP POLICY IF EXISTS "categories_select_all" ON public.categories;
 CREATE POLICY "categories_select_all" ON public.categories FOR SELECT USING (true);
 
 -- RLS Policies: Orders
+DROP POLICY IF EXISTS "orders_select_own" ON public.orders;
 CREATE POLICY "orders_select_own" ON public.orders FOR SELECT USING (auth.uid() = customer_id OR auth.role() = 'service_role');
+DROP POLICY IF EXISTS "orders_insert" ON public.orders;
 CREATE POLICY "orders_insert" ON public.orders FOR INSERT WITH CHECK (auth.role() = 'service_role');
 
 -- RLS Policies: Reviews
+DROP POLICY IF EXISTS "reviews_select_all" ON public.reviews;
 CREATE POLICY "reviews_select_all" ON public.reviews FOR SELECT USING (true);
+DROP POLICY IF EXISTS "reviews_insert" ON public.reviews;
 CREATE POLICY "reviews_insert" ON public.reviews FOR INSERT WITH CHECK (auth.role() = 'service_role');
 
 -- RLS Policies: Vendors
+DROP POLICY IF EXISTS "vendors_select_all" ON public.vendors;
 CREATE POLICY "vendors_select_all" ON public.vendors FOR SELECT USING (true);

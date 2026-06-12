@@ -4,7 +4,7 @@
 
 -- 1. STOREFRONT THEMES
 CREATE TABLE IF NOT EXISTS public.storefront_themes (
-  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   storefront_id UUID REFERENCES public.storefronts(id) ON DELETE CASCADE,
   name TEXT NOT NULL,
   template_name TEXT NOT NULL DEFAULT 'default',
@@ -24,7 +24,7 @@ CREATE INDEX IF NOT EXISTS idx_storefront_themes_storefront ON public.storefront
 
 -- 2. STOREFRONT DOMAIN SETTINGS
 CREATE TABLE IF NOT EXISTS public.storefront_domain_settings (
-  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   storefront_id UUID REFERENCES public.storefronts(id) ON DELETE CASCADE,
   domain TEXT NOT NULL,
   domain_type TEXT NOT NULL CHECK (domain_type IN ('tld','subdomain','custom')),

@@ -430,7 +430,11 @@ export default function CreateStorefrontWizard() {
                 <div className="flex items-center gap-2">
                   <input
                     value={form.subdomain || form.domainName}
-                    onChange={e => update("subdomain", e.target.value.toLowerCase().replace(/[^a-z0-9-]/g, ""))}
+                    onChange={e => {
+                      const val = e.target.value.toLowerCase().replace(/[^a-z0-9-]/g, "");
+                      update("subdomain", val);
+                      update("domainName", val);
+                    }}
                     placeholder="yourstore"
                     className="h-11 px-4 text-lg font-mono rounded-xl border border-border focus:outline-none focus:ring-2 focus:ring-orange/20 focus:border-orange flex-1"
                   />
@@ -440,7 +444,11 @@ export default function CreateStorefrontWizard() {
               {form.domainType === "custom" && (
                 <input
                   value={form.customDomain}
-                  onChange={e => update("customDomain", e.target.value.toLowerCase().replace(/[^a-z0-9.-]/g, ""))}
+                  onChange={e => {
+                    const val = e.target.value.toLowerCase().replace(/[^a-z0-9.-]/g, "");
+                    update("customDomain", val);
+                    update("domainName", val);
+                  }}
                   placeholder="yourstore.com"
                   className="w-full h-11 px-4 text-lg font-mono rounded-xl border border-border focus:outline-none focus:ring-2 focus:ring-orange/20 focus:border-orange"
                 />

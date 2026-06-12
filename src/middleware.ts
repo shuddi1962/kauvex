@@ -105,6 +105,8 @@ export async function middleware(request: NextRequest) {
   const isVendorRoute = pathname.startsWith("/vendor") && !isVendorAuthRoute;
 
   if (isAdminRoute || isVendorRoute) {
+    let supabaseResponse2 = NextResponse.next({ request });
+
     const { createServerClient } = await import("@supabase/ssr");
     const supabase = createServerClient(
       process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -112,11 +114,22 @@ export async function middleware(request: NextRequest) {
       {
         cookies: {
           getAll: () => request.cookies.getAll(),
-          setAll: () => {},
+          setAll: (cookiesToSet) => {
+            cookiesToSet.forEach(({ name, value }) => request.cookies.set(name, value));
+            supabaseResponse2 = NextResponse.next({ request });
+            cookiesToSet.forEach(({ name, value, options }) => supabaseResponse2.cookies.set(name, value, options));
+          },
         },
       }
     );
     const { data: { user } } = await supabase.auth.getUser();
+
+    supabaseResponse2.headers.forEach((value, key) => {
+      response.headers.set(key, value);
+    });
+    supabaseResponse2.cookies.getAll().forEach((cookie) => {
+      response.cookies.set(cookie.name, cookie.value);
+    });
 
     if (!user) {
       const loginUrl = new URL("/auth/login", request.url);

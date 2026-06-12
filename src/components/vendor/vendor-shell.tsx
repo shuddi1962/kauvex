@@ -38,7 +38,8 @@ const topNav: { key: SectionKey; label: string; icon: React.ElementType; groups:
     groups: [
       { title: "Products", items: [
         { label: "All Products", href: "/vendor/products" },
-        { label: "Add Product", href: "/vendor/products/create" },
+        { label: "Add Product", href: "/vendor/products" },
+        { label: "Shared Catalog", href: "/vendor/catalog", badge: "Sell" },
       ]},
       { title: "Fulfillment", items: [
         { label: "FBK", href: "/vendor/fbk" },
@@ -89,7 +90,7 @@ const topNav: { key: SectionKey; label: string; icon: React.ElementType; groups:
 
 function detectSection(pathname: string): SectionKey {
   if (pathname === "/vendor/dashboard" || pathname === "/vendor/analytics" || pathname === "/vendor/earnings") return "dashboard";
-  if (pathname.startsWith("/vendor/products") || pathname.startsWith("/vendor/fbk") || pathname.startsWith("/vendor/shipping")) return "products";
+  if (pathname.startsWith("/vendor/products") || pathname.startsWith("/vendor/catalog") || pathname.startsWith("/vendor/fbk") || pathname.startsWith("/vendor/shipping")) return "products";
   if (pathname.startsWith("/vendor/orders")) return "orders";
   if (pathname.startsWith("/vendor/store-builder") || pathname.startsWith("/vendor/shop")) return "store";
   if (pathname.startsWith("/vendor/advertising") || pathname.startsWith("/vendor/promotions")) return "marketing";

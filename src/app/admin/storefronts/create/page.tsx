@@ -207,22 +207,16 @@ export default function CreateStorefrontWizard() {
       status: "active",
     };
 
-    const { data, error } = await insforge.database.from("storefronts").insert([payload]).select();
-    if (error) { setSaving(false); alert("Failed: " + error.message); return; }
+    const res = await fetch("/api/admin/storefronts/create", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ payload, categories: form.categories, vendors: form.vendors }),
+    });
+    const json = await res.json();
+    if (!res.ok) { setSaving(false); alert("Failed: " + (json.error || "Unknown error")); return; }
 
-    const storefrontId = data?.[0]?.id;
+    const storefrontId = json.data?.[0]?.id;
     if (!storefrontId) { setSaving(false); return; }
-
-    if (form.categories.length > 0) {
-      await insforge.database.from("storefront_categories").insert(
-        form.categories.map(c => ({ storefront_id: storefrontId, category_id: c }))
-      );
-    }
-    if (form.vendors.length > 0) {
-      await insforge.database.from("storefront_vendors").insert(
-        form.vendors.map(v => ({ storefront_id: storefrontId, vendor_id: v }))
-      );
-    }
 
     setCreatedId(storefrontId);
     setSaving(false);

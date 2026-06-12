@@ -1,17 +1,16 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useState, useRef, useEffect } from "react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import {
-  LayoutDashboard, ShoppingCart, Package, Users, Settings,
-  Image, Layers, Shield, Store, CreditCard, Search, Bell,
-  ChevronDown, ChevronLeft, Menu, ExternalLink, BarChart3,
-  FolderTree, Megaphone, MapPin, Warehouse, Palette, Globe,
-  Plug, Heart, Gift, Ticket, Scale, PenTool, Smartphone,
-  ScrollText, FileText, Tag, Award, SlidersHorizontal,
-  Navigation, Anchor, UserPlus, Wrench, ClipboardList,
-  ImageIcon, ArrowLeft, Sparkles, ChevronRight, Truck,
+  LayoutDashboard, Package, CreditCard, Megaphone, Palette,
+  Globe, Truck, Settings, Search, Bell, ChevronDown, ChevronLeft,
+  Menu, ArrowLeft, BarChart3, FolderTree, ShoppingCart, Users,
+  Image, Layers, Shield, Store, Warehouse, MapPin, Plug, Heart,
+  Gift, Ticket, Scale, PenTool, Smartphone, ScrollText, FileText,
+  Tag, Award, SlidersHorizontal, Navigation, Anchor, UserPlus,
+  Wrench, ClipboardList, ImageIcon, Sparkles, ChevronRight, Star,
 } from "lucide-react";
 
 type SectionKey = "dashboard" | "commerce" | "sales" | "marketing" | "content" | "marketplace" | "operations" | "system";
@@ -22,150 +21,157 @@ interface NavItem {
   badge?: string;
 }
 
-const topNavSections: { key: SectionKey; label: string; icon: React.ElementType }[] = [
-  { key: "dashboard", label: "Dashboard", icon: LayoutDashboard },
-  { key: "commerce", label: "Commerce", icon: Package },
-  { key: "sales", label: "Sales", icon: CreditCard },
-  { key: "marketing", label: "Marketing", icon: Megaphone },
-  { key: "content", label: "Content", icon: Palette },
-  { key: "marketplace", label: "Marketplace", icon: Globe },
-  { key: "operations", label: "Operations", icon: Truck },
-  { key: "system", label: "System", icon: Settings },
+interface NavGroup {
+  title: string;
+  items: NavItem[];
+}
+
+const topNavSections: { key: SectionKey; label: string; icon: React.ElementType; groups: NavGroup[] }[] = [
+  {
+    key: "dashboard", label: "Dashboard", icon: LayoutDashboard,
+    groups: [
+      { title: "Overview", items: [
+        { label: "Dashboard", href: "/admin" },
+        { label: "Analytics", href: "/admin/analytics" },
+        { label: "Reports", href: "/admin/analytics/bi" },
+      ]},
+    ],
+  },
+  {
+    key: "commerce", label: "Commerce", icon: Package,
+    groups: [
+      { title: "Catalog", items: [
+        { label: "All Products", href: "/admin/products" },
+        { label: "Add Product", href: "/admin/products/create" },
+        { label: "Categories", href: "/admin/categories" },
+        { label: "Brands", href: "/admin/brands" },
+        { label: "Tags", href: "/admin/tags" },
+        { label: "Variations", href: "/admin/variations" },
+        { label: "Bundles", href: "/admin/bundles" },
+      ]},
+      { title: "Orders", items: [
+        { label: "All Orders", href: "/admin/orders" },
+        { label: "Disputes", href: "/admin/disputes" },
+        { label: "Quotes", href: "/admin/quotes" },
+        { label: "Bookings", href: "/admin/bookings" },
+      ]},
+      { title: "Customers", items: [
+        { label: "All Customers", href: "/admin/customers" },
+        { label: "CRM Pipeline", href: "/admin/crm" },
+        { label: "Gift Cards", href: "/admin/gift-cards" },
+        { label: "Coupons", href: "/admin/coupons" },
+      ]},
+      { title: "Reviews", items: [
+        { label: "Product Reviews", href: "/admin/reviews" },
+      ]},
+    ],
+  },
+  {
+    key: "sales", label: "Sales", icon: CreditCard,
+    groups: [
+      { title: "Sales", items: [
+        { label: "Orders", href: "/admin/orders" },
+        { label: "POS", href: "/admin/pos" },
+        { label: "Quotes", href: "/admin/quotes" },
+        { label: "Bookings", href: "/admin/bookings" },
+      ]},
+      { title: "Finance", items: [
+        { label: "Payments & P&L", href: "/admin/finance" },
+      ]},
+    ],
+  },
+  {
+    key: "marketing", label: "Marketing", icon: Megaphone,
+    groups: [
+      { title: "Campaigns", items: [
+        { label: "Marketing", href: "/admin/marketing" },
+        { label: "Advertising", href: "/admin/advertising" },
+        { label: "Banners", href: "/admin/banners" },
+        { label: "Popups & Ads", href: "/admin/popups" },
+      ]},
+      { title: "SEO", items: [
+        { label: "SEO Tools", href: "/admin/seo" },
+      ]},
+    ],
+  },
+  {
+    key: "content", label: "Content", icon: Palette,
+    groups: [
+      { title: "Design", items: [
+        { label: "Homepage Builder", href: "/admin/homepage" },
+        { label: "Page Editor", href: "/admin/page-editor" },
+        { label: "Menu Builder", href: "/admin/menu" },
+        { label: "Banner Builder", href: "/admin/banners/builder" },
+        { label: "Footer Builder", href: "/admin/footer" },
+      ]},
+      { title: "Media", items: [
+        { label: "Media Library", href: "/admin/media" },
+        { label: "Pages", href: "/admin/pages" },
+      ]},
+    ],
+  },
+  {
+    key: "marketplace", label: "Marketplace", icon: Globe,
+    groups: [
+      { title: "Storefronts", items: [
+        { label: "All Storefronts", href: "/admin/storefronts" },
+        { label: "Create Storefront", href: "/admin/storefronts/create", badge: "New" },
+      ]},
+      { title: "Vendors", items: [
+        { label: "All Vendors", href: "/admin/vendors" },
+        { label: "Vendor Ads", href: "/admin/vendor-ads" },
+      ]},
+      { title: "Fulfillment", items: [
+        { label: "FBK Management", href: "/admin/fbk" },
+        { label: "Boat Configurator", href: "/admin/boat-configurator" },
+      ]},
+    ],
+  },
+  {
+    key: "operations", label: "Operations", icon: Truck,
+    groups: [
+      { title: "Logistics", items: [
+        { label: "Delivery", href: "/admin/delivery" },
+        { label: "Shipping Zones", href: "/admin/shipping" },
+        { label: "Shipping Carriers", href: "/admin/shipping-carriers" },
+      ]},
+      { title: "Warehouse", items: [
+        { label: "Locations", href: "/admin/locations" },
+        { label: "Warehouses", href: "/admin/warehouses" },
+        { label: "Inventory", href: "/admin/inventory" },
+        { label: "Pickup Points", href: "/admin/pickup-points" },
+      ]},
+      { title: "Services", items: [
+        { label: "Warranty", href: "/admin/warranty" },
+        { label: "Field Team", href: "/admin/field-team" },
+        { label: "CJ Dropshipping", href: "/admin/cj-dropshipping" },
+      ]},
+    ],
+  },
+  {
+    key: "system", label: "System", icon: Settings,
+    groups: [
+      { title: "Configuration", items: [
+        { label: "General Settings", href: "/admin/settings" },
+        { label: "Staff", href: "/admin/staff" },
+        { label: "Roles & Permissions", href: "/admin/roles" },
+        { label: "Feature Flags", href: "/admin/features" },
+      ]},
+      { title: "Tools", items: [
+        { label: "Mobile App", href: "/admin/mobile" },
+        { label: "Site Doctor", href: "/admin/site-doctor" },
+        { label: "Audit Log", href: "/admin/audit-log" },
+        { label: "AI Tools", href: "/admin/ai" },
+      ]},
+      { title: "Developers", items: [
+        { label: "API Docs", href: "/api/docs" },
+      ]},
+    ],
+  },
 ];
 
-const topNavDefaults: Record<SectionKey, string> = {
-  dashboard: "/admin",
-  commerce: "/admin/products",
-  sales: "/admin/orders",
-  marketing: "/admin/marketing",
-  content: "/admin/homepage",
-  marketplace: "/admin/storefronts",
-  operations: "/admin/delivery",
-  system: "/admin/settings",
-};
-
-const sidebarNav: Record<SectionKey, { title: string; items: NavItem[] }[]> = {
-  dashboard: [
-    { title: "Overview", items: [
-      { label: "Dashboard", href: "/admin" },
-      { label: "Analytics", href: "/admin/analytics" },
-      { label: "Reports", href: "/admin/analytics/bi" },
-    ]},
-  ],
-  commerce: [
-    { title: "Catalog", items: [
-      { label: "All Products", href: "/admin/products" },
-      { label: "Add Product", href: "/admin/products/create" },
-      { label: "Categories", href: "/admin/categories" },
-      { label: "Brands", href: "/admin/brands" },
-      { label: "Tags", href: "/admin/tags" },
-      { label: "Variations", href: "/admin/variations" },
-      { label: "Bundles", href: "/admin/bundles" },
-    ]},
-    { title: "Orders", items: [
-      { label: "All Orders", href: "/admin/orders" },
-      { label: "Disputes", href: "/admin/disputes" },
-      { label: "Quotes", href: "/admin/quotes" },
-      { label: "Bookings", href: "/admin/bookings" },
-    ]},
-    { title: "Customers", items: [
-      { label: "All Customers", href: "/admin/customers" },
-      { label: "CRM Pipeline", href: "/admin/crm" },
-      { label: "Gift Cards", href: "/admin/gift-cards" },
-      { label: "Coupons", href: "/admin/coupons" },
-    ]},
-    { title: "Reviews", items: [
-      { label: "Product Reviews", href: "/admin/reviews" },
-    ]},
-  ],
-  sales: [
-    { title: "Sales", items: [
-      { label: "Orders", href: "/admin/orders" },
-      { label: "POS", href: "/admin/pos" },
-      { label: "Quotes", href: "/admin/quotes" },
-      { label: "Bookings", href: "/admin/bookings" },
-    ]},
-    { title: "Finance", items: [
-      { label: "Payments & P&L", href: "/admin/finance" },
-    ]},
-  ],
-  marketing: [
-    { title: "Campaigns", items: [
-      { label: "Marketing", href: "/admin/marketing" },
-      { label: "Advertising", href: "/admin/advertising" },
-      { label: "Banners", href: "/admin/banners" },
-      { label: "Popups & Ads", href: "/admin/popups" },
-    ]},
-    { title: "SEO", items: [
-      { label: "SEO Tools", href: "/admin/seo" },
-    ]},
-  ],
-  content: [
-    { title: "Design", items: [
-      { label: "Homepage Builder", href: "/admin/homepage" },
-      { label: "Page Editor", href: "/admin/page-editor" },
-      { label: "Menu Builder", href: "/admin/menu" },
-      { label: "Banner Builder", href: "/admin/banners/builder" },
-      { label: "Footer Builder", href: "/admin/footer" },
-    ]},
-    { title: "Media", items: [
-      { label: "Media Library", href: "/admin/media" },
-      { label: "Pages", href: "/admin/pages" },
-    ]},
-  ],
-  marketplace: [
-    { title: "Storefronts", items: [
-      { label: "All Storefronts", href: "/admin/storefronts" },
-      { label: "Create Storefront", href: "/admin/storefronts/create", badge: "New" },
-    ]},
-    { title: "Vendors", items: [
-      { label: "All Vendors", href: "/admin/vendors" },
-      { label: "Vendor Ads", href: "/admin/vendor-ads" },
-    ]},
-    { title: "Fulfillment", items: [
-      { label: "FBK Management", href: "/admin/fbk" },
-      { label: "Boat Configurator", href: "/admin/boat-configurator" },
-    ]},
-  ],
-  operations: [
-    { title: "Logistics", items: [
-      { label: "Delivery", href: "/admin/delivery" },
-      { label: "Shipping Zones", href: "/admin/shipping" },
-      { label: "Shipping Carriers", href: "/admin/shipping-carriers" },
-    ]},
-    { title: "Warehouse", items: [
-      { label: "Locations", href: "/admin/locations" },
-      { label: "Warehouses", href: "/admin/warehouses" },
-      { label: "Inventory", href: "/admin/inventory" },
-      { label: "Pickup Points", href: "/admin/pickup-points" },
-    ]},
-    { title: "Services", items: [
-      { label: "Warranty", href: "/admin/warranty" },
-      { label: "Field Team", href: "/admin/field-team" },
-      { label: "CJ Dropshipping", href: "/admin/cj-dropshipping" },
-    ]},
-  ],
-  system: [
-    { title: "Configuration", items: [
-      { label: "General Settings", href: "/admin/settings" },
-      { label: "Staff", href: "/admin/staff" },
-      { label: "Roles & Permissions", href: "/admin/roles" },
-      { label: "Feature Flags", href: "/admin/features" },
-    ]},
-    { title: "Tools", items: [
-      { label: "Mobile App", href: "/admin/mobile" },
-      { label: "Site Doctor", href: "/admin/site-doctor" },
-      { label: "Audit Log", href: "/admin/audit-log" },
-      { label: "AI Tools", href: "/admin/ai" },
-    ]},
-    { title: "Developers", items: [
-      { label: "API Docs", href: "/api/docs" },
-    ]},
-  ],
-};
-
 function detectSection(pathname: string): SectionKey {
-  if (pathname === "/admin" || pathname === "/admin/analytics") return "dashboard";
+  if (pathname === "/admin" || pathname.startsWith("/admin/analytics")) return "dashboard";
   if (pathname.startsWith("/admin/products") || pathname.startsWith("/admin/categories") || pathname.startsWith("/admin/brands") || pathname.startsWith("/admin/tags") || pathname.startsWith("/admin/variations") || pathname.startsWith("/admin/bundles") || pathname.startsWith("/admin/orders") || pathname.startsWith("/admin/customers") || pathname.startsWith("/admin/crm") || pathname.startsWith("/admin/gift-cards") || pathname.startsWith("/admin/coupons") || pathname.startsWith("/admin/disputes") || pathname.startsWith("/admin/reviews") || pathname.startsWith("/admin/inventory") || pathname.startsWith("/admin/quotes") || pathname.startsWith("/admin/bookings")) return "commerce";
   if (pathname.startsWith("/admin/pos") || pathname.startsWith("/admin/finance")) return "sales";
   if (pathname.startsWith("/admin/marketing") || pathname.startsWith("/admin/advertising") || pathname.startsWith("/admin/banners") || pathname.startsWith("/admin/popups") || pathname.startsWith("/admin/seo")) return "marketing";
@@ -185,11 +191,27 @@ interface AdminShellProps {
 export default function AdminShell({ children, title, subtitle }: AdminShellProps) {
   const pathname = usePathname();
   const router = useRouter();
-  const [sidebarOpen, setSidebarOpen] = useState(true);
+  const [dropdownOpen, setDropdownOpen] = useState<SectionKey | null>(null);
   const [mobileNavOpen, setMobileNavOpen] = useState(false);
+  const [sidebarOpen, setSidebarOpen] = useState(false);
+  const dropdownRef = useRef<HTMLDivElement>(null);
 
   const activeSection = detectSection(pathname);
-  const sidebarGroups = sidebarNav[activeSection] || sidebarNav.dashboard;
+  const currentSection = topNavSections.find(s => s.key === activeSection);
+
+  useEffect(() => {
+    function handleClickOutside(e: MouseEvent) {
+      if (dropdownRef.current && !dropdownRef.current.contains(e.target as Node)) {
+        setDropdownOpen(null);
+      }
+    }
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
+
+  useEffect(() => {
+    setDropdownOpen(null);
+  }, [pathname]);
 
   const isActiveLink = (href: string) => {
     if (href === "/admin") return pathname === "/admin";
@@ -198,7 +220,6 @@ export default function AdminShell({ children, title, subtitle }: AdminShellProp
 
   return (
     <div className="flex h-screen bg-gray-50 overflow-hidden">
-      {/* Mobile overlay */}
       {mobileNavOpen && (
         <div className="fixed inset-0 bg-black/50 z-30 lg:hidden" onClick={() => setMobileNavOpen(false)} />
       )}
@@ -217,21 +238,52 @@ export default function AdminShell({ children, title, subtitle }: AdminShellProp
           <span className="text-[9px] text-orange font-medium bg-white/10 px-1.5 py-0.5 rounded hidden md:block">Admin</span>
         </Link>
 
-        <div className="flex-1 flex items-center gap-0.5 overflow-x-auto no-scrollbar">
+        <div ref={dropdownRef} className="flex-1 flex items-center gap-0.5 overflow-x-auto no-scrollbar">
           {topNavSections.map((sec) => {
             const Icon = sec.icon;
             const isActive = activeSection === sec.key;
+            const isOpen = dropdownOpen === sec.key;
             return (
-              <Link
-                key={sec.key}
-                href={topNavDefaults[sec.key]}
-                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium whitespace-nowrap transition-all ${
-                  isActive ? "bg-white/15 text-white" : "text-white/50 hover:text-white/80 hover:bg-white/5"
-                }`}
-              >
-                <Icon size={14} />
-                <span className="hidden sm:inline">{sec.label}</span>
-              </Link>
+              <div key={sec.key} className="relative">
+                <button
+                  onClick={() => setDropdownOpen(isOpen ? null : sec.key)}
+                  className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium whitespace-nowrap transition-all ${
+                    isActive || isOpen ? "bg-white/15 text-white" : "text-white/50 hover:text-white/80 hover:bg-white/5"
+                  }`}
+                >
+                  <Icon size={14} />
+                  <span className="hidden sm:inline">{sec.label}</span>
+                  <ChevronDown size={10} className={`transition-transform ${isOpen ? "rotate-180" : ""}`} />
+                </button>
+
+                {isOpen && (
+                  <div className="absolute top-full left-0 mt-1 bg-white rounded-xl shadow-xl border border-border py-2 min-w-[200px] z-50">
+                    {sec.groups.map((group) => (
+                      <div key={group.title}>
+                        <p className="px-3 py-1 text-[9px] text-gray-500 uppercase tracking-wider font-semibold">{group.title}</p>
+                        {group.items.map((item) => {
+                          const active = isActiveLink(item.href);
+                          return (
+                            <Link
+                              key={item.href}
+                              href={item.href}
+                              onClick={() => setDropdownOpen(null)}
+                              className={`flex items-center gap-2 px-3 py-1.5 text-xs transition-all ${
+                                active ? "bg-orange-50 text-orange font-semibold" : "text-gray-700 hover:bg-gray-50"
+                              }`}
+                            >
+                              <span>{item.label}</span>
+                              {item.badge && (
+                                <span className="ml-auto text-[8px] bg-orange text-white px-1 py-0.5 rounded-full font-bold">{item.badge}</span>
+                              )}
+                            </Link>
+                          );
+                        })}
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
             );
           })}
         </div>
@@ -259,28 +311,30 @@ export default function AdminShell({ children, title, subtitle }: AdminShellProp
 
       {/* ===== LAYOUT: sidebar + main ===== */}
       <div className="flex flex-1 pt-14 min-h-0">
-        {/* ===== LEFT SIDEBAR (contextual) ===== */}
+        {/* ===== LEFT SIDEBAR (compact, collapsed by default) ===== */}
         <aside className={`${
-          sidebarOpen ? "w-[220px]" : "w-0 lg:w-[52px]"
+          sidebarOpen ? "w-[200px]" : "w-0 lg:w-[48px]"
         } bg-white border-r border-border shrink-0 overflow-y-auto transition-all duration-200 ${
-          mobileNavOpen ? "fixed left-0 top-14 bottom-0 z-30 w-[250px]" : "hidden lg:block"
+          mobileNavOpen ? "fixed left-0 top-14 bottom-0 z-30 w-[220px]" : "hidden lg:block"
         }`}>
-          <div className="flex items-center justify-between px-3 h-10 border-b border-border">
-            <span className="text-[9px] font-semibold text-text-4 uppercase tracking-wider">
-              {topNavSections.find(s => s.key === activeSection)?.label || ""}
-            </span>
-            <button onClick={() => setSidebarOpen(!sidebarOpen)} className="p-1 hover:bg-gray-100 rounded hidden lg:block">
-              <ChevronLeft size={12} className="text-text-4" />
+          <div className={`flex items-center ${sidebarOpen ? "justify-between px-3" : "justify-center"} h-10 border-b border-border`}>
+            {sidebarOpen && (
+              <span className="text-[9px] font-semibold text-text-4 uppercase tracking-wider">
+                {currentSection?.label || ""}
+              </span>
+            )}
+            <button onClick={() => setSidebarOpen(!sidebarOpen)} className="p-1 hover:bg-gray-100 rounded">
+              <ChevronLeft size={12} className={`text-text-4 transition-transform ${!sidebarOpen ? "rotate-180" : ""}`} />
             </button>
           </div>
 
-          <nav className="py-2 px-2 space-y-3">
-            {sidebarGroups.map((group) => (
+          <nav className="py-2 px-1.5 space-y-3">
+            {currentSection?.groups.map((group) => (
               <div key={group.title}>
                 {sidebarOpen && (
                   <p className="px-2 mb-0.5 text-[9px] text-text-4 uppercase tracking-wider font-semibold">{group.title}</p>
                 )}
-                {group.items.map((item) => {
+                {group.items.slice(0, sidebarOpen ? undefined : 1).map((item) => {
                   const active = isActiveLink(item.href);
                   return (
                     <Link
@@ -293,7 +347,9 @@ export default function AdminShell({ children, title, subtitle }: AdminShellProp
                       }`}
                       title={!sidebarOpen ? item.label : undefined}
                     >
-                      {!sidebarOpen && <div className={`w-1.5 h-1.5 rounded-full ${active ? "bg-orange" : "bg-text-4"}`} />}
+                      {!sidebarOpen && (
+                        <div className={`w-1.5 h-1.5 rounded-full ${active ? "bg-orange" : "bg-text-4"}`} />
+                      )}
                       {sidebarOpen && <span>{item.label}</span>}
                       {sidebarOpen && item.badge && (
                         <span className="ml-auto text-[8px] bg-orange text-white px-1 py-0.5 rounded-full font-bold">{item.badge}</span>
@@ -308,7 +364,6 @@ export default function AdminShell({ children, title, subtitle }: AdminShellProp
 
         {/* ===== MAIN CONTENT ===== */}
         <div className="flex-1 flex flex-col overflow-hidden">
-          {/* Page Header */}
           <div className="bg-white border-b border-border px-6 py-3 flex items-center gap-3 shrink-0">
             <button onClick={() => router.back()} className="p-1 hover:bg-gray-100 rounded-lg text-text-4">
               <ArrowLeft size={15} />

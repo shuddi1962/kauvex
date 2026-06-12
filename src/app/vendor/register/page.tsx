@@ -118,11 +118,49 @@ export default function VendorRegisterPage() {
 
   const handleNext = () => { if (validate()) setStep(s => Math.min(s + 1, 4)); };
   const handleBack = () => setStep(s => Math.max(s - 1, 0));
-  const handleSubmit = () => {
+  const [apiError, setApiError] = useState("");
+
+  const handleSubmit = async () => {
     if (!validate()) return;
-    console.log("Vendor Registration:", form);
     setSubmitted(true);
-    setTimeout(() => router.push("/vendor/login"), 3000);
+    setApiError("");
+    try {
+      const res = await fetch("/api/v1/vendors/register-full", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          email: form.email,
+          password: form.password,
+          phone: form.phone,
+          business_name: form.businessName,
+          legal_business_name: form.legalBusinessName,
+          store_name: form.storeName,
+          store_slug: form.storeSlug,
+          business_type: form.businessType,
+          country: form.country,
+          state: form.state,
+          city: form.city,
+          business_address: form.businessAddress,
+          tax_id: form.taxId,
+          government_id: form.governmentId,
+          cac_number: form.cacNumber,
+          vat_number: form.vatNumber,
+          selected_storefronts: form.selectedStorefronts,
+          id_type: form.idType,
+          id_number: form.idNumber,
+        }),
+      });
+      const json = await res.json();
+      if (!res.ok) {
+        setApiError(json.error || "Registration failed");
+        setSubmitted(false);
+        return;
+      }
+      setTimeout(() => router.push("/vendor/login"), 2000);
+    } catch {
+      setApiError("Network error. Please try again.");
+      setSubmitted(false);
+    }
   };
 
   const inputCls = (key: string) =>
@@ -138,11 +176,26 @@ export default function VendorRegisterPage() {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center px-6">
         <div className="text-center max-w-md">
-          <div className="w-20 h-20 rounded-full bg-green-100 flex items-center justify-center mx-auto mb-6">
-            <CheckCircle className="w-10 h-10 text-green-600" />
-          </div>
-          <h2 className="font-bold text-2xl text-text-1 mb-2">Application Submitted!</h2>
-          <p className="text-text-4 text-sm">Thank you for registering. Our team will review your application within 2-3 business days.</p>
+          {apiError ? (
+            <>
+              <div className="w-20 h-20 rounded-full bg-red-100 flex items-center justify-center mx-auto mb-6">
+                <AlertCircle className="w-10 h-10 text-red-600" />
+              </div>
+              <h2 className="font-bold text-2xl text-text-1 mb-2">Registration Failed</h2>
+              <p className="text-text-4 text-sm mb-4">{apiError}</p>
+              <button onClick={() => { setSubmitted(false); setApiError(""); }} className="px-6 py-2.5 rounded-lg bg-orange hover:bg-orange-600 text-white text-sm font-bold transition-all">
+                Try Again
+              </button>
+            </>
+          ) : (
+            <>
+              <div className="w-20 h-20 rounded-full bg-green-100 flex items-center justify-center mx-auto mb-6">
+                <CheckCircle className="w-10 h-10 text-green-600" />
+              </div>
+              <h2 className="font-bold text-2xl text-text-1 mb-2">Account Created!</h2>
+              <p className="text-text-4 text-sm">Your seller account has been created. Redirecting to login...</p>
+            </>
+          )}
         </div>
       </div>
     );

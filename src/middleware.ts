@@ -101,8 +101,8 @@ export async function middleware(request: NextRequest) {
 
   const isAdminLoginRoute = pathname.startsWith("/admin/login");
   const isAdminRoute = pathname.startsWith("/admin") && !isAdminLoginRoute;
-  const isVendorLoginRoute = pathname.startsWith("/vendor/login");
-  const isVendorRoute = pathname.startsWith("/vendor") && !isVendorLoginRoute;
+  const isVendorAuthRoute = pathname.startsWith("/vendor/login") || pathname.startsWith("/vendor/register");
+  const isVendorRoute = pathname.startsWith("/vendor") && !isVendorAuthRoute;
 
   if (isAdminRoute || isVendorRoute) {
     const { createServerClient } = await import("@supabase/ssr");

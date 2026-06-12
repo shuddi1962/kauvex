@@ -57,7 +57,7 @@ const faqCategories = [
       { q: "How do I create an account?", a: "Click My Account in the header → Create Account. Fill in your details and verify your email. Your account gives you access to order tracking, wishlists, wallet, and more." },
       { q: "How does the loyalty program work?", a: "Earn points on every purchase. Progress through tiers (Bronze → Silver → Gold → Platinum) for increasing perks: discounts, free shipping, priority support, and exclusive access to deals." },
       { q: "How does the wallet work?", a: "Top up via bank transfer or card. Use wallet balance for instant checkout. Receive refunds and loyalty rewards directly in your wallet. Withdraw to bank anytime." },
-      { q: "Can I become a vendor/seller?", a: "Yes. Register as a vendor at /auth/register (select 'Vendor / Seller'). Once approved, you get your own dashboard, product listings, and storefront." },
+      { q: "Can I become a vendor/seller?", a: "Yes. Register as a vendor at /vendor/register. Once approved, you get your own dashboard, product listings, and storefront." },
     ],
   },
 ];

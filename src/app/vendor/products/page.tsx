@@ -1,9 +1,11 @@
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
+import Link from "next/link";
 import {
   Plus, Search, Edit, Trash2, Eye, ToggleLeft, ToggleRight,
   Upload, Star, Save, X, Loader2, Package, Image as ImageIcon,
+  ArrowRight,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { insforge } from "@/lib/insforge";
@@ -338,6 +340,22 @@ export default function VendorProductsPage() {
           <Plus size={16} /> {showForm && !editingId ? "Cancel" : "Add Product"}
         </button>
       </div>
+
+      {/* Sell from Shared Catalog Banner */}
+      <Link href="/vendor/catalog" className="block bg-gradient-to-r from-orange-50 to-amber-50 border border-orange/20 rounded-xl p-4 mb-4 hover:shadow-sm transition-all group">
+        <div className="flex items-center gap-3">
+          <div className="w-10 h-10 rounded-xl bg-orange/10 flex items-center justify-center group-hover:scale-110 transition-transform">
+            <Package className="w-5 h-5 text-orange" />
+          </div>
+          <div className="flex-1">
+            <p className="text-sm font-bold text-orange-800">Sell from Shared Catalog</p>
+            <p className="text-xs text-orange-600">Browse existing products and start selling them instantly — no need to create from scratch</p>
+          </div>
+          <div className="flex items-center gap-1 text-xs font-semibold text-orange">
+            Browse Catalog <ArrowRight size={12} />
+          </div>
+        </div>
+      </Link>
 
       <div className="max-w-7xl mx-auto space-y-4">
         {/* Product Form */}

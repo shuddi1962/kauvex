@@ -189,7 +189,10 @@ export default function CreateStorefrontWizard() {
   const handleCreate = async () => {
     setSaving(true);
     const domain = getActiveDomain();
-    const slug = form.domainName.toLowerCase().replace(/[^a-z0-9-]+/g, "");
+    const base = form.domainName.toLowerCase().replace(/[^a-z0-9-]+/g, "");
+    const slug = form.domainType === "tld"
+      ? `${base}-${form.selectedTld.replace(/^\./, "")}`
+      : base;
 
     const payload: any = {
       name: form.name || form.domainName,

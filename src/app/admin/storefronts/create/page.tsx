@@ -197,7 +197,7 @@ export default function CreateStorefrontWizard() {
     const payload: any = {
       name: form.name || form.domainName,
       slug,
-      domain_type: form.domainType === "tld" ? "subdomain" : form.domainType,
+      domain_type: form.domainType,
       subdomain: form.domainType === "subdomain" ? (form.subdomain || form.domainName) : null,
       custom_domain: form.domainType === "custom" ? form.customDomain : null,
       active_domain: domain,

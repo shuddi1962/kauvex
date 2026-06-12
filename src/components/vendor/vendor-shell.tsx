@@ -22,7 +22,6 @@ import {
   CreditCard,
   Building2,
 } from "lucide-react";
-import { Button } from "@/components/ui/button";
 
 const vendorNav = [
   { label: "Dashboard", icon: LayoutDashboard, href: "/vendor/dashboard" },

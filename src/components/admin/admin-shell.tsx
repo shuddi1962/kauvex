@@ -155,6 +155,7 @@ const sidebarSections = [
       { label: "Mobile App", icon: Smartphone, href: "/admin/mobile" },
       { label: "Site Doctor", icon: AlertTriangle, href: "/admin/site-doctor" },
       { label: "Audit Log", icon: ScrollText, href: "/admin/audit-log" },
+      { label: "API Docs", icon: FileText, href: "/api/docs" },
     ],
   },
 ];

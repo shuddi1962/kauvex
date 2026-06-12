@@ -124,27 +124,38 @@ export async function middleware(request: NextRequest) {
       return NextResponse.redirect(loginUrl);
     }
 
-    if (isAdminRoute) {
-      const { data: profile } = await supabase
-        .from("profiles")
-        .select("role")
-        .eq("id", user.id)
-        .single();
+    const role = (user.user_metadata?.role as string) || "";
 
-      if (!profile || !["super-admin", "admin", "finance-admin", "support-admin"].includes(profile.role)) {
-        return NextResponse.redirect(new URL("/", request.url));
+    if (isAdminRoute) {
+      const allowed = ["super-admin", "admin", "finance-admin", "support-admin"];
+      if (role && allowed.includes(role)) {
+        // proceed — role from metadata is sufficient
+      } else {
+        const { data: profile } = await supabase
+          .from("profiles")
+          .select("role")
+          .eq("id", user.id)
+          .single();
+
+        if (!profile || !allowed.includes(profile.role)) {
+          return NextResponse.redirect(new URL("/", request.url));
+        }
       }
     }
 
     if (isVendorRoute) {
-      const { data: profile } = await supabase
-        .from("profiles")
-        .select("role")
-        .eq("id", user.id)
-        .single();
+      if (role && (role === "vendor" || role === "admin")) {
+        // proceed — role from metadata is sufficient
+      } else {
+        const { data: profile } = await supabase
+          .from("profiles")
+          .select("role")
+          .eq("id", user.id)
+          .single();
 
-      if (!profile || (profile.role !== "vendor" && profile.role !== "admin")) {
-        return NextResponse.redirect(new URL("/", request.url));
+        if (!profile || (profile.role !== "vendor" && profile.role !== "admin")) {
+          return NextResponse.redirect(new URL("/", request.url));
+        }
       }
     }
   }

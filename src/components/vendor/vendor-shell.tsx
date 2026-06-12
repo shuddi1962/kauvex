@@ -4,41 +4,88 @@ import { useState } from "react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import {
-  LayoutDashboard,
-  Package,
-  ShoppingCart,
-  DollarSign,
-  Store,
-  Truck,
-  Megaphone,
-  BarChart3,
-  Settings,
-  Bell,
-  ChevronDown,
-  Menu,
-  ArrowLeft,
-  Palette,
-  Users,
-  CreditCard,
-  Building2,
+  LayoutDashboard, Package, ShoppingCart, DollarSign, Store,
+  Truck, Megaphone, BarChart3, Settings, Bell, ChevronDown,
+  Menu, ArrowLeft, Palette, Users, CreditCard, Building2,
+  Sparkles, Globe, FileText, MessageSquare, HelpCircle,
 } from "lucide-react";
 
-const vendorNav = [
-  { label: "Dashboard", icon: LayoutDashboard, href: "/vendor/dashboard" },
-  { label: "Products", icon: Package, href: "/vendor/products" },
-  { label: "Orders", icon: ShoppingCart, href: "/vendor/orders" },
-  { label: "Earnings", icon: DollarSign, href: "/vendor/earnings" },
-  { label: "Shop Settings", icon: Store, href: "/vendor/shop" },
-  { label: "Store Builder", icon: Palette, href: "/vendor/store-builder" },
-  { label: "Shipping", icon: Truck, href: "/vendor/shipping" },
-  { label: "Promotions", icon: Megaphone, href: "/vendor/promotions" },
-  { label: "Advertising", icon: Megaphone, href: "/vendor/advertising" },
-  { label: "FBK", icon: Package, href: "/vendor/fbk" },
-  { label: "Analytics", icon: BarChart3, href: "/vendor/analytics" },
-  { label: "Staff", icon: Users, href: "/vendor/dashboard/staff" },
-  { label: "Subscription", icon: CreditCard, href: "/vendor/subscription" },
-  { label: "Settings", icon: Settings, href: "/vendor/settings" },
+type SectionKey = "dashboard" | "products" | "orders" | "store" | "marketing" | "settings";
+
+const topNav: { key: SectionKey; label: string; icon: React.ElementType }[] = [
+  { key: "dashboard", label: "Dashboard", icon: LayoutDashboard },
+  { key: "products", label: "Products", icon: Package },
+  { key: "orders", label: "Orders", icon: ShoppingCart },
+  { key: "store", label: "Store", icon: Store },
+  { key: "marketing", label: "Marketing", icon: Megaphone },
+  { key: "settings", label: "Settings", icon: Settings },
 ];
+
+const topNavDefaults: Record<SectionKey, string> = {
+  dashboard: "/vendor/dashboard",
+  products: "/vendor/products",
+  orders: "/vendor/orders",
+  store: "/vendor/store-builder",
+  marketing: "/vendor/advertising",
+  settings: "/vendor/settings",
+};
+
+const sidebarNav: Record<SectionKey, { title: string; items: { label: string; href: string; badge?: string }[] }[]> = {
+  dashboard: [
+    { title: "Overview", items: [
+      { label: "Dashboard", href: "/vendor/dashboard" },
+      { label: "Analytics", href: "/vendor/analytics" },
+      { label: "Earnings", href: "/vendor/earnings" },
+    ]},
+  ],
+  products: [
+    { title: "Products", items: [
+      { label: "All Products", href: "/vendor/products" },
+      { label: "Add Product", href: "/vendor/products/create" },
+    ]},
+    { title: "Fulfillment", items: [
+      { label: "FBK", href: "/vendor/fbk" },
+      { label: "Shipping", href: "/vendor/shipping" },
+    ]},
+  ],
+  orders: [
+    { title: "Orders", items: [
+      { label: "All Orders", href: "/vendor/orders" },
+    ]},
+  ],
+  store: [
+    { title: "Store Design", items: [
+      { label: "Store Builder", href: "/vendor/store-builder" },
+      { label: "Shop Settings", href: "/vendor/shop" },
+    ]},
+    { title: "Content", items: [
+      { label: "Custom Pages", href: "/vendor/store-builder" },
+    ]},
+  ],
+  marketing: [
+    { title: "Advertising", items: [
+      { label: "Campaigns", href: "/vendor/advertising" },
+      { label: "Promotions", href: "/vendor/promotions" },
+    ]},
+  ],
+  settings: [
+    { title: "Account", items: [
+      { label: "Profile", href: "/vendor/settings" },
+      { label: "Subscription", href: "/vendor/subscription" },
+      { label: "Staff", href: "/vendor/dashboard/staff" },
+    ]},
+  ],
+};
+
+function detectSection(pathname: string): SectionKey {
+  if (pathname === "/vendor/dashboard" || pathname === "/vendor/analytics" || pathname === "/vendor/earnings") return "dashboard";
+  if (pathname.startsWith("/vendor/products") || pathname.startsWith("/vendor/fbk") || pathname.startsWith("/vendor/shipping")) return "products";
+  if (pathname.startsWith("/vendor/orders")) return "orders";
+  if (pathname.startsWith("/vendor/store-builder") || pathname.startsWith("/vendor/shop")) return "store";
+  if (pathname.startsWith("/vendor/advertising") || pathname.startsWith("/vendor/promotions")) return "marketing";
+  if (pathname.startsWith("/vendor/settings") || pathname.startsWith("/vendor/subscription") || pathname.startsWith("/vendor/dashboard/staff")) return "settings";
+  return "dashboard";
+}
 
 interface VendorShellProps {
   children: React.ReactNode;
@@ -47,116 +94,136 @@ interface VendorShellProps {
 }
 
 export default function VendorShell({ children, title, subtitle }: VendorShellProps) {
-  const [sidebarOpen, setSidebarOpen] = useState(false);
   const pathname = usePathname();
   const router = useRouter();
+  const [sidebarOpen, setSidebarOpen] = useState(true);
+  const [mobileNavOpen, setMobileNavOpen] = useState(false);
+
+  const activeSection = detectSection(pathname);
+  const sidebarGroups = sidebarNav[activeSection] || sidebarNav.dashboard;
+
+  const isActiveLink = (href: string) => {
+    if (href === "/vendor/dashboard") return pathname === "/vendor/dashboard";
+    return pathname.startsWith(href);
+  };
 
   return (
     <div className="flex h-screen bg-off-white overflow-hidden">
-      {/* Mobile Overlay */}
-      {sidebarOpen && (
-        <div className="fixed inset-0 bg-black/50 z-40 lg:hidden" onClick={() => setSidebarOpen(false)} />
+      {mobileNavOpen && (
+        <div className="fixed inset-0 bg-black/50 z-30 lg:hidden" onClick={() => setMobileNavOpen(false)} />
       )}
 
-      {/* Sidebar */}
-      <aside className={`w-60 bg-white border-r border-border flex flex-col shrink-0 fixed lg:relative h-full z-50 ${
-        sidebarOpen ? "translate-x-0" : "-translate-x-full lg:translate-x-0"
-      } transition-all duration-300`}>
-        <div className="p-4 border-b border-border flex items-center gap-2.5 shrink-0">
-          <Link href="/vendor/dashboard" className="flex items-center gap-2.5">
-            <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-purple-600 to-purple-800 flex items-center justify-center">
-              <Store size={16} className="text-white" />
-            </div>
-            <div>
-              <div className="font-syne font-bold text-xs text-text-1">Vendor Hub</div>
-              <div className="text-[9px] text-text-4">Partner Portal</div>
-            </div>
-          </Link>
-        </div>
+      {/* TOP NAV */}
+      <div className="fixed top-0 left-0 right-0 h-14 bg-navy text-white z-40 flex items-center px-3 gap-1 shadow-lg">
+        <button onClick={() => setMobileNavOpen(!mobileNavOpen)} className="lg:hidden p-1.5 hover:bg-white/10 rounded-lg">
+          <Menu size={18} />
+        </button>
 
-        <nav className="flex-1 py-2 overflow-y-auto">
-          {vendorNav.map((item) => {
-            const Icon = item.icon;
-            const isActive = pathname === item.href || pathname.startsWith(item.href + "/");
+        <Link href="/vendor/dashboard" className="flex items-center gap-2 px-2 shrink-0">
+          <div className="w-7 h-7 rounded-lg bg-gradient-to-br from-purple-600 to-purple-800 flex items-center justify-center">
+            <Store size={14} className="text-white" />
+          </div>
+          <span className="font-bold text-xs tracking-tight hidden sm:block">Vendor Hub</span>
+        </Link>
+
+        <div className="flex-1 flex items-center gap-0.5 overflow-x-auto no-scrollbar">
+          {topNav.map((sec) => {
+            const Icon = sec.icon;
+            const isActive = activeSection === sec.key;
             return (
               <Link
-                key={item.href}
-                href={item.href}
-                className={`flex items-center gap-2.5 px-4 py-2 mx-2 rounded-lg text-xs transition-colors ${
-                  isActive ? "bg-purple-50 text-purple-700 font-semibold" : "text-text-3 hover:bg-off-white"
+                key={sec.key}
+                href={topNavDefaults[sec.key]}
+                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium whitespace-nowrap transition-all ${
+                  isActive ? "bg-white/15 text-white" : "text-white/50 hover:text-white/80 hover:bg-white/5"
                 }`}
               >
-                <Icon size={16} />
-                {item.label}
+                <Icon size={14} />
+                <span className="hidden sm:inline">{sec.label}</span>
               </Link>
             );
           })}
-        </nav>
-
-        <div className="p-3 border-t border-border shrink-0">
-          <div className="bg-off-white rounded-lg p-3 text-center">
-            <p className="text-[10px] text-text-4">Your Commission Rate</p>
-            <p className="font-syne font-bold text-xl text-purple-700">12%</p>
-            <p className="text-[10px] text-text-4 mt-1">Platform fee per sale</p>
-          </div>
-          <Link
-            href="/"
-            className="flex items-center justify-center gap-2 text-text-4 hover:text-text-2 text-xs py-2 mt-2 transition-colors"
-          >
-            <Building2 size={14} />
-            <span>View Storefront</span>
-          </Link>
         </div>
-      </aside>
 
-      {/* Main */}
-      <div className="flex-1 flex flex-col overflow-hidden min-w-0">
-        {/* Top Bar */}
-        <header className="bg-white border-b border-border h-14 flex items-center justify-between px-4 lg:px-6 shrink-0">
-          <div className="flex items-center gap-3">
-            <button
-              onClick={() => setSidebarOpen(!sidebarOpen)}
-              className="lg:hidden p-1.5 hover:bg-off-white rounded-lg transition-colors"
-            >
-              <Menu size={20} className="text-text-3" />
-            </button>
+        <div className="flex items-center gap-2 shrink-0">
+          <button className="relative p-1.5 hover:bg-white/10 rounded-lg">
+            <Bell size={15} className="text-white/60" />
+            <span className="absolute -top-0.5 -right-0.5 w-3.5 h-3.5 bg-purple-500 text-white text-[7px] font-bold rounded-full flex items-center justify-center">3</span>
+          </button>
+          <div className="flex items-center gap-2 pl-2 ml-1 border-l border-white/10">
+            <div className="w-7 h-7 rounded-full bg-purple-600 flex items-center justify-center">
+              <span className="text-white text-[9px] font-bold">VS</span>
+            </div>
+            <span className="text-[10px] font-semibold hidden lg:block">Vendor</span>
+            <ChevronDown size={12} className="text-white/40" />
+          </div>
+        </div>
+      </div>
 
-            <button
-              onClick={() => router.back()}
-              className="flex items-center gap-1.5 text-text-4 hover:text-purple-700 text-sm transition-colors"
-            >
-              <ArrowLeft size={16} />
-              <span className="hidden sm:inline">Back</span>
+      <div className="flex flex-1 pt-14 min-h-0">
+        {/* LEFT SIDEBAR */}
+        <aside className={`${
+          sidebarOpen ? "w-[200px]" : "w-0 lg:w-[52px]"
+        } bg-white border-r border-border shrink-0 overflow-y-auto transition-all duration-200 ${
+          mobileNavOpen ? "fixed left-0 top-14 bottom-0 z-30 w-[220px]" : "hidden lg:block"
+        }`}>
+          <div className="flex items-center justify-between px-3 h-10 border-b border-border">
+            <span className="text-[9px] font-semibold text-text-4 uppercase tracking-wider">
+              {topNav.find(s => s.key === activeSection)?.label || ""}
+            </span>
+            <button onClick={() => setSidebarOpen(!sidebarOpen)} className="p-1 hover:bg-gray-100 rounded hidden lg:block">
+              <ArrowLeft size={12} className={"text-text-4 " + (!sidebarOpen ? "rotate-180" : "")} />
             </button>
-            <div className="border-l border-border pl-3 hidden sm:block">
-              <h1 className="font-syne font-bold text-base text-text-1 leading-tight">{title}</h1>
+          </div>
+
+          <nav className="py-2 px-2 space-y-3">
+            {sidebarGroups.map((group) => (
+              <div key={group.title}>
+                {sidebarOpen && (
+                  <p className="px-2 mb-0.5 text-[9px] text-text-4 uppercase tracking-wider font-semibold">{group.title}</p>
+                )}
+                {group.items.map((item) => {
+                  const active = isActiveLink(item.href);
+                  return (
+                    <Link
+                      key={item.href}
+                      href={item.href}
+                      className={`flex items-center gap-2 px-2.5 py-1.5 rounded-lg text-xs transition-all ${
+                        active
+                          ? "bg-purple-50 text-purple-700 font-semibold"
+                          : "text-text-3 hover:bg-gray-50 hover:text-text-1"
+                      }`}
+                      title={!sidebarOpen ? item.label : undefined}
+                    >
+                      {!sidebarOpen && <div className={`w-1.5 h-1.5 rounded-full ${active ? "bg-purple-600" : "bg-text-4"}`} />}
+                      {sidebarOpen && <span>{item.label}</span>}
+                      {sidebarOpen && item.badge && (
+                        <span className="ml-auto text-[8px] bg-purple-600 text-white px-1 py-0.5 rounded-full font-bold">{item.badge}</span>
+                      )}
+                    </Link>
+                  );
+                })}
+              </div>
+            ))}
+          </nav>
+        </aside>
+
+        {/* MAIN */}
+        <div className="flex-1 flex flex-col overflow-hidden">
+          <div className="bg-white border-b border-border px-6 py-3 flex items-center gap-3 shrink-0">
+            <button onClick={() => router.back()} className="p-1 hover:bg-gray-100 rounded-lg text-text-4">
+              <ArrowLeft size={15} />
+            </button>
+            <div>
+              <h1 className="font-bold text-base text-text-1 leading-tight">{title}</h1>
               {subtitle && <p className="text-[11px] text-text-4 -mt-0.5">{subtitle}</p>}
             </div>
           </div>
 
-          <div className="flex items-center gap-3">
-            <button className="relative p-1.5 hover:bg-off-white rounded-lg">
-              <Bell size={18} className="text-text-3" />
-              <span className="absolute -top-0.5 -right-0.5 w-4 h-4 bg-purple-600 text-white text-[8px] font-bold rounded-full flex items-center justify-center">3</span>
-            </button>
-            <div className="flex items-center gap-2 pl-3 border-l border-border">
-              <div className="w-8 h-8 rounded-full bg-purple-600 flex items-center justify-center">
-                <span className="text-white text-xs font-bold">VS</span>
-              </div>
-              <span className="text-xs font-semibold hidden sm:inline">Vendor</span>
-              <ChevronDown size={14} className="text-text-4" />
-            </div>
-          </div>
-        </header>
-
-        {/* Content */}
-        <main className="flex-1 overflow-y-auto p-4 lg:p-6">
-          <div className="sm:hidden mb-4">
-            <h1 className="font-syne font-bold text-lg text-text-1">{title}</h1>
-            {subtitle && <p className="text-xs text-text-4">{subtitle}</p>}
-          </div>
-          {children}
-        </main>
+          <main className="flex-1 overflow-y-auto p-6">
+            {children}
+          </main>
+        </div>
       </div>
     </div>
   );

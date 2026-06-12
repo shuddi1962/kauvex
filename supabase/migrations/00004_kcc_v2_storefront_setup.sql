@@ -154,22 +154,41 @@ ALTER TABLE public.storefront_domain_settings ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.storefront_categories ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.country_tlds ENABLE ROW LEVEL SECURITY;
 
--- Admin full access
+-- Admin full access on storefronts (main table)
+DROP POLICY IF EXISTS "admin_all_storefronts" ON public.storefronts;
+CREATE POLICY "admin_all_storefronts" ON public.storefronts FOR ALL
+USING (
+  auth.role() = 'authenticated' AND (
+    (auth.jwt() -> 'user_metadata' ->> 'role') IN ('super-admin', 'admin', 'store-manager', 'content-editor')
+  )
+)
+WITH CHECK (
+  auth.role() = 'authenticated' AND (
+    (auth.jwt() -> 'user_metadata' ->> 'role') IN ('super-admin', 'admin', 'store-manager')
+  )
+);
+
+-- Authenticated users can read storefronts
+DROP POLICY IF EXISTS "auth_read_storefronts" ON public.storefronts;
+CREATE POLICY "auth_read_storefronts" ON public.storefronts FOR SELECT
+USING (auth.role() = 'authenticated');
+
+-- Admin full access on new tables
 CREATE POLICY "admin_all_storefront_themes" ON public.storefront_themes FOR ALL USING (
   auth.role() = 'authenticated' AND (
-    (auth.jwt() -> 'user_metadata' ->> 'role') IN ('super-admin', 'admin')
+    (auth.jwt() -> 'user_metadata' ->> 'role') IN ('super-admin', 'admin', 'store-manager', 'content-editor')
   )
 ) WITH CHECK (true);
 
 CREATE POLICY "admin_all_domain_settings" ON public.storefront_domain_settings FOR ALL USING (
   auth.role() = 'authenticated' AND (
-    (auth.jwt() -> 'user_metadata' ->> 'role') IN ('super-admin', 'admin')
+    (auth.jwt() -> 'user_metadata' ->> 'role') IN ('super-admin', 'admin', 'store-manager')
   )
 ) WITH CHECK (true);
 
 CREATE POLICY "admin_all_storefront_categories" ON public.storefront_categories FOR ALL USING (
   auth.role() = 'authenticated' AND (
-    (auth.jwt() -> 'user_metadata' ->> 'role') IN ('super-admin', 'admin')
+    (auth.jwt() -> 'user_metadata' ->> 'role') IN ('super-admin', 'admin', 'store-manager')
   )
 ) WITH CHECK (true);
 

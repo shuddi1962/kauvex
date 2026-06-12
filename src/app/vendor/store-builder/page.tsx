@@ -75,6 +75,15 @@ const FONTS = [
   { value: "mono", label: "JetBrains Mono", class: "font-mono" },
 ];
 
+const VENDOR_TEMPLATES = [
+  { id: "marketplace", name: "Marketplace", tag: "Standard", colors: ["#0A1628","#FF6B00","#F8F9FA"], desc: "Classic marketplace layout with full-width design" },
+  { id: "minimal", name: "Minimal Store", tag: "Clean", colors: ["#2D3748","#4A5568","#FFFFFF"], desc: "Simple, distraction-free storefront" },
+  { id: "boutique", name: "Boutique", tag: "Elegant", colors: ["#1A1A1A","#E91E63","#FAFAFA"], desc: "Elegant fashion & lifestyle store design" },
+  { id: "tech", name: "Tech Store", tag: "Modern", colors: ["#0D1117","#58A6FF","#F0F6FC"], desc: "Modern tech and electronics showcase" },
+  { id: "premium", name: "Premium", tag: "Luxury", colors: ["#1C1C1C","#C9A84C","#FFFFFF"], desc: "High-end premium brand storefront" },
+  { id: "corporate", name: "Corporate", tag: "B2B", colors: ["#003366","#00A3E0","#F5F7FA"], desc: "Professional B2B wholesale layout" },
+];
+
 const COLOR_PRESETS = [
   { name: "Ocean", primary: "#0A1628", accent: "#FF6B00", bg: "#FFFFFF" },
   { name: "Forest", primary: "#1A3A2A", accent: "#4CAF50", bg: "#F5F7F0" },
@@ -234,6 +243,39 @@ export default function StoreBuilderPage() {
     <div className="space-y-6">
       <div className="bg-white rounded-xl border border-gray-200 p-5">
         <h3 className="font-semibold text-sm flex items-center gap-2 mb-4">
+          <LayoutTemplate size={16} className="text-purple-600" /> Store Template
+        </h3>
+        <p className="text-xs text-gray-400 mb-4">Choose a template that matches your brand style</p>
+        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
+          {VENDOR_TEMPLATES.map((t) => {
+            const selected = selectedColors.name === t.name;
+            return (
+              <button key={t.id} onClick={() => {
+                const match = COLOR_PRESETS.find(c => c.name.toLowerCase() === t.name.toLowerCase());
+                if (match) setSelectedColors(match);
+              }}
+                className={`rounded-xl border-2 p-2.5 text-left transition-all hover:shadow-sm ${
+                  selected ? "border-purple-600" : "border-gray-200 hover:border-purple-300"
+                }`}>
+                <div className="h-12 rounded-lg mb-1.5 overflow-hidden border border-gray-100" style={{ backgroundColor: t.colors[2] }}>
+                  <div className="h-2.5 flex items-center px-1 gap-0.5" style={{ backgroundColor: t.colors[0] }}>
+                    <div className="w-1 h-1 rounded-full" style={{ backgroundColor: t.colors[1] }} />
+                  </div>
+                  <div className="p-1 space-y-0.5">
+                    <div className="w-3 h-0.5 rounded" style={{ backgroundColor: t.colors[1] }} />
+                    <div className="w-full h-0.5 rounded bg-gray-200" />
+                  </div>
+                </div>
+                <p className="text-[10px] font-bold text-text-1">{t.name}</p>
+                <span className="text-[8px] text-gray-400 bg-gray-100 px-1 rounded">{t.tag}</span>
+              </button>
+            );
+          })}
+        </div>
+      </div>
+
+      <div className="bg-white rounded-xl border border-gray-200 p-5">
+        <h3 className="font-semibold text-sm flex items-center gap-2 mb-4">
           <Image size={16} className="text-purple-600" /> Branding Assets
         </h3>
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -283,39 +325,24 @@ export default function StoreBuilderPage() {
           <div>
             <label className="text-[10px] text-gray-400 block mb-1">Primary</label>
             <div className="flex items-center gap-2">
-              <input
-                type="color"
-                value={selectedColors.primary}
-                onChange={(e) => setSelectedColors({ ...selectedColors, primary: e.target.value })}
-                disabled={isLocked("color_customizer")}
-                className="w-8 h-8 rounded border border-gray-200 cursor-pointer"
-              />
+              <input type="color" value={selectedColors.primary} onChange={(e) => setSelectedColors({ ...selectedColors, primary: e.target.value })}
+                disabled={isLocked("color_customizer")} className="w-8 h-8 rounded border border-gray-200 cursor-pointer" />
               <span className="text-[10px] font-mono text-gray-400">{selectedColors.primary}</span>
             </div>
           </div>
           <div>
             <label className="text-[10px] text-gray-400 block mb-1">Accent</label>
             <div className="flex items-center gap-2">
-              <input
-                type="color"
-                value={selectedColors.accent}
-                onChange={(e) => setSelectedColors({ ...selectedColors, accent: e.target.value })}
-                disabled={isLocked("color_customizer")}
-                className="w-8 h-8 rounded border border-gray-200 cursor-pointer"
-              />
+              <input type="color" value={selectedColors.accent} onChange={(e) => setSelectedColors({ ...selectedColors, accent: e.target.value })}
+                disabled={isLocked("color_customizer")} className="w-8 h-8 rounded border border-gray-200 cursor-pointer" />
               <span className="text-[10px] font-mono text-gray-400">{selectedColors.accent}</span>
             </div>
           </div>
           <div>
             <label className="text-[10px] text-gray-400 block mb-1">Background</label>
             <div className="flex items-center gap-2">
-              <input
-                type="color"
-                value={selectedColors.bg}
-                onChange={(e) => setSelectedColors({ ...selectedColors, bg: e.target.value })}
-                disabled={isLocked("color_customizer")}
-                className="w-8 h-8 rounded border border-gray-200 cursor-pointer"
-              />
+              <input type="color" value={selectedColors.bg} onChange={(e) => setSelectedColors({ ...selectedColors, bg: e.target.value })}
+                disabled={isLocked("color_customizer")} className="w-8 h-8 rounded border border-gray-200 cursor-pointer" />
               <span className="text-[10px] font-mono text-gray-400">{selectedColors.bg}</span>
             </div>
           </div>
@@ -329,16 +356,9 @@ export default function StoreBuilderPage() {
         </h3>
         <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-3">
           {FONTS.map((font) => (
-            <button
-              key={font.value}
-              onClick={() => !isLocked("font_selector") && setSelectedFont(font.value)}
+            <button key={font.value} onClick={() => !isLocked("font_selector") && setSelectedFont(font.value)}
               disabled={isLocked("font_selector")}
-              className={`p-3 rounded-xl border-2 text-left transition-all ${
-                selectedFont === font.value
-                  ? "border-purple-600 bg-purple-50"
-                  : "border-gray-200 hover:border-purple-300"
-              } ${font.class}`}
-            >
+              className={`p-3 rounded-xl border-2 text-left transition-all ${selectedFont === font.value ? "border-purple-600 bg-purple-50" : "border-gray-200 hover:border-purple-300"} ${font.class}`}>
               <p className="text-xs font-semibold">{font.label}</p>
               <p className="text-[10px] text-gray-400 mt-0.5">Aa Bb Cc</p>
             </button>

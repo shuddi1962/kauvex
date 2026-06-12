@@ -7,152 +7,136 @@ import {
   Globe, MapPin, Palette, CheckCircle2, ArrowRight, ArrowLeft,
   Search, ExternalLink, Plus, ChevronDown, Check, X, Info,
   Loader2, Star, Layout, Eye, DollarSign, Users, FolderTree,
+  Sparkles, Shield, HelpCircle, Copy, Monitor,
 } from "lucide-react";
 import { insforge } from "@/lib/insforge";
 
 const countries = [
-  { code: "US", name: "United States", flag: "🇺🇸", phone: "+1" },
-  { code: "GB", name: "United Kingdom", flag: "🇬🇧", phone: "+44" },
-  { code: "CA", name: "Canada", flag: "🇨🇦", phone: "+1" },
-  { code: "AU", name: "Australia", flag: "🇦🇺", phone: "+61" },
-  { code: "NG", name: "Nigeria", flag: "🇳🇬", phone: "+234" },
-  { code: "DE", name: "Germany", flag: "🇩🇪", phone: "+49" },
-  { code: "FR", name: "France", flag: "🇫🇷", phone: "+33" },
-  { code: "AE", name: "UAE", flag: "🇦🇪", phone: "+971" },
-  { code: "IN", name: "India", flag: "🇮🇳", phone: "+91" },
-  { code: "JP", name: "Japan", flag: "🇯🇵", phone: "+81" },
-  { code: "CN", name: "China", flag: "🇨🇳", phone: "+86" },
-  { code: "BR", name: "Brazil", flag: "🇧🇷", phone: "+55" },
-  { code: "ZA", name: "South Africa", flag: "🇿🇦", phone: "+27" },
-  { code: "SG", name: "Singapore", flag: "🇸🇬", phone: "+65" },
-  { code: "HK", name: "Hong Kong", flag: "🇭🇰", phone: "+852" },
-  { code: "MY", name: "Malaysia", flag: "🇲🇾", phone: "+60" },
-  { code: "KR", name: "South Korea", flag: "🇰🇷", phone: "+82" },
-  { code: "SA", name: "Saudi Arabia", flag: "🇸🇦", phone: "+966" },
-  { code: "EG", name: "Egypt", flag: "🇪🇬", phone: "+20" },
-  { code: "KE", name: "Kenya", flag: "🇰🇪", phone: "+254" },
-  { code: "GH", name: "Ghana", flag: "🇬🇭", phone: "+233" },
+  { code: "US", name: "United States", flag: "🇺🇸", tld: ".com" },
+  { code: "GB", name: "United Kingdom", flag: "🇬🇧", tld: ".uk" },
+  { code: "CA", name: "Canada", flag: "🇨🇦", tld: ".ca" },
+  { code: "AU", name: "Australia", flag: "🇦🇺", tld: ".au" },
+  { code: "NG", name: "Nigeria", flag: "🇳🇬", tld: ".ng" },
+  { code: "DE", name: "Germany", flag: "🇩🇪", tld: ".de" },
+  { code: "FR", name: "France", flag: "🇫🇷", tld: ".fr" },
+  { code: "AE", name: "UAE", flag: "🇦🇪", tld: ".ae" },
+  { code: "IN", name: "India", flag: "🇮🇳", tld: ".in" },
+  { code: "JP", name: "Japan", flag: "🇯🇵", tld: ".jp" },
+  { code: "CN", name: "China", flag: "🇨🇳", tld: ".cn" },
+  { code: "BR", name: "Brazil", flag: "🇧🇷", tld: ".br" },
+  { code: "ZA", name: "South Africa", flag: "🇿🇦", tld: ".za" },
+  { code: "SG", name: "Singapore", flag: "🇸🇬", tld: ".sg" },
+  { code: "HK", name: "Hong Kong", flag: "🇭🇰", tld: ".hk" },
+  { code: "MY", name: "Malaysia", flag: "🇲🇾", tld: ".my" },
+  { code: "KR", name: "South Korea", flag: "🇰🇷", tld: ".kr" },
+  { code: "SA", name: "Saudi Arabia", flag: "🇸🇦", tld: ".sa" },
+  { code: "EG", name: "Egypt", flag: "🇪🇬", tld: ".eg" },
+  { code: "KE", name: "Kenya", flag: "🇰🇪", tld: ".ke" },
+  { code: "GH", name: "Ghana", flag: "🇬🇭", tld: ".gh" },
 ];
 
-const tlds = [
-  { tld: ".com", country: "US", desc: "United States / Global" },
-  { tld: ".uk", country: "GB", desc: "United Kingdom" },
-  { tld: ".ca", country: "CA", desc: "Canada" },
-  { tld: ".au", country: "AU", desc: "Australia" },
-  { tld: ".ng", country: "NG", desc: "Nigeria" },
-  { tld: ".de", country: "DE", desc: "Germany" },
-  { tld: ".fr", country: "FR", desc: "France" },
-  { tld: ".ae", country: "AE", desc: "UAE" },
-  { tld: ".in", country: "IN", desc: "India" },
-  { tld: ".jp", country: "JP", desc: "Japan" },
-  { tld: ".cn", country: "CN", desc: "China" },
-  { tld: ".br", country: "BR", desc: "Brazil" },
-  { tld: ".za", country: "ZA", desc: "South Africa" },
-  { tld: ".sg", country: "SG", desc: "Singapore" },
-  { tld: ".hk", country: "HK", desc: "Hong Kong" },
-  { tld: ".my", country: "MY", desc: "Malaysia" },
-  { tld: ".kr", country: "KR", desc: "South Korea" },
-  { tld: ".sa", country: "SA", desc: "Saudi Arabia" },
-  { tld: ".eg", country: "EG", desc: "Egypt" },
-  { tld: ".ke", country: "KE", desc: "Kenya" },
-  { tld: ".gh", country: "GH", desc: "Ghana" },
-];
+const currencies: Record<string, { code: string; symbol: string }> = {
+  US: { code: "USD", symbol: "$" }, GB: { code: "GBP", symbol: "£" },
+  CA: { code: "CAD", symbol: "CA$" }, AU: { code: "AUD", symbol: "A$" },
+  NG: { code: "NGN", symbol: "₦" }, DE: { code: "EUR", symbol: "€" },
+  FR: { code: "EUR", symbol: "€" }, AE: { code: "AED", symbol: "د.إ" },
+  IN: { code: "INR", symbol: "₹" }, JP: { code: "JPY", symbol: "¥" },
+  CN: { code: "CNY", symbol: "¥" }, BR: { code: "BRL", symbol: "R$" },
+  ZA: { code: "ZAR", symbol: "R" }, SG: { code: "SGD", symbol: "S$" },
+  HK: { code: "HKD", symbol: "HK$" }, MY: { code: "MYR", symbol: "RM" },
+  KR: { code: "KRW", symbol: "₩" }, SA: { code: "SAR", symbol: "﷼" },
+  EG: { code: "EGP", symbol: "E£" }, KE: { code: "KES", symbol: "KSh" },
+  GH: { code: "GHS", symbol: "GH₵" },
+};
 
-const currencies = [
-  { code: "USD", symbol: "$", name: "US Dollar" },
-  { code: "GBP", symbol: "£", name: "British Pound" },
-  { code: "EUR", symbol: "€", name: "Euro" },
-  { code: "CAD", symbol: "CA$", name: "Canadian Dollar" },
-  { code: "AUD", symbol: "A$", name: "Australian Dollar" },
-  { code: "NGN", symbol: "₦", name: "Nigerian Naira" },
-  { code: "AED", symbol: "د.إ", name: "UAE Dirham" },
-  { code: "INR", symbol: "₹", name: "Indian Rupee" },
-  { code: "JPY", symbol: "¥", name: "Japanese Yen" },
-  { code: "CNY", symbol: "¥", name: "Chinese Yuan" },
-  { code: "BRL", symbol: "R$", name: "Brazilian Real" },
-  { code: "ZAR", symbol: "R", name: "South African Rand" },
-  { code: "SGD", symbol: "S$", name: "Singapore Dollar" },
-  { code: "HKD", symbol: "HK$", name: "Hong Kong Dollar" },
-  { code: "MYR", symbol: "RM", name: "Malaysian Ringgit" },
-  { code: "KRW", symbol: "₩", name: "South Korean Won" },
-  { code: "SAR", symbol: "﷼", name: "Saudi Riyal" },
-  { code: "EGP", symbol: "E£", name: "Egyptian Pound" },
-  { code: "KES", symbol: "KSh", name: "Kenyan Shilling" },
-  { code: "GHS", symbol: "GH₵", name: "Ghanaian Cedi" },
-];
-
-const languages = [
-  { code: "en", name: "English" },
-  { code: "de", name: "German" },
-  { code: "fr", name: "French" },
-  { code: "es", name: "Spanish" },
-  { code: "pt", name: "Portuguese" },
-  { code: "zh", name: "Chinese" },
-  { code: "ja", name: "Japanese" },
-  { code: "ar", name: "Arabic" },
-  { code: "ko", name: "Korean" },
-  { code: "ms", name: "Malay" },
-  { code: "hi", name: "Hindi" },
-  { code: "ha", name: "Hausa" },
-  { code: "yo", name: "Yoruba" },
-];
+const taxConfig: Record<string, { rate: number; label: string; inclusive: boolean }> = {
+  US: { rate: 0, label: "Sales Tax", inclusive: false },
+  GB: { rate: 20, label: "VAT", inclusive: true },
+  CA: { rate: 13, label: "HST", inclusive: false },
+  AU: { rate: 10, label: "GST", inclusive: true },
+  NG: { rate: 7.5, label: "VAT", inclusive: true },
+  DE: { rate: 19, label: "MwSt", inclusive: true },
+  FR: { rate: 20, label: "TVA", inclusive: true },
+  AE: { rate: 5, label: "VAT", inclusive: true },
+  IN: { rate: 18, label: "GST", inclusive: true },
+  JP: { rate: 10, label: "Consumption Tax", inclusive: true },
+  CN: { rate: 13, label: "VAT", inclusive: true },
+  BR: { rate: 17, label: "ICMS", inclusive: true },
+  ZA: { rate: 15, label: "VAT", inclusive: true },
+  SG: { rate: 9, label: "GST", inclusive: true },
+  HK: { rate: 0, label: "N/A", inclusive: false },
+  MY: { rate: 10, label: "SST", inclusive: true },
+  KR: { rate: 10, label: "VAT", inclusive: true },
+  SA: { rate: 15, label: "VAT", inclusive: true },
+  EG: { rate: 14, label: "VAT", inclusive: true },
+  KE: { rate: 16, label: "VAT", inclusive: true },
+  GH: { rate: 12.5, label: "VAT", inclusive: true },
+};
 
 const themes = [
   {
-    id: "default", name: "Kauvex Default", desc: "Full-featured marketplace layout",
-    colors: ["#0A1628", "#FF6B00", "#F8F9FA"], popular: true,
-    features: ["Full-width layout", "Classic header", "Detailed footer", "Standard product cards"],
+    id: "default", name: "Kauvex Default", tag: "Marketplace",
+    colors: ["#0A1628","#FF6B00","#F8F9FA"],
+    desc: "Full-featured marketplace with classic header and detailed footer. Best for general stores.",
+    features: ["Full-width", "Classic header", "Standard cards", "Detailed footer"],
   },
   {
-    id: "light", name: "Kauvex Light", desc: "Clean, minimal marketplace design",
-    colors: ["#FFFFFF", "#FF6B00", "#FFFFFF"], popular: false,
-    features: ["Full-width layout", "Minimal header", "Compact footer", "Standard product cards"],
+    id: "light", name: "Kauvex Light", tag: "Clean",
+    colors: ["#FFFFFF","#FF6B00","#FFFFFF"],
+    desc: "Clean, minimal design with a light aesthetic. Perfect for modern brands.",
+    features: ["Full-width", "Minimal header", "Standard cards", "Compact footer"],
   },
   {
-    id: "dark", name: "Kauvex Dark", desc: "Bold dark theme for premium feel",
-    colors: ["#1A1A2E", "#FF6B00", "#0F0F1A"], popular: false,
-    features: ["Full-width layout", "Classic header", "Detailed footer", "Standard product cards"],
+    id: "dark", name: "Kauvex Dark", tag: "Premium",
+    colors: ["#1A1A2E","#FF6B00","#0F0F1A"],
+    desc: "Bold dark theme that gives a premium, sophisticated feel.",
+    features: ["Full-width", "Classic header", "Standard cards", "Dark footer"],
   },
   {
-    id: "b2b", name: "B2B Pro", desc: "Corporate B2B wholesale layout",
-    colors: ["#003366", "#00A3E0", "#F5F7FA"], popular: false,
-    features: ["Contained layout", "Corporate header", "Compact footer", "List product cards"],
+    id: "b2b", name: "B2B Pro", tag: "Corporate",
+    colors: ["#003366","#00A3E0","#F5F7FA"],
+    desc: "Corporate B2B layout with list product cards and compact design.",
+    features: ["Contained", "Corporate header", "List cards", "Compact footer"],
   },
   {
-    id: "fashion", name: "Fashion Boutique", desc: "Elegant fashion store design",
-    colors: ["#1A1A1A", "#E91E63", "#FAFAFA"], popular: false,
-    features: ["Full-width layout", "Centered header", "Detailed footer", "Large image cards"],
+    id: "fashion", name: "Fashion Boutique", tag: "Boutique",
+    colors: ["#1A1A1A","#E91E63","#FAFAFA"],
+    desc: "Elegant fashion store with large image cards and centered header.",
+    features: ["Full-width", "Centered header", "Large images", "Detailed footer"],
   },
   {
-    id: "electronics", name: "Electronics Hub", desc: "Tech-focused product showcase",
-    colors: ["#0D1117", "#58A6FF", "#F0F6FC"], popular: false,
-    features: ["Full-width layout", "Classic header", "Detailed footer", "Standard product cards"],
+    id: "electronics", name: "Electronics Hub", tag: "Tech",
+    colors: ["#0D1117","#58A6FF","#F0F6FC"],
+    desc: "Tech-focused layout ideal for electronics and gadgets.",
+    features: ["Full-width", "Classic header", "Standard cards", "Dark footer"],
   },
   {
-    id: "luxury", name: "Luxury", desc: "High-end premium storefront",
-    colors: ["#1C1C1C", "#C9A84C", "#FFFFFF"], popular: false,
-    features: ["Contained layout", "Centered header", "Minimal footer", "Elegant product cards"],
+    id: "luxury", name: "Luxury", tag: "High-End",
+    colors: ["#1C1C1C","#C9A84C","#FFFFFF"],
+    desc: "High-end luxury storefront with elegant typography and refined spacing.",
+    features: ["Contained", "Centered header", "Elegant cards", "Minimal footer"],
   },
   {
-    id: "minimal", name: "Minimal Store", desc: "Simple, distraction-free shopping",
-    colors: ["#2D3748", "#4A5568", "#FFFFFF"], popular: false,
-    features: ["Contained layout", "Minimal header", "Compact footer", "Standard product cards"],
+    id: "minimal", name: "Minimal Store", tag: "Simple",
+    colors: ["#2D3748","#4A5568","#FFFFFF"],
+    desc: "Simple, distraction-free shopping experience focused on products.",
+    features: ["Contained", "Minimal header", "Standard cards", "Compact footer"],
   },
 ];
 
 const demoCategories = [
-  { id: "electronics", name: "Electronics", icon: "🔌", count: "12,450" },
-  { id: "fashion", name: "Fashion", icon: "👗", count: "8,230" },
-  { id: "marine", name: "Marine", icon: "🚤", count: "3,150" },
-  { id: "industrial", name: "Industrial", icon: "🏭", count: "5,670" },
-  { id: "automotive", name: "Automotive", icon: "🚗", count: "4,890" },
-  { id: "ict", name: "ICT", icon: "💻", count: "6,340" },
-  { id: "home", name: "Home & Living", icon: "🏠", count: "9,120" },
-  { id: "beauty", name: "Beauty & Health", icon: "💄", count: "7,560" },
-  { id: "sports", name: "Sports & Outdoors", icon: "⚽", count: "3,780" },
-  { id: "toys", name: "Toys & Kids", icon: "🧸", count: "2,340" },
-  { id: "books", name: "Books & Media", icon: "📚", count: "4,120" },
-  { id: "grocery", name: "Grocery", icon: "🛒", count: "1,890" },
+  { id: "electronics", name: "Electronics", icon: "🔌", count: "12,450", subs: 8 },
+  { id: "fashion", name: "Fashion", icon: "👗", count: "8,230", subs: 6 },
+  { id: "marine", name: "Marine", icon: "🚤", count: "3,150", subs: 5 },
+  { id: "industrial", name: "Industrial", icon: "🏭", count: "5,670", subs: 7 },
+  { id: "automotive", name: "Automotive", icon: "🚗", count: "4,890", subs: 5 },
+  { id: "ict", name: "ICT", icon: "💻", count: "6,340", subs: 4 },
+  { id: "home", name: "Home & Living", icon: "🏠", count: "9,120", subs: 6 },
+  { id: "beauty", name: "Beauty & Health", icon: "💄", count: "7,560", subs: 5 },
+  { id: "sports", name: "Sports & Outdoors", icon: "⚽", count: "3,780", subs: 4 },
+  { id: "toys", name: "Toys & Kids", icon: "🧸", count: "2,340", subs: 3 },
+  { id: "books", name: "Books & Media", icon: "📚", count: "4,120", subs: 4 },
+  { id: "grocery", name: "Grocery", icon: "🛒", count: "1,890", subs: 3 },
 ];
 
 const demoVendors = [
@@ -166,48 +150,19 @@ const demoVendors = [
   { id: "v8", name: "SportsDirect Intl", products: 201, rating: 4.2, country: "AU" },
 ];
 
-type Step = "info" | "domain" | "theme" | "content" | "dns" | "review";
-
-const steps: { key: Step; label: string; icon: React.ElementType }[] = [
-  { key: "info", label: "Info & Region", icon: MapPin },
-  { key: "domain", label: "Domain", icon: Globe },
-  { key: "theme", label: "Theme", icon: Palette },
-  { key: "content", label: "Content", icon: FolderTree },
-  { key: "dns", label: "DNS Setup", icon: ExternalLink },
-  { key: "review", label: "Launch", icon: RocketIcon },
-];
-
-function RocketIcon({ size }: { size?: number }) {
-  return (
-    <svg width={size || 16} height={size || 16} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-      <path d="M4.5 16.5c-1.5 1.26-2 5-2 5s3.74-.5 5-2c.71-.84.7-2.13-.09-2.91a2.18 2.18 0 0 0-2.91-.09z" />
-      <path d="M12 15l-3-3a22 22 0 0 1 2-3.95A12.88 12.88 0 0 1 22 2c0 2.72-.78 7.5-6 11a22.35 22.35 0 0 1-4 2z" />
-      <path d="M9 12H4s.55-3.03 2-4c1.62-1.08 5 0 5 0" />
-      <path d="M12 15v5s3.03-.55 4-2c1.08-1.62 0-5 0-5" />
-    </svg>
-  );
-}
+type Step = "type" | "info" | "domain" | "theme" | "content" | "review";
 
 export default function CreateStorefrontWizard() {
   const router = useRouter();
-  const [step, setStep] = useState<Step>("info");
+  const [step, setStep] = useState<Step>("type");
   const [saving, setSaving] = useState(false);
   const [createdId, setCreatedId] = useState<string | null>(null);
   const [domainSearch, setDomainSearch] = useState("");
 
-  const stepIndex = steps.findIndex(s => s.key === step);
-  const totalSteps = steps.length;
-
   const [form, setForm] = useState({
     name: "",
-    slug: "",
+    domainName: "",
     countryCode: "US",
-    currencyCode: "USD",
-    currencySymbol: "$",
-    languageCode: "en",
-    taxRate: 0,
-    taxLabel: "VAT",
-    taxInclusive: false,
     domainType: "tld" as "tld" | "subdomain" | "custom",
     selectedTld: ".com",
     subdomain: "",
@@ -222,42 +177,33 @@ export default function CreateStorefrontWizard() {
   };
 
   const country = countries.find(c => c.code === form.countryCode);
-  const tld = tlds.find(t => t.tld === form.selectedTld);
+  const currency = currencies[form.countryCode] || { code: "USD", symbol: "$" };
+  const tax = taxConfig[form.countryCode] || { rate: 0, label: "VAT", inclusive: false };
 
   const getActiveDomain = () => {
-    if (form.domainType === "tld") return `${form.slug}${form.selectedTld}`;
-    if (form.domainType === "subdomain") return `${form.subdomain || form.slug}.kauvex.com`;
+    if (form.domainType === "tld") return `${form.domainName}${form.selectedTld}`;
+    if (form.domainType === "subdomain") return `${form.subdomain || form.domainName}.kauvex.com`;
     return form.customDomain;
-  };
-
-  const canProceed = () => {
-    switch (step) {
-      case "info": return form.name.length >= 2 && form.slug.length >= 2;
-      case "domain": return getActiveDomain().length > 0;
-      case "theme": return form.themeId.length > 0;
-      case "content": return true;
-      case "dns": return true;
-      default: return true;
-    }
   };
 
   const handleCreate = async () => {
     setSaving(true);
     const domain = getActiveDomain();
+    const slug = form.domainName.toLowerCase().replace(/[^a-z0-9-]+/g, "");
+
     const payload: any = {
-      name: form.name,
-      slug: form.slug,
+      name: form.name || form.domainName,
+      slug,
       domain_type: form.domainType === "tld" ? "subdomain" : form.domainType,
-      subdomain: form.domainType === "subdomain" ? (form.subdomain || form.slug) : null,
+      subdomain: form.domainType === "subdomain" ? (form.subdomain || form.domainName) : null,
       custom_domain: form.domainType === "custom" ? form.customDomain : null,
       active_domain: domain,
-      currency_code: form.currencyCode,
-      currency_symbol: form.currencySymbol,
-      language_code: form.languageCode,
+      currency_code: currency.code,
+      currency_symbol: currency.symbol,
       country_code: form.countryCode,
-      tax_rate: form.taxRate,
-      tax_label: form.taxLabel,
-      tax_inclusive: form.taxInclusive,
+      tax_rate: tax.rate,
+      tax_label: tax.label,
+      tax_inclusive: tax.inclusive,
       status: "active",
     };
 
@@ -277,314 +223,391 @@ export default function CreateStorefrontWizard() {
         form.vendors.map(v => ({ storefront_id: storefrontId, vendor_id: v }))
       );
     }
-    await insforge.database.from("storefront_themes").insert([{
-      storefront_id: storefrontId,
-      name: themes.find(t => t.id === form.themeId)?.name || "Kauvex Default",
-      template_name: form.themeId,
-      is_active: true,
-      is_default: true,
-    }]);
 
     setCreatedId(storefrontId);
     setSaving(false);
   };
 
-  const next = () => {
-    const idx = steps.findIndex(s => s.key === step);
-    if (idx < totalSteps - 1) setStep(steps[idx + 1].key);
+  const canProceed = () => {
+    switch (step) {
+      case "type": return form.domainType.length > 0;
+      case "info": return form.domainName.length >= 2;
+      case "domain": return getActiveDomain().length > 0;
+      case "theme": return form.themeId.length > 0;
+      case "content": return true;
+      default: return true;
+    }
   };
-  const prev = () => {
+
+  const steps: { key: Step; label: string; desc: string; icon: React.ElementType }[] = [
+    { key: "type", label: "Type", desc: "Domain type", icon: Globe },
+    { key: "info", label: "Domain Name", desc: "Your domain", icon: ExternalLink },
+    { key: "domain", label: "Region", desc: "Country & tax", icon: MapPin },
+    { key: "theme", label: "Template", desc: "Design", icon: Palette },
+    { key: "content", label: "Content", desc: "Categories", icon: FolderTree },
+    { key: "review", label: "Launch", desc: "Review", icon: Sparkles },
+  ];
+
+  const currentStepIndex = steps.findIndex(s => s.key === step);
+  const nextStep = () => {
+    const idx = steps.findIndex(s => s.key === step);
+    if (idx < steps.length - 1) setStep(steps[idx + 1].key);
+  };
+  const prevStep = () => {
     const idx = steps.findIndex(s => s.key === step);
     if (idx > 0) setStep(steps[idx - 1].key);
   };
 
-  const filteredTlds = tlds.filter(t =>
-    t.tld.includes(domainSearch.toLowerCase()) ||
-    t.desc.toLowerCase().includes(domainSearch.toLowerCase())
+  const filteredTlds = countries.filter(c =>
+    c.tld.includes(domainSearch.toLowerCase()) ||
+    c.name.toLowerCase().includes(domainSearch.toLowerCase()) ||
+    c.flag.includes(domainSearch)
   );
+
+  if (createdId) {
+    return (
+      <AdminShell title="Storefront Created" subtitle="Your new storefront is ready">
+        <div className="max-w-lg mx-auto text-center py-12 space-y-5">
+          <div className="w-16 h-16 rounded-full bg-green-100 flex items-center justify-center mx-auto">
+            <CheckCircle2 size={32} className="text-green-600" />
+          </div>
+          <h2 className="font-bold text-2xl text-text-1">Storefront Created!</h2>
+          <p className="text-sm text-text-4">
+            <strong className="text-text-1">{form.name || form.domainName}</strong> is now live at <br />
+            <span className="text-orange font-mono font-bold text-lg">{getActiveDomain()}</span>
+          </p>
+          <div className="flex items-center justify-center gap-3 pt-4">
+            <button onClick={() => router.push(`/admin/storefronts/${createdId}`)}
+              className="h-10 px-6 bg-orange text-white text-sm font-semibold rounded-lg hover:bg-orange/90">
+              Configure Storefront
+            </button>
+            <button onClick={() => router.push("/admin/storefronts")}
+              className="h-10 px-6 border border-border text-text-2 text-sm font-medium rounded-lg hover:bg-gray-50">
+              All Storefronts
+            </button>
+          </div>
+        </div>
+      </AdminShell>
+    );
+  }
 
   return (
     <AdminShell title="Create Storefront" subtitle="Set up a new regional or custom storefront">
-      {/* Stepper */}
-      <div className="bg-white rounded-xl border border-border mb-6">
-        <div className="flex items-center justify-between px-6 py-4">
-          {steps.map((s, i) => {
-            const Icon = s.icon;
-            const isActive = step === s.key;
-            const isPast = stepIndex > i;
-            return (
-              <button
-                key={s.key}
-                onClick={() => !isPast && !isActive && setStep(s.key)}
-                disabled={isPast ? false : !isActive}
-                className={`flex items-center gap-2 text-xs font-medium transition-all ${
-                  isActive ? "text-orange" : isPast ? "text-green-600" : "text-text-4"
-                } ${isPast ? "cursor-pointer hover:text-green-700" : ""} ${!isActive && !isPast ? "cursor-default" : ""}`}
-              >
-                <div className={`w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold transition-all ${
-                  isActive ? "bg-orange text-white" : isPast ? "bg-green-100 text-green-700" : "bg-gray-100 text-text-4"
-                }`}>
-                  {isPast ? <Check size={12} /> : i + 1}
+      <div className="max-w-4xl mx-auto">
+        {/* Step indicator — horizontal steps */}
+        <div className="bg-white rounded-xl border border-border mb-6 p-4">
+          <div className="flex items-center gap-2">
+            {steps.map((s, i) => {
+              const Icon = s.icon;
+              const isActive = s.key === step;
+              const isPast = currentStepIndex > i;
+              const isFuture = currentStepIndex < i;
+              return (
+                <div key={s.key} className="flex items-center gap-2 flex-1">
+                  <button
+                    onClick={() => isPast && setStep(s.key)}
+                    disabled={isFuture}
+                    className={`flex items-center gap-2 min-w-0 ${isFuture ? "opacity-40 cursor-default" : isPast ? "cursor-pointer" : ""}`}
+                  >
+                    <div className={`w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold shrink-0 ${
+                      isActive ? "bg-orange text-white shadow-md" :
+                      isPast ? "bg-green-100 text-green-700" :
+                      "bg-gray-100 text-text-4"
+                    }`}>
+                      {isPast ? <Check size={12} /> : i + 1}
+                    </div>
+                    <div className="min-w-0 hidden sm:block">
+                      <p className={`text-[10px] font-semibold leading-tight ${isActive ? "text-orange" : isPast ? "text-green-700" : "text-text-4"}`}>{s.label}</p>
+                      <p className="text-[8px] text-text-4 truncate">{s.desc}</p>
+                    </div>
+                  </button>
+                  {i < steps.length - 1 && <div className={`flex-1 h-px ${isPast ? "bg-green-300" : "bg-gray-200"}`} />}
                 </div>
-                <span className="hidden sm:inline">{s.label}</span>
-              </button>
-            );
-          })}
+              );
+            })}
+          </div>
         </div>
-        <div className="h-1 bg-gray-100 rounded-b-xl overflow-hidden">
-          <div className="h-full bg-orange transition-all duration-300 rounded-b-xl" style={{ width: `${((stepIndex + 1) / totalSteps) * 100}%` }} />
-        </div>
-      </div>
 
-      {/* Step Content */}
-      <div className="bg-white rounded-xl border border-border p-6">
-        {/* STEP 1: INFO & REGION */}
-        {step === "info" && (
-          <div className="max-w-2xl space-y-5">
-            <div className="flex items-center gap-3 mb-1">
-              <div className="w-9 h-9 rounded-lg bg-orange/10 flex items-center justify-center">
-                <MapPin size={18} className="text-orange" />
-              </div>
-              <div>
-                <h2 className="font-bold text-lg text-text-1">Basic Information</h2>
-                <p className="text-xs text-text-4">Name your storefront and choose its region</p>
-              </div>
+        {/* ===== STEP 1: DOMAIN TYPE ===== */}
+        {step === "type" && (
+          <div className="bg-white rounded-xl border border-border p-6 space-y-5">
+            <div>
+              <h2 className="font-bold text-lg text-text-1">Choose your domain type</h2>
+              <p className="text-sm text-text-4">How do you want your storefront to be accessed?</p>
             </div>
 
-            <div className="grid grid-cols-2 gap-4">
-              <div>
-                <label className="text-xs font-semibold text-text-2 block mb-1">Storefront Name *</label>
-                <input value={form.name} onChange={e => {
-                  const name = e.target.value;
-                  update("name", name);
-                  if (!form.slug || form.slug === name.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, "")) {
-                    const slug = name.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, "");
-                    update("slug", slug);
-                  }
-                }} placeholder="e.g. Kauvex UK, Kauvex Nigeria" className="w-full h-10 px-3 text-sm rounded-lg border border-border focus:outline-none focus:ring-2 focus:ring-orange/20 focus:border-orange" />
+            <div className="grid grid-cols-3 gap-4">
+              {[
+                {
+                  key: "tld" as const,
+                  title: "Country Domain",
+                  subtitle: "yourstore.com / .uk / .ca",
+                  desc: "Pick a country extension like .com, .uk, .ca, .ng. Best for regional stores.",
+                  icon: Globe,
+                  color: "bg-blue-50 text-blue",
+                },
+                {
+                  key: "subdomain" as const,
+                  title: "Subdomain",
+                  subtitle: "store.kauvex.com",
+                  desc: "Your store as a subdomain on kauvex.com. Fastest setup, no DNS needed.",
+                  icon: Monitor,
+                  color: "bg-purple-50 text-purple-700",
+                },
+                {
+                  key: "custom" as const,
+                  title: "Custom Domain",
+                  subtitle: "yourdomain.com",
+                  desc: "Use your own domain name. Requires DNS configuration to point to Kauvex.",
+                  icon: ExternalLink,
+                  color: "bg-green-50 text-green-700",
+                },
+              ].map(opt => (
+                <button key={opt.key} onClick={() => { update("domainType", opt.key); }}
+                  className={`rounded-xl border-2 p-5 text-left transition-all hover:shadow-md ${
+                    form.domainType === opt.key ? "border-orange bg-orange-50 ring-2 ring-orange/20" : "border-border"
+                  }`}>
+                  <div className={`w-10 h-10 rounded-xl ${opt.color} flex items-center justify-center mb-3`}>
+                    <opt.icon size={20} />
+                  </div>
+                  <p className="font-bold text-sm text-text-1">{opt.title}</p>
+                  <p className="text-xs text-text-4 mt-1">{opt.subtitle}</p>
+                  <p className="text-[10px] text-text-4 mt-2 leading-relaxed">{opt.desc}</p>
+                </button>
+              ))}
+            </div>
+
+            {form.domainType === "tld" && (
+              <div className="bg-blue-50 border border-blue/20 rounded-xl p-3 flex items-start gap-2">
+                <Info size={14} className="text-blue shrink-0 mt-0.5" />
+                <p className="text-[11px] text-blue-800">Country domains work automatically with our infrastructure. Just choose your name and extension.</p>
               </div>
-              <div>
-                <label className="text-xs font-semibold text-text-2 block mb-1">Slug *</label>
-                <input value={form.slug} onChange={e => update("slug", e.target.value.toLowerCase().replace(/[^a-z0-9-]+/g, ""))} placeholder="e.g. uk, nigeria" className="w-full h-10 px-3 text-sm rounded-lg border border-border focus:outline-none focus:ring-2 focus:ring-orange/20 focus:border-orange" />
+            )}
+            {form.domainType === "custom" && (
+              <div className="bg-amber-50 border border-amber/20 rounded-xl p-3 flex items-start gap-2">
+                <HelpCircle size={14} className="text-amber-600 shrink-0 mt-0.5" />
+                <p className="text-[11px] text-amber-800">Custom domains need DNS records (A record or CNAME). We&apos;ll show you exactly what to configure.</p>
               </div>
+            )}
+          </div>
+        )}
+
+        {/* ===== STEP 2: DOMAIN NAME ===== */}
+        {step === "info" && (
+          <div className="bg-white rounded-xl border border-border p-6 space-y-5">
+            <div>
+              <h2 className="font-bold text-lg text-text-1">Choose your domain name</h2>
+              <p className="text-sm text-text-4">This will be your storefront&apos;s web address</p>
+            </div>
+
+            {/* Domain name input */}
+            <div>
+              <label className="text-xs font-semibold text-text-2 block mb-1.5">Your domain name</label>
+              {form.domainType === "tld" && (
+                <div className="flex items-center gap-2">
+                  <input
+                    value={form.domainName}
+                    onChange={e => update("domainName", e.target.value.toLowerCase().replace(/[^a-z0-9-]/g, ""))}
+                    placeholder="yourstore"
+                    className="flex-1 h-11 px-4 text-lg font-mono rounded-xl border border-border focus:outline-none focus:ring-2 focus:ring-orange/20 focus:border-orange"
+                  />
+                  <div className="relative">
+                    <select value={form.selectedTld} onChange={e => {
+                      update("selectedTld", e.target.value);
+                      const c = countries.find(c => c.tld === e.target.value);
+                      if (c) update("countryCode", c.code);
+                    }}
+                      className="h-11 px-3 pr-8 text-sm font-bold font-mono rounded-xl border border-border bg-white appearance-none focus:outline-none focus:ring-2 focus:ring-orange/20">
+                      {countries.map(c => <option key={c.tld} value={c.tld}>{c.tld}</option>)}
+                    </select>
+                    <ChevronDown size={12} className="absolute right-3 top-1/2 -translate-y-1/2 text-text-4 pointer-events-none" />
+                  </div>
+                </div>
+              )}
+              {form.domainType === "subdomain" && (
+                <div className="flex items-center gap-2">
+                  <input
+                    value={form.subdomain || form.domainName}
+                    onChange={e => update("subdomain", e.target.value.toLowerCase().replace(/[^a-z0-9-]/g, ""))}
+                    placeholder="yourstore"
+                    className="h-11 px-4 text-lg font-mono rounded-xl border border-border focus:outline-none focus:ring-2 focus:ring-orange/20 focus:border-orange flex-1"
+                  />
+                  <span className="text-sm text-text-4 font-mono font-semibold">.kauvex.com</span>
+                </div>
+              )}
+              {form.domainType === "custom" && (
+                <input
+                  value={form.customDomain}
+                  onChange={e => update("customDomain", e.target.value.toLowerCase().replace(/[^a-z0-9.-]/g, ""))}
+                  placeholder="yourstore.com"
+                  className="w-full h-11 px-4 text-lg font-mono rounded-xl border border-border focus:outline-none focus:ring-2 focus:ring-orange/20 focus:border-orange"
+                />
+              )}
+            </div>
+
+            {/* Preview domain */}
+            {form.domainName && (
+              <div className="bg-gray-50 rounded-xl border border-border p-4">
+                <p className="text-[10px] text-text-4 uppercase font-semibold tracking-wider mb-1">Your storefront URL</p>
+                <p className="font-mono font-bold text-lg text-orange">
+                  {getActiveDomain() || "—"}
+                </p>
+              </div>
+            )}
+
+            {form.domainType === "custom" && (
+              <div className="bg-blue-50 border border-blue/20 rounded-xl p-3 flex items-start gap-2">
+                <Shield size={14} className="text-blue shrink-0 mt-0.5" />
+                <p className="text-[11px] text-blue-800">After creation, we&apos;ll provide DNS records to connect your domain. SSL via Let&apos;s Encrypt is automatic.</p>
+              </div>
+            )}
+
+            {/* TLD picker (for tld type) */}
+            {form.domainType === "tld" && (
+              <div>
+                <label className="text-xs font-semibold text-text-2 block mb-1.5">Or pick a country extension</label>
+                <div className="relative mb-3">
+                  <Search size={13} className="absolute left-3 top-1/2 -translate-y-1/2 text-text-4" />
+                  <input value={domainSearch} onChange={e => setDomainSearch(e.target.value)} placeholder="Search countries or TLDs..."
+                    className="w-full h-9 pl-9 pr-3 text-sm rounded-lg border border-border focus:outline-none focus:ring-2 focus:ring-orange/20" />
+                </div>
+                <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 gap-1.5 max-h-48 overflow-y-auto">
+                  {filteredTlds.map(c => (
+                    <button key={c.code} onClick={() => { update("selectedTld", c.tld); update("countryCode", c.code); }}
+                      className={`flex items-center gap-1.5 p-2 rounded-lg border text-[10px] transition-all ${
+                        form.selectedTld === c.tld ? "border-orange bg-orange-50 text-orange font-semibold" : "border-border hover:border-gray-300 text-text-2"
+                      }`}>
+                      <span>{c.flag}</span>
+                      <span className="font-bold">{c.tld}</span>
+                    </button>
+                  ))}
+                </div>
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* ===== STEP 3: REGION ===== */}
+        {step === "domain" && (
+          <div className="bg-white rounded-xl border border-border p-6 space-y-5">
+            <div>
+              <h2 className="font-bold text-lg text-text-1">Region & Localization</h2>
+              <p className="text-sm text-text-4">Currency, tax rates, and regional settings</p>
             </div>
 
             <div className="grid grid-cols-2 gap-4">
               <div>
                 <label className="text-xs font-semibold text-text-2 block mb-1">Country / Region</label>
                 <div className="relative">
-                  <select value={form.countryCode} onChange={e => {
-                    const c = countries.find(x => x.code === e.target.value);
-                    if (c) {
-                      update("countryCode", c.code);
-                      const tld = tlds.find(t => t.country === c.code);
-                      if (tld) update("selectedTld", tld.tld);
-                      const cur = currencies.find(cu => cu.code === getCurrencyForCountry(c.code));
-                      if (cur) { update("currencyCode", cur.code); update("currencySymbol", cur.symbol); }
-                      const lang = getLanguageForCountry(c.code);
-                      update("languageCode", lang);
-                      const tax = getTaxForCountry(c.code);
-                      update("taxRate", tax.rate);
-                      update("taxLabel", tax.label);
-                      update("taxInclusive", tax.inclusive);
-                    }
-                  }} className="w-full h-10 px-3 text-sm rounded-lg border border-border bg-white appearance-none focus:outline-none focus:ring-2 focus:ring-orange/20 focus:border-orange pr-8">
-                    {countries.map(c => (
-                      <option key={c.code} value={c.code}>{c.flag} {c.name}</option>
-                    ))}
+                  <select value={form.countryCode} onChange={e => update("countryCode", e.target.value)}
+                    className="w-full h-10 px-3 text-sm rounded-xl border border-border bg-white appearance-none focus:outline-none focus:ring-2 focus:ring-orange/20 pr-8">
+                    {countries.map(c => <option key={c.code} value={c.code}>{c.flag} {c.name}</option>)}
                   </select>
-                  <ChevronDown size={14} className="absolute right-3 top-1/2 -translate-y-1/2 text-text-4 pointer-events-none" />
+                  <ChevronDown size={12} className="absolute right-3 top-1/2 -translate-y-1/2 text-text-4 pointer-events-none" />
                 </div>
               </div>
               <div>
-                <label className="text-xs font-semibold text-text-2 block mb-1">Language</label>
+                <label className="text-xs font-semibold text-text-2 block mb-1">Domain Extension</label>
                 <div className="relative">
-                  <select value={form.languageCode} onChange={e => update("languageCode", e.target.value)}
-                    className="w-full h-10 px-3 text-sm rounded-lg border border-border bg-white appearance-none focus:outline-none focus:ring-2 focus:ring-orange/20 focus:border-orange pr-8">
-                    {languages.map(l => <option key={l.code} value={l.code}>{l.name} ({l.code})</option>)}
+                  <select value={form.selectedTld} onChange={e => {
+                    update("selectedTld", e.target.value);
+                    const c = countries.find(c => c.tld === e.target.value);
+                    if (c) update("countryCode", c.code);
+                  }} className="w-full h-10 px-3 text-sm font-bold rounded-xl border border-border bg-white appearance-none focus:outline-none focus:ring-2 focus:ring-orange/20 pr-8">
+                    {countries.map(c => <option key={c.tld} value={c.tld}>{c.flag} {c.tld}</option>)}
                   </select>
-                  <ChevronDown size={14} className="absolute right-3 top-1/2 -translate-y-1/2 text-text-4 pointer-events-none" />
+                  <ChevronDown size={12} className="absolute right-3 top-1/2 -translate-y-1/2 text-text-4 pointer-events-none" />
                 </div>
               </div>
             </div>
 
-            <div className="grid grid-cols-2 gap-4">
-              <div>
-                <label className="text-xs font-semibold text-text-2 block mb-1">Currency</label>
-                <div className="relative">
-                  <select value={form.currencyCode} onChange={e => {
-                    const cur = currencies.find(c => c.code === e.target.value);
-                    update("currencyCode", e.target.value);
-                    if (cur) update("currencySymbol", cur.symbol);
-                  }} className="w-full h-10 px-3 text-sm rounded-lg border border-border bg-white appearance-none focus:outline-none focus:ring-2 focus:ring-orange/20 focus:border-orange pr-8">
-                    {currencies.map(c => <option key={c.code} value={c.code}>{c.symbol} {c.code} — {c.name}</option>)}
-                  </select>
-                  <ChevronDown size={14} className="absolute right-3 top-1/2 -translate-y-1/2 text-text-4 pointer-events-none" />
+            <div className="bg-gray-50 rounded-xl border border-border p-4">
+              <p className="text-xs font-semibold text-text-3 mb-3">Auto-configured for {country?.flag} {country?.name}</p>
+              <div className="grid grid-cols-3 gap-4">
+                <div className="bg-white rounded-lg p-3 border border-border">
+                  <p className="text-[9px] text-text-4 uppercase font-semibold">Currency</p>
+                  <p className="text-lg font-bold text-text-1">{currency.symbol} <span className="text-sm font-mono">{currency.code}</span></p>
                 </div>
-              </div>
-              <div className="grid grid-cols-2 gap-2">
-                <div>
-                  <label className="text-xs font-semibold text-text-2 block mb-1">Tax Rate (%)</label>
-                  <input type="number" step="0.1" value={form.taxRate} onChange={e => update("taxRate", parseFloat(e.target.value) || 0)}
-                    className="w-full h-10 px-3 text-sm rounded-lg border border-border focus:outline-none focus:ring-2 focus:ring-orange/20 focus:border-orange" />
+                <div className="bg-white rounded-lg p-3 border border-border">
+                  <p className="text-[9px] text-text-4 uppercase font-semibold">Tax Rate</p>
+                  <p className="text-lg font-bold text-text-1">{tax.rate}% <span className="text-sm font-mono text-text-4">{tax.label}</span></p>
                 </div>
-                <div>
-                  <label className="text-xs font-semibold text-text-2 block mb-1">Tax Label</label>
-                  <input value={form.taxLabel} onChange={e => update("taxLabel", e.target.value)}
-                    className="w-full h-10 px-3 text-sm rounded-lg border border-border focus:outline-none focus:ring-2 focus:ring-orange/20 focus:border-orange" />
+                <div className="bg-white rounded-lg p-3 border border-border">
+                  <p className="text-[9px] text-text-4 uppercase font-semibold">Tax Type</p>
+                  <p className="text-lg font-bold text-text-1">{tax.inclusive ? "Inclusive" : "Exclusive"}</p>
                 </div>
               </div>
             </div>
 
-            <label className="flex items-center gap-3 cursor-pointer">
-              <input type="checkbox" checked={form.taxInclusive} onChange={e => update("taxInclusive", e.target.checked)}
-                className="w-4 h-4 rounded border-gray-300 accent-orange" />
-              <div>
-                <p className="text-sm font-medium text-text-1">Tax Inclusive Pricing</p>
-                <p className="text-[11px] text-text-4">Prices displayed include tax</p>
-              </div>
-            </label>
-
-            <div className="bg-orange-50 border border-orange/20 rounded-xl p-4 flex items-start gap-3">
-              <Info size={16} className="text-orange shrink-0 mt-0.5" />
-              <p className="text-xs text-text-2">This storefront will use <strong>{form.currencyCode} ({form.currencySymbol})</strong> with <strong>{form.languageCode.toUpperCase()}</strong> language. Tax rate: <strong>{form.taxRate}% {form.taxLabel}</strong>. {form.taxInclusive ? "(inclusive)" : "(exclusive)"}</p>
+            <div className="bg-green-50 border border-green/20 rounded-xl p-3 flex items-start gap-2">
+              <CheckCircle2 size={14} className="text-green-600 shrink-0 mt-0.5" />
+              <p className="text-[11px] text-green-800">Regional settings are pre-configured for <strong>{country?.name}</strong>. You can change these anytime in storefront settings.</p>
             </div>
           </div>
         )}
 
-        {/* STEP 2: DOMAIN */}
-        {step === "domain" && (
-          <div className="max-w-3xl space-y-5">
-            <div className="flex items-center gap-3 mb-1">
-              <div className="w-9 h-9 rounded-lg bg-orange/10 flex items-center justify-center">
-                <Globe size={18} className="text-orange" />
-              </div>
-              <div>
-                <h2 className="font-bold text-lg text-text-1">Choose Your Domain</h2>
-                <p className="text-xs text-text-4">Select a country TLD, subdomain, or connect a custom domain</p>
-              </div>
-            </div>
-
-            <div className="flex gap-3">
-              {[
-                { key: "tld" as const, label: "Country TLD", desc: `yourstore${form.selectedTld}`, icon: Globe },
-                { key: "subdomain" as const, label: "Subdomain", desc: "yourstore.kauvex.com", icon: Globe },
-                { key: "custom" as const, label: "Custom Domain", desc: "yourdomain.com", icon: ExternalLink },
-              ].map(opt => (
-                <button key={opt.key} onClick={() => update("domainType", opt.key)}
-                  className={`flex-1 p-4 rounded-xl border-2 text-left transition-all ${
-                    form.domainType === opt.key ? "border-orange bg-orange-50" : "border-border hover:border-gray-300"
-                  }`}>
-                  <opt.icon size={20} className={`mb-2 ${form.domainType === opt.key ? "text-orange" : "text-text-4"}`} />
-                  <p className="text-sm font-semibold text-text-1">{opt.label}</p>
-                  <p className="text-[11px] text-text-4 mt-0.5">{opt.desc}</p>
-                </button>
-              ))}
-            </div>
-
-            {form.domainType === "tld" && (
-              <div>
-                <label className="text-xs font-semibold text-text-2 block mb-2">Select Country TLD</label>
-                <div className="relative mb-3">
-                  <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-text-4" />
-                  <input value={domainSearch} onChange={e => setDomainSearch(e.target.value)} placeholder="Search TLDs..." className="w-full h-9 pl-9 pr-3 text-sm rounded-lg border border-border focus:outline-none focus:ring-2 focus:ring-orange/20" />
-                </div>
-                <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-2 max-h-64 overflow-y-auto">
-                  {filteredTlds.map(t => (
-                    <button key={t.tld} onClick={() => update("selectedTld", t.tld)}
-                      className={`flex items-center gap-2 p-2.5 rounded-lg border text-xs transition-all ${
-                        form.selectedTld === t.tld ? "border-orange bg-orange-50 text-orange" : "border-border hover:border-gray-300 text-text-2"
-                      }`}>
-                      <span className="font-bold text-sm">{t.tld}</span>
-                      <span className="text-text-4">{t.desc}</span>
-                    </button>
-                  ))}
-                </div>
-                <p className="text-xs text-text-4 mt-3">Your domain: <strong className="text-orange">{form.slug || "yourstore"}{form.selectedTld}</strong></p>
-              </div>
-            )}
-
-            {form.domainType === "subdomain" && (
-              <div>
-                <label className="text-xs font-semibold text-text-2 block mb-1">Subdomain</label>
-                <div className="flex items-center gap-2">
-                  <input value={form.subdomain || form.slug} onChange={e => update("subdomain", e.target.value.toLowerCase().replace(/[^a-z0-9-]+/g, ""))}
-                    placeholder={form.slug || "yourstore"} className="flex-1 h-10 px-3 text-sm rounded-lg border border-border focus:outline-none focus:ring-2 focus:ring-orange/20 focus:border-orange" />
-                  <span className="text-sm text-text-4 font-mono">.kauvex.com</span>
-                </div>
-                <p className="text-xs text-text-4 mt-2">Your storefront will be available at: <strong className="text-orange">{(form.subdomain || form.slug) || "yourstore"}.kauvex.com</strong></p>
-              </div>
-            )}
-
-            {form.domainType === "custom" && (
-              <div>
-                <label className="text-xs font-semibold text-text-2 block mb-1">Custom Domain</label>
-                <input value={form.customDomain} onChange={e => update("customDomain", e.target.value.toLowerCase().replace(/[^a-z0-9.-]+/g, ""))}
-                  placeholder="yourstore.com" className="w-full h-10 px-3 text-sm rounded-lg border border-border focus:outline-none focus:ring-2 focus:ring-orange/20 focus:border-orange" />
-                <p className="text-xs text-text-4 mt-2">You will need to configure DNS records after creation. We&apos;ll show you detailed instructions.</p>
-                <div className="bg-blue-50 border border-blue/20 rounded-xl p-3 flex items-start gap-2 mt-3">
-                  <Info size={14} className="text-blue shrink-0 mt-0.5" />
-                  <p className="text-[11px] text-blue-800">Custom domains require DNS configuration (A record or CNAME pointing to our servers). SSL certificates are auto-provisioned via Let&apos;s Encrypt.</p>
-                </div>
-              </div>
-            )}
-          </div>
-        )}
-
-        {/* STEP 3: THEME */}
+        {/* ===== STEP 4: THEME ===== */}
         {step === "theme" && (
-          <div className="space-y-5">
-            <div className="flex items-center gap-3 mb-1">
-              <div className="w-9 h-9 rounded-lg bg-orange/10 flex items-center justify-center">
-                <Palette size={18} className="text-orange" />
-              </div>
-              <div>
-                <h2 className="font-bold text-lg text-text-1">Choose a Theme</h2>
-                <p className="text-xs text-text-4">Select a template for your storefront&apos;s look and feel</p>
-              </div>
+          <div className="bg-white rounded-xl border border-border p-6 space-y-5">
+            <div>
+              <h2 className="font-bold text-lg text-text-1">Choose a template</h2>
+              <p className="text-sm text-text-4">Your storefront&apos;s look and feel — you can change this later</p>
             </div>
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-              {themes.map((theme) => (
-                <button key={theme.id} onClick={() => update("themeId", theme.id)}
-                  className={`rounded-xl border-2 p-4 text-left transition-all hover:shadow-md ${
-                    form.themeId === theme.id ? "border-orange ring-2 ring-orange/20" : "border-border"
-                  }`}>
-                  <div className="flex items-center gap-1.5 mb-3">
-                    {theme.colors.map((color, i) => (
-                      <div key={i} className="w-5 h-5 rounded-full border border-gray-200" style={{ backgroundColor: color }} />
-                    ))}
-                  </div>
-                  <p className="text-sm font-bold text-text-1">{theme.name}</p>
-                  <p className="text-[10px] text-text-4 mt-0.5 mb-2">{theme.desc}</p>
-                  <ul className="space-y-0.5">
-                    {theme.features.map((f, i) => (
-                      <li key={i} className="flex items-center gap-1 text-[9px] text-text-4">
-                        <Check size={8} className="text-green-600 shrink-0" /> {f}
-                      </li>
-                    ))}
-                  </ul>
-                </button>
-              ))}
+            <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+              {themes.map((theme) => {
+                const selected = form.themeId === theme.id;
+                return (
+                  <button key={theme.id} onClick={() => update("themeId", theme.id)}
+                    className={`rounded-xl border-2 p-3 text-left transition-all hover:shadow-md ${
+                      selected ? "border-orange ring-2 ring-orange/20" : "border-border"
+                    }`}>
+                    {/* Mini preview */}
+                    <div className="h-16 rounded-lg mb-2 overflow-hidden border border-border" style={{ backgroundColor: theme.colors[2] }}>
+                      <div className="h-3 flex items-center px-1.5 gap-0.5" style={{ backgroundColor: theme.colors[0] }}>
+                        <div className="w-1.5 h-1.5 rounded-full" style={{ backgroundColor: theme.colors[1] }} />
+                        <div className="w-1 h-1 rounded-full bg-white/30" />
+                      </div>
+                      <div className="p-1.5 space-y-0.5">
+                        <div className="flex gap-0.5">
+                          <div className="w-3 h-1 rounded" style={{ backgroundColor: theme.colors[1] }} />
+                          <div className="w-1.5 h-1 rounded bg-gray-200" />
+                        </div>
+                        <div className="w-full h-1 rounded bg-gray-200/60" />
+                      </div>
+                    </div>
+
+                    <div className="flex items-center gap-1.5 mb-1">
+                      <div className="flex gap-0.5">
+                        {theme.colors.map((c, i) => (
+                          <div key={i} className="w-2.5 h-2.5 rounded-full border border-gray-200" style={{ backgroundColor: c }} />
+                        ))}
+                      </div>
+                      <span className={`text-[10px] bg-gray-100 text-text-4 px-1 rounded font-medium ${selected ? "bg-orange-50 text-orange" : ""}`}>{theme.tag}</span>
+                    </div>
+                    <p className={`text-xs font-bold ${selected ? "text-orange" : "text-text-1"}`}>{theme.name}</p>
+                    <p className="text-[9px] text-text-4 mt-0.5 leading-relaxed">{theme.desc}</p>
+                  </button>
+                );
+              })}
             </div>
           </div>
         )}
 
-        {/* STEP 4: CONTENT (Categories & Vendors) */}
+        {/* ===== STEP 5: CONTENT ===== */}
         {step === "content" && (
-          <div className="space-y-6">
-            <div className="flex items-center gap-3 mb-1">
-              <div className="w-9 h-9 rounded-lg bg-orange/10 flex items-center justify-center">
-                <FolderTree size={18} className="text-orange" />
-              </div>
-              <div>
-                <h2 className="font-bold text-lg text-text-1">Categories & Vendors</h2>
-                <p className="text-xs text-text-4">Select which categories and vendors appear on this storefront</p>
-              </div>
+          <div className="bg-white rounded-xl border border-border p-6 space-y-5">
+            <div>
+              <h2 className="font-bold text-lg text-text-1">Categories & Vendors</h2>
+              <p className="text-sm text-text-4">Choose what content appears on this storefront</p>
             </div>
 
+            {/* Categories */}
             <div>
-              <label className="text-xs font-semibold text-text-2 block mb-2">Categories</label>
+              <div className="flex items-center justify-between mb-2">
+                <label className="text-xs font-semibold text-text-2">Categories</label>
+                <span className="text-[10px] text-text-4">{form.categories.length} selected</span>
+              </div>
               <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-2">
                 {demoCategories.map(cat => {
                   const selected = form.categories.includes(cat.id);
@@ -595,36 +618,42 @@ export default function CreateStorefrontWizard() {
                       selected ? "border-orange bg-orange-50" : "border-border hover:border-gray-300"
                     }`}>
                       <span>{cat.icon}</span>
-                      <div className="flex-1 min-w-0">
+                      <div className="flex-1 min-w-0 text-left">
                         <p className="font-medium text-text-1">{cat.name}</p>
-                        <p className="text-[9px] text-text-4">{cat.count} products</p>
+                        <p className="text-[8px] text-text-4">{cat.count} products · {cat.subs} subcategories</p>
                       </div>
-                      {selected && <Check size={12} className="text-orange shrink-0" />}
+                      {selected && <Check size={11} className="text-orange shrink-0" />}
                     </button>
                   );
                 })}
               </div>
+              <div className="bg-blue-50 border border-blue/20 rounded-lg p-2.5 flex items-start gap-1.5 mt-2">
+                <Info size={11} className="text-blue shrink-0 mt-0.5" />
+                <p className="text-[10px] text-blue-800">All subcategories and their products will be available on this storefront automatically.</p>
+              </div>
             </div>
 
+            {/* Vendors */}
             <div>
-              <label className="text-xs font-semibold text-text-2 block mb-2">Vendors</label>
+              <div className="flex items-center justify-between mb-2">
+                <label className="text-xs font-semibold text-text-2">Vendors</label>
+                <span className="text-[10px] text-text-4">{form.vendors.length} selected</span>
+              </div>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
                 {demoVendors.map(v => {
                   const selected = form.vendors.includes(v.id);
                   return (
                     <button key={v.id} onClick={() => {
                       update("vendors", selected ? form.vendors.filter(x => x !== v.id) : [...form.vendors, v.id]);
-                    }} className={`flex items-center gap-3 p-3 rounded-lg border text-xs transition-all ${
+                    }} className={`flex items-center gap-3 p-2.5 rounded-lg border text-xs transition-all ${
                       selected ? "border-orange bg-orange-50" : "border-border hover:border-gray-300"
                     }`}>
-                      <div className="w-8 h-8 rounded-full bg-blue/10 flex items-center justify-center text-blue text-xs font-bold shrink-0">
-                        {v.name.charAt(0)}
-                      </div>
+                      <div className="w-7 h-7 rounded-full bg-blue/10 flex items-center justify-center text-blue text-[10px] font-bold shrink-0">{v.name.charAt(0)}</div>
                       <div className="flex-1 min-w-0 text-left">
                         <p className="text-sm font-medium text-text-1">{v.name}</p>
-                        <p className="text-[10px] text-text-4">{v.products} products · ⭐ {v.rating} · {v.country}</p>
+                        <p className="text-[9px] text-text-4">{v.products} products · ⭐ {v.rating}</p>
                       </div>
-                      {selected && <Check size={14} className="text-orange shrink-0" />}
+                      {selected && <Check size={13} className="text-orange shrink-0" />}
                     </button>
                   );
                 })}
@@ -633,224 +662,61 @@ export default function CreateStorefrontWizard() {
           </div>
         )}
 
-        {/* STEP 5: DNS GUIDE */}
-        {step === "dns" && (
-          <div className="max-w-2xl space-y-5">
-            <div className="flex items-center gap-3 mb-1">
-              <div className="w-9 h-9 rounded-lg bg-orange/10 flex items-center justify-center">
-                <ExternalLink size={18} className="text-orange" />
-              </div>
-              <div>
-                <h2 className="font-bold text-lg text-text-1">DNS Configuration</h2>
-                <p className="text-xs text-text-4">How to point your domain to Kauvex</p>
-              </div>
-            </div>
-
-            {form.domainType === "tld" && (
-              <div className="bg-green-50 border border-green/20 rounded-xl p-4 flex items-start gap-3">
-                <Check size={16} className="text-green-600 shrink-0 mt-0.5" />
-                <div>
-                  <p className="text-sm font-semibold text-green-800">No DNS configuration needed</p>
-                  <p className="text-xs text-green-700 mt-1">Country TLD storefronts work automatically with our domain infrastructure. Your storefront will be available at <strong>{form.slug}{form.selectedTld}</strong> once DNS propagates (usually 24-48 hours for new TLDs).</p>
-                </div>
-              </div>
-            )}
-
-            {form.domainType === "subdomain" && (
-              <div className="bg-green-50 border border-green/20 rounded-xl p-4 flex items-start gap-3">
-                <Check size={16} className="text-green-600 shrink-0 mt-0.5" />
-                <div>
-                  <p className="text-sm font-semibold text-green-800">Automatic subdomain</p>
-                  <p className="text-xs text-green-700 mt-1">Subdomains on kauvex.com are automatically configured. Your storefront will be live at <strong>{(form.subdomain || form.slug) || "yourstore"}.kauvex.com</strong> immediately.</p>
-                </div>
-              </div>
-            )}
-
-            {form.domainType === "custom" && (
-              <div className="space-y-4">
-                <p className="text-sm text-text-2">To connect your custom domain, follow these steps:</p>
-
-                <div className="space-y-3">
-                  {[
-                    { step: "1", title: "Access Your DNS Provider", desc: "Log in to your domain registrar or DNS hosting provider (e.g., GoDaddy, Namecheap, Cloudflare, AWS Route 53)." },
-                    { step: "2", title: "Add the Following DNS Records", desc: "", records: [
-                      { type: "A", name: "@", value: "76.76.21.21", ttl: "3600", desc: "Points your root domain to Kauvex" },
-                      { type: "CNAME", name: "www", value: "kauvex.com", ttl: "3600", desc: "Redirects www to your domain" },
-                    ]},
-                    { step: "3", title: "Or Use Our Nameservers (Recommended)", desc: "Replace your current nameservers with:", nameservers: ["ns1.kauvex.com", "ns2.kauvex.com", "ns3.kauvex.com"] },
-                    { step: "4", title: "Wait for Propagation", desc: "DNS changes can take 24-48 hours to propagate globally. SSL certificates are automatically provisioned once your domain resolves." },
-                    { step: "5", title: "Verify Domain", desc: "Once propagated, we'll automatically verify your domain and enable SSL. You can check the status in the storefront settings." },
-                  ].map(item => (
-                    <div key={item.step} className="flex gap-3 p-4 rounded-xl border border-border">
-                      <div className="w-7 h-7 rounded-full bg-orange text-white flex items-center justify-center text-xs font-bold shrink-0 mt-0.5">
-                        {item.step}
-                      </div>
-                      <div className="space-y-2">
-                        <p className="text-sm font-semibold text-text-1">{item.title}</p>
-                        <p className="text-xs text-text-4">{item.desc}</p>
-                        {"records" in item && item.records && (
-                          <div className="bg-gray-50 rounded-lg overflow-hidden border border-border">
-                            <table className="w-full text-xs">
-                              <thead><tr className="bg-gray-100"><th className="p-2 text-left font-semibold text-text-4">Type</th><th className="p-2 text-left font-semibold text-text-4">Name</th><th className="p-2 text-left font-semibold text-text-4">Value</th><th className="p-2 text-left font-semibold text-text-4">TTL</th></tr></thead>
-                              <tbody>
-                                {item.records.map((r: any) => (
-                                  <tr key={r.name + r.type} className="border-t border-border">
-                                    <td className="p-2 font-mono text-orange font-semibold">{r.type}</td>
-                                    <td className="p-2 font-mono">{r.name}</td>
-                                    <td className="p-2 font-mono text-blue">{r.value}</td>
-                                    <td className="p-2 text-text-4">{r.ttl}</td>
-                                  </tr>
-                                ))}
-                              </tbody>
-                            </table>
-                          </div>
-                        )}
-                        {"nameservers" in item && item.nameservers && (
-                          <div className="flex flex-wrap gap-2">
-                            {item.nameservers.map((ns: string) => (
-                              <code key={ns} className="text-xs bg-gray-100 px-2 py-1 rounded font-mono text-blue">{ns}</code>
-                            ))}
-                          </div>
-                        )}
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            )}
-          </div>
-        )}
-
-        {/* STEP 6: REVIEW & LAUNCH */}
+        {/* ===== STEP 6: REVIEW ===== */}
         {step === "review" && (
-          <div className="max-w-2xl space-y-5">
-            <div className="flex items-center gap-3 mb-1">
-              <div className="w-9 h-9 rounded-lg bg-orange/10 flex items-center justify-center">
-                <RocketIcon size={18} />
-              </div>
+          <div className="bg-white rounded-xl border border-border p-6 space-y-5">
+            <div>
+              <h2 className="font-bold text-lg text-text-1">Review & Launch</h2>
+              <p className="text-sm text-text-4">Check everything looks right before going live</p>
+            </div>
+
+            <div className="bg-gray-50 rounded-xl border border-border divide-y divide-border">
+              {[
+                { label: "Domain", value: getActiveDomain() },
+                { label: "Name", value: form.name || form.domainName },
+                { label: "Country", value: country ? `${country.flag} ${country.name} ${country.tld}` : "" },
+                { label: "Currency", value: `${currency.symbol} ${currency.code}` },
+                { label: "Tax", value: `${tax.rate}% ${tax.label} (${tax.inclusive ? "inclusive" : "exclusive"})` },
+                { label: "Template", value: themes.find(t => t.id === form.themeId)?.name || "" },
+                { label: "Categories", value: `${form.categories.length} selected (subcategories included)` },
+                { label: "Vendors", value: `${form.vendors.length} selected` },
+              ].map(item => (
+                <div key={item.label} className="flex items-center justify-between px-4 py-2.5 text-sm">
+                  <span className="text-text-4">{item.label}</span>
+                  <span className="font-semibold text-text-1 text-right">{item.value}</span>
+                </div>
+              ))}
+            </div>
+
+            <div className="bg-green-50 border border-green/20 rounded-xl p-4 flex items-start gap-3">
+              <Sparkles size={16} className="text-green-600 shrink-0 mt-0.5" />
               <div>
-                <h2 className="font-bold text-lg text-text-1">Review & Launch</h2>
-                <p className="text-xs text-text-4">Review your storefront configuration before launching</p>
+                <p className="text-sm font-semibold text-green-800">Ready to launch</p>
+                <p className="text-xs text-green-700 mt-1">Your storefront will be created and available at <strong>{getActiveDomain()}</strong> immediately. You can modify all settings later.</p>
               </div>
             </div>
 
-            {createdId ? (
-              <div className="text-center py-10 space-y-4">
-                <div className="w-16 h-16 rounded-full bg-green-100 flex items-center justify-center mx-auto">
-                  <CheckCircle2 size={32} className="text-green-600" />
-                </div>
-                <h3 className="font-bold text-xl text-text-1">Storefront Created!</h3>
-                <p className="text-sm text-text-4 max-w-md mx-auto">
-                  Your storefront <strong>{form.name}</strong> has been created and is now active at <strong>{getActiveDomain()}</strong>.
-                </p>
-                <div className="flex items-center justify-center gap-3 pt-4">
-                  <button onClick={() => router.push(`/admin/storefronts/${createdId}`)}
-                    className="h-10 px-5 bg-orange text-white text-sm font-semibold rounded-lg hover:bg-orange/90">
-                    Configure Storefront
-                  </button>
-                  <button onClick={() => router.push("/admin/storefronts")}
-                    className="h-10 px-5 border border-border text-text-2 text-sm font-medium rounded-lg hover:bg-gray-50">
-                    Back to All Storefronts
-                  </button>
-                </div>
-              </div>
-            ) : (
-              <>
-                <div className="bg-gray-50 rounded-xl border border-border p-4 space-y-3">
-                  <div className="flex items-center justify-between pb-3 border-b border-border">
-                    <span className="text-xs font-semibold text-text-4 uppercase">Setting</span>
-                    <span className="text-xs font-semibold text-text-4 uppercase">Value</span>
-                  </div>
-                  {[
-                    { label: "Storefront Name", value: form.name },
-                    { label: "Slug", value: form.slug },
-                    { label: "Domain", value: getActiveDomain(), highlight: true },
-                    { label: "Domain Type", value: form.domainType === "tld" ? "Country TLD" : form.domainType === "subdomain" ? "Subdomain" : "Custom Domain" },
-                    { label: "Country", value: country ? `${country.flag} ${country.name}` : "" },
-                    { label: "Currency", value: `${form.currencySymbol} ${form.currencyCode}` },
-                    { label: "Language", value: languages.find(l => l.code === form.languageCode)?.name || form.languageCode },
-                    { label: "Tax", value: `${form.taxRate}% ${form.taxLabel} ${form.taxInclusive ? "(inclusive)" : "(exclusive)"}` },
-                    { label: "Theme", value: themes.find(t => t.id === form.themeId)?.name },
-                    { label: "Categories", value: `${form.categories.length} selected` },
-                    { label: "Vendors", value: `${form.vendors.length} selected` },
-                  ].map(item => (
-                    <div key={item.label} className="flex items-center justify-between text-sm">
-                      <span className="text-text-2">{item.label}</span>
-                      <span className={`font-semibold ${item.highlight ? "text-orange" : "text-text-1"}`}>{item.value}</span>
-                    </div>
-                  ))}
-                </div>
-
-                <button onClick={handleCreate} disabled={saving}
-                  className="w-full h-12 bg-orange text-white text-sm font-bold rounded-xl hover:bg-orange/90 transition-colors disabled:opacity-50 flex items-center justify-center gap-2">
-                  {saving ? <><Loader2 size={16} className="animate-spin" /> Creating...</> : <>Launch Storefront <RocketIcon size={16} /></>}
-                </button>
-              </>
-            )}
+            <button onClick={handleCreate} disabled={saving}
+              className="w-full h-12 bg-orange text-white text-sm font-bold rounded-xl hover:bg-orange/90 transition-colors disabled:opacity-50 flex items-center justify-center gap-2">
+              {saving ? <><Loader2 size={16} className="animate-spin" /> Creating...</> : <>Launch Storefront <Sparkles size={16} /></>}
+            </button>
           </div>
         )}
-      </div>
 
-      {/* Navigation Buttons */}
-      {!createdId && (
+        {/* Navigation */}
         <div className="flex items-center justify-between mt-6">
-          <button onClick={prev} disabled={stepIndex === 0}
-            className="flex items-center gap-1.5 h-10 px-5 text-sm font-medium text-text-3 hover:bg-gray-100 rounded-lg transition-colors disabled:opacity-30">
-            <ArrowLeft size={14} /> Back
+          <button onClick={prevStep} disabled={currentStepIndex === 0}
+            className="flex items-center gap-1.5 h-9 px-4 text-xs font-medium text-text-3 hover:bg-gray-100 rounded-lg transition-colors disabled:opacity-30">
+            <ArrowLeft size={13} /> Back
           </button>
-          <button onClick={next} disabled={!canProceed() || step === "review"}
-            className="flex items-center gap-1.5 h-10 px-5 bg-orange text-white text-sm font-semibold rounded-lg hover:bg-orange/90 transition-colors disabled:opacity-50">
-            {step === "review" ? "Launch" : "Continue"} <ArrowRight size={14} />
-          </button>
+          {step !== "review" && (
+            <button onClick={nextStep} disabled={!canProceed()}
+              className="flex items-center gap-1.5 h-9 px-5 bg-orange text-white text-xs font-semibold rounded-lg hover:bg-orange/90 transition-colors disabled:opacity-50">
+              Continue <ArrowRight size={13} />
+            </button>
+          )}
         </div>
-      )}
+      </div>
     </AdminShell>
   );
-}
-
-function getCurrencyForCountry(code: string): string {
-  const map: Record<string, string> = {
-    US: "USD", GB: "GBP", CA: "CAD", AU: "AUD", NG: "NGN",
-    DE: "EUR", FR: "EUR", AE: "AED", IN: "INR", JP: "JPY",
-    CN: "CNY", BR: "BRL", ZA: "ZAR", SG: "SGD", HK: "HKD",
-    MY: "MYR", KR: "KRW", SA: "SAR", EG: "EGP", KE: "KES", GH: "GHS",
-  };
-  return map[code] || "USD";
-}
-
-function getLanguageForCountry(code: string): string {
-  const map: Record<string, string> = {
-    US: "en", GB: "en", CA: "en", AU: "en", NG: "en",
-    DE: "de", FR: "fr", AE: "ar", IN: "hi", JP: "ja",
-    CN: "zh", BR: "pt", ZA: "en", SG: "en", HK: "en",
-    MY: "ms", KR: "ko", SA: "ar", EG: "ar", KE: "en", GH: "en",
-  };
-  return map[code] || "en";
-}
-
-function getTaxForCountry(code: string): { rate: number; label: string; inclusive: boolean } {
-  const map: Record<string, { rate: number; label: string; inclusive: boolean }> = {
-    US: { rate: 0, label: "Sales Tax", inclusive: false },
-    GB: { rate: 20, label: "VAT", inclusive: true },
-    CA: { rate: 13, label: "HST", inclusive: false },
-    AU: { rate: 10, label: "GST", inclusive: true },
-    NG: { rate: 7.5, label: "VAT", inclusive: true },
-    DE: { rate: 19, label: "MwSt", inclusive: true },
-    FR: { rate: 20, label: "TVA", inclusive: true },
-    AE: { rate: 5, label: "VAT", inclusive: true },
-    IN: { rate: 18, label: "GST", inclusive: true },
-    JP: { rate: 10, label: "Consumption Tax", inclusive: true },
-    CN: { rate: 13, label: "VAT", inclusive: true },
-    BR: { rate: 17, label: "ICMS", inclusive: true },
-    ZA: { rate: 15, label: "VAT", inclusive: true },
-    SG: { rate: 9, label: "GST", inclusive: true },
-    HK: { rate: 0, label: "N/A", inclusive: false },
-    MY: { rate: 10, label: "SST", inclusive: true },
-    KR: { rate: 10, label: "VAT", inclusive: true },
-    SA: { rate: 15, label: "VAT", inclusive: true },
-    EG: { rate: 14, label: "VAT", inclusive: true },
-    KE: { rate: 16, label: "VAT", inclusive: true },
-    GH: { rate: 12.5, label: "VAT", inclusive: true },
-  };
-  return map[code] || { rate: 0, label: "VAT", inclusive: false };
 }

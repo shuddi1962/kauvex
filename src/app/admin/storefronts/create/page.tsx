@@ -9,7 +9,7 @@ import {
   Loader2, Star, Layout, Eye, DollarSign, Users, FolderTree,
   Sparkles, Shield, HelpCircle, Copy, Monitor,
 } from "lucide-react";
-import { insforge } from "@/lib/insforge";
+import { supabase } from "@/lib/insforge";
 
 const countries = [
   { code: "US", name: "United States", flag: "🇺🇸", tld: ".com" },
@@ -207,9 +207,14 @@ export default function CreateStorefrontWizard() {
       status: "active",
     };
 
+    const { data: { session } } = await supabase.auth.getSession();
+    const token = session?.access_token;
     const res = await fetch("/api/admin/storefronts/create", {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
+      headers: {
+        "Content-Type": "application/json",
+        ...(token ? { "Authorization": `Bearer ${token}` } : {}),
+      },
       body: JSON.stringify({ payload, categories: form.categories, vendors: form.vendors }),
     });
     const json = await res.json();

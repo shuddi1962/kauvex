@@ -37,6 +37,9 @@ export async function POST(request: NextRequest) {
       .select();
 
     if (error) {
+      if (error.message.includes("duplicate key") || error.message.includes("unique constraint")) {
+        return errorResponse("A storefront with this domain name already exists", 409);
+      }
       return errorResponse(error.message, 400);
     }
 

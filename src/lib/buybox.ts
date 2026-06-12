@@ -45,15 +45,6 @@ export interface VendorOfferWithScore extends VendorOffer {
   vendor_shop_name: string
 }
 
-interface ScoreComponents {
-  price: number
-  fulfillment: number
-  delivery_speed: number
-  seller_rating: number
-  inventory: number
-  total: number
-}
-
 function getDeliverySpeedScore(days: number): number {
   return Math.max(0, 100 - (days - 1) * 10)
 }
@@ -157,7 +148,6 @@ export async function determineBuyBoxWinner(
   const adminDb = createAdminClient()
 
   const offerIds = scored.map(o => o.id)
-  const winnerId = winner?.id || ''
 
   await adminDb
     .from('vendor_offers')

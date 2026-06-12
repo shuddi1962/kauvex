@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { Shield, AlertTriangle, Check, X } from "lucide-react";
+import { AlertTriangle, Check, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
 interface AgeVerificationProps {

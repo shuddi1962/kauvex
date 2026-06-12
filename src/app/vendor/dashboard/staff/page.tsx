@@ -7,19 +7,14 @@ import {
   Mail,
   UserPlus,
   Shield,
-  Clock,
   X,
   Check,
   Search,
-  ChevronDown,
-  Bell,
-  Store,
   Loader2,
-  AlertTriangle,
-  Eye,
   Activity,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import VendorShell from "@/components/vendor/vendor-shell";
 
 const STAFF_ROLES = [
   {
@@ -106,7 +101,6 @@ export default function StaffPage() {
     if (!inviteEmail) return;
     setProcessing(true);
     await new Promise((r) => setTimeout(r, 1000));
-    const roleInfo = STAFF_ROLES.find((r) => r.value === inviteRole);
     const initials = inviteEmail[0].toUpperCase();
     setStaff([
       ...staff,
@@ -140,31 +134,15 @@ export default function StaffPage() {
   );
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <div className="bg-white border-b border-gray-200 px-6 py-4">
-        <div className="flex items-center justify-between">
-          <div>
-            <h1 className="text-xl font-bold text-gray-900">Staff Management</h1>
-            <p className="text-sm text-gray-500">Manage your vendor team members</p>
-          </div>
-          <div className="flex items-center gap-2">
-            <Link
-              href="/vendor/dashboard"
-              className="px-3 py-2 text-sm border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors"
-            >
-              Dashboard
-            </Link>
-            <Button
-              size="sm"
-              onClick={() => setShowInviteForm(true)}
-            >
-              <UserPlus size={14} className="mr-1" /> Invite Staff
-            </Button>
-          </div>
-        </div>
+    <VendorShell title="Staff Management" subtitle="Manage your vendor team members">
+      <div className="flex items-center justify-between mb-4">
+        <p className="text-sm text-gray-500">Manage your vendor team members</p>
+        <Button size="sm" onClick={() => setShowInviteForm(true)}>
+          <UserPlus size={14} className="mr-1" /> Invite Staff
+        </Button>
       </div>
 
-      <div className="max-w-5xl mx-auto p-6 space-y-6">
+      <div className="max-w-5xl mx-auto space-y-6">
         <div className="flex items-center gap-3">
           <div className="relative flex-1 max-w-xs">
             <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
@@ -202,7 +180,6 @@ export default function StaffPage() {
               ) : (
                 filteredStaff.map((member) => {
                   const roleInfo = STAFF_ROLES.find((r) => r.value === member.role);
-                  const logs = activityLog[member.id] || [];
                   return (
                     <tr key={member.id} className="border-b border-gray-50 hover:bg-gray-50 transition-colors">
                       <td className="py-3 px-4">
@@ -423,6 +400,6 @@ export default function StaffPage() {
           <div className="fixed inset-0 bg-black/30 flex items-center justify-center z-50 hidden" />
         )}
       </div>
-    </div>
+    </VendorShell>
   );
 }

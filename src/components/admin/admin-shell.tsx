@@ -47,6 +47,9 @@ import {
   Warehouse,
   PenTool,
   Smartphone,
+  Scale,
+  ClipboardList,
+  ScrollText,
 } from "lucide-react";
 
 const sidebarSections = [
@@ -65,6 +68,8 @@ const sidebarSections = [
       { label: "Reviews", icon: Heart, href: "/admin/reviews" },
       { label: "Gift Cards", icon: Gift, href: "/admin/gift-cards" },
       { label: "Coupons", icon: Ticket, href: "/admin/coupons" },
+      { label: "Bundles", icon: Gift, href: "/admin/bundles" },
+      { label: "Disputes", icon: Scale, href: "/admin/disputes" },
     ],
   },
   {
@@ -108,6 +113,7 @@ const sidebarSections = [
       { label: "Pickup Points", icon: MapPin, href: "/admin/pickup-points" },
       { label: "Warranty", icon: Shield, href: "/admin/warranty" },
       { label: "Field Team", icon: Wrench, href: "/admin/field-team" },
+      { label: "CJ Dropshipping", icon: ClipboardList, href: "/admin/cj-dropshipping" },
     ],
   },
   {
@@ -125,6 +131,7 @@ const sidebarSections = [
       { label: "Banner Builder", icon: Image, href: "/admin/banners/builder" },
       { label: "Footer Builder", icon: Layers, href: "/admin/footer" },
       { label: "Media Library", icon: ImageIcon, href: "/admin/media" },
+      { label: "Pages", icon: ScrollText, href: "/admin/pages" },
     ],
   },
   {
@@ -147,6 +154,7 @@ const sidebarSections = [
       { label: "Feature Flags", icon: Plug, href: "/admin/features" },
       { label: "Mobile App", icon: Smartphone, href: "/admin/mobile" },
       { label: "Site Doctor", icon: AlertTriangle, href: "/admin/site-doctor" },
+      { label: "Audit Log", icon: ScrollText, href: "/admin/audit-log" },
     ],
   },
 ];

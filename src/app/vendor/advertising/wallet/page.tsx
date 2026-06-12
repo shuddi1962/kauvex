@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import Link from "next/link";
+import VendorShell from "@/components/vendor/vendor-shell";
 import { Button } from "@/components/ui/button";
 import {
   Wallet, Plus, ArrowDownRight, ArrowUpRight, CreditCard,
@@ -62,22 +63,8 @@ export default function VendorAdWalletPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <div className="bg-white border-b border-gray-200 px-6 py-4">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <Link href="/vendor/advertising" className="p-1.5 hover:bg-gray-100 rounded-lg transition-colors">
-              <ArrowLeft size={18} className="text-text-3" />
-            </Link>
-            <div>
-              <h1 className="text-xl font-bold text-text-1">Ad Wallet</h1>
-              <p className="text-sm text-text-4">Manage your advertising budget and transactions</p>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <div className="max-w-5xl mx-auto p-6 space-y-6">
+    <VendorShell title="Ad Wallet" subtitle="Manage your advertising budget and transactions">
+      <div className="max-w-5xl mx-auto space-y-6">
         {/* Balance Card */}
         <div className="bg-gradient-to-br from-blue to-blue-700 rounded-xl p-6 text-white">
           <div className="flex items-start justify-between">
@@ -257,6 +244,6 @@ export default function VendorAdWalletPage() {
           </div>
         </div>
       </div>
-    </div>
+    </VendorShell>
   );
 }

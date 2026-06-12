@@ -9,6 +9,7 @@ import {
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { insforge } from "@/lib/insforge";
+import VendorShell from "@/components/vendor/vendor-shell";
 
 export default function VendorSettingsPage() {
   const [loading, setLoading] = useState(true);
@@ -82,41 +83,31 @@ export default function VendorSettingsPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <Loader2 size={24} className="animate-spin text-purple-600" />
-      </div>
+      <VendorShell title="Settings" subtitle="Manage your vendor account and store">
+        <div className="flex items-center justify-center py-12">
+          <Loader2 size={24} className="animate-spin text-purple-600" />
+        </div>
+      </VendorShell>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      {/* Header */}
-      <div className="bg-white border-b border-gray-200 px-6 py-4 sticky top-0 z-10">
-        <div className="max-w-4xl mx-auto flex items-center justify-between">
-          <div className="flex items-center gap-4">
-            <Link href="/vendor/dashboard" className="p-2 hover:bg-gray-100 rounded-lg">
-              <ArrowLeft size={18} className="text-gray-500" />
-            </Link>
-            <div>
-              <h1 className="text-xl font-bold text-gray-900">Settings</h1>
-              <p className="text-sm text-gray-500">Manage your vendor account and store</p>
-            </div>
-          </div>
-          <div className="flex items-center gap-3">
-            {saved && (
-              <span className="flex items-center gap-1 text-sm text-green-600 bg-green-50 px-3 py-1.5 rounded-lg">
-                <CheckCircle2 size={14} /> Saved
-              </span>
-            )}
-            <Button onClick={handleSave} disabled={saving}>
-              <Save size={16} className="mr-2" />
-              {saving ? "Saving..." : "Save All"}
-            </Button>
-          </div>
+    <VendorShell title="Settings" subtitle="Manage your vendor account and store">
+      <div className="flex items-center justify-between mb-4">
+        <div className="flex items-center gap-3">
+          {saved && (
+            <span className="flex items-center gap-1 text-sm text-green-600 bg-green-50 px-3 py-1.5 rounded-lg">
+              <CheckCircle2 size={14} /> Saved
+            </span>
+          )}
         </div>
+        <Button onClick={handleSave} disabled={saving}>
+          <Save size={16} className="mr-2" />
+          {saving ? "Saving..." : "Save All"}
+        </Button>
       </div>
 
-      <div className="max-w-4xl mx-auto p-6 space-y-6">
+      <div className="max-w-4xl mx-auto space-y-6">
         {/* Personal Info */}
         <div className="bg-white rounded-xl p-6 border border-gray-200 space-y-4">
           <div className="flex items-center gap-2 pb-3 border-b border-gray-100">
@@ -263,6 +254,6 @@ export default function VendorSettingsPage() {
           </Button>
         </div>
       </div>
-    </div>
+    </VendorShell>
   );
 }

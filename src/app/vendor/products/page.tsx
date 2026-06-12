@@ -7,6 +7,7 @@ import {
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { insforge } from "@/lib/insforge";
+import VendorShell from "@/components/vendor/vendor-shell";
 
 interface VendorProduct {
   id: string;
@@ -323,7 +324,7 @@ export default function VendorProductsPage() {
   const selectedBrand = brands.find((b) => b.id === form.brand_id);
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <VendorShell title="Products" subtitle="Manage your product catalog">
       {/* Toast */}
       {toast && (
         <div className={`fixed top-4 right-4 z-50 px-4 py-3 rounded-lg shadow-lg text-white text-sm ${toast.type === "success" ? "bg-green-600" : "bg-red-600"}`}>
@@ -331,22 +332,14 @@ export default function VendorProductsPage() {
         </div>
       )}
 
-      {/* Header */}
-      <div className="bg-white border-b border-gray-200 px-6 py-4">
-        <div className="flex items-center justify-between">
-          <div>
-            <h1 className="text-xl font-bold text-gray-900">My Products</h1>
-            <p className="text-sm text-gray-500">{products.length} products</p>
-          </div>
-          <div className="flex gap-2">
-            <button onClick={() => { resetForm(); setShowForm(!showForm); }} className="flex items-center gap-2 px-4 py-2 bg-purple-600 text-white rounded-lg text-sm hover:bg-purple-700">
-              <Plus size={16} /> {showForm && !editingId ? "Cancel" : "Add Product"}
-            </button>
-          </div>
-        </div>
+      <div className="flex items-center justify-between mb-4">
+        <p className="text-sm text-gray-500">{products.length} products</p>
+        <button onClick={() => { resetForm(); setShowForm(!showForm); }} className="flex items-center gap-2 px-4 py-2 bg-purple-600 text-white rounded-lg text-sm hover:bg-purple-700">
+          <Plus size={16} /> {showForm && !editingId ? "Cancel" : "Add Product"}
+        </button>
       </div>
 
-      <div className="max-w-7xl mx-auto p-6 space-y-4">
+      <div className="max-w-7xl mx-auto space-y-4">
         {/* Product Form */}
         {showForm && (
           <div className="bg-white rounded-xl border border-gray-200 shadow-sm">
@@ -657,7 +650,7 @@ export default function VendorProductsPage() {
           </div>
         )}
       </div>
-    </div>
+    </VendorShell>
   );
 }
 

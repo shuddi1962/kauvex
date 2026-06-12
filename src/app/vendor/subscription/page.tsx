@@ -19,11 +19,10 @@ import {
   BarChart3,
   RefreshCw,
   Ban,
-  ChevronDown,
-  Bell,
   Loader2,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import VendorShell from "@/components/vendor/vendor-shell";
 
 const CURRENT_PLAN = {
   id: "free",
@@ -148,23 +147,8 @@ export default function SubscriptionPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <div className="bg-white border-b border-gray-200 px-6 py-4">
-        <div className="flex items-center justify-between">
-          <div>
-            <h1 className="text-xl font-bold text-gray-900">Subscription</h1>
-            <p className="text-sm text-gray-500">Manage your vendor plan and billing</p>
-          </div>
-          <Link
-            href="/vendor/dashboard"
-            className="px-3 py-2 text-sm border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors"
-          >
-            Dashboard
-          </Link>
-        </div>
-      </div>
-
-      <div className="max-w-5xl mx-auto p-6 space-y-6">
+    <VendorShell title="Subscription & Plans" subtitle="Manage your vendor plan and billing">
+      <div className="max-w-5xl mx-auto space-y-6">
         <div className="grid lg:grid-cols-3 gap-6">
           <div className="lg:col-span-2">
             <div className="bg-white rounded-xl border border-gray-200 p-6">
@@ -473,6 +457,6 @@ export default function SubscriptionPage() {
           </div>
         </div>
       )}
-    </div>
+    </VendorShell>
   );
 }

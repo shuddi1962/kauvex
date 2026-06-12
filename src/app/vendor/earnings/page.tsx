@@ -4,6 +4,7 @@ import { useState, useEffect, useCallback } from "react";
 import Link from "next/link";
 import { DollarSign, TrendingUp, Wallet, ArrowDownToLine, Calendar, Loader2 } from "lucide-react";
 import { insforge } from "@/lib/insforge";
+import VendorShell from "@/components/vendor/vendor-shell";
 
 interface Payout {
   id: string;
@@ -11,13 +12,6 @@ interface Payout {
   status: string;
   created_at: string;
   method: string;
-}
-
-interface Order {
-  total_amount: number;
-  status: string;
-  created_at: string;
-  vendor_id: string;
 }
 
 export default function VendorEarningsPage() {
@@ -39,7 +33,7 @@ export default function VendorEarningsPage() {
       if (!user) return;
       setVendorId(user.id);
 
-      const [payoutsRes, ordersRes] = await Promise.all([
+      const [payoutsRes] = await Promise.all([
         insforge.database.from("payouts").select("*").eq("vendor_id", user.id).order("created_at", { ascending: false }),
         insforge.database.from("orders").select("total_amount, status, created_at").eq("vendor_id", user.id),
       ]);
@@ -54,7 +48,6 @@ export default function VendorEarningsPage() {
 
   useEffect(() => { fetchData(); }, [fetchData]);
 
-  const totalRevenue = 0; // Calculate from orders if needed
   const totalPayout = payouts.filter((p) => p.status === "completed").reduce((a, p) => a + p.amount, 0);
   const pendingPayout = payouts.filter((p) => p.status !== "completed").reduce((a, p) => a + p.amount, 0);
 
@@ -80,27 +73,22 @@ export default function VendorEarningsPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <VendorShell title="Earnings" subtitle="Revenue and payout overview">
       {toast && (
         <div className={`fixed top-4 right-4 z-50 px-4 py-3 rounded-lg shadow-lg text-white text-sm ${toast.type === "success" ? "bg-green-600" : "bg-red-600"}`}>
           {toast.message}
         </div>
       )}
 
-      <div className="bg-white border-b border-gray-200 px-6 py-4">
-        <div className="flex items-center justify-between">
-          <div><h1 className="text-xl font-bold text-gray-900">Earnings</h1><p className="text-sm text-gray-500">Revenue and payout overview</p></div>
-          <div className="flex gap-2">
-            <Link href="/vendor/dashboard" className="px-3 py-2 text-sm border border-gray-200 rounded-lg hover:bg-gray-50">Dashboard</Link>
-            <button onClick={handlePayoutRequest} disabled={requesting || pendingPayout === 0} className="flex items-center gap-2 px-4 py-2 bg-purple-600 text-white rounded-lg text-sm hover:bg-purple-700 disabled:opacity-50">
-              {requesting ? <Loader2 size={16} className="animate-spin" /> : <ArrowDownToLine size={16} />}
-              Request Payout
-            </button>
-          </div>
-        </div>
+      <div className="flex items-center justify-between mb-4">
+        <p className="text-sm text-gray-500">Revenue and payout overview</p>
+        <button onClick={handlePayoutRequest} disabled={requesting || pendingPayout === 0} className="flex items-center gap-2 px-4 py-2 bg-purple-600 text-white rounded-lg text-sm hover:bg-purple-700 disabled:opacity-50">
+          {requesting ? <Loader2 size={16} className="animate-spin" /> : <ArrowDownToLine size={16} />}
+          Request Payout
+        </button>
       </div>
 
-      <div className="max-w-7xl mx-auto p-6 space-y-6">
+      <div className="max-w-7xl mx-auto space-y-6">
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
           {[
             { label: "Total Revenue", value: `₦0`, icon: TrendingUp, color: "text-green-600" },
@@ -148,6 +136,6 @@ export default function VendorEarningsPage() {
           )}
         </div>
       </div>
-    </div>
+    </VendorShell>
   );
 }

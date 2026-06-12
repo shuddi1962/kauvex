@@ -41,30 +41,6 @@ function getEmail(): string {
   return process.env.CJ_EMAIL || "";
 }
 
-async function cjFetch<T>(endpoint: string, options: RequestInit = {}): Promise<T> {
-  const url = `${CJ_API_BASE}${endpoint}`;
-  const token = await cjAuth();
-
-  const res = await fetch(url, {
-    ...options,
-    headers: {
-      "Content-Type": "application/json",
-      "CJ-Authorization": `Bearer ${token}`,
-      ...(options.headers || {}),
-    },
-  });
-
-  if (!res.ok) {
-    const errBody = await res.text();
-    console.error(`[CJDropshipping] ${options.method || "GET"} ${endpoint} failed:`, res.status, errBody);
-    throw new Error(`CJ API error ${res.status}: ${errBody}`);
-  }
-
-  const data = await res.json();
-  console.log(`[CJDropshipping] ${options.method || "GET"} ${endpoint} → ${res.status}`);
-  return data as T;
-}
-
 export async function cjAuth(): Promise<string> {
   if (cachedToken && Date.now() < cachedToken.expiresAt) {
     return cachedToken.token;

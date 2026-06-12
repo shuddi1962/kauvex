@@ -1,5 +1,4 @@
 import { insforge } from '@/lib/insforge'
-import { createOpenRouterClient } from './openrouter'
 
 export interface Recommendation {
   productId: string

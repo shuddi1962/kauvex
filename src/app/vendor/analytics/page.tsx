@@ -4,6 +4,7 @@ import { useState, useEffect, useCallback } from "react";
 import Link from "next/link";
 import { BarChart3, TrendingUp, Eye, ShoppingCart, Users, Package, Loader2 } from "lucide-react";
 import { insforge } from "@/lib/insforge";
+import VendorShell from "@/components/vendor/vendor-shell";
 
 export default function VendorAnalyticsPage() {
   const [loading, setLoading] = useState(true);
@@ -85,15 +86,8 @@ export default function VendorAnalyticsPage() {
   const maxViews = Math.max(...weeklyData.map((d) => d.views), 1);
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <div className="bg-white border-b border-gray-200 px-6 py-4">
-        <div className="flex items-center justify-between">
-          <div><h1 className="text-xl font-bold text-gray-900">Analytics</h1><p className="text-sm text-gray-500">Last 30 days performance</p></div>
-          <Link href="/vendor/dashboard" className="px-3 py-2 text-sm border border-gray-200 rounded-lg hover:bg-gray-50">Dashboard</Link>
-        </div>
-      </div>
-
-      <div className="max-w-7xl mx-auto p-6 space-y-6">
+    <VendorShell title="Analytics" subtitle="Last 30 days performance">
+      <div className="max-w-7xl mx-auto space-y-6">
         {loading ? (
           <div className="text-center py-12"><Loader2 size={24} className="animate-spin mx-auto text-gray-400" /></div>
         ) : (
@@ -146,6 +140,6 @@ export default function VendorAnalyticsPage() {
           </>
         )}
       </div>
-    </div>
+    </VendorShell>
   );
 }

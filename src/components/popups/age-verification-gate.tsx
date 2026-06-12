@@ -12,7 +12,7 @@ export default function AgeVerificationGate() {
         .split("; ")
         .find((row) => row.startsWith("kauvex-storefront="));
       if (cookie) {
-        const value = JSON.parse(decodeURIComponent(cookie.split("=")[1]));
+        JSON.parse(decodeURIComponent(cookie.split("=")[1]));
         setConfig({ enabled: true, minAge: 18 });
       } else {
         setConfig({ enabled: false, minAge: 18 });

@@ -3,6 +3,7 @@
 import { useState } from "react";
 import Link from "next/link";
 import { Store, Save, Image, Globe, MapPin, Phone, Mail } from "lucide-react";
+import VendorShell from "@/components/vendor/vendor-shell";
 
 export default function VendorShopPage() {
   const [shop, setShop] = useState({
@@ -22,18 +23,13 @@ export default function VendorShopPage() {
   const handleSave = () => alert("Shop profile saved successfully!");
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <div className="bg-white border-b border-gray-200 px-6 py-4">
-        <div className="flex items-center justify-between">
-          <div><h1 className="text-xl font-bold text-gray-900">Shop Profile</h1><p className="text-sm text-gray-500">Customize your vendor storefront</p></div>
-          <div className="flex gap-2">
-            <Link href="/vendor/dashboard" className="px-3 py-2 text-sm border border-gray-200 rounded-lg hover:bg-gray-50">Dashboard</Link>
-            <button onClick={handleSave} className="flex items-center gap-2 px-4 py-2 bg-purple-600 text-white rounded-lg text-sm hover:bg-purple-700"><Save size={16} /> Save Changes</button>
-          </div>
-        </div>
+    <VendorShell title="Shop Settings" subtitle="Customize your vendor storefront">
+      <div className="flex items-center justify-between mb-4">
+        <p className="text-sm text-gray-500">Customize your vendor storefront</p>
+        <button onClick={handleSave} className="flex items-center gap-2 px-4 py-2 bg-purple-600 text-white rounded-lg text-sm hover:bg-purple-700"><Save size={16} /> Save Changes</button>
       </div>
 
-      <div className="max-w-4xl mx-auto p-6 space-y-6">
+      <div className="max-w-4xl mx-auto space-y-6">
         <div className="bg-white rounded-xl p-6 border border-gray-200 space-y-4">
           <h3 className="font-semibold text-sm flex items-center gap-2"><Store size={16} /> Shop Info</h3>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -65,6 +61,6 @@ export default function VendorShopPage() {
           <div><label className="text-xs text-gray-500 block mb-1">Shipping Note</label><input value={shop.shippingNote} onChange={(e) => setShop({ ...shop, shippingNote: e.target.value })} className="w-full h-10 px-3 text-sm border border-gray-200 rounded-lg" /></div>
         </div>
       </div>
-    </div>
+    </VendorShell>
   );
 }

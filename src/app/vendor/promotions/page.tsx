@@ -3,6 +3,7 @@
 import { useState } from "react";
 import Link from "next/link";
 import { Plus, Trash2, ToggleLeft, ToggleRight, Tag } from "lucide-react";
+import VendorShell from "@/components/vendor/vendor-shell";
 
 const demoCoupons = [
   { id: 1, code: "VENDOR10", type: "percentage", value: 10, minOrder: 20000, usageLimit: 100, used: 34, active: true, expires: "2024-06-30" },
@@ -25,18 +26,13 @@ export default function VendorPromotionsPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <div className="bg-white border-b border-gray-200 px-6 py-4">
-        <div className="flex items-center justify-between">
-          <div><h1 className="text-xl font-bold text-gray-900">Promotions</h1><p className="text-sm text-gray-500">{coupons.length} coupons</p></div>
-          <div className="flex gap-2">
-            <Link href="/vendor/dashboard" className="px-3 py-2 text-sm border border-gray-200 rounded-lg hover:bg-gray-50">Dashboard</Link>
-            <button onClick={() => setShowAdd(!showAdd)} className="flex items-center gap-2 px-4 py-2 bg-purple-600 text-white rounded-lg text-sm hover:bg-purple-700"><Plus size={16} /> Create Coupon</button>
-          </div>
-        </div>
+    <VendorShell title="Promotions" subtitle="Create and manage coupons and deals">
+      <div className="flex items-center justify-between mb-4">
+        <p className="text-sm text-gray-500">{coupons.length} coupons</p>
+        <button onClick={() => setShowAdd(!showAdd)} className="flex items-center gap-2 px-4 py-2 bg-purple-600 text-white rounded-lg text-sm hover:bg-purple-700"><Plus size={16} /> Create Coupon</button>
       </div>
 
-      <div className="max-w-5xl mx-auto p-6 space-y-4">
+      <div className="max-w-5xl mx-auto space-y-4">
         {showAdd && (
           <div className="bg-white rounded-xl p-6 border border-gray-200 space-y-4">
             <h3 className="font-semibold text-sm">New Coupon</h3>
@@ -81,6 +77,6 @@ export default function VendorPromotionsPage() {
           </div>
         ))}
       </div>
-    </div>
+    </VendorShell>
   );
 }

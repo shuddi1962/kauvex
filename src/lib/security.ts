@@ -1,8 +1,8 @@
 import { TOTP } from "otplib";
-
-const totp = new TOTP();
 import { z } from "zod";
 import { insforge } from "./insforge";
+
+const totp = new TOTP();
 
 const rateLimitStore = new Map<string, { count: number; resetAt: number }>();
 

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import {
   Settings,
   Globe,
@@ -155,13 +155,7 @@ export default function SettingsPage() {
 
   const notificationTypes = ["Add to Cart", "Order Placed", "Payment Confirmed", "Wishlist Added", "Coupon Applied", "Review Submitted", "Newsletter Signup", "Return Requested", "Account Created", "Quote Sent", "Affiliate Commission"];
 
-  useEffect(() => {
-    const defaults: Record<string, { popup: boolean; email: boolean; sms: boolean }> = {};
-    notificationTypes.forEach((n) => { defaults[n] = { popup: true, email: true, sms: false }; });
-    loadSettings(defaults);
-  }, []);
-
-  const loadSettings = async (defaultNotifs: Record<string, { popup: boolean; email: boolean; sms: boolean }>) => {
+  const loadSettings = useCallback(async (defaultNotifs: Record<string, { popup: boolean; email: boolean; sms: boolean }>) => {
     try {
       const { data } = await insforge.database.from("settings").select("*");
       if (data) {
@@ -192,7 +186,13 @@ export default function SettingsPage() {
       console.error("Failed to load settings:", e);
       setNotifications(defaultNotifs);
     }
-  };
+  }, [notifications]);
+
+  useEffect(() => {
+    const defaults: Record<string, { popup: boolean; email: boolean; sms: boolean }> = {};
+    notificationTypes.forEach((n) => { defaults[n] = { popup: true, email: true, sms: false }; });
+    loadSettings(defaults);
+  }, [loadSettings]);
 
   const saveSettings = async (key: string, value: unknown) => {
     setSaving(true);

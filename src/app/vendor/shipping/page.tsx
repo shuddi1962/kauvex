@@ -9,6 +9,7 @@ import {
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { insforge } from "@/lib/insforge";
+import VendorShell from "@/components/vendor/vendor-shell";
 
 interface ShippingZone {
   id: string;
@@ -179,44 +180,36 @@ export default function VendorShippingPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <Loader2 size={24} className="animate-spin text-purple-600" />
-      </div>
+      <VendorShell title="Shipping" subtitle="Configure delivery areas, rates, and estimated times">
+        <div className="flex items-center justify-center py-12">
+          <Loader2 size={24} className="animate-spin text-purple-600" />
+        </div>
+      </VendorShell>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      {/* Header */}
-      <div className="bg-white border-b border-gray-200 px-6 py-4 sticky top-0 z-10">
-        <div className="max-w-5xl mx-auto flex items-center justify-between">
-          <div className="flex items-center gap-4">
-            <Link href="/vendor/dashboard" className="p-2 hover:bg-gray-100 rounded-lg">
-              <ArrowLeft size={18} className="text-gray-500" />
-            </Link>
-            <div>
-              <h1 className="text-xl font-bold text-gray-900">Shipping Zones</h1>
-              <p className="text-sm text-gray-500">Configure delivery areas, rates, and estimated times</p>
-            </div>
-          </div>
-          <div className="flex items-center gap-3">
-            {saved && (
-              <span className="flex items-center gap-1 text-sm text-green-600 bg-green-50 px-3 py-1.5 rounded-lg">
-                <CheckCircle2 size={14} /> Saved
-              </span>
-            )}
-            <Button variant="outline" onClick={() => { setShowAdd(true); setEditingId(null); setForm({ name: "", regions: [], flatRate: "", freeAbove: "", estimatedDays: "" }); }}>
-              <Plus size={16} className="mr-2" /> Add Zone
-            </Button>
-            <Button onClick={handleSave} disabled={saving}>
-              <Package size={16} className="mr-2" />
-              {saving ? "Saving..." : "Save All"}
-            </Button>
-          </div>
+    <VendorShell title="Shipping" subtitle="Configure delivery areas, rates, and estimated times">
+      <div className="flex items-center justify-between mb-4">
+        <div className="flex items-center gap-3">
+          {saved && (
+            <span className="flex items-center gap-1 text-sm text-green-600 bg-green-50 px-3 py-1.5 rounded-lg">
+              <CheckCircle2 size={14} /> Saved
+            </span>
+          )}
+        </div>
+        <div className="flex items-center gap-3">
+          <Button variant="outline" onClick={() => { setShowAdd(true); setEditingId(null); setForm({ name: "", regions: [], flatRate: "", freeAbove: "", estimatedDays: "" }); }}>
+            <Plus size={16} className="mr-2" /> Add Zone
+          </Button>
+          <Button onClick={handleSave} disabled={saving}>
+            <Package size={16} className="mr-2" />
+            {saving ? "Saving..." : "Save All"}
+          </Button>
         </div>
       </div>
 
-      <div className="max-w-5xl mx-auto p-6 space-y-4">
+      <div className="max-w-5xl mx-auto space-y-4">
         {/* Add/Edit Form */}
         {(showAdd || editingId) && (
           <div className="bg-white rounded-xl p-6 border border-gray-200 space-y-4">
@@ -336,6 +329,6 @@ export default function VendorShippingPage() {
           </div>
         ))}
       </div>
-    </div>
+    </VendorShell>
   );
 }

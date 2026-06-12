@@ -1,6 +1,6 @@
 "use client";
 
-import React, { createContext, useContext, useState, useEffect, ReactNode } from "react";
+import React, { createContext, useContext, useState, useEffect, useCallback, ReactNode } from "react";
 import { insforge } from "@/lib/insforge";
 import { useCurrencyStore } from "@/store/currency-store";
 
@@ -81,6 +81,18 @@ export function StorefrontProvider({ children }: { children: ReactNode }) {
   const [loading, setLoading] = useState(true);
   const setCurrency = useCurrencyStore(s => s.setCurrency);
 
+  const applyStorefront = useCallback((sf: Storefront) => {
+    setStorefrontState(sf);
+    localStorage.setItem("kauvex-storefront", JSON.stringify({ id: sf.id }));
+    const rate = EXCHANGE_RATES[sf.currencyCode] || 1;
+    setExchangeRate(rate);
+    setCurrency(sf.currencyCode);
+  }, [setCurrency]);
+
+  const setStorefront = useCallback((sf: Storefront) => {
+    applyStorefront(sf);
+  }, [applyStorefront]);
+
   useEffect(() => {
     (async () => {
       const { data, error } = await insforge.database
@@ -124,19 +136,7 @@ export function StorefrontProvider({ children }: { children: ReactNode }) {
       }
       setLoading(false);
     })();
-  }, []);
-
-  const applyStorefront = (sf: Storefront) => {
-    setStorefrontState(sf);
-    localStorage.setItem("kauvex-storefront", JSON.stringify({ id: sf.id }));
-    const rate = EXCHANGE_RATES[sf.currencyCode] || 1;
-    setExchangeRate(rate);
-    setCurrency(sf.currencyCode);
-  };
-
-  const setStorefront = (sf: Storefront) => {
-    applyStorefront(sf);
-  };
+  }, [applyStorefront]);
 
   const getStorefrontByDomain = (domain: string): Storefront | undefined => {
     return storefronts.find(s => s.activeDomain === domain);

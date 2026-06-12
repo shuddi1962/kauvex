@@ -1,22 +1,25 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import AdminShell from "@/components/admin/admin-shell";
 import { motion } from "framer-motion";
 import { LineChart, Line, ResponsiveContainer, Area, AreaChart, XAxis, YAxis, Tooltip } from "recharts";
 import { Users, ShoppingCart, DollarSign, Clock, Activity, ArrowUpRight } from "lucide-react";
 
 function AnimatedNumber({ value, prefix = "", suffix = "" }: { value: number; prefix?: string; suffix?: string }) {
-  const [display, setDisplay] = useState(0);
+  const [display, setDisplay] = useState(value);
+  const fromRef = useRef(display);
+  fromRef.current = display;
 
   useEffect(() => {
     const duration = 800;
     const steps = 20;
-    const increment = (value - display) / steps;
+    const from = fromRef.current;
+    const increment = (value - from) / steps;
     let step = 0;
     const interval = setInterval(() => {
       step++;
-      setDisplay((prev) => Math.round(prev + increment));
+      setDisplay(Math.round(from + increment * step));
       if (step >= steps) {
         setDisplay(value);
         clearInterval(interval);

@@ -41,6 +41,17 @@ import {
   ExternalLink,
   RefreshCw,
   Download,
+  FolderTree,
+  Award,
+  Gift,
+  Ticket,
+  Scale,
+  MapPin,
+  Warehouse,
+  ClipboardList,
+  ScrollText,
+  ImageIcon,
+  Smartphone,
 } from "lucide-react";
 
 const sidebarSections = [
@@ -49,10 +60,16 @@ const sidebarSections = [
     items: [
       { label: "Dashboard", icon: LayoutDashboard, href: "/admin", active: true },
       { label: "Products", icon: Package, href: "/admin/products" },
+      { label: "Categories", icon: FolderTree, href: "/admin/categories" },
+      { label: "Brands", icon: Award, href: "/admin/brands" },
       { label: "Orders", icon: ShoppingCart, href: "/admin/orders" },
       { label: "Customers", icon: Users, href: "/admin/customers" },
       { label: "Inventory", icon: Layers, href: "/admin/inventory" },
       { label: "Reviews", icon: Heart, href: "/admin/reviews" },
+      { label: "Gift Cards", icon: Gift, href: "/admin/gift-cards" },
+      { label: "Coupons", icon: Ticket, href: "/admin/coupons" },
+      { label: "Bundles", icon: Gift, href: "/admin/bundles" },
+      { label: "Disputes", icon: Scale, href: "/admin/disputes" },
     ],
   },
   {
@@ -67,15 +84,25 @@ const sidebarSections = [
     title: "Marketing",
     items: [
       { label: "Campaigns", icon: Megaphone, href: "/admin/marketing" },
+      { label: "Advertising", icon: Megaphone, href: "/admin/advertising" },
       { label: "Banners", icon: Image, href: "/admin/banners" },
+      { label: "Popups & Ads", icon: Megaphone, href: "/admin/popups" },
       { label: "SEO Tools", icon: Search, href: "/admin/seo" },
+    ],
+  },
+  {
+    title: "Finance",
+    items: [
+      { label: "Payments & P&L", icon: CreditCard, href: "/admin/finance" },
     ],
   },
   {
     title: "Operations",
     items: [
-      { label: "Shipping", icon: Truck, href: "/admin/shipping" },
-      { label: "Maintenance", icon: Wrench, href: "/admin/maintenance" },
+      { label: "Delivery", icon: Truck, href: "/admin/delivery" },
+      { label: "Shipping Zones", icon: MapPin, href: "/admin/shipping" },
+      { label: "Warehouses", icon: Warehouse, href: "/admin/warehouses" },
+      { label: "CJ Dropshipping", icon: ClipboardList, href: "/admin/cj-dropshipping" },
     ],
   },
   {
@@ -84,7 +111,8 @@ const sidebarSections = [
       { label: "Homepage Builder", icon: Palette, href: "/admin/homepage" },
       { label: "Banner Builder", icon: Image, href: "/admin/banners/builder" },
       { label: "Footer Builder", icon: Layers, href: "/admin/footer" },
-      { label: "Page Builder", icon: FileText, href: "/admin/pages" },
+      { label: "Pages", icon: ScrollText, href: "/admin/pages" },
+      { label: "Media Library", icon: ImageIcon, href: "/admin/media" },
     ],
   },
   {
@@ -92,16 +120,21 @@ const sidebarSections = [
     items: [
       { label: "Vendors", icon: Store, href: "/admin/vendors" },
       { label: "Vendor Ads", icon: Megaphone, href: "/admin/vendor-ads" },
+      { label: "Storefronts", icon: Globe, href: "/admin/storefronts" },
+      { label: "FBK Management", icon: Package, href: "/admin/fbk" },
     ],
   },
   {
     title: "System",
     items: [
       { label: "Settings", icon: Settings, href: "/admin/settings" },
+      { label: "Staff", icon: UserPlus, href: "/admin/staff" },
       { label: "Roles", icon: Shield, href: "/admin/roles" },
-      { label: "Analytics", icon: Globe, href: "/admin/analytics" },
+      { label: "Analytics", icon: BarChart3, href: "/admin/analytics" },
       { label: "Feature Flags", icon: Plug, href: "/admin/features" },
+      { label: "Mobile App", icon: Smartphone, href: "/admin/mobile" },
       { label: "Site Doctor", icon: AlertTriangle, href: "/admin/site-doctor" },
+      { label: "Audit Log", icon: ScrollText, href: "/admin/audit-log" },
     ],
   },
 ];

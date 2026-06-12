@@ -12,26 +12,22 @@ import {
   Sparkles,
   Image,
   Type,
-  Settings,
   Eye,
   Save,
   ChevronRight,
   Plus,
   GripVertical,
   X,
-  Check,
   Building2,
   PaintBucket,
   Monitor,
   Smartphone,
   Tablet,
-  ChevronDown,
-  Bell,
-  Store,
   Cpu,
   Code,
   ToggleLeft,
 } from "lucide-react";
+import VendorShell from "@/components/vendor/vendor-shell";
 
 type PlanTier = "free" | "premium" | "enterprise";
 
@@ -118,7 +114,7 @@ export default function StoreBuilderPage() {
     setShowLockedModal(feature);
   };
 
-  const LockedOverlay = ({ feature }: { feature: string }) => (
+  const LockedOverlay = (_props: { feature: string }) => (
     <div className="absolute inset-0 bg-white/80 backdrop-blur-[1px] rounded-xl flex flex-col items-center justify-center z-10">
       <Lock size={24} className="text-gray-300 mb-2" />
       <p className="text-xs font-semibold text-gray-400 mb-2">Premium Feature</p>
@@ -201,8 +197,8 @@ export default function StoreBuilderPage() {
                     }`}
                   />
                 </button>
-              </div>
-            );
+    </div>
+  );
           })}
         </div>
       </div>
@@ -567,47 +563,29 @@ export default function StoreBuilderPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <div className="bg-white border-b border-gray-200 px-6 py-4">
-        <div className="flex items-center justify-between">
-          <div>
-            <h1 className="text-xl font-bold text-gray-900">Store Builder</h1>
-            <p className="text-sm text-gray-500">Design and customize your vendor storefront</p>
+    <VendorShell title="Store Builder" subtitle="Design and customize your vendor storefront">
+      <div className="flex items-center justify-between mb-4">
+        <div className="flex items-center gap-2">
+          <div className="flex items-center gap-1.5 bg-gray-100 rounded-lg p-0.5">
+            {[
+              { id: "desktop", icon: Monitor },
+              { id: "tablet", icon: Tablet },
+              { id: "mobile", icon: Smartphone },
+            ].map((device) => {
+              const Icon = device.icon;
+              return (
+                <button
+                  key={device.id}
+                  onClick={() => setPreviewMode(device.id)}
+                  className={`p-1.5 rounded transition-colors ${
+                    previewMode === device.id ? "bg-white shadow-sm text-purple-600" : "text-gray-400 hover:text-gray-600"
+                  }`}
+                >
+                  <Icon size={14} />
+                </button>
+              );
+            })}
           </div>
-          <div className="flex items-center gap-2">
-            <div className="flex items-center gap-1.5 bg-gray-100 rounded-lg p-0.5 mr-2">
-              {[
-                { id: "desktop", icon: Monitor },
-                { id: "tablet", icon: Tablet },
-                { id: "mobile", icon: Smartphone },
-              ].map((device) => {
-                const Icon = device.icon;
-                return (
-                  <button
-                    key={device.id}
-                    onClick={() => setPreviewMode(device.id)}
-                    className={`p-1.5 rounded transition-colors ${
-                      previewMode === device.id ? "bg-white shadow-sm text-purple-600" : "text-gray-400 hover:text-gray-600"
-                    }`}
-                  >
-                    <Icon size={14} />
-                  </button>
-                );
-              })}
-            </div>
-            <Link
-              href="/vendor/dashboard"
-              className="px-3 py-2 text-sm border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors"
-            >
-              Dashboard
-            </Link>
-            <button className="flex items-center gap-2 px-4 py-2 bg-purple-600 text-white rounded-lg text-sm hover:bg-purple-700 transition-colors">
-              <Save size={16} /> Save Changes
-            </button>
-          </div>
-        </div>
-
-        <div className="flex items-center gap-2 mt-3">
           <span
             className={`text-[10px] font-semibold px-2 py-0.5 rounded-full ${
               plan === "free"
@@ -628,9 +606,12 @@ export default function StoreBuilderPage() {
             </Link>
           )}
         </div>
+        <button className="flex items-center gap-2 px-4 py-2 bg-purple-600 text-white rounded-lg text-sm hover:bg-purple-700 transition-colors">
+          <Save size={16} /> Save Changes
+        </button>
       </div>
 
-      <div className="max-w-6xl mx-auto p-6">
+      <div className="max-w-6xl mx-auto">
         <div className="flex gap-1 bg-white rounded-xl border border-gray-200 p-1 mb-6 overflow-x-auto">
           {TABS.map((tab) => {
             const Icon = tab.icon;
@@ -680,6 +661,6 @@ export default function StoreBuilderPage() {
           </div>
         </div>
       )}
-    </div>
+    </VendorShell>
   );
 }

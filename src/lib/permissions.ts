@@ -456,7 +456,7 @@ export async function getUserPermissions(userId: string): Promise<UserPermission
 }
 
 export function requirePermission(resource: string, action: string) {
-  return async (req: NextRequest): Promise<NextResponse | null> => {
+  return async (_req: NextRequest): Promise<NextResponse | null> => {
     try {
       const supabase = createClient()
       const { data, error: authError } = await supabase.auth.getUser()

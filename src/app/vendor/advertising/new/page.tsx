@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import Link from "next/link";
+import VendorShell from "@/components/vendor/vendor-shell";
 import { Button } from "@/components/ui/button";
 import {
   Megaphone, ArrowLeft, ArrowRight, Check, ChevronLeft, ChevronRight,
@@ -117,25 +118,14 @@ export default function NewAdCampaignPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <div className="bg-white border-b border-gray-200 px-6 py-4">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <Link href="/vendor/advertising" className="p-1.5 hover:bg-gray-100 rounded-lg transition-colors">
-              <ArrowLeft size={18} className="text-text-3" />
-            </Link>
-            <div>
-              <h1 className="text-xl font-bold text-text-1">Create Campaign</h1>
-              <p className="text-sm text-text-4">Set up a new advertising campaign</p>
-            </div>
-          </div>
-          <Link href="/vendor/advertising">
-            <Button variant="outline" size="sm">Cancel</Button>
-          </Link>
-        </div>
+    <VendorShell title="Create Ad Campaign" subtitle="Set up a new advertising campaign for your products">
+      <div className="flex items-center gap-2 mb-4">
+        <Link href="/vendor/advertising">
+          <Button variant="outline" size="sm">Cancel</Button>
+        </Link>
       </div>
 
-      <div className="max-w-6xl mx-auto p-6">
+      <div className="max-w-6xl mx-auto">
         {/* Stepper */}
         <div className="flex items-center justify-center mb-8">
           {steps.map((s, i) => (
@@ -513,6 +503,6 @@ export default function NewAdCampaignPage() {
           </div>
         </div>
       </div>
-    </div>
+    </VendorShell>
   );
 }

@@ -4,6 +4,7 @@ import { useState, useEffect, useCallback } from "react";
 import Link from "next/link";
 import { Search, Eye, Package, Truck, CheckCircle2, Clock, XCircle, Loader2 } from "lucide-react";
 import { insforge } from "@/lib/insforge";
+import VendorShell from "@/components/vendor/vendor-shell";
 
 interface VendorOrder {
   id: string;
@@ -100,21 +101,18 @@ export default function VendorOrdersPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <VendorShell title="Orders" subtitle="Track and manage your orders">
       {toast && (
         <div className={`fixed top-4 right-4 z-50 px-4 py-3 rounded-lg shadow-lg text-white text-sm ${toast.type === "success" ? "bg-green-600" : "bg-red-600"}`}>
           {toast.message}
         </div>
       )}
 
-      <div className="bg-white border-b border-gray-200 px-6 py-4">
-        <div className="flex items-center justify-between">
-          <div><h1 className="text-xl font-bold text-gray-900">Orders</h1><p className="text-sm text-gray-500">{orders.length} total orders</p></div>
-          <Link href="/vendor/dashboard" className="px-3 py-2 text-sm border border-gray-200 rounded-lg hover:bg-gray-50">Dashboard</Link>
-        </div>
+      <div className="flex items-center justify-between mb-4">
+        <p className="text-sm text-gray-500">{orders.length} total orders</p>
       </div>
 
-      <div className="max-w-7xl mx-auto p-6 space-y-4">
+      <div className="max-w-7xl mx-auto space-y-4">
         <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
           {["all", "pending", "processing", "shipped", "delivered"].map((f) => (
             <button key={f} onClick={() => setFilter(f)} className={`px-3 py-2 text-xs rounded-lg border capitalize ${filter === f ? "bg-purple-600 text-white border-purple-600" : "bg-white border-gray-200"}`}>
@@ -203,6 +201,6 @@ export default function VendorOrdersPage() {
           </div>
         )}
       </div>
-    </div>
+    </VendorShell>
   );
 }

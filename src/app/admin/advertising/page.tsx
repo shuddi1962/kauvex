@@ -1,14 +1,13 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import AdminShell from "@/components/admin/admin-shell";
 import { Button } from "@/components/ui/button";
-import { insforge } from "@/lib/insforge";
 import {
   Megaphone, DollarSign, Eye, MousePointer, BarChart3, TrendingUp,
-  TrendingDown, CheckCircle2, XCircle, Clock, Filter, Search,
-  Settings, Save, Loader2, Plus, ChevronDown, ChevronUp, Calendar,
-  Download, RefreshCw, Wallet, Target, Users,
+  TrendingDown, CheckCircle2, XCircle, Filter, Search,
+  Settings, Save, Loader2, ChevronDown, ChevronUp,
+  Download, RefreshCw, Target,
 } from "lucide-react";
 import {
   LineChart, Line, BarChart, Bar, XAxis, YAxis, CartesianGrid,

@@ -4,8 +4,8 @@ import { useState, useEffect } from "react";
 import AdminShell from "@/components/admin/admin-shell";
 import { insforge } from "@/lib/insforge";
 import {
-  Users, Package, ArrowDown, ArrowUp, Store,
-  Warehouse, Loader2, Search, Eye, UserPlus,
+  Package, ArrowDown, ArrowUp, Store,
+  Loader2, Search, Eye, UserPlus,
 } from "lucide-react";
 
 interface Vendor {
@@ -100,7 +100,7 @@ export default function FbkDashboardPage() {
       if (eRes.data && eRes.data.length > 0) setEnrollments(eRes.data);
       else {
         for (const e of seedEnrollments) {
-          const { vendor, ...rest } = e;
+          const { vendor: _vendor, ...rest } = e;
           await insforge.database.from("fbk_enrollments").insert(rest);
         }
         setEnrollments(seedEnrollments);
@@ -109,7 +109,7 @@ export default function FbkDashboardPage() {
       if (iRes.data && iRes.data.length > 0) setInbounds(iRes.data);
       else {
         for (const p of seedInbounds) {
-          const { vendor, ...rest } = p;
+          const { vendor: _vendor, ...rest } = p;
           await insforge.database.from("fbk_inbound_plans").insert(rest);
         }
         setInbounds(seedInbounds);
@@ -118,7 +118,7 @@ export default function FbkDashboardPage() {
       if (oRes.data && oRes.data.length > 0) setOutbounds(oRes.data);
       else {
         for (const p of seedOutbounds) {
-          const { vendor, ...rest } = p;
+          const { vendor: _vendor, ...rest } = p;
           await insforge.database.from("fbk_outbound_plans").insert(rest);
         }
         setOutbounds(seedOutbounds);

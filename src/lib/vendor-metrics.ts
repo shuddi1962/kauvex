@@ -1,15 +1,5 @@
 import { createAdminClient } from './supabase/admin'
 
-interface VendorMetrics {
-  totalOrders: number
-  cancelledOrders: number
-  disputedOrders: number
-  negativeReviews: number
-  lateShipments: number
-  totalMessages: number
-  respondedMessages: number
-}
-
 async function getVendorOrderIds(vendorId: string): Promise<string[]> {
   const db = createAdminClient()
 

@@ -7,23 +7,18 @@ import {
   Warehouse,
   Truck,
   DollarSign,
-  CalendarDays,
   Plus,
   X,
   Check,
   AlertTriangle,
   Loader2,
   Clock,
-  FileText,
   ChevronDown,
-  Bell,
-  Store,
   TrendingUp,
-  BarChart3,
   MapPin,
-  BoxesIcon,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import VendorShell from "@/components/vendor/vendor-shell";
 
 type FbkStatus = "not_enrolled" | "pending" | "active" | "suspended";
 
@@ -332,43 +327,30 @@ export default function FbkPage() {
       <div className={`flex items-start gap-2 p-3 rounded-lg border ${banner.color}`}>
         <AlertTriangle size={14} className="mt-0.5" />
         <p className="text-xs">{banner.text}</p>
-      </div>
-    );
+    </div>
+  );
   };
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <div className="bg-white border-b border-gray-200 px-6 py-4">
-        <div className="flex items-center justify-between">
-          <div>
-            <h1 className="text-xl font-bold text-gray-900">FBK — Fulfillment by KAUVEX</h1>
-            <p className="text-sm text-gray-500">Warehouse storage and order fulfillment</p>
-          </div>
-          <div className="flex items-center gap-2">
-            <span
-              className={`text-[10px] font-semibold px-2 py-0.5 rounded-full ${
-                enrollmentStatus === "active"
-                  ? "bg-green-100 text-green-700"
-                  : enrollmentStatus === "pending"
-                    ? "bg-amber-100 text-amber-700"
-                    : enrollmentStatus === "suspended"
-                      ? "bg-red-100 text-red-600"
-                      : "bg-gray-100 text-gray-500"
-              }`}
-            >
-              {enrollmentStatus === "not_enrolled" ? "Not Enrolled" : enrollmentStatus}
-            </span>
-            <Link
-              href="/vendor/dashboard"
-              className="px-3 py-2 text-sm border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors"
-            >
-              Dashboard
-            </Link>
-          </div>
-        </div>
+    <VendorShell title="Fulfillment by KAUVEX" subtitle="Warehouse storage and order fulfillment">
+      <div className="flex items-center justify-between mb-4">
+        <p className="text-sm text-gray-500">Warehouse storage and order fulfillment</p>
+        <span
+          className={`text-[10px] font-semibold px-2 py-0.5 rounded-full ${
+            enrollmentStatus === "active"
+              ? "bg-green-100 text-green-700"
+              : enrollmentStatus === "pending"
+                ? "bg-amber-100 text-amber-700"
+                : enrollmentStatus === "suspended"
+                  ? "bg-red-100 text-red-600"
+                  : "bg-gray-100 text-gray-500"
+          }`}
+        >
+          {enrollmentStatus === "not_enrolled" ? "Not Enrolled" : enrollmentStatus}
+        </span>
       </div>
 
-      <div className="max-w-5xl mx-auto p-6">
+      <div className="max-w-5xl mx-auto">
         {renderStatusBanner()}
         <div className="mt-6">
           {enrollmentStatus === "not_enrolled" ? renderNotEnrolled() : renderEnrolled()}
@@ -497,6 +479,6 @@ export default function FbkPage() {
           </div>
         </div>
       )}
-    </div>
+    </VendorShell>
   );
 }

@@ -214,12 +214,14 @@ export function useSearchQuery(debounceMs = 300) {
   }, []);
 
   useEffect(() => {
+    const abort = abortRef.current;
+    const timer = timerRef.current;
     return () => {
-      if (timerRef.current) {
-        clearTimeout(timerRef.current);
+      if (timer) {
+        clearTimeout(timer);
       }
-      if (abortRef.current) {
-        abortRef.current.abort();
+      if (abort) {
+        abort.abort();
       }
     };
   }, []);

@@ -39,14 +39,6 @@ import {
   Plug,
   Settings,
   Bell,
-  ShoppingBag,
-  UserPlus,
-  Activity,
-  Download,
-  RefreshCw,
-  BarChart3,
-  DollarSign,
-  Eye,
 } from "lucide-react";
 
 const disputeData = [

@@ -2,8 +2,9 @@
 
 import { useState, useEffect } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import AdminShell from "@/components/admin/admin-shell";
-import { Plus, Edit2, Globe, ExternalLink, ToggleLeft, ToggleRight, Search, X } from "lucide-react";
+import { Plus, Edit2, Globe, ExternalLink, ToggleLeft, ToggleRight, Search, X, Sparkles, CheckCircle2 } from "lucide-react";
 import { insforge } from "@/lib/insforge";
 
 interface Storefront {
@@ -20,11 +21,20 @@ interface Storefront {
   isDefault: boolean;
   active: boolean;
   metaTitle?: string;
+  domain_verified?: boolean;
+  ssl_status?: string;
+  created_at?: string;
 }
 
-const flags: Record<string, string> = { US: "🇺🇸", GB: "🇬🇧", CA: "🇨🇦", AU: "🇦🇺", NG: "🇳🇬", DE: "🇩🇪" };
+const flags: Record<string, string> = {
+  US: "🇺🇸", GB: "🇬🇧", CA: "🇨🇦", AU: "🇦🇺", NG: "🇳🇬",
+  DE: "🇩🇪", FR: "🇫🇷", AE: "🇦🇪", IN: "🇮🇳", JP: "🇯🇵",
+  CN: "🇨🇳", BR: "🇧🇷", ZA: "🇿🇦", SG: "🇸🇬", HK: "🇭🇰",
+  MY: "🇲🇾", KR: "🇰🇷", SA: "🇸🇦", EG: "🇪🇬", KE: "🇰🇪", GH: "🇬🇭",
+};
 
 export default function AdminStorefrontsPage() {
+  const router = useRouter();
   const [storefronts, setStorefronts] = useState<Storefront[]>([]);
   const [searchQuery, setSearchQuery] = useState("");
   const [showModal, setShowModal] = useState(false);
@@ -56,6 +66,9 @@ export default function AdminStorefrontsPage() {
         isDefault: s.is_default,
         active: s.status === "active",
         metaTitle: s.meta_title,
+        domain_verified: s.domain_verified || false,
+        ssl_status: s.ssl_status || "pending",
+        created_at: s.created_at,
       })));
     }
   };
@@ -136,8 +149,11 @@ export default function AdminStorefrontsPage() {
               className="w-full h-9 pl-9 pr-3 text-sm rounded-lg bg-gray-50 border border-gray-200 focus:outline-none focus:border-blue focus:ring-1 focus:ring-blue/20"
             />
           </div>
+          <Link href="/admin/storefronts/create" className="h-9 px-4 bg-orange text-white text-sm font-semibold rounded-lg hover:bg-orange/90 flex items-center gap-2">
+            <Sparkles size={14} /> Create Storefront
+          </Link>
           <button onClick={() => setShowModal(true)} className="h-9 px-4 bg-blue text-white text-sm font-semibold rounded-lg hover:bg-blue-600 flex items-center gap-2">
-            <Plus size={14} /> Add Storefront
+            <Plus size={14} /> Quick Add
           </button>
         </div>
       </div>
@@ -149,8 +165,10 @@ export default function AdminStorefrontsPage() {
             <tr className="bg-gray-50 border-b border-gray-200">
               <th className="p-3 text-left text-xs font-semibold text-text-4 uppercase">Storefront</th>
               <th className="p-3 text-left text-xs font-semibold text-text-4 uppercase">Domain</th>
+              <th className="p-3 text-center text-xs font-semibold text-text-4 uppercase">Type</th>
               <th className="p-3 text-center text-xs font-semibold text-text-4 uppercase">Currency</th>
-              <th className="p-3 text-center text-xs font-semibold text-text-4 uppercase">Tax Rate</th>
+              <th className="p-3 text-center text-xs font-semibold text-text-4 uppercase">Tax</th>
+              <th className="p-3 text-center text-xs font-semibold text-text-4 uppercase">SSL</th>
               <th className="p-3 text-center text-xs font-semibold text-text-4 uppercase">Default</th>
               <th className="p-3 text-center text-xs font-semibold text-text-4 uppercase">Status</th>
               <th className="p-3 text-right text-xs font-semibold text-text-4 uppercase">Actions</th>
@@ -158,7 +176,7 @@ export default function AdminStorefrontsPage() {
           </thead>
           <tbody>
             {filtered.length === 0 ? (
-              <tr><td colSpan={7} className="p-8 text-center text-sm text-text-4">No storefronts found</td></tr>
+              <tr><td colSpan={9} className="p-8 text-center text-sm text-text-4">No storefronts found</td></tr>
             ) : filtered.map(sf => (
               <tr key={sf.id} className="border-b border-gray-100 hover:bg-gray-50 transition-colors">
                 <td className="p-3">
@@ -174,7 +192,7 @@ export default function AdminStorefrontsPage() {
                           <span className="text-[9px] bg-blue/10 text-blue font-semibold px-1.5 py-0.5 rounded-full">DEFAULT</span>
                         )}
                       </div>
-                      <p className="text-[10px] text-text-4">{sf.slug} · {sf.metaTitle}</p>
+                      <p className="text-[10px] text-text-4">{sf.slug} · {sf.metaTitle || "—"}</p>
                     </div>
                   </div>
                 </td>
@@ -183,13 +201,26 @@ export default function AdminStorefrontsPage() {
                     {sf.activeDomain}
                     <ExternalLink size={10} className="shrink-0" />
                   </Link>
-                  <p className="text-[10px] text-text-4 mt-0.5 capitalize">{sf.domainType?.replace("_", " ")}</p>
+                </td>
+                <td className="p-3 text-center">
+                  <span className={`text-[10px] font-medium px-1.5 py-0.5 rounded-full ${
+                    sf.domainType === "subdomain" ? "bg-blue-50 text-blue" : "bg-purple-50 text-purple-700"
+                  }`}>
+                    {sf.domainType === "subdomain" ? "Subdomain" : "Custom"}
+                  </span>
                 </td>
                 <td className="p-3 text-center">
                   <span className="text-sm font-semibold text-text-1">{sf.currencySymbol}</span>
                   <p className="text-[10px] text-text-4">{sf.currencyCode}</p>
                 </td>
                 <td className="p-3 text-center text-sm text-text-2">{sf.taxRate > 0 ? `${sf.taxRate}%` : "—"}</td>
+                <td className="p-3 text-center">
+                  <span className={`text-[10px] font-medium px-1.5 py-0.5 rounded-full ${
+                    sf.ssl_status === "active" ? "bg-green-50 text-green-700" : "bg-gray-100 text-text-4"
+                  }`}>
+                    {sf.ssl_status === "active" ? "✅ Active" : "⏳ Pending"}
+                  </span>
+                </td>
                 <td className="p-3 text-center">
                   {sf.isDefault ? (
                     <span className="text-xs font-medium text-green-600 bg-green-50 px-2 py-0.5 rounded-full">Yes</span>
@@ -227,8 +258,12 @@ export default function AdminStorefrontsPage() {
         <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4" onClick={() => setShowModal(false)}>
           <div className="bg-white rounded-xl max-w-lg w-full p-6" onClick={e => e.stopPropagation()}>
             <div className="flex items-center justify-between mb-4">
-              <h3 className="font-bold text-lg text-text-1">New Storefront</h3>
+              <h3 className="font-bold text-lg text-text-1">Quick Create</h3>
               <button onClick={() => setShowModal(false)} className="p-1 hover:bg-gray-100 rounded-lg"><X size={18} /></button>
+            </div>
+            <div className="bg-orange-50 border border-orange/20 rounded-xl p-3 mb-4 flex items-center gap-2">
+              <Sparkles size={14} className="text-orange" />
+              <p className="text-xs text-text-2">For full setup with domain, theme & DNS config, use the <Link href="/admin/storefronts/create" className="text-orange font-semibold underline">Create Storefront Wizard</Link></p>
             </div>
             <div className="space-y-4">
               <div>

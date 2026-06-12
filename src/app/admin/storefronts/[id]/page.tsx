@@ -6,6 +6,8 @@ import AdminShell from "@/components/admin/admin-shell";
 import {
   Globe, MapPin, Home, CreditCard, Truck, Store, Save,
   ArrowLeft, ChevronDown, ToggleLeft, ToggleRight, Image,
+  ExternalLink, CheckCircle2, Info, Check, Search, Copy,
+  Palette,
 } from "lucide-react";
 import { insforge } from "@/lib/insforge";
 
@@ -80,7 +82,7 @@ const countries = [
   { code: "KE", name: "Kenya" },
 ];
 
-type Tab = "general" | "regional" | "homepage" | "payments" | "shipping" | "vendors";
+type Tab = "general" | "regional" | "homepage" | "domain" | "theme" | "payments" | "shipping" | "vendors";
 
 export default function EditStorefrontPage() {
   const params = useParams();
@@ -157,6 +159,8 @@ export default function EditStorefrontPage() {
     { key: "general", label: "General", icon: Globe },
     { key: "regional", label: "Regional", icon: MapPin },
     { key: "homepage", label: "Homepage", icon: Home },
+    { key: "domain", label: "Domain & DNS", icon: ExternalLink },
+    { key: "theme", label: "Theme", icon: Palette },
     { key: "payments", label: "Payments", icon: CreditCard },
     { key: "shipping", label: "Shipping", icon: Truck },
     { key: "vendors", label: "Vendors", icon: Store },
@@ -581,6 +585,172 @@ export default function EditStorefrontPage() {
                     }`}>
                       {v.status}
                     </span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* ===== DOMAIN & DNS TAB ===== */}
+        {tab === "domain" && (
+          <div className="max-w-2xl space-y-5">
+            <div className="flex items-center gap-3 mb-1">
+              <div className="w-9 h-9 rounded-lg bg-orange/10 flex items-center justify-center">
+                <ExternalLink size={18} className="text-orange" />
+              </div>
+              <div>
+                <h3 className="font-bold text-base text-text-1">Domain & DNS</h3>
+                <p className="text-xs text-text-4">Manage domain configuration and DNS records</p>
+              </div>
+            </div>
+
+            <div className="grid grid-cols-3 gap-3">
+              <div className="bg-green-50 rounded-xl p-4 text-center border border-green/20">
+                <CheckCircle2 size={20} className="mx-auto text-green-600 mb-1" />
+                <p className="text-lg font-bold text-green-700">Active</p>
+                <p className="text-[10px] text-green-600">Domain Status</p>
+              </div>
+              <div className="bg-blue-50 rounded-xl p-4 text-center border border-blue/20">
+                <CheckCircle2 size={20} className="mx-auto text-blue mb-1" />
+                <p className="text-lg font-bold text-blue-700">Active</p>
+                <p className="text-[10px] text-blue-600">SSL Status</p>
+              </div>
+              <div className="bg-amber-50 rounded-xl p-4 text-center border border-amber/20">
+                <Info size={20} className="mx-auto text-amber-600 mb-1" />
+                <p className="text-lg font-bold text-amber-700">—</p>
+                <p className="text-[10px] text-amber-600">DNS Verified</p>
+              </div>
+            </div>
+
+            <div className="bg-white rounded-xl border border-border p-4">
+              <p className="text-sm font-semibold text-text-1 mb-3">Current Domain</p>
+              <div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg border border-border">
+                <div className="flex items-center gap-2">
+                  <Globe size={16} className="text-blue" />
+                  <span className="text-sm font-mono font-semibold text-text-1">{form.activeDomain || "—"}</span>
+                  <span className={`text-[10px] px-1.5 py-0.5 rounded-full font-medium ${
+                    form.active ? "bg-green-50 text-green-700" : "bg-gray-100 text-text-4"
+                  }`}>{form.active ? "Live" : "Inactive"}</span>
+                </div>
+                <button onClick={() => { navigator.clipboard.writeText(form.activeDomain || ""); }}
+                  className="p-1.5 hover:bg-gray-200 rounded-lg transition-colors">
+                  <Copy size={14} className="text-text-4" />
+                </button>
+              </div>
+            </div>
+
+            <div>
+              <p className="text-sm font-semibold text-text-1 mb-3">DNS Records to Configure</p>
+              <p className="text-xs text-text-4 mb-3">Add these records to your DNS provider to point your domain to Kauvex.</p>
+              <div className="bg-gray-50 rounded-xl border border-border overflow-hidden">
+                <table className="w-full text-xs">
+                  <thead>
+                    <tr className="bg-gray-100">
+                      <th className="p-3 text-left font-semibold text-text-4">Type</th>
+                      <th className="p-3 text-left font-semibold text-text-4">Name</th>
+                      <th className="p-3 text-left font-semibold text-text-4">Value</th>
+                      <th className="p-3 text-left font-semibold text-text-4">TTL</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {[
+                      { type: "A", name: "@", value: "76.76.21.21", ttl: "3600" },
+                      { type: "A", name: "@", value: "76.76.21.22", ttl: "3600" },
+                      { type: "CNAME", name: "www", value: "kauvex.com", ttl: "3600" },
+                    ].map(r => (
+                      <tr key={r.type + r.name} className="border-t border-border">
+                        <td className="p-3 font-mono text-orange font-semibold">{r.type}</td>
+                        <td className="p-3 font-mono">{r.name}</td>
+                        <td className="p-3 font-mono text-blue">{r.value}
+                          <button onClick={() => navigator.clipboard.writeText(r.value)}
+                            className="ml-2 p-0.5 hover:bg-gray-200 rounded inline-flex">
+                            <Copy size={10} className="text-text-4" />
+                          </button>
+                        </td>
+                        <td className="p-3 text-text-4">{r.ttl}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+
+            <div>
+              <p className="text-sm font-semibold text-text-1 mb-3">Nameserver Configuration (Alternative)</p>
+              <p className="text-xs text-text-4 mb-3">Replace your domain&apos;s nameservers with our managed nameservers for automatic DNS and SSL.</p>
+              <div className="flex flex-wrap gap-2">
+                {["ns1.kauvex.com", "ns2.kauvex.com", "ns3.kauvex.com"].map(ns => (
+                  <code key={ns} className="text-xs bg-gray-100 px-3 py-1.5 rounded-lg font-mono text-blue border border-border">
+                    {ns}
+                  </code>
+                ))}
+              </div>
+            </div>
+
+            <div className="bg-blue-50 border border-blue/20 rounded-xl p-4 flex items-start gap-3">
+              <Info size={16} className="text-blue shrink-0 mt-0.5" />
+              <div>
+                <p className="text-sm font-semibold text-blue-800">Need help?</p>
+                <p className="text-xs text-blue-700 mt-1">DNS changes can take 24-48 hours to propagate. SSL certificates via Let&apos;s Encrypt are auto-provisioned once the domain resolves. You can verify domain ownership by adding a TXT record: <code className="font-mono bg-blue-100 px-1 rounded">kauvex-verify={form.id}</code></p>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* ===== THEME TAB ===== */}
+        {tab === "theme" && (
+          <div className="space-y-5">
+            <div className="flex items-center gap-3 mb-1">
+              <div className="w-9 h-9 rounded-lg bg-orange/10 flex items-center justify-center">
+                <Palette size={18} className="text-orange" />
+              </div>
+              <div>
+                <h3 className="font-bold text-base text-text-1">Theme Settings</h3>
+                <p className="text-xs text-text-4">Customize the look and feel of this storefront</p>
+              </div>
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+              {[
+                { id: "default", name: "Kauvex Default", colors: ["#0A1628", "#FF6B00", "#F8F9FA"], desc: "Full-featured marketplace" },
+                { id: "light", name: "Kauvex Light", colors: ["#FFFFFF", "#FF6B00", "#FFFFFF"], desc: "Clean minimal design" },
+                { id: "dark", name: "Kauvex Dark", colors: ["#1A1A2E", "#FF6B00", "#0F0F1A"], desc: "Bold dark premium feel" },
+                { id: "b2b", name: "B2B Pro", colors: ["#003366", "#00A3E0", "#F5F7FA"], desc: "Corporate B2B layout" },
+                { id: "fashion", name: "Fashion", colors: ["#1A1A1A", "#E91E63", "#FAFAFA"], desc: "Elegant fashion store" },
+                { id: "electronics", name: "Electronics", colors: ["#0D1117", "#58A6FF", "#F0F6FC"], desc: "Tech-focused showcase" },
+                { id: "luxury", name: "Luxury", colors: ["#1C1C1C", "#C9A84C", "#FFFFFF"], desc: "High-end premium" },
+                { id: "minimal", name: "Minimal", colors: ["#2D3748", "#4A5568", "#FFFFFF"], desc: "Simple distraction-free" },
+              ].map(theme => (
+                <button key={theme.id}
+                  className="rounded-xl border-2 border-border p-4 text-left hover:shadow-md transition-all hover:border-gray-300"
+                >
+                  <div className="flex items-center gap-1.5 mb-3">
+                    {theme.colors.map((c, i) => (
+                      <div key={i} className="w-5 h-5 rounded-full border border-gray-200" style={{ backgroundColor: c }} />
+                    ))}
+                  </div>
+                  <p className="text-sm font-bold text-text-1">{theme.name}</p>
+                  <p className="text-[10px] text-text-4 mt-0.5">{theme.desc}</p>
+                </button>
+              ))}
+            </div>
+
+            <div className="bg-gray-50 rounded-xl border border-border p-4 space-y-4">
+              <p className="text-sm font-semibold text-text-1">Custom Colors</p>
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+                {[
+                  { label: "Primary", key: "primary", default: "#0A1628" },
+                  { label: "Accent", key: "accent", default: "#FF6B00" },
+                  { label: "Background", key: "background", default: "#F8F9FA" },
+                  { label: "Text", key: "text", default: "#1A1A2E" },
+                ].map(c => (
+                  <div key={c.key}>
+                    <label className="text-xs font-semibold text-text-2 block mb-1">{c.label}</label>
+                    <div className="flex items-center gap-2">
+                      <input type="color" defaultValue={c.default} className="w-9 h-9 rounded-lg border border-border cursor-pointer" />
+                      <input defaultValue={c.default} className="flex-1 h-9 px-2 text-xs font-mono rounded-lg border border-border focus:outline-none focus:ring-2 focus:ring-orange/20" />
+                    </div>
                   </div>
                 ))}
               </div>

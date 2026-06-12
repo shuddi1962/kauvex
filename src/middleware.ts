@@ -154,7 +154,7 @@ export async function middleware(request: NextRequest) {
           .single();
 
         if (!profile || (profile.role !== "vendor" && profile.role !== "admin")) {
-          return NextResponse.redirect(new URL("/", request.url));
+          return NextResponse.redirect(new URL("/account", request.url));
         }
       }
     }

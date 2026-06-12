@@ -37,11 +37,23 @@ function LoginForm() {
       const redirect = searchParams.get("redirect") || "/account";
 
       if (user?.role === "super-admin" || user?.role === "admin" || user?.role === "finance-admin" || user?.role === "support-admin") {
-        router.push("/admin");
+        if (redirect.startsWith("/admin")) {
+          router.push(redirect);
+        } else {
+          router.push("/admin");
+        }
       } else if (user?.role === "vendor") {
-        router.push("/vendor/dashboard");
+        if (redirect.startsWith("/vendor")) {
+          router.push(redirect);
+        } else {
+          router.push("/vendor/dashboard");
+        }
       } else {
-        router.push(redirect);
+        if (redirect.startsWith("/admin") || redirect.startsWith("/vendor")) {
+          router.push("/account");
+        } else {
+          router.push(redirect);
+        }
       }
     } catch {
       // error is set in the store

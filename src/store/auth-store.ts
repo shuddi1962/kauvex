@@ -40,19 +40,17 @@ export const useAuthStore = create<AuthStore>((set) => ({
         const meta = data.user.user_metadata as Record<string, string> | undefined;
         let role = meta?.role || "customer";
 
-        if (!meta?.role) {
-          try {
-            const { data: profileRows } = await insforge.database
-              .from("profiles")
-              .select("role")
-              .eq("id", data.user.id)
-              .limit(1);
-            if (profileRows && profileRows.length > 0 && profileRows[0].role) {
-              role = profileRows[0].role;
-            }
-          } catch {
-            // fallback to customer
+        try {
+          const { data: profileRows } = await insforge.database
+            .from("profiles")
+            .select("role")
+            .eq("id", data.user.id)
+            .limit(1);
+          if (profileRows && profileRows.length > 0 && profileRows[0].role) {
+            role = profileRows[0].role;
           }
+        } catch {
+          // fallback to metadata role
         }
 
         set({
@@ -87,19 +85,17 @@ export const useAuthStore = create<AuthStore>((set) => ({
       const meta = data.user.user_metadata as Record<string, string> | undefined;
       let role = meta?.role || "customer";
 
-      if (!meta?.role) {
-        try {
-          const { data: profileRows } = await insforge.database
-            .from("profiles")
-            .select("role")
-            .eq("id", data.user.id)
-            .limit(1);
-          if (profileRows && profileRows.length > 0 && profileRows[0].role) {
-            role = profileRows[0].role;
-          }
-        } catch {
-          // fallback to customer
+      try {
+        const { data: profileRows } = await insforge.database
+          .from("profiles")
+          .select("role")
+          .eq("id", data.user.id)
+          .limit(1);
+        if (profileRows && profileRows.length > 0 && profileRows[0].role) {
+          role = profileRows[0].role;
         }
+      } catch {
+        // fallback to metadata role
       }
 
       set({

@@ -1,217 +1,233 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import AdminShell from "@/components/admin/admin-shell";
-import {
-  GripVertical, Eye, EyeOff, Settings, ChevronUp, ChevronDown,
-  Image, ShoppingBag, Layers, Star, Megaphone, Tag, Truck,
-  Zap, Users, MessageCircle, Save, RotateCcw, Monitor, Smartphone,
-} from "lucide-react";
+import { GripVertical, Plus, Eye, EyeOff, Trash2, Save, ArrowUpDown, ChevronDown, ChevronUp, Sparkles, TrendingUp, Package, Store, Award, Star, Smartphone, MessageSquare, Zap, Clock, Percent, DollarSign, FileText, Globe, Megaphone } from "lucide-react";
 import { insforge } from "@/lib/insforge";
 
-interface HomepageSection {
-  id: string;
-  name: string;
-  icon: typeof Image;
-  enabled: boolean;
-  order: number;
-  settings?: Record<string, unknown>;
-}
-
-const defaultSections: HomepageSection[] = [
-  { id: "hero", name: "Hero Slider", icon: Image, enabled: true, order: 0 },
-  { id: "notice", name: "Notice / Promo Bar", icon: Megaphone, enabled: true, order: 1 },
-  { id: "categories", name: "Category Grid", icon: Layers, enabled: true, order: 2 },
-  { id: "featured", name: "Featured Products", icon: Star, enabled: true, order: 3 },
-  { id: "flash-sale", name: "Flash Sale Countdown", icon: Zap, enabled: true, order: 4 },
-  { id: "brands", name: "Brand Marquee", icon: Tag, enabled: true, order: 5 },
-  { id: "new-arrivals", name: "New Arrivals", icon: ShoppingBag, enabled: true, order: 6 },
-  { id: "promo-banners", name: "Promo Banners (2-col)", icon: Image, enabled: true, order: 7 },
-  { id: "best-sellers", name: "Best Sellers", icon: Star, enabled: true, order: 8 },
-  { id: "marine", name: "Marine & Safety Section", icon: Truck, enabled: true, order: 9 },
-  { id: "boat-engines", name: "Boat Engines Showcase", icon: ShoppingBag, enabled: true, order: 10 },
-  { id: "services", name: "Professional Services", icon: Users, enabled: true, order: 11 },
-  { id: "testimonials", name: "Customer Testimonials", icon: MessageCircle, enabled: false, order: 12 },
-  { id: "blog", name: "Latest Blog Posts", icon: Layers, enabled: false, order: 13 },
-  { id: "newsletter", name: "Newsletter Signup", icon: Megaphone, enabled: true, order: 14 },
-  { id: "recently-viewed", name: "Recently Viewed", icon: Eye, enabled: true, order: 15 },
+const sectionTypes = [
+  { value: "flash_deals", label: "Flash Deals", icon: Clock },
+  { value: "trending", label: "Trending Products", icon: TrendingUp },
+  { value: "featured", label: "Featured Products", icon: Star },
+  { value: "ai_recommended", label: "AI Recommended", icon: Sparkles },
+  { value: "new_arrivals", label: "New Arrivals", icon: Package },
+  { value: "recently_viewed", label: "Recently Viewed", icon: Clock },
+  { value: "best_sellers", label: "Best Sellers", icon: Award },
+  { value: "featured_vendors", label: "Featured Vendors", icon: Store },
+  { value: "featured_brands", label: "Featured Brands", icon: Award },
+  { value: "product_collections", label: "Product Collections", icon: FileText },
+  { value: "wholesale_deals", label: "Wholesale Deals", icon: DollarSign },
+  { value: "clearance_deals", label: "Clearance Deals", icon: Percent },
+  { value: "sponsored_products", label: "Sponsored Products", icon: Zap },
+  { value: "sponsored_stores", label: "Sponsored Stores", icon: Store },
+  { value: "country_promotions", label: "Country Promotions", icon: Globe },
+  { value: "vendor_promotions", label: "Vendor Promotions", icon: Megaphone },
+  { value: "limited_time_offers", label: "Limited Time Offers", icon: Clock },
+  { value: "bundle_deals", label: "Bundle Deals", icon: Package },
+  { value: "newsletter", label: "Newsletter", icon: MessageSquare },
+  { value: "mobile_app_download", label: "Mobile App Download", icon: Smartphone },
+  { value: "testimonials", label: "Testimonials", icon: MessageSquare },
+  { value: "blog_posts", label: "Blog Posts", icon: FileText },
 ];
 
-export default function HomepageBuilderPage() {
-  const [sections, setSections] = useState(defaultSections);
-  const [previewMode, setPreviewMode] = useState<"desktop" | "mobile">("desktop");
-  const [selectedSection, setSelectedSection] = useState<string | null>(null);
-  const [hasChanges, setHasChanges] = useState(false);
+interface Section {
+  id: string;
+  section_type: string;
+  title: string;
+  subtitle: string | null;
+  config: Record<string, any>;
+  sort_order: number;
+  is_visible: boolean;
+}
+
+export default function AdminHomepageBuilder() {
+  const [sections, setSections] = useState<Section[]>([]);
   const [saving, setSaving] = useState(false);
+  const [expandedId, setExpandedId] = useState<string | null>(null);
 
-  useEffect(() => { loadLayout(); }, []);
+  useEffect(() => {
+    (async () => {
+      const { data } = await insforge.database
+        .from("homepage_sections")
+        .select("*")
+        .order("sort_order", { ascending: true });
+      if (data) setSections(data);
+    })();
+  }, []);
 
-  const loadLayout = async () => {
-    try {
-      const { data } = await insforge.database.from("settings").select("*").eq("key", "homepage_layout");
-      if (data?.[0]?.value) {
-        const saved = data[0].value as { id: string; name: string; enabled: boolean; order: number }[];
-        const restored = saved.map((s) => ({
-          ...s,
-          icon: defaultSections.find((d) => d.id === s.id)?.icon || Image,
-        }));
-        setSections(restored);
-      }
-    } catch (err) {
-      console.error("Failed to load homepage layout:", err);
+  const addSection = async (type: string) => {
+    const template = sectionTypes.find((s) => s.value === type);
+    const maxOrder = sections.reduce((max, s) => Math.max(max, s.sort_order), -1);
+    const newSection = {
+      section_type: type,
+      title: template?.label || type,
+      subtitle: null,
+      config: {},
+      sort_order: maxOrder + 1,
+      is_visible: true,
+    };
+    const { data, error } = await insforge.database.from("homepage_sections").insert([newSection]).select();
+    if (!error && data) setSections((prev) => [...prev, ...data]);
+  };
+
+  const updateSection = async (id: string, updates: Partial<Section>) => {
+    await insforge.database.from("homepage_sections").update(updates).eq("id", id);
+    setSections((prev) => prev.map((s) => (s.id === id ? { ...s, ...updates } : s)));
+  };
+
+  const removeSection = async (id: string) => {
+    await insforge.database.from("homepage_sections").delete().eq("id", id);
+    setSections((prev) => prev.filter((s) => s.id !== id));
+  };
+
+  const moveSection = async (index: number, direction: "up" | "down") => {
+    const newIndex = direction === "up" ? index - 1 : index + 1;
+    if (newIndex < 0 || newIndex >= sections.length) return;
+
+    const updated = [...sections];
+    [updated[index], updated[newIndex]] = [updated[newIndex], updated[index]];
+    const reordered = updated.map((s, i) => ({ ...s, sort_order: i }));
+    setSections(reordered);
+
+    for (const s of reordered) {
+      await insforge.database.from("homepage_sections").update({ sort_order: s.sort_order }).eq("id", s.id);
     }
   };
 
-  const saveLayout = async () => {
+  const saveAll = async () => {
     setSaving(true);
-    try {
-      const toSave = sections.map(({ icon: _icon, ...rest }) => rest);
-      await insforge.database.from("settings").upsert({ key: "homepage_layout", value: toSave });
-      setHasChanges(false);
-    } catch (err) {
-      console.error("Failed to save layout:", err);
-    } finally {
-      setSaving(false);
+    for (const section of sections) {
+      await insforge.database.from("homepage_sections").update({
+        title: section.title,
+        subtitle: section.subtitle,
+        is_visible: section.is_visible,
+        sort_order: section.sort_order,
+      }).eq("id", section.id);
     }
+    setSaving(false);
   };
-
-  const toggleSection = (id: string) => {
-    setSections((prev) => prev.map((s) => s.id === id ? { ...s, enabled: !s.enabled } : s));
-    setHasChanges(true);
-  };
-
-  const moveSection = (id: string, direction: "up" | "down") => {
-    setSections((prev) => {
-      const sorted = [...prev].sort((a, b) => a.order - b.order);
-      const idx = sorted.findIndex((s) => s.id === id);
-      if (direction === "up" && idx > 0) {
-        const temp = sorted[idx].order;
-        sorted[idx].order = sorted[idx - 1].order;
-        sorted[idx - 1].order = temp;
-      } else if (direction === "down" && idx < sorted.length - 1) {
-        const temp = sorted[idx].order;
-        sorted[idx].order = sorted[idx + 1].order;
-        sorted[idx + 1].order = temp;
-      }
-      return sorted;
-    });
-    setHasChanges(true);
-  };
-
-  const sorted = [...sections].sort((a, b) => a.order - b.order);
-  const enabledCount = sections.filter((s) => s.enabled).length;
 
   return (
-    <AdminShell title="Homepage Builder" subtitle="Show, hide, and reorder homepage sections">
-      {/* Toolbar */}
-      <div className="flex items-center justify-between mb-4 flex-wrap gap-3">
-        <div className="flex items-center gap-3">
-          <span className="text-sm text-text-3">
-            <span className="font-semibold text-text-1">{enabledCount}</span> of {sections.length} sections active
-          </span>
+    <div className="max-w-4xl mx-auto">
+      <div className="flex items-center justify-between mb-6">
+        <div>
+          <h1 className="font-bold text-lg text-text-1">Homepage Builder</h1>
+          <p className="text-xs text-text-4">Drag to reorder sections, toggle visibility, and manage homepage content.</p>
         </div>
-        <div className="flex items-center gap-2">
-          <div className="flex bg-white rounded-lg border border-gray-200 p-0.5">
-            <button onClick={() => setPreviewMode("desktop")} className={`p-2 rounded-md transition-colors ${previewMode === "desktop" ? "bg-blue text-white" : "text-text-4"}`}>
-              <Monitor size={14} />
-            </button>
-            <button onClick={() => setPreviewMode("mobile")} className={`p-2 rounded-md transition-colors ${previewMode === "mobile" ? "bg-blue text-white" : "text-text-4"}`}>
-              <Smartphone size={14} />
-            </button>
-          </div>
-          <button onClick={() => { setSections(defaultSections); setHasChanges(true); }} className="flex items-center gap-1.5 px-3 py-2 rounded-lg border border-gray-200 text-xs text-text-3 hover:bg-gray-50 transition-colors">
-            <RotateCcw size={14} /> Reset
-          </button>
-          <button disabled={!hasChanges || saving} onClick={saveLayout} className="flex items-center gap-1.5 px-4 py-2 rounded-lg bg-blue text-white text-xs font-semibold hover:bg-blue-600 transition-colors disabled:opacity-40">
-            <Save size={14} /> {saving ? "Saving..." : "Save Layout"}
-          </button>
-        </div>
+        <button onClick={saveAll} disabled={saving}
+          className="flex items-center gap-1.5 bg-orange text-white text-xs font-bold h-9 px-4 rounded-lg hover:bg-orange/90 transition-colors disabled:opacity-50">
+          <Save size={14} /> {saving ? "Saving..." : "Save Changes"}
+        </button>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
-        {/* Section List */}
-        <div className="lg:col-span-2 space-y-2">
-          {sorted.map((section, idx) => {
-            const Icon = section.icon;
+      {/* Add Section */}
+      <details className="mb-6 bg-white rounded-xl border border-border p-4">
+        <summary className="text-sm font-semibold text-text-1 cursor-pointer flex items-center gap-2">
+          <Plus size={16} className="text-orange" /> Add New Section
+        </summary>
+        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-2 mt-4">
+          {sectionTypes.map((type) => {
+            const Icon = type.icon;
+            const isAdded = sections.some((s) => s.section_type === type.value);
             return (
-              <div key={section.id} className={`bg-white rounded-xl border transition-colors ${selectedSection === section.id ? "border-blue shadow-soft" : "border-gray-200"} ${!section.enabled ? "opacity-60" : ""}`}>
-                <div className="flex items-center gap-3 px-4 py-3">
-                  <GripVertical size={16} className="text-text-4 cursor-grab shrink-0" />
-                  <div className={`w-8 h-8 rounded-lg flex items-center justify-center shrink-0 ${section.enabled ? "bg-blue/10 text-blue" : "bg-gray-100 text-text-4"}`}>
-                    <Icon size={16} />
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <p className="text-sm font-medium text-text-1">{section.name}</p>
-                    <p className="text-[10px] text-text-4">Section #{idx + 1}</p>
-                  </div>
-                  <div className="flex items-center gap-1">
-                    <button onClick={() => moveSection(section.id, "up")} disabled={idx === 0} className="p-1.5 hover:bg-gray-50 rounded-lg disabled:opacity-30 transition-colors">
-                      <ChevronUp size={14} className="text-text-4" />
-                    </button>
-                    <button onClick={() => moveSection(section.id, "down")} disabled={idx === sorted.length - 1} className="p-1.5 hover:bg-gray-50 rounded-lg disabled:opacity-30 transition-colors">
-                      <ChevronDown size={14} className="text-text-4" />
-                    </button>
-                    <button onClick={() => toggleSection(section.id)} className={`p-1.5 rounded-lg transition-colors ${section.enabled ? "hover:bg-green-50 text-green-600" : "hover:bg-red/10 text-red"}`}>
-                      {section.enabled ? <Eye size={14} /> : <EyeOff size={14} />}
-                    </button>
-                    <button onClick={() => setSelectedSection(selectedSection === section.id ? null : section.id)} className="p-1.5 hover:bg-gray-50 rounded-lg transition-colors">
-                      <Settings size={14} className="text-text-4" />
-                    </button>
-                  </div>
-                </div>
-
-                {selectedSection === section.id && (
-                  <div className="px-4 pb-4 pt-2 border-t border-gray-100">
-                    <div className="grid grid-cols-2 gap-3">
-                      <div>
-                        <label className="text-[10px] text-text-4 font-semibold uppercase tracking-wider">Display Title</label>
-                        <input type="text" defaultValue={section.name} onChange={(e) => { setSections((prev) => prev.map((s) => s.id === section.id ? { ...s, name: e.target.value } : s)); setHasChanges(true); }} className="mt-1 w-full h-9 px-3 rounded-lg border border-gray-200 text-xs focus:outline-none focus:border-blue" />
-                      </div>
-                      <div>
-                        <label className="text-[10px] text-text-4 font-semibold uppercase tracking-wider">Products to Show</label>
-                        <select onChange={() => setHasChanges(true)} className="mt-1 w-full h-9 px-3 rounded-lg border border-gray-200 text-xs focus:outline-none focus:border-blue bg-white">
-                          <option>4</option><option>6</option><option>8</option><option>12</option>
-                        </select>
-                      </div>
-                      <div>
-                        <label className="text-[10px] text-text-4 font-semibold uppercase tracking-wider">Layout Style</label>
-                        <select onChange={() => setHasChanges(true)} className="mt-1 w-full h-9 px-3 rounded-lg border border-gray-200 text-xs focus:outline-none focus:border-blue bg-white">
-                          <option>Grid</option><option>Carousel</option><option>List</option>
-                        </select>
-                      </div>
-                      <div>
-                        <label className="text-[10px] text-text-4 font-semibold uppercase tracking-wider">Background</label>
-                        <select onChange={() => setHasChanges(true)} className="mt-1 w-full h-9 px-3 rounded-lg border border-gray-200 text-xs focus:outline-none focus:border-blue bg-white">
-                          <option>White</option><option>Off-White</option><option>Navy</option>
-                        </select>
-                      </div>
-                    </div>
-                  </div>
-                )}
-              </div>
+              <button
+                key={type.value}
+                onClick={() => addSection(type.value)}
+                disabled={isAdded}
+                className={`flex items-center gap-2 p-2.5 rounded-lg border text-xs transition-colors ${
+                  isAdded
+                    ? "border-green-200 bg-green-50 text-green-700 cursor-not-allowed"
+                    : "border-border hover:border-orange hover:bg-orange-50 text-text-2"
+                }`}
+              >
+                <Icon size={14} />
+                {type.label}
+                {isAdded && <span className="text-[9px] ml-auto">Added</span>}
+              </button>
             );
           })}
         </div>
+      </details>
 
-        {/* Preview Panel */}
-        <div className="bg-white rounded-xl border border-gray-200 p-4 sticky top-4">
-          <h3 className="font-semibold text-sm text-text-1 mb-3 flex items-center gap-2">
-            <Eye size={16} className="text-blue" /> Live Preview
-          </h3>
-          <div className={`border border-gray-200 rounded-lg overflow-hidden bg-off-white ${previewMode === "mobile" ? "max-w-[280px] mx-auto" : ""}`}>
-            {sorted.filter((s) => s.enabled).map((section) => (
-              <div key={section.id} className="border-b border-dashed border-gray-200 last:border-0 p-2 hover:bg-blue/5 transition-colors cursor-pointer" onClick={() => setSelectedSection(section.id)}>
-                <div className="flex items-center gap-1.5">
-                  <section.icon size={10} className="text-text-4" />
-                  <span className="text-[9px] text-text-3 font-medium">{section.name}</span>
+      {/* Sections List */}
+      <div className="space-y-2">
+        {sections.map((section, index) => {
+          const typeDef = sectionTypes.find((t) => t.value === section.section_type);
+          const Icon = typeDef?.icon || Package;
+          const isExpanded = expandedId === section.id;
+
+          return (
+            <div key={section.id} className="bg-white rounded-xl border border-border overflow-hidden">
+              <div className="flex items-center gap-3 px-4 py-3">
+                <div className="cursor-grab text-text-4 hover:text-text-2">
+                  <GripVertical size={16} />
                 </div>
-                <div className="mt-1 h-4 bg-gray-100 rounded animate-pulse" />
+
+                <div className={`w-8 h-8 rounded-lg flex items-center justify-center ${
+                  section.is_visible ? "bg-blue-50 text-blue" : "bg-gray-100 text-text-4"
+                }`}>
+                  <Icon size={16} />
+                </div>
+
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-center gap-2">
+                    <span className="text-sm font-semibold text-text-1">{section.title}</span>
+                    <span className="text-[9px] bg-gray-100 text-text-4 px-1.5 py-0.5 rounded font-mono">{section.section_type}</span>
+                    {!section.is_visible && (
+                      <span className="text-[9px] bg-red-50 text-red px-1.5 py-0.5 rounded">Hidden</span>
+                    )}
+                  </div>
+                  <p className="text-[10px] text-text-4">Order: {index + 1}</p>
+                </div>
+
+                <div className="flex items-center gap-1">
+                  <button onClick={() => moveSection(index, "up")} disabled={index === 0}
+                    className="p-1.5 hover:bg-gray-100 rounded-lg disabled:opacity-30 transition-colors">
+                    <ChevronUp size={14} className="text-text-4" />
+                  </button>
+                  <button onClick={() => moveSection(index, "down")} disabled={index === sections.length - 1}
+                    className="p-1.5 hover:bg-gray-100 rounded-lg disabled:opacity-30 transition-colors">
+                    <ChevronDown size={14} className="text-text-4" />
+                  </button>
+                  <button onClick={() => updateSection(section.id, { is_visible: !section.is_visible })}
+                    className={`p-1.5 rounded-lg transition-colors ${section.is_visible ? "hover:bg-gray-100 text-text-4" : "bg-red-50 text-red"}`}>
+                    {section.is_visible ? <Eye size={14} /> : <EyeOff size={14} />}
+                  </button>
+                  <button onClick={() => setExpandedId(isExpanded ? null : section.id)}
+                    className="p-1.5 hover:bg-gray-100 rounded-lg transition-colors">
+                    <ArrowUpDown size={14} className="text-text-4" />
+                  </button>
+                  <button onClick={() => removeSection(section.id)}
+                    className="p-1.5 hover:bg-red-50 text-text-4 hover:text-red rounded-lg transition-colors">
+                    <Trash2 size={14} />
+                  </button>
+                </div>
               </div>
-            ))}
+
+              {isExpanded && (
+                <div className="px-4 pb-4 pt-2 border-t border-border space-y-3">
+                  <div>
+                    <label className="text-[10px] text-text-4 font-semibold uppercase">Title</label>
+                    <input value={section.title} onChange={(e) => setSections((prev) => prev.map((s) => s.id === section.id ? { ...s, title: e.target.value } : s))}
+                      className="w-full h-9 px-3 text-xs border border-border rounded-lg mt-1 focus:outline-none focus:ring-2 focus:ring-orange/20 focus:border-orange" />
+                  </div>
+                  <div>
+                    <label className="text-[10px] text-text-4 font-semibold uppercase">Subtitle</label>
+                    <input value={section.subtitle || ""} onChange={(e) => setSections((prev) => prev.map((s) => s.id === section.id ? { ...s, subtitle: e.target.value } : s))}
+                      className="w-full h-9 px-3 text-xs border border-border rounded-lg mt-1 focus:outline-none focus:ring-2 focus:ring-orange/20 focus:border-orange" />
+                  </div>
+                </div>
+              )}
+            </div>
+          );
+        })}
+
+        {sections.length === 0 && (
+          <div className="text-center py-12 text-text-4">
+            <Package size={32} className="mx-auto mb-2 opacity-30" />
+            <p className="text-sm">No sections configured yet. Add your first section above.</p>
           </div>
-          <p className="text-[10px] text-text-4 mt-3 text-center">Click a section to configure</p>
-        </div>
+        )}
       </div>
-    </AdminShell>
+    </div>
   );
 }

@@ -6,8 +6,9 @@ import { usePathname, useRouter } from "next/navigation";
 import {
   LayoutDashboard, Package, ShoppingCart, Store,
   Megaphone, Settings, Bell, ChevronDown, BarChart3,
-  Menu, ArrowLeft, DollarSign, Truck, Sparkles,
+  Menu, ArrowLeft, DollarSign, Truck, Sparkles, RefreshCw,
 } from "lucide-react";
+import { VendorStorefrontFilter } from "@/components/admin/storefront-filter";
 
 type SectionKey = "dashboard" | "products" | "orders" | "store" | "marketing" | "settings";
 
@@ -204,6 +205,7 @@ export default function VendorShell({ children, title, subtitle }: VendorShellPr
         </div>
 
         <div className="flex items-center gap-2 shrink-0">
+          <VendorStorefrontFilter />
           <button className="relative p-1.5 hover:bg-white/10 rounded-lg">
             <Bell size={15} className="text-white/60" />
             <span className="absolute -top-0.5 -right-0.5 w-3.5 h-3.5 bg-purple-500 text-white text-[7px] font-bold rounded-full flex items-center justify-center">3</span>

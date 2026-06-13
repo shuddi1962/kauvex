@@ -11,7 +11,9 @@ import {
   Gift, Ticket, Scale, PenTool, Smartphone, ScrollText, FileText,
   Tag, Award, SlidersHorizontal, Navigation, Anchor, UserPlus,
   Wrench, ClipboardList, ImageIcon, Sparkles, ChevronRight, Star,
+  RefreshCw, UserCog, MapPinOff,
 } from "lucide-react";
+import { AdminStorefrontFilter } from "@/components/admin/storefront-filter";
 
 type SectionKey = "dashboard" | "commerce" | "sales" | "marketing" | "content" | "marketplace" | "operations" | "system";
 
@@ -48,6 +50,7 @@ const topNavSections: { key: SectionKey; label: string; icon: React.ElementType;
         { label: "Tags", href: "/admin/tags" },
         { label: "Variations", href: "/admin/variations" },
         { label: "Bundles", href: "/admin/bundles" },
+        { label: "Storefront Assignment", href: "/admin/product-storefronts", badge: "New" },
       ]},
       { title: "Orders", items: [
         { label: "All Orders", href: "/admin/orders" },
@@ -132,14 +135,17 @@ const topNavSections: { key: SectionKey; label: string; icon: React.ElementType;
     groups: [
       { title: "Logistics", items: [
         { label: "Delivery", href: "/admin/delivery" },
+        { label: "Drivers", href: "/admin/drivers" },
         { label: "Shipping Zones", href: "/admin/shipping" },
         { label: "Shipping Carriers", href: "/admin/shipping-carriers" },
+        { label: "Returns", href: "/admin/returns" },
       ]},
       { title: "Warehouse", items: [
         { label: "Locations", href: "/admin/locations" },
         { label: "Warehouses", href: "/admin/warehouses" },
         { label: "Inventory", href: "/admin/inventory" },
         { label: "Pickup Points", href: "/admin/pickup-points" },
+        { label: "Drop-off Zones", href: "/admin/dropoff-zones" },
       ]},
       { title: "Services", items: [
         { label: "Warranty", href: "/admin/warranty" },
@@ -172,12 +178,12 @@ const topNavSections: { key: SectionKey; label: string; icon: React.ElementType;
 
 function detectSection(pathname: string): SectionKey {
   if (pathname === "/admin" || pathname.startsWith("/admin/analytics")) return "dashboard";
-  if (pathname.startsWith("/admin/products") || pathname.startsWith("/admin/categories") || pathname.startsWith("/admin/brands") || pathname.startsWith("/admin/tags") || pathname.startsWith("/admin/variations") || pathname.startsWith("/admin/bundles") || pathname.startsWith("/admin/orders") || pathname.startsWith("/admin/customers") || pathname.startsWith("/admin/crm") || pathname.startsWith("/admin/gift-cards") || pathname.startsWith("/admin/coupons") || pathname.startsWith("/admin/disputes") || pathname.startsWith("/admin/reviews") || pathname.startsWith("/admin/inventory") || pathname.startsWith("/admin/quotes") || pathname.startsWith("/admin/bookings")) return "commerce";
+  if (pathname.startsWith("/admin/products") || pathname.startsWith("/admin/product-storefronts") || pathname.startsWith("/admin/categories") || pathname.startsWith("/admin/brands") || pathname.startsWith("/admin/tags") || pathname.startsWith("/admin/variations") || pathname.startsWith("/admin/bundles") || pathname.startsWith("/admin/orders") || pathname.startsWith("/admin/customers") || pathname.startsWith("/admin/crm") || pathname.startsWith("/admin/gift-cards") || pathname.startsWith("/admin/coupons") || pathname.startsWith("/admin/disputes") || pathname.startsWith("/admin/reviews") || pathname.startsWith("/admin/inventory") || pathname.startsWith("/admin/quotes") || pathname.startsWith("/admin/bookings")) return "commerce";
   if (pathname.startsWith("/admin/pos") || pathname.startsWith("/admin/finance")) return "sales";
   if (pathname.startsWith("/admin/marketing") || pathname.startsWith("/admin/advertising") || pathname.startsWith("/admin/banners") || pathname.startsWith("/admin/popups") || pathname.startsWith("/admin/seo")) return "marketing";
   if (pathname.startsWith("/admin/homepage") || pathname.startsWith("/admin/page-editor") || pathname.startsWith("/admin/menu") || pathname.startsWith("/admin/footer") || pathname.startsWith("/admin/media") || pathname.startsWith("/admin/pages")) return "content";
   if (pathname.startsWith("/admin/storefronts") || pathname.startsWith("/admin/vendors") || pathname.startsWith("/admin/vendor-ads") || pathname.startsWith("/admin/fbk") || pathname.startsWith("/admin/boat-configurator")) return "marketplace";
-  if (pathname.startsWith("/admin/delivery") || pathname.startsWith("/admin/shipping") || pathname.startsWith("/admin/shipping-carriers") || pathname.startsWith("/admin/locations") || pathname.startsWith("/admin/warehouses") || pathname.startsWith("/admin/pickup-points") || pathname.startsWith("/admin/warranty") || pathname.startsWith("/admin/field-team") || pathname.startsWith("/admin/cj-dropshipping")) return "operations";
+  if (pathname.startsWith("/admin/delivery") || pathname.startsWith("/admin/drivers") || pathname.startsWith("/admin/returns") || pathname.startsWith("/admin/shipping") || pathname.startsWith("/admin/shipping-carriers") || pathname.startsWith("/admin/locations") || pathname.startsWith("/admin/warehouses") || pathname.startsWith("/admin/pickup-points") || pathname.startsWith("/admin/dropoff-zones") || pathname.startsWith("/admin/warranty") || pathname.startsWith("/admin/field-team") || pathname.startsWith("/admin/cj-dropshipping")) return "operations";
   if (pathname.startsWith("/admin/settings") || pathname.startsWith("/admin/staff") || pathname.startsWith("/admin/roles") || pathname.startsWith("/admin/features") || pathname.startsWith("/admin/mobile") || pathname.startsWith("/admin/site-doctor") || pathname.startsWith("/admin/audit-log") || pathname.startsWith("/admin/ai") || pathname.startsWith("/api/docs")) return "system";
   return "dashboard";
 }
@@ -289,6 +295,7 @@ export default function AdminShell({ children, title, subtitle }: AdminShellProp
         </div>
 
         <div className="flex items-center gap-1.5 shrink-0">
+          <AdminStorefrontFilter />
           <div className="relative hidden md:block">
             <Search size={12} className="absolute left-2.5 top-1/2 -translate-y-1/2 text-white/30" />
             <input placeholder="Search..." className="w-36 h-8 bg-white/10 rounded-lg pl-8 pr-2.5 text-xs text-white placeholder:text-white/30 border border-white/10 focus:outline-none focus:border-white/30" />

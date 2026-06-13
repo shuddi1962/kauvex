@@ -4,8 +4,18 @@ import { useState, useEffect } from "react";
 import AdminShell from "@/components/admin/admin-shell";
 import { insforge } from "@/lib/insforge";
 import {
-  Package, ArrowDown, ArrowUp, Store,
-  Loader2, Search, Eye, UserPlus,
+  Package,
+  ArrowDown,
+  ArrowUp,
+  Store,
+  Loader2,
+  Search,
+  Check,
+  X,
+  AlertTriangle,
+  Building2,
+  Clock,
+  Filter,
 } from "lucide-react";
 
 interface Vendor {
@@ -17,131 +27,133 @@ interface Vendor {
 interface FbkEnrollment {
   id: string;
   vendor_id: string;
-  warehouse_id: string;
-  storage_used: number;
-  storage_capacity: number;
   status: string;
-  vendor?: Vendor;
+  storage_limit: number | null;
+  created_at: string;
+  approved_at: string | null;
+  vendor: Vendor | null;
 }
 
 interface InboundPlan {
   id: string;
   vendor_id: string;
-  reference: string;
-  items: number;
   status: string;
+  notes: string | null;
+  estimated_arrival: string | null;
   created_at: string;
-  vendor?: Vendor;
+  warehouse_id: string;
+  items: { id: string; quantity_shipped: number }[] | null;
 }
-
-interface OutboundPlan {
-  id: string;
-  vendor_id: string;
-  reference: string;
-  items: number;
-  status: string;
-  created_at: string;
-  vendor?: Vendor;
-}
-
-const seedVendors = [
-  { id: "1", shop_name: "TechWorld Ltd", vendor_tier: "gold" },
-  { id: "2", shop_name: "FashionHub NG", vendor_tier: "silver" },
-  { id: "3", shop_name: "Home Essentials Co", vendor_tier: "bronze" },
-];
-
-const seedEnrollments: FbkEnrollment[] = [
-  { id: "1", vendor_id: "1", warehouse_id: "1", storage_used: 450, storage_capacity: 1000, status: "active", vendor: seedVendors[0] },
-  { id: "2", vendor_id: "2", warehouse_id: "1", storage_used: 200, storage_capacity: 500, status: "active", vendor: seedVendors[1] },
-  { id: "3", vendor_id: "3", warehouse_id: "2", storage_used: 80, storage_capacity: 300, status: "active", vendor: seedVendors[2] },
-];
-
-const seedInbounds: InboundPlan[] = [
-  { id: "1", vendor_id: "1", reference: "INB-2024-001", items: 120, status: "pending", created_at: "2024-03-15", vendor: seedVendors[0] },
-  { id: "2", vendor_id: "2", reference: "INB-2024-002", items: 45, status: "pending", created_at: "2024-03-14", vendor: seedVendors[1] },
-  { id: "3", vendor_id: "3", reference: "INB-2024-003", items: 200, status: "received", created_at: "2024-03-12", vendor: seedVendors[2] },
-];
-
-const seedOutbounds: OutboundPlan[] = [
-  { id: "1", vendor_id: "1", reference: "OUT-2024-001", items: 30, status: "pending", created_at: "2024-03-15", vendor: seedVendors[0] },
-  { id: "2", vendor_id: "1", reference: "OUT-2024-002", items: 15, status: "packed", created_at: "2024-03-14", vendor: seedVendors[0] },
-  { id: "3", vendor_id: "2", reference: "OUT-2024-003", items: 8, status: "shipped", created_at: "2024-03-13", vendor: seedVendors[1] },
-];
 
 const statusStyles: Record<string, string> = {
   active: "bg-green-50 text-green-700",
-  suspended: "bg-amber-50 text-amber-700",
-  inactive: "bg-gray-100 text-text-4",
   pending: "bg-amber-50 text-amber-700",
-  received: "bg-blue-50 text-blue",
-  picked: "bg-purple-50 text-purple-700",
-  packed: "bg-indigo-50 text-indigo-700",
-  shipped: "bg-green-50 text-green-700",
-  cancelled: "bg-red-50 text-red",
+  rejected: "bg-red-50 text-red-600",
+  approved: "bg-blue-50 text-blue-600",
+  processing: "bg-blue-100 text-blue-600",
+  in_transit: "bg-purple-100 text-purple-600",
+  completed: "bg-green-100 text-green-700",
+  cancelled: "bg-gray-100 text-text-4",
+  draft: "bg-gray-100 text-text-4",
 };
 
-export default function FbkDashboardPage() {
+export default function AdminFbkPage() {
   const [enrollments, setEnrollments] = useState<FbkEnrollment[]>([]);
   const [inbounds, setInbounds] = useState<InboundPlan[]>([]);
-  const [outbounds, setOutbounds] = useState<OutboundPlan[]>([]);
   const [loading, setLoading] = useState(true);
+  const [actionLoading, setActionLoading] = useState<string | null>(null);
+  const [error, setError] = useState("");
   const [search, setSearch] = useState("");
+  const [tab, setTab] = useState<"enrollments" | "inbounds">("enrollments");
 
-  useEffect(() => { loadData(); }, []);
+  useEffect(() => {
+    loadData();
+  }, []);
 
   const loadData = async () => {
+    setLoading(true);
+    setError("");
     try {
-      const [eRes, iRes, oRes] = await Promise.all([
-        insforge.database.from("fbk_enrollments").select("*, vendor:vendors(id, shop_name, vendor_tier)"),
-        insforge.database.from("fbk_inbound_plans").select("*, vendor:vendors(id, shop_name, vendor_tier)"),
-        insforge.database.from("fbk_outbound_plans").select("*, vendor:vendors(id, shop_name, vendor_tier)"),
+      const [eRes, iRes] = await Promise.all([
+        insforge.database
+          .from("fbk_enrollments")
+          .select("*, vendor:vendors(id, shop_name, vendor_tier)"),
+        insforge.database
+          .from("fbk_inbound_plans")
+          .select("*, items:fbk_inbound_items(id, quantity_shipped)"),
       ]);
 
-      if (eRes.data && eRes.data.length > 0) setEnrollments(eRes.data);
-      else {
-        for (const e of seedEnrollments) {
-          const { vendor: _vendor, ...rest } = e;
-          await insforge.database.from("fbk_enrollments").insert(rest);
-        }
-        setEnrollments(seedEnrollments);
-      }
-
-      if (iRes.data && iRes.data.length > 0) setInbounds(iRes.data);
-      else {
-        for (const p of seedInbounds) {
-          const { vendor: _vendor, ...rest } = p;
-          await insforge.database.from("fbk_inbound_plans").insert(rest);
-        }
-        setInbounds(seedInbounds);
-      }
-
-      if (oRes.data && oRes.data.length > 0) setOutbounds(oRes.data);
-      else {
-        for (const p of seedOutbounds) {
-          const { vendor: _vendor, ...rest } = p;
-          await insforge.database.from("fbk_outbound_plans").insert(rest);
-        }
-        setOutbounds(seedOutbounds);
-      }
+      if (eRes.data) setEnrollments(eRes.data as unknown as FbkEnrollment[]);
+      if (iRes.data) setInbounds(iRes.data as unknown as InboundPlan[]);
     } catch {
-      setEnrollments(seedEnrollments);
-      setInbounds(seedInbounds);
-      setOutbounds(seedOutbounds);
-    } finally { setLoading(false); }
+      setError("Failed to load FBK data");
+    } finally {
+      setLoading(false);
+    }
   };
 
-  const totalInventory = enrollments.reduce((s, e) => s + e.storage_used, 0);
-  const pendingInbounds = inbounds.filter(p => p.status === "pending").length;
-  const pendingOutbounds = outbounds.filter(p => p.status === "pending" || p.status === "picked" || p.status === "packed").length;
+  const handleStatusUpdate = async (enrollmentId: string, newStatus: string) => {
+    setActionLoading(enrollmentId);
+    setError("");
+    try {
+      const tokenRes = await fetch("/api/auth/session-token");
+      const { token } = await tokenRes.json();
+      if (!token) { setError("Authentication failed"); setActionLoading(null); return; }
 
-  const filteredVendors = search
-    ? enrollments.filter(e => e.vendor?.shop_name?.toLowerCase().includes(search.toLowerCase()))
+      const res = await fetch("/api/v1/fbk/enroll", {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+        body: JSON.stringify({ id: enrollmentId, status: newStatus }),
+      });
+
+      const json = await res.json();
+      if (!res.ok) {
+        setError(json.error || "Failed to update enrollment");
+        setActionLoading(null);
+        return;
+      }
+
+      setEnrollments((prev) =>
+        prev.map((e) =>
+          e.id === enrollmentId
+            ? { ...e, status: newStatus, approved_at: newStatus === "approved" ? new Date().toISOString() : null }
+            : e
+        )
+      );
+    } catch {
+      setError("Network error");
+    } finally {
+      setActionLoading(null);
+    }
+  };
+
+  const filteredEnrollments = search
+    ? enrollments.filter(
+        (e) =>
+          e.vendor?.shop_name?.toLowerCase().includes(search.toLowerCase()) ||
+          e.status.toLowerCase().includes(search.toLowerCase())
+      )
     : enrollments;
+
+  const filteredInbounds = search
+    ? inbounds.filter(
+        (p) =>
+          p.id.toLowerCase().includes(search.toLowerCase()) ||
+          p.status.toLowerCase().includes(search.toLowerCase())
+      )
+    : inbounds;
+
+  const totalEnrolled = enrollments.filter((e) => e.status === "active").length;
+  const pendingEnrollments = enrollments.filter((e) => e.status === "pending").length;
+  const totalInbounds = inbounds.length;
+  const pendingInbounds = inbounds.filter((p) => p.status === "pending" || p.status === "processing").length;
 
   if (loading) {
     return (
       <AdminShell title="FBK Management" subtitle="Fulfillment by KAUVEX">
-        <div className="flex items-center justify-center py-20"><Loader2 className="animate-spin text-blue" size={32} /></div>
+        <div className="flex items-center justify-center py-20">
+          <Loader2 className="animate-spin text-orange" size={32} />
+        </div>
       </AdminShell>
     );
   }
@@ -150,117 +162,203 @@ export default function FbkDashboardPage() {
     <AdminShell title="FBK Management" subtitle="Fulfillment by KAUVEX">
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
         {[
-          { label: "Enrolled Vendors", value: enrollments.length, icon: Store, color: "text-blue" },
-          { label: "Total Inventory Items", value: totalInventory.toLocaleString(), icon: Package, color: "text-purple-600" },
-          { label: "Pending Inbounds", value: pendingInbounds, icon: ArrowDown, color: "text-amber-600" },
-          { label: "Pending Outbounds", value: pendingOutbounds, icon: ArrowUp, color: "text-rose-600" },
-        ].map(s => (
-          <div key={s.label} className="bg-white rounded-xl border border-gray-200 p-4">
-            <div className="flex items-center gap-2 mb-1">
-              <s.icon size={16} className={s.color} />
-              <p className="text-xs text-text-4">{s.label}</p>
+          { label: "Total Enrollments", value: enrollments.length, icon: Store, color: "text-orange" },
+          { label: "Active Vendors", value: totalEnrolled, icon: Building2, color: "text-green-600" },
+          { label: "Pending Approval", value: pendingEnrollments, icon: Clock, color: "text-amber-600" },
+          { label: "Pending Inbounds", value: pendingInbounds, icon: ArrowDown, color: "text-blue-600" },
+        ].map((s) => {
+          const Icon = s.icon;
+          return (
+            <div key={s.label} className="bg-white rounded-xl border border-gray-200 p-4">
+              <div className="flex items-center gap-2 mb-1">
+                <Icon size={16} className={s.color} />
+                <p className="text-xs text-text-4">{s.label}</p>
+              </div>
+              <p className={`font-bold text-2xl ${s.color}`}>{s.value}</p>
             </div>
-            <p className={`font-bold text-2xl ${s.color}`}>{s.value}</p>
-          </div>
-        ))}
+          );
+        })}
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* Enrolled Vendors */}
-        <div className="lg:col-span-1">
-          <div className="bg-white rounded-xl border border-gray-200 p-4">
-            <h3 className="font-bold text-sm text-text-1 mb-3">Enrolled Vendors</h3>
-            <div className="relative mb-3">
-              <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-text-4" />
-              <input value={search} onChange={e => setSearch(e.target.value)} placeholder="Search vendors..." className="w-full h-8 pl-9 pr-3 text-xs rounded-lg bg-gray-50 border border-gray-200 focus:outline-none focus:border-blue" />
-            </div>
-            <div className="space-y-2">
-              {filteredVendors.map(e => (
-                <div key={e.id} className="flex items-center justify-between p-2.5 rounded-lg border border-gray-100 hover:bg-gray-50">
-                  <div className="flex items-center gap-2.5">
-                    <div className="w-8 h-8 rounded-full bg-blue/10 flex items-center justify-center text-blue text-xs font-bold">
-                      {e.vendor?.shop_name?.charAt(0) || "?"}
-                    </div>
-                    <div>
-                      <p className="text-xs font-semibold text-text-1">{e.vendor?.shop_name || "Unknown"}</p>
-                      <p className="text-[9px] text-text-4">{e.storage_used} / {e.storage_capacity} units</p>
-                    </div>
-                  </div>
-                  <span className={`text-[9px] font-medium px-1.5 py-0.5 rounded-full ${statusStyles[e.status] || "bg-gray-100 text-text-4"}`}>
-                    {e.status}
-                  </span>
-                </div>
-              ))}
-            </div>
+      {error && (
+        <div className="flex items-start gap-2 p-3 mb-4 rounded-lg border bg-red-50 border-red-200 text-red-800 text-xs">
+          <AlertTriangle size={14} className="mt-0.5 shrink-0" />
+          {error}
+        </div>
+      )}
+
+      <div className="bg-white rounded-xl border border-gray-200 p-4">
+        <div className="flex items-center justify-between mb-4">
+          <div className="flex gap-1">
+            <button
+              onClick={() => { setTab("enrollments"); setSearch(""); }}
+              className={`px-3 py-1.5 text-xs font-semibold rounded-lg transition-colors ${
+                tab === "enrollments" ? "bg-orange text-white" : "bg-gray-100 text-text-4 hover:bg-gray-200"
+              }`}
+            >
+              Enrollments ({enrollments.length})
+            </button>
+            <button
+              onClick={() => { setTab("inbounds"); setSearch(""); }}
+              className={`px-3 py-1.5 text-xs font-semibold rounded-lg transition-colors ${
+                tab === "inbounds" ? "bg-orange text-white" : "bg-gray-100 text-text-4 hover:bg-gray-200"
+              }`}
+            >
+              Inbound Plans ({inbounds.length})
+            </button>
+          </div>
+          <div className="relative">
+            <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-text-4" />
+            <input
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              placeholder={`Search ${tab}...`}
+              className="w-48 h-8 pl-9 pr-3 text-xs rounded-lg bg-gray-50 border border-gray-200 focus:outline-none focus:border-orange"
+            />
           </div>
         </div>
 
-        {/* Pending Inbounds */}
-        <div className="lg:col-span-1">
-          <div className="bg-white rounded-xl border border-gray-200 p-4">
-            <h3 className="font-bold text-sm text-text-1 mb-3">Pending Inbound Plans</h3>
-            {inbounds.filter(p => p.status === "pending").length === 0 ? (
-              <p className="text-xs text-text-4 text-center py-8">No pending inbound plans</p>
-            ) : (
-              <div className="space-y-2">
-                {inbounds.filter(p => p.status === "pending").map(p => (
-                  <div key={p.id} className="p-2.5 rounded-lg border border-amber-100 bg-amber-50/30">
-                    <div className="flex items-center justify-between mb-1">
-                      <span className="text-xs font-mono font-semibold text-text-1">{p.reference}</span>
-                      <span className={`text-[9px] font-medium px-1.5 py-0.5 rounded-full ${statusStyles[p.status] || ""}`}>{p.status}</span>
-                    </div>
-                    <p className="text-[10px] text-text-4">{p.vendor?.shop_name || "Unknown"} · {p.items} items</p>
-                    <p className="text-[9px] text-text-4">{p.created_at}</p>
-                  </div>
-                ))}
-              </div>
-            )}
+        {tab === "enrollments" ? (
+          <div className="overflow-x-auto">
+            <table className="w-full text-sm">
+              <thead>
+                <tr className="border-b border-gray-100">
+                  <th className="text-left py-2.5 px-3 text-[10px] text-gray-400 font-semibold uppercase">Vendor</th>
+                  <th className="text-left py-2.5 px-3 text-[10px] text-gray-400 font-semibold uppercase">Status</th>
+                  <th className="text-left py-2.5 px-3 text-[10px] text-gray-400 font-semibold uppercase">Tier</th>
+                  <th className="text-left py-2.5 px-3 text-[10px] text-gray-400 font-semibold uppercase">Date</th>
+                  <th className="text-right py-2.5 px-3 text-[10px] text-gray-400 font-semibold uppercase">Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                {filteredEnrollments.length === 0 ? (
+                  <tr>
+                    <td colSpan={5} className="py-8 text-center text-xs text-text-4">
+                      No enrollments found
+                    </td>
+                  </tr>
+                ) : (
+                  filteredEnrollments.map((e) => (
+                    <tr key={e.id} className="border-b border-gray-50 hover:bg-gray-50/50">
+                      <td className="py-2.5 px-3">
+                        <p className="text-xs font-semibold text-text-1">
+                          {e.vendor?.shop_name || "Unknown Vendor"}
+                        </p>
+                        <p className="text-[9px] text-text-4 font-mono">{e.vendor_id.slice(0, 8)}...</p>
+                      </td>
+                      <td className="py-2.5 px-3">
+                        <span
+                          className={`text-[9px] font-medium px-1.5 py-0.5 rounded-full ${
+                            statusStyles[e.status] || "bg-gray-100 text-text-4"
+                          }`}
+                        >
+                          {e.status}
+                        </span>
+                      </td>
+                      <td className="py-2.5 px-3">
+                        <span className="text-xs text-text-3">
+                          {e.vendor?.vendor_tier || "—"}
+                        </span>
+                      </td>
+                      <td className="py-2.5 px-3">
+                        <span className="text-xs text-text-4">
+                          {new Date(e.created_at).toLocaleDateString()}
+                        </span>
+                      </td>
+                      <td className="py-2.5 px-3 text-right">
+                        {e.status === "pending" ? (
+                          <div className="flex items-center justify-end gap-1">
+                            <button
+                              onClick={() => handleStatusUpdate(e.id, "approved")}
+                              disabled={actionLoading === e.id}
+                              className="p-1.5 rounded-lg bg-green-50 text-green-600 hover:bg-green-100 transition-colors disabled:opacity-50"
+                              title="Approve"
+                            >
+                              {actionLoading === e.id ? (
+                                <Loader2 size={12} className="animate-spin" />
+                              ) : (
+                                <Check size={12} />
+                              )}
+                            </button>
+                            <button
+                              onClick={() => handleStatusUpdate(e.id, "rejected")}
+                              disabled={actionLoading === e.id}
+                              className="p-1.5 rounded-lg bg-red-50 text-red-600 hover:bg-red-100 transition-colors disabled:opacity-50"
+                              title="Reject"
+                            >
+                              <X size={12} />
+                            </button>
+                          </div>
+                        ) : (
+                          <span className="text-[9px] text-text-4 italic">Done</span>
+                        )}
+                      </td>
+                    </tr>
+                  ))
+                )}
+              </tbody>
+            </table>
           </div>
-        </div>
-
-        {/* Pending Outbounds */}
-        <div className="lg:col-span-1">
-          <div className="bg-white rounded-xl border border-gray-200 p-4">
-            <h3 className="font-bold text-sm text-text-1 mb-3">Pending Outbound Plans</h3>
-            {outbounds.filter(p => p.status !== "shipped" && p.status !== "cancelled").length === 0 ? (
-              <p className="text-xs text-text-4 text-center py-8">No pending outbound plans</p>
-            ) : (
-              <div className="space-y-2">
-                {outbounds.filter(p => p.status !== "shipped" && p.status !== "cancelled").map(p => (
-                  <div key={p.id} className="p-2.5 rounded-lg border border-blue-100 bg-blue-50/30">
-                    <div className="flex items-center justify-between mb-1">
-                      <span className="text-xs font-mono font-semibold text-text-1">{p.reference}</span>
-                      <span className={`text-[9px] font-medium px-1.5 py-0.5 rounded-full ${statusStyles[p.status] || ""}`}>{p.status}</span>
-                    </div>
-                    <p className="text-[10px] text-text-4">{p.vendor?.shop_name || "Unknown"} · {p.items} items</p>
-                    <p className="text-[9px] text-text-4">{p.created_at}</p>
-                  </div>
-                ))}
-              </div>
-            )}
+        ) : (
+          <div className="overflow-x-auto">
+            <table className="w-full text-sm">
+              <thead>
+                <tr className="border-b border-gray-100">
+                  <th className="text-left py-2.5 px-3 text-[10px] text-gray-400 font-semibold uppercase">Plan ID</th>
+                  <th className="text-left py-2.5 px-3 text-[10px] text-gray-400 font-semibold uppercase">Status</th>
+                  <th className="text-left py-2.5 px-3 text-[10px] text-gray-400 font-semibold uppercase">Items</th>
+                  <th className="text-left py-2.5 px-3 text-[10px] text-gray-400 font-semibold uppercase">Est. Arrival</th>
+                  <th className="text-left py-2.5 px-3 text-[10px] text-gray-400 font-semibold uppercase">Created</th>
+                </tr>
+              </thead>
+              <tbody>
+                {filteredInbounds.length === 0 ? (
+                  <tr>
+                    <td colSpan={5} className="py-8 text-center text-xs text-text-4">
+                      No inbound plans found
+                    </td>
+                  </tr>
+                ) : (
+                  filteredInbounds.map((p) => (
+                    <tr key={p.id} className="border-b border-gray-50 hover:bg-gray-50/50">
+                      <td className="py-2.5 px-3">
+                        <span className="text-xs font-mono font-semibold text-text-1">
+                          {p.id.slice(0, 8)}
+                        </span>
+                      </td>
+                      <td className="py-2.5 px-3">
+                        <span
+                          className={`text-[9px] font-medium px-1.5 py-0.5 rounded-full ${
+                            statusStyles[p.status] || "bg-gray-100 text-text-4"
+                          }`}
+                        >
+                          {p.status}
+                        </span>
+                      </td>
+                      <td className="py-2.5 px-3">
+                        <span className="text-xs text-text-3">
+                          {(p.items || []).length} products
+                        </span>
+                      </td>
+                      <td className="py-2.5 px-3">
+                        <span className="text-xs text-text-4">
+                          {p.estimated_arrival
+                            ? new Date(p.estimated_arrival).toLocaleDateString()
+                            : "—"}
+                        </span>
+                      </td>
+                      <td className="py-2.5 px-3">
+                        <span className="text-xs text-text-4">
+                          {new Date(p.created_at).toLocaleDateString()}
+                        </span>
+                      </td>
+                    </tr>
+                  ))
+                )}
+              </tbody>
+            </table>
           </div>
-        </div>
-      </div>
-
-      {/* Quick Actions */}
-      <div className="mt-6 bg-white rounded-xl border border-gray-200 p-4">
-        <h3 className="font-bold text-sm text-text-1 mb-3">Quick Actions</h3>
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-          {[
-            { label: "Create Inbound Plan", icon: ArrowDown, color: "text-amber-600", bg: "bg-amber-50" },
-            { label: "Create Outbound Plan", icon: ArrowUp, color: "text-rose-600", bg: "bg-rose-50" },
-            { label: "Enroll Vendor", icon: UserPlus, color: "text-blue", bg: "bg-blue/5" },
-            { label: "View All Plans", icon: Eye, color: "text-purple-600", bg: "bg-purple-50" },
-          ].map(a => {
-            const Icon = a.icon;
-            return (
-              <button key={a.label} className={`flex items-center gap-2.5 p-3 rounded-lg ${a.bg} hover:opacity-80 transition-opacity`}>
-                <Icon size={16} className={a.color} />
-                <span className="text-xs font-semibold text-text-1">{a.label}</span>
-              </button>
-            );
-          })}
-        </div>
+        )}
       </div>
     </AdminShell>
   );

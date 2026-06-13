@@ -22,7 +22,7 @@ export async function GET(request: NextRequest) {
       config = await detectAndLocalize(request);
     }
 
-    return successResponse(config);
+    return successResponse(config as Record<string, unknown>);
   } catch {
     return errorResponse("Internal server error", 500);
   }

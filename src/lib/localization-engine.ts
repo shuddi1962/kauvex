@@ -106,7 +106,7 @@ export async function getLocalizationForCountry(
 ): Promise<LocalizationConfig> {
   const config = COUNTRY_CONFIG[countryCode] || COUNTRY_CONFIG["GB"];
 
-  let storefrontSlug = COUNTRY_STOREFRONT[countryCode] || "global";
+  const storefrontSlug = COUNTRY_STOREFRONT[countryCode] || "global";
   let storefrontId = "";
   let storefrontName = "Global";
 

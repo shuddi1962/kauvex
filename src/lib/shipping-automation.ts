@@ -26,6 +26,7 @@ interface WarehouseWithInventory {
   latitude: number;
   longitude: number;
   inventory: number;
+  distanceScore?: number;
 }
 
 function haversineDistance(
@@ -178,7 +179,7 @@ export async function autoRouteShipment(params: {
       warehouseId: warehouse.id,
       warehouseName: warehouse.name,
       warehouseCity: warehouse.city,
-      distanceScore: warehouse.distanceScore,
+      distanceScore: warehouse.distanceScore ?? 0,
       hasInventory: warehouse.inventory > 0,
       carrierCode: bestRate?.carrier || "",
       carrierName: bestRate?.carrierName || "",

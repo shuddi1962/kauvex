@@ -1509,6 +1509,164 @@ model ConsentLog {
   @@map("consent_logs")
 }
 
+// ============================================================
+// SECTION 1.16: PAYMENT TRANSACTIONS & GATEWAY LOG
+// ============================================================
+
+model PaymentTransaction {
+  id            String    @id @default(cuid())
+  orderId       String?
+  vendorId      String?
+  customerId    String?
+  amount        Decimal   @db.Decimal(12, 2)
+  currency      String    @default("USD")
+  gateway       String
+  gatewayRef    String?
+  gatewayStatus String?
+  type          String    @default("payment")
+  status        String    @default("pending")
+  fee           Decimal?  @default(0) @db.Decimal(12, 2)
+  netAmount     Decimal?  @db.Decimal(12, 2)
+  metadata      Json?
+  description   String?
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  @@index([orderId])
+  @@index([vendorId])
+  @@index([gatewayRef])
+  @@map("payment_transactions")
+}
+
+// ============================================================
+// SECTION 1.17: ESCROW PAYMENT SYSTEM
+// ============================================================
+
+model Escrow {
+  id            String    @id @default(cuid())
+  orderId       String
+  vendorId      String
+  customerId    String
+  amount        Decimal   @db.Decimal(12, 2)
+  currency      String    @default("USD")
+  status        String    @default("held")
+  heldAt        DateTime  @default(now())
+  releasedAt    DateTime?
+  releaseRule   String    @default("delivery_confirmed")
+  daysToRelease Int       @default(7)
+  refundedAt    DateTime?
+  notes         String?
+
+  @@index([orderId])
+  @@map("escrow_payments")
+}
+
+// ============================================================
+// SECTION 1.18: VENDOR WALLET TRANSACTIONS
+// ============================================================
+
+model VendorWalletTransaction {
+  id            String    @id @default(cuid())
+  vendorId      String
+  type          String
+  amount        Decimal   @db.Decimal(12, 2)
+  balanceBefore Decimal   @db.Decimal(12, 2)
+  balanceAfter  Decimal   @db.Decimal(12, 2)
+  referenceType String?
+  referenceId   String?
+  description   String?
+  status        String    @default("completed")
+  createdAt     DateTime  @default(now())
+
+  @@index([vendorId, createdAt])
+  @@map("vendor_wallet_transactions")
+}
+
+// ============================================================
+// SECTION 1.19: CUSTOMER WALLET TRANSACTIONS
+// ============================================================
+
+model CustomerWalletTransaction {
+  id            String    @id @default(cuid())
+  customerId    String
+  type          String
+  amount        Decimal   @db.Decimal(12, 2)
+  balanceBefore Decimal   @db.Decimal(12, 2)
+  balanceAfter  Decimal   @db.Decimal(12, 2)
+  referenceType String?
+  referenceId   String?
+  description   String?
+  status        String    @default("completed")
+  createdAt     DateTime  @default(now())
+
+  @@index([customerId, createdAt])
+  @@map("customer_wallet_transactions")
+}
+
+// ============================================================
+// SECTION 1.20: REFERRAL REWARDS
+// ============================================================
+
+model ReferralReward {
+  id            String    @id @default(cuid())
+  referrerId    String
+  referredId    String?
+  referredEmail String?
+  orderId       String?
+  rewardType    String    @default("signup")
+  rewardAmount  Decimal   @default(0) @db.Decimal(12, 2)
+  status        String    @default("pending")
+  paidAt        DateTime?
+  createdAt     DateTime  @default(now())
+
+  @@index([referrerId])
+  @@map("referral_rewards")
+}
+
+// ============================================================
+// SECTION 1.21: FRAUD DETECTION
+// ============================================================
+
+model FraudFlag {
+  id            String    @id @default(cuid())
+  orderId       String?
+  customerId    String?
+  vendorId      String?
+  flagType      String
+  riskScore     Decimal   @db.Decimal(5, 2)
+  reason        String?
+  metadata      Json?
+  status        String    @default("open")
+  reviewedBy    String?
+  reviewedAt    DateTime?
+  actionTaken   String?
+  createdAt     DateTime  @default(now())
+
+  @@index([orderId])
+  @@index([customerId])
+  @@map("fraud_flags")
+}
+
+// ============================================================
+// SECTION 1.22: PAYOUT BATCHES
+// ============================================================
+
+model PayoutBatch {
+  id            String    @id @default(cuid())
+  scheduleType  String    @default("manual")
+  status        String    @default("pending")
+  totalAmount   Decimal   @default(0) @db.Decimal(14, 2)
+  totalCount    Int       @default(0)
+  completedCount Int      @default(0)
+  failedCount   Int       @default(0)
+  processedAt   DateTime?
+  notes         String?
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  @@map("payout_batches")
+}
+
 model AuditLog {
   id            String   @id @default(cuid())
   userId        String?

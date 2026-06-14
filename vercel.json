@@ -10,11 +10,11 @@
     },
     {
       "path": "/api/cron/abandoned-carts",
-      "schedule": "0 */4 * * *"
+      "schedule": "0 6 * * *"
     },
     {
       "path": "/api/cron/buybox",
-      "schedule": "0 */6 * * *"
+      "schedule": "0 10 * * *"
     }
   ],
   "headers": [

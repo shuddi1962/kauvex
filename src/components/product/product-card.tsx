@@ -28,9 +28,10 @@ const categoryImages: Record<string, string> = {
 interface ProductCardProps {
   product: Product;
   style?: "classic" | "overlay" | "horizontal" | "bold" | "compact";
+  isSponsored?: boolean;
 }
 
-export default function ProductCard({ product, style = "classic" }: ProductCardProps) {
+export default function ProductCard({ product, style = "classic", isSponsored = false }: ProductCardProps) {
   const { addItem } = useCartStore();
   const { toggleWishlist, wishlistItems, toggleCompare } = useUIStore();
   const { formatPrice, currency } = useCurrencyStore();
@@ -54,6 +55,11 @@ export default function ProductCard({ product, style = "classic" }: ProductCardP
           {isOnSale && (
             <Badge variant="sale" className="absolute top-2 left-2">
               -{discountPercent}%
+            </Badge>
+          )}
+          {isSponsored && (
+            <Badge variant="featured" className="absolute top-2 right-2 text-[9px]">
+              SPONSORED
             </Badge>
           )}
         </Link>
@@ -141,6 +147,11 @@ export default function ProductCard({ product, style = "classic" }: ProductCardP
                   {badge.type.toUpperCase().replace("-", " ")}
                 </Badge>
               ))}
+            {isSponsored && (
+              <Badge variant="featured" className="text-[10px]">
+                SPONSORED
+              </Badge>
+            )}
           </div>
 
           {/* Quick actions */}
@@ -226,6 +237,11 @@ export default function ProductCard({ product, style = "classic" }: ProductCardP
                   {badge.type.toUpperCase().replace("-", " ")}
                 </Badge>
               ))}
+            {isSponsored && (
+              <Badge variant="featured" className="text-xs px-3 py-1 font-bold">
+                SPONSORED
+              </Badge>
+            )}
           </div>
 
           {/* Quick Actions */}
@@ -326,6 +342,11 @@ export default function ProductCard({ product, style = "classic" }: ProductCardP
               -{discountPercent}%
             </Badge>
           )}
+          {isSponsored && (
+            <Badge variant="featured" className="absolute top-1.5 right-1.5 text-[9px] px-1.5 py-0.5">
+              SPONSORED
+            </Badge>
+          )}
 
           {/* Minimal hover actions */}
           <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-colors flex items-center justify-center gap-2 opacity-0 group-hover:opacity-100">
@@ -389,6 +410,11 @@ export default function ProductCard({ product, style = "classic" }: ProductCardP
               {badge.type.toUpperCase().replace("-", " ")}
             </Badge>
           ))}
+          {isSponsored && (
+            <Badge variant="featured" className="text-[10px]">
+              SPONSORED
+            </Badge>
+          )}
         </div>
 
         {/* Quick Actions */}

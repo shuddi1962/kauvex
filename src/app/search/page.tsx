@@ -9,6 +9,7 @@ import { products, categories, brands } from "@/lib/demo-data";
 import { searchProducts, searchCategories, searchBrands, addRecentSearch } from "@/lib/search";
 import { KAUVEX_CATEGORIES } from "@/lib/categories";
 import { useCurrencyStore } from "@/store/currency-store";
+import { isSponsoredProduct } from "@/lib/sponsored-products";
 import type { Product } from "@/types";
 
 type ViewMode = "grid" | "list";
@@ -424,13 +425,13 @@ function SearchPageInner() {
                 {viewMode === "grid" ? (
                   <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
                     {pagedResults.map((product) => (
-                      <ProductCard key={product.id} product={product} formatPrice={formatPrice} formatNGN={formatNGN} currency={currency} />
+                      <ProductCard key={product.id} product={product} isSponsored={isSponsoredProduct(product.id, "search_results")} formatPrice={formatPrice} formatNGN={formatNGN} currency={currency} />
                     ))}
                   </div>
                 ) : (
                   <div className="space-y-3">
                     {pagedResults.map((product) => (
-                      <ProductRow key={product.id} product={product} formatPrice={formatPrice} formatNGN={formatNGN} currency={currency} />
+                      <ProductRow key={product.id} product={product} isSponsored={isSponsoredProduct(product.id, "search_results")} formatPrice={formatPrice} formatNGN={formatNGN} currency={currency} />
                     ))}
                   </div>
                 )}
@@ -552,11 +553,13 @@ function ProductCard({
   formatPrice,
   formatNGN,
   currency,
+  isSponsored = false,
 }: {
   product: Product;
   formatPrice: (n: number) => string;
   formatNGN: (n: number) => string;
   currency: string;
+  isSponsored?: boolean;
 }) {
   const price = product.salePrice || product.regularPrice;
   const hasSale = !!product.salePrice;
@@ -577,6 +580,11 @@ function ProductCard({
         {hasSale && (
           <span className="absolute top-2 left-2 bg-[#FF6B00] text-white text-[10px] font-bold px-1.5 py-0.5 rounded">
             SALE
+          </span>
+        )}
+        {isSponsored && (
+          <span className="absolute top-2 right-2 bg-blue text-white text-[9px] font-bold px-1.5 py-0.5 rounded">
+            SPONSORED
           </span>
         )}
       </div>
@@ -608,11 +616,13 @@ function ProductRow({
   formatPrice,
   formatNGN,
   currency,
+  isSponsored = false,
 }: {
   product: Product;
   formatPrice: (n: number) => string;
   formatNGN: (n: number) => string;
   currency: string;
+  isSponsored?: boolean;
 }) {
   const price = product.salePrice || product.regularPrice;
   const hasSale = !!product.salePrice;
@@ -633,6 +643,11 @@ function ProductRow({
         {hasSale && (
           <span className="absolute top-1 left-1 bg-[#FF6B00] text-white text-[10px] font-bold px-1.5 py-0.5 rounded">
             SALE
+          </span>
+        )}
+        {isSponsored && (
+          <span className="absolute top-1 right-1 bg-blue text-white text-[8px] font-bold px-1 py-0.5 rounded">
+            SPONSORED
           </span>
         )}
       </div>

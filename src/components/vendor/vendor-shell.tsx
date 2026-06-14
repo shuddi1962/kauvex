@@ -41,6 +41,7 @@ const topNav: { key: SectionKey; label: string; icon: React.ElementType; groups:
         { label: "All Products", href: "/vendor/products" },
         { label: "Add Product", href: "/vendor/products" },
         { label: "Shared Catalog", href: "/vendor/catalog", badge: "Sell" },
+        { label: "AI Tools", href: "/vendor/ai-tools" },
       ]},
       { title: "Fulfillment", items: [
         { label: "FBK", href: "/vendor/fbk" },
@@ -73,6 +74,7 @@ const topNav: { key: SectionKey; label: string; icon: React.ElementType; groups:
     groups: [
       { title: "Advertising", items: [
         { label: "Campaigns", href: "/vendor/advertising" },
+        { label: "Analytics", href: "/vendor/advertising/analytics" },
         { label: "Promotions", href: "/vendor/promotions" },
       ]},
     ],

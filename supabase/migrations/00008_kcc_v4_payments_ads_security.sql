@@ -9,7 +9,7 @@
 -- Ad creative assets table
 CREATE TABLE IF NOT EXISTS ad_creatives (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  campaign_id TEXT NOT NULL REFERENCES ad_campaigns(id) ON DELETE CASCADE,
+  campaign_id UUID NOT NULL REFERENCES ad_campaigns(id) ON DELETE CASCADE,
   type TEXT NOT NULL DEFAULT 'image',
   url TEXT NOT NULL,
   headline TEXT,
@@ -24,7 +24,7 @@ CREATE TABLE IF NOT EXISTS ad_creatives (
 -- Ad targeting rules
 CREATE TABLE IF NOT EXISTS ad_targeting_rules (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  campaign_id TEXT NOT NULL REFERENCES ad_campaigns(id) ON DELETE CASCADE,
+  campaign_id UUID NOT NULL REFERENCES ad_campaigns(id) ON DELETE CASCADE,
   rule_type TEXT NOT NULL,
   rule_value JSONB NOT NULL DEFAULT '{}',
   is_active BOOLEAN DEFAULT true,
@@ -111,8 +111,24 @@ CREATE TABLE IF NOT EXISTS currency_rules (
 );
 
 -- ============================================================
-// SECTION 65: ESCROW ENHANCEMENTS
+-- SECTION 65: ESCROW ENHANCEMENTS
 -- ============================================================
+
+CREATE TABLE IF NOT EXISTS escrow_payments (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  order_id TEXT NOT NULL,
+  vendor_id TEXT NOT NULL,
+  customer_id TEXT NOT NULL,
+  amount DECIMAL(12,2) NOT NULL,
+  currency TEXT DEFAULT 'USD',
+  status TEXT DEFAULT 'held',
+  held_at TIMESTAMPTZ DEFAULT now(),
+  released_at TIMESTAMPTZ,
+  release_rule TEXT DEFAULT 'delivery_confirmed',
+  days_to_release INT DEFAULT 7,
+  refunded_at TIMESTAMPTZ,
+  notes TEXT
+);
 
 ALTER TABLE escrow_payments ADD COLUMN IF NOT EXISTS release_after_days INT DEFAULT 7;
 ALTER TABLE escrow_payments ADD COLUMN IF NOT EXISTS return_period_days INT DEFAULT 14;
@@ -201,6 +217,19 @@ ON CONFLICT DO NOTHING;
 -- ============================================================
 -- SECTION 70: REFERRAL SYSTEM ENHANCEMENTS
 -- ============================================================
+
+CREATE TABLE IF NOT EXISTS referral_rewards (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  referrer_id TEXT NOT NULL,
+  referred_id TEXT,
+  referred_email TEXT,
+  order_id TEXT,
+  reward_type TEXT DEFAULT 'signup',
+  reward_amount DECIMAL(12,2) DEFAULT 0,
+  status TEXT DEFAULT 'pending',
+  paid_at TIMESTAMPTZ,
+  created_at TIMESTAMPTZ DEFAULT now()
+);
 
 ALTER TABLE referral_rewards ADD COLUMN IF NOT EXISTS repeat_purchase_bonus DECIMAL(12,2) DEFAULT 0;
 
@@ -452,6 +481,26 @@ CREATE TABLE IF NOT EXISTS background_jobs (
 -- ============================================================
 -- INDEXES FOR PERFORMANCE
 -- ============================================================
+
+CREATE TABLE IF NOT EXISTS payment_transactions (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  order_id TEXT,
+  vendor_id TEXT,
+  customer_id TEXT,
+  amount DECIMAL(12,2) NOT NULL,
+  currency TEXT DEFAULT 'USD',
+  gateway TEXT NOT NULL,
+  gateway_ref TEXT,
+  gateway_status TEXT,
+  type TEXT DEFAULT 'payment',
+  status TEXT DEFAULT 'pending',
+  fee DECIMAL(12,2) DEFAULT 0,
+  net_amount DECIMAL(12,2),
+  metadata JSONB,
+  description TEXT,
+  created_at TIMESTAMPTZ DEFAULT now(),
+  updated_at TIMESTAMPTZ DEFAULT now()
+);
 
 CREATE INDEX IF NOT EXISTS idx_ad_metrics_campaign_date ON ad_metrics(campaign_id, date);
 CREATE INDEX IF NOT EXISTS idx_payment_transactions_order ON payment_transactions(order_id);

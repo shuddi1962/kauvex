@@ -3,6 +3,20 @@
   "buildCommand": "npm run build",
   "installCommand": "npm install",
   "regions": ["iad1"],
+  "crons": [
+    {
+      "path": "/api/cron/payouts",
+      "schedule": "0 2 * * *"
+    },
+    {
+      "path": "/api/cron/abandoned-carts",
+      "schedule": "0 */4 * * *"
+    },
+    {
+      "path": "/api/cron/buybox",
+      "schedule": "0 */6 * * *"
+    }
+  ],
   "headers": [
     {
       "source": "/sw.js",

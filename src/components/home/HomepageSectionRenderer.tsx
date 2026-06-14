@@ -11,6 +11,7 @@ import FeaturedVendorsSection from "./FeaturedVendorsSection";
 import FeaturedBrandsSection from "./FeaturedBrandsSection";
 import TestimonialsSection from "./TestimonialsSection";
 import NewsletterSection from "./NewsletterSection";
+import SponsoredProductsSection from "./SponsoredProductsSection";
 
 interface HomepageSection {
   id: string;
@@ -29,6 +30,7 @@ const defaultSections: { type: string; title: string; subtitle?: string }[] = [
   { type: "best_sellers", title: "Best Sellers" },
   { type: "new_arrivals", title: "New Arrivals" },
   { type: "featured_brands", title: "Featured Brands" },
+  { type: "sponsored_products", title: "Sponsored Products", subtitle: "Featured products from our trusted vendors" },
   { type: "testimonials", title: "What Our Customers Say" },
   { type: "newsletter", title: "Stay in the Loop", subtitle: "Get exclusive deals and new arrivals." },
 ];
@@ -41,6 +43,7 @@ const componentMap: Record<string, React.FC<{ title: string; subtitle?: string; 
   best_sellers: (props) => <BestSellersSection title={props.title} />,
   featured_vendors: (props) => <FeaturedVendorsSection title={props.title} vendors={[]} />,
   featured_brands: () => <FeaturedBrandsSection />,
+  sponsored_products: (props) => <SponsoredProductsSection title={props.title} subtitle={props.subtitle} />,
   testimonials: () => <TestimonialsSection />,
   newsletter: (props) => <NewsletterSection title={props.title} subtitle={props.subtitle || ""} buttonText="Subscribe" />,
 };

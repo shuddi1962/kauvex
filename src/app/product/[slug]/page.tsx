@@ -38,6 +38,7 @@ import { useCartStore } from "@/store/cart-store";
 import { useUIStore } from "@/store/ui-store";
 import { useCurrencyStore } from "@/store/currency-store";
 import { products } from "@/lib/demo-data";
+import { isSponsoredProduct } from "@/lib/sponsored-products";
 import ProductCard from "@/components/product/product-card";
 
 // Demo reviews
@@ -702,7 +703,7 @@ export default function ProductDetailPage({ params }: { params: { slug: string }
             <h2 className="font-syne font-bold text-xl mb-6">Frequently Bought Together</h2>
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
               {upsellProducts.map((p) => (
-                <ProductCard key={p.id} product={p} />
+                <ProductCard key={p.id} product={p} isSponsored={isSponsoredProduct(p.id, "product_detail")} />
               ))}
             </div>
           </div>
@@ -714,7 +715,7 @@ export default function ProductDetailPage({ params }: { params: { slug: string }
             <h2 className="font-syne font-bold text-xl mb-6">Related Products</h2>
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
               {relatedProducts.map((p) => (
-                <ProductCard key={p.id} product={p} />
+                <ProductCard key={p.id} product={p} isSponsored={isSponsoredProduct(p.id, "product_detail")} />
               ))}
             </div>
           </div>

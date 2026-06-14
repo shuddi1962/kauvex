@@ -35,7 +35,7 @@ const topNavSections: { key: SectionKey; label: string; icon: React.ElementType;
       { title: "Overview", items: [
         { label: "Dashboard", href: "/admin" },
         { label: "Analytics", href: "/admin/analytics" },
-        { label: "Reports", href: "/admin/analytics/bi" },
+        { label: "Reports", href: "/admin/reports" },
       ]},
     ],
   },
@@ -171,20 +171,23 @@ const topNavSections: { key: SectionKey; label: string; icon: React.ElementType;
       ]},
       { title: "Developers", items: [
         { label: "API Docs", href: "/api/docs" },
+        { label: "API Keys", href: "/admin/api-keys" },
+        { label: "Webhooks", href: "/admin/webhooks" },
+        { label: "White Label", href: "/admin/white-label" },
       ]},
     ],
   },
 ];
 
 function detectSection(pathname: string): SectionKey {
-  if (pathname === "/admin" || pathname.startsWith("/admin/analytics")) return "dashboard";
+  if (pathname === "/admin" || pathname.startsWith("/admin/analytics") || pathname.startsWith("/admin/reports")) return "dashboard";
   if (pathname.startsWith("/admin/products") || pathname.startsWith("/admin/product-storefronts") || pathname.startsWith("/admin/categories") || pathname.startsWith("/admin/brands") || pathname.startsWith("/admin/tags") || pathname.startsWith("/admin/variations") || pathname.startsWith("/admin/bundles") || pathname.startsWith("/admin/orders") || pathname.startsWith("/admin/customers") || pathname.startsWith("/admin/crm") || pathname.startsWith("/admin/gift-cards") || pathname.startsWith("/admin/coupons") || pathname.startsWith("/admin/disputes") || pathname.startsWith("/admin/reviews") || pathname.startsWith("/admin/inventory") || pathname.startsWith("/admin/quotes") || pathname.startsWith("/admin/bookings")) return "commerce";
   if (pathname.startsWith("/admin/pos") || pathname.startsWith("/admin/finance")) return "sales";
   if (pathname.startsWith("/admin/marketing") || pathname.startsWith("/admin/advertising") || pathname.startsWith("/admin/banners") || pathname.startsWith("/admin/popups") || pathname.startsWith("/admin/seo")) return "marketing";
   if (pathname.startsWith("/admin/homepage") || pathname.startsWith("/admin/page-editor") || pathname.startsWith("/admin/menu") || pathname.startsWith("/admin/footer") || pathname.startsWith("/admin/media") || pathname.startsWith("/admin/pages")) return "content";
   if (pathname.startsWith("/admin/storefronts") || pathname.startsWith("/admin/vendors") || pathname.startsWith("/admin/vendor-ads") || pathname.startsWith("/admin/fbk") || pathname.startsWith("/admin/boat-configurator")) return "marketplace";
   if (pathname.startsWith("/admin/delivery") || pathname.startsWith("/admin/drivers") || pathname.startsWith("/admin/returns") || pathname.startsWith("/admin/shipping") || pathname.startsWith("/admin/shipping-carriers") || pathname.startsWith("/admin/locations") || pathname.startsWith("/admin/warehouses") || pathname.startsWith("/admin/pickup-points") || pathname.startsWith("/admin/dropoff-zones") || pathname.startsWith("/admin/warranty") || pathname.startsWith("/admin/field-team") || pathname.startsWith("/admin/cj-dropshipping")) return "operations";
-  if (pathname.startsWith("/admin/settings") || pathname.startsWith("/admin/staff") || pathname.startsWith("/admin/roles") || pathname.startsWith("/admin/features") || pathname.startsWith("/admin/mobile") || pathname.startsWith("/admin/site-doctor") || pathname.startsWith("/admin/audit-log") || pathname.startsWith("/admin/ai") || pathname.startsWith("/api/docs")) return "system";
+  if (pathname.startsWith("/admin/settings") || pathname.startsWith("/admin/staff") || pathname.startsWith("/admin/roles") || pathname.startsWith("/admin/features") || pathname.startsWith("/admin/mobile") || pathname.startsWith("/admin/site-doctor") || pathname.startsWith("/admin/audit-log") || pathname.startsWith("/admin/ai") || pathname.startsWith("/admin/api-keys") || pathname.startsWith("/admin/webhooks") || pathname.startsWith("/admin/white-label") || pathname.startsWith("/api/docs")) return "system";
   return "dashboard";
 }
 

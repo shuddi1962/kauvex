@@ -45,6 +45,16 @@ const topNav: { key: SectionKey; label: string; icon: React.ElementType; groups:
         { label: "Shared Catalog", href: "/vendor/catalog", badge: "Sell" },
         { label: "AI Tools", href: "/vendor/ai-tools" },
       ]},
+      { title: "Print on Demand", items: [
+        { label: "POD Dashboard", href: "/vendor/pod" },
+        { label: "Design Studio", href: "/vendor/pod/design-studio", badge: "New" },
+        { label: "My Products", href: "/vendor/pod/products" },
+        { label: "Orders", href: "/vendor/pod/orders" },
+        { label: "Design Marketplace", href: "/pod-marketplace" },
+      ]},
+      { title: "Dropshipping", items: [
+        { label: "Dropshipping Hub", href: "/vendor/dropshipping", badge: "New" },
+      ]},
       { title: "Fulfillment", items: [
         { label: "FBK", href: "/vendor/fbk" },
         { label: "Shipping", href: "/vendor/shipping" },
@@ -95,7 +105,7 @@ const topNav: { key: SectionKey; label: string; icon: React.ElementType; groups:
 
 function detectSection(pathname: string): SectionKey {
   if (pathname === "/vendor/dashboard" || pathname === "/vendor/analytics" || pathname === "/vendor/earnings") return "dashboard";
-  if (pathname.startsWith("/vendor/products") || pathname.startsWith("/vendor/catalog") || pathname.startsWith("/vendor/fbk") || pathname.startsWith("/vendor/shipping")) return "products";
+  if (pathname.startsWith("/vendor/products") || pathname.startsWith("/vendor/catalog") || pathname.startsWith("/vendor/fbk") || pathname.startsWith("/vendor/shipping") || pathname.startsWith("/vendor/pod") || pathname.startsWith("/vendor/dropshipping") || pathname.startsWith("/pod-marketplace")) return "products";
   if (pathname.startsWith("/vendor/orders")) return "orders";
   if (pathname.startsWith("/vendor/store-builder") || pathname.startsWith("/vendor/shop")) return "store";
   if (pathname.startsWith("/vendor/advertising") || pathname.startsWith("/vendor/promotions")) return "marketing";

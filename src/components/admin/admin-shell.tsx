@@ -150,6 +150,13 @@ const topNavSections: { key: SectionKey; label: string; icon: React.ElementType;
         { label: "Suppliers", href: "/admin/suppliers" },
         { label: "Franchise", href: "/admin/franchise" },
         { label: "Auctions", href: "/admin/auctions" },
+        { label: "Group Buy", href: "/admin/group-buy", badge: "New" },
+      ]},
+      { title: "Sourcing & Products", items: [
+        { label: "Product Sourcing", href: "/admin/sourcing" },
+        { label: "Print on Demand", href: "/admin/pod", badge: "New" },
+        { label: "Art Marketplace", href: "/admin/art-marketplace", badge: "New" },
+        { label: "Dropshipping", href: "/admin/cj-dropshipping" },
       ]},
       { title: "Fulfillment", items: [
         { label: "FBK Management", href: "/admin/fbk" },
@@ -217,7 +224,7 @@ function detectSection(pathname: string): SectionKey {
   if (pathname.startsWith("/admin/pos") || pathname.startsWith("/admin/finance") || pathname.startsWith("/admin/bnpl") || pathname.startsWith("/admin/financing") || pathname.startsWith("/admin/insurance") || pathname.startsWith("/admin/credit")) return "sales";
   if (pathname.startsWith("/admin/marketing") || pathname.startsWith("/admin/email-marketing") || pathname.startsWith("/admin/advertising") || pathname.startsWith("/admin/banners") || pathname.startsWith("/admin/popups") || pathname.startsWith("/admin/seo") || pathname.startsWith("/admin/affiliates") || pathname.startsWith("/admin/social-commerce") || pathname.startsWith("/admin/live-shopping")) return "marketing";
   if (pathname.startsWith("/admin/homepage") || pathname.startsWith("/admin/page-editor") || pathname.startsWith("/admin/menu") || pathname.startsWith("/admin/footer") || pathname.startsWith("/admin/media") || pathname.startsWith("/admin/pages")) return "content";
-  if (pathname.startsWith("/admin/storefronts") || pathname.startsWith("/admin/vendors") || pathname.startsWith("/admin/vendor-ads") || pathname.startsWith("/admin/fbk") || pathname.startsWith("/admin/boat-configurator") || pathname.startsWith("/admin/reputation") || pathname.startsWith("/admin/authenticity") || pathname.startsWith("/admin/suppliers") || pathname.startsWith("/admin/franchise") || pathname.startsWith("/admin/auctions")) return "marketplace";
+  if (pathname.startsWith("/admin/storefronts") || pathname.startsWith("/admin/vendors") || pathname.startsWith("/admin/vendor-ads") || pathname.startsWith("/admin/fbk") || pathname.startsWith("/admin/boat-configurator") || pathname.startsWith("/admin/reputation") || pathname.startsWith("/admin/authenticity") || pathname.startsWith("/admin/suppliers") || pathname.startsWith("/admin/franchise") || pathname.startsWith("/admin/auctions") || pathname.startsWith("/admin/sourcing") || pathname.startsWith("/admin/pod") || pathname.startsWith("/admin/art-marketplace") || pathname.startsWith("/admin/group-buy")) return "marketplace";
   if (pathname.startsWith("/admin/delivery") || pathname.startsWith("/admin/drivers") || pathname.startsWith("/admin/returns") || pathname.startsWith("/admin/shipping") || pathname.startsWith("/admin/shipping-carriers") || pathname.startsWith("/admin/locations") || pathname.startsWith("/admin/warehouses") || pathname.startsWith("/admin/pickup-points") || pathname.startsWith("/admin/dropoff-zones") || pathname.startsWith("/admin/warranty") || pathname.startsWith("/admin/field-team") || pathname.startsWith("/admin/cj-dropshipping") || pathname.startsWith("/admin/forecasting") || pathname.startsWith("/admin/fraud")) return "operations";
   if (pathname.startsWith("/admin/settings") || pathname.startsWith("/admin/staff") || pathname.startsWith("/admin/roles") || pathname.startsWith("/admin/features") || pathname.startsWith("/admin/mobile") || pathname.startsWith("/admin/site-doctor") || pathname.startsWith("/admin/audit-log") || pathname.startsWith("/admin/ai") || pathname.startsWith("/admin/api-keys") || pathname.startsWith("/admin/webhooks") || pathname.startsWith("/admin/white-label") || pathname.startsWith("/admin/languages") || pathname.startsWith("/admin/ai-assistant") || pathname.startsWith("/admin/chat") || pathname.startsWith("/api/docs")) return "system";
   return "dashboard";

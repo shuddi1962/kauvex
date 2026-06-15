@@ -91,6 +91,49 @@ const staticCategories = [
       { label: "Office Equipment", href: "/category/office-equipment" },
     ],
   },
+  {
+    label: "Explore",
+    href: "#",
+    is_mega: true,
+    children: [
+      {
+        label: "Kauvex Live",
+        href: "/live",
+        icon: "🔴",
+        description: "Shop live with your favourite vendors",
+      },
+      {
+        label: "Group Buy",
+        href: "/group-buy",
+        icon: "🤝",
+        description: "Buy together, save more on every deal",
+      },
+      {
+        label: "POD Marketplace",
+        href: "/pod-marketplace",
+        icon: "🎨",
+        description: "Browse & license designs for POD products",
+      },
+      {
+        label: "Art Marketplace",
+        href: "/art-marketplace",
+        icon: "🖼️",
+        description: "Buy and sell digital art & illustrations",
+      },
+      {
+        label: "Concierge AI",
+        href: "/concierge",
+        icon: "✨",
+        description: "AI-powered personal shopping assistant",
+      },
+      {
+        label: "Request Product",
+        href: "/request-product",
+        icon: "📦",
+        description: "Can't find it? We'll source it for you",
+      },
+    ],
+  },
 ];
 
 export default function MegaMenu() {

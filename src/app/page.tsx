@@ -4,6 +4,7 @@ import { Truck, Shield, Headphones, CreditCard } from "lucide-react";
 import HeroBannerEnhanced from "@/components/home/hero-banner-enhanced";
 import CategoryGrid from "@/components/home/category-grid";
 import FeaturedProducts from "@/components/home/featured-products";
+import V3FeaturesSection from "@/components/home/v3-features";
 import SellBanner from "@/components/home/sell-banner";
 import HomepageSectionRenderer from "@/components/home/HomepageSectionRenderer";
 
@@ -47,6 +48,9 @@ export default function HomePage() {
 
       {/* Today's Picks */}
       <FeaturedProducts />
+
+      {/* V3 Feature Highlights */}
+      <V3FeaturesSection />
 
       {/* Modular Homepage Sections (from DB or defaults) */}
       <HomepageSectionRenderer />

@@ -186,6 +186,20 @@ export default function Footer() {
             </ul>
           </div>
 
+          {/* Explore */}
+          <div>
+            <h4 className="font-bold text-sm text-white mb-4">Explore</h4>
+            <ul className="space-y-2.5">
+              <li><Link href="/live" className="text-sm text-white/40 hover:text-white transition-colors">Kauvex Live</Link></li>
+              <li><Link href="/group-buy" className="text-sm text-white/40 hover:text-white transition-colors">Group Buy Deals</Link></li>
+              <li><Link href="/pod-marketplace" className="text-sm text-white/40 hover:text-white transition-colors">POD Marketplace</Link></li>
+              <li><Link href="/art-marketplace" className="text-sm text-white/40 hover:text-white transition-colors">Art Marketplace</Link></li>
+              <li><Link href="/concierge" className="text-sm text-white/40 hover:text-white transition-colors">Concierge AI</Link></li>
+              <li><Link href="/request-product" className="text-sm text-white/40 hover:text-white transition-colors">Request a Product</Link></li>
+              <li><Link href="/deals" className="text-sm text-white/40 hover:text-white transition-colors">Today&apos;s Deals</Link></li>
+            </ul>
+          </div>
+
           {/* Regional Stores */}
           <div>
             <h4 className="font-bold text-sm text-white mb-4">Regional Stores</h4>

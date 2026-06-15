@@ -7,11 +7,13 @@ import {
   LayoutDashboard, Package, CreditCard, Megaphone, Palette,
   Globe, Truck, Settings, Search, Bell, ChevronDown, ChevronLeft,
   Menu, ArrowLeft, BarChart3, FolderTree, ShoppingCart, Users,
-  Image, Layers, Shield, Store, Warehouse, MapPin, Plug, Heart,
+  Image,   Layers, Shield, Store, Warehouse, MapPin, Plug, Heart,
   Gift, Ticket, Scale, PenTool, Smartphone, ScrollText, FileText,
   Tag, Award, SlidersHorizontal, Navigation, Anchor, UserPlus,
   Wrench, ClipboardList, ImageIcon, Sparkles, ChevronRight, Star,
-  RefreshCw, UserCog, MapPinOff,
+  RefreshCw, UserCog, MapPinOff, Building2, Handshake, Radio,
+  Gavel, Repeat, Download, Bot, MessageCircle, Languages,
+  Shield, BadgePercent, TrendingUp, Scan, FileBadge,
 } from "lucide-react";
 import { AdminStorefrontFilter } from "@/components/admin/storefront-filter";
 
@@ -50,13 +52,20 @@ const topNavSections: { key: SectionKey; label: string; icon: React.ElementType;
         { label: "Tags", href: "/admin/tags" },
         { label: "Variations", href: "/admin/variations" },
         { label: "Bundles", href: "/admin/bundles" },
+        { label: "Digital Products", href: "/admin/digital-products" },
         { label: "Storefront Assignment", href: "/admin/product-storefronts", badge: "New" },
+      ]},
+      { title: "Enterprise", items: [
+        { label: "ERP Dashboard", href: "/admin/erp" },
+        { label: "Procurement", href: "/admin/procurement" },
+        { label: "RFQ System", href: "/admin/rfq" },
       ]},
       { title: "Orders", items: [
         { label: "All Orders", href: "/admin/orders" },
         { label: "Disputes", href: "/admin/disputes" },
         { label: "Quotes", href: "/admin/quotes" },
         { label: "Bookings", href: "/admin/bookings" },
+        { label: "Subscriptions", href: "/admin/subscriptions" },
       ]},
       { title: "Customers", items: [
         { label: "All Customers", href: "/admin/customers" },
@@ -80,6 +89,10 @@ const topNavSections: { key: SectionKey; label: string; icon: React.ElementType;
       ]},
       { title: "Finance", items: [
         { label: "Payments & P&L", href: "/admin/finance" },
+        { label: "BNPL", href: "/admin/bnpl" },
+        { label: "Vendor Financing", href: "/admin/financing" },
+        { label: "Insurance", href: "/admin/insurance" },
+        { label: "Credit System", href: "/admin/credit" },
       ]},
     ],
   },
@@ -88,9 +101,15 @@ const topNavSections: { key: SectionKey; label: string; icon: React.ElementType;
     groups: [
       { title: "Campaigns", items: [
         { label: "Marketing", href: "/admin/marketing" },
+        { label: "Email Marketing", href: "/admin/email-marketing" },
         { label: "Advertising", href: "/admin/advertising" },
+        { label: "Affiliates", href: "/admin/affiliates" },
         { label: "Banners", href: "/admin/banners" },
         { label: "Popups & Ads", href: "/admin/popups" },
+      ]},
+      { title: "Social", items: [
+        { label: "Social Commerce", href: "/admin/social-commerce" },
+        { label: "Live Shopping", href: "/admin/live-shopping" },
       ]},
       { title: "SEO", items: [
         { label: "SEO Tools", href: "/admin/seo" },
@@ -123,6 +142,13 @@ const topNavSections: { key: SectionKey; label: string; icon: React.ElementType;
       { title: "Vendors", items: [
         { label: "All Vendors", href: "/admin/vendors" },
         { label: "Vendor Ads", href: "/admin/vendor-ads" },
+        { label: "Reputation", href: "/admin/reputation" },
+        { label: "Authenticity", href: "/admin/authenticity" },
+      ]},
+      { title: "Partner Network", items: [
+        { label: "Suppliers", href: "/admin/suppliers" },
+        { label: "Franchise", href: "/admin/franchise" },
+        { label: "Auctions", href: "/admin/auctions" },
       ]},
       { title: "Fulfillment", items: [
         { label: "FBK Management", href: "/admin/fbk" },
@@ -151,6 +177,8 @@ const topNavSections: { key: SectionKey; label: string; icon: React.ElementType;
         { label: "Warranty", href: "/admin/warranty" },
         { label: "Field Team", href: "/admin/field-team" },
         { label: "CJ Dropshipping", href: "/admin/cj-dropshipping" },
+        { label: "Forecasting", href: "/admin/forecasting" },
+        { label: "Fraud Detection", href: "/admin/fraud" },
       ]},
     ],
   },
@@ -162,12 +190,15 @@ const topNavSections: { key: SectionKey; label: string; icon: React.ElementType;
         { label: "Staff", href: "/admin/staff" },
         { label: "Roles & Permissions", href: "/admin/roles" },
         { label: "Feature Flags", href: "/admin/features" },
+        { label: "Languages", href: "/admin/languages" },
       ]},
       { title: "Tools", items: [
         { label: "Mobile App", href: "/admin/mobile" },
         { label: "Site Doctor", href: "/admin/site-doctor" },
         { label: "Audit Log", href: "/admin/audit-log" },
         { label: "AI Tools", href: "/admin/ai" },
+        { label: "AI Assistant", href: "/admin/ai-assistant" },
+        { label: "Chat System", href: "/admin/chat" },
       ]},
       { title: "Developers", items: [
         { label: "API Docs", href: "/api/docs" },
@@ -181,13 +212,13 @@ const topNavSections: { key: SectionKey; label: string; icon: React.ElementType;
 
 function detectSection(pathname: string): SectionKey {
   if (pathname === "/admin" || pathname.startsWith("/admin/analytics") || pathname.startsWith("/admin/reports")) return "dashboard";
-  if (pathname.startsWith("/admin/products") || pathname.startsWith("/admin/product-storefronts") || pathname.startsWith("/admin/categories") || pathname.startsWith("/admin/brands") || pathname.startsWith("/admin/tags") || pathname.startsWith("/admin/variations") || pathname.startsWith("/admin/bundles") || pathname.startsWith("/admin/orders") || pathname.startsWith("/admin/customers") || pathname.startsWith("/admin/crm") || pathname.startsWith("/admin/gift-cards") || pathname.startsWith("/admin/coupons") || pathname.startsWith("/admin/disputes") || pathname.startsWith("/admin/reviews") || pathname.startsWith("/admin/inventory") || pathname.startsWith("/admin/quotes") || pathname.startsWith("/admin/bookings")) return "commerce";
-  if (pathname.startsWith("/admin/pos") || pathname.startsWith("/admin/finance")) return "sales";
-  if (pathname.startsWith("/admin/marketing") || pathname.startsWith("/admin/advertising") || pathname.startsWith("/admin/banners") || pathname.startsWith("/admin/popups") || pathname.startsWith("/admin/seo")) return "marketing";
+  if (pathname.startsWith("/admin/products") || pathname.startsWith("/admin/product-storefronts") || pathname.startsWith("/admin/categories") || pathname.startsWith("/admin/brands") || pathname.startsWith("/admin/tags") || pathname.startsWith("/admin/variations") || pathname.startsWith("/admin/bundles") || pathname.startsWith("/admin/orders") || pathname.startsWith("/admin/customers") || pathname.startsWith("/admin/crm") || pathname.startsWith("/admin/gift-cards") || pathname.startsWith("/admin/coupons") || pathname.startsWith("/admin/disputes") || pathname.startsWith("/admin/reviews") || pathname.startsWith("/admin/inventory") || pathname.startsWith("/admin/quotes") || pathname.startsWith("/admin/bookings") || pathname.startsWith("/admin/erp") || pathname.startsWith("/admin/procurement") || pathname.startsWith("/admin/rfq") || pathname.startsWith("/admin/digital-products") || pathname.startsWith("/admin/subscriptions")) return "commerce";
+  if (pathname.startsWith("/admin/pos") || pathname.startsWith("/admin/finance") || pathname.startsWith("/admin/bnpl") || pathname.startsWith("/admin/financing") || pathname.startsWith("/admin/insurance") || pathname.startsWith("/admin/credit")) return "sales";
+  if (pathname.startsWith("/admin/marketing") || pathname.startsWith("/admin/email-marketing") || pathname.startsWith("/admin/advertising") || pathname.startsWith("/admin/banners") || pathname.startsWith("/admin/popups") || pathname.startsWith("/admin/seo") || pathname.startsWith("/admin/affiliates") || pathname.startsWith("/admin/social-commerce") || pathname.startsWith("/admin/live-shopping")) return "marketing";
   if (pathname.startsWith("/admin/homepage") || pathname.startsWith("/admin/page-editor") || pathname.startsWith("/admin/menu") || pathname.startsWith("/admin/footer") || pathname.startsWith("/admin/media") || pathname.startsWith("/admin/pages")) return "content";
-  if (pathname.startsWith("/admin/storefronts") || pathname.startsWith("/admin/vendors") || pathname.startsWith("/admin/vendor-ads") || pathname.startsWith("/admin/fbk") || pathname.startsWith("/admin/boat-configurator")) return "marketplace";
-  if (pathname.startsWith("/admin/delivery") || pathname.startsWith("/admin/drivers") || pathname.startsWith("/admin/returns") || pathname.startsWith("/admin/shipping") || pathname.startsWith("/admin/shipping-carriers") || pathname.startsWith("/admin/locations") || pathname.startsWith("/admin/warehouses") || pathname.startsWith("/admin/pickup-points") || pathname.startsWith("/admin/dropoff-zones") || pathname.startsWith("/admin/warranty") || pathname.startsWith("/admin/field-team") || pathname.startsWith("/admin/cj-dropshipping")) return "operations";
-  if (pathname.startsWith("/admin/settings") || pathname.startsWith("/admin/staff") || pathname.startsWith("/admin/roles") || pathname.startsWith("/admin/features") || pathname.startsWith("/admin/mobile") || pathname.startsWith("/admin/site-doctor") || pathname.startsWith("/admin/audit-log") || pathname.startsWith("/admin/ai") || pathname.startsWith("/admin/api-keys") || pathname.startsWith("/admin/webhooks") || pathname.startsWith("/admin/white-label") || pathname.startsWith("/api/docs")) return "system";
+  if (pathname.startsWith("/admin/storefronts") || pathname.startsWith("/admin/vendors") || pathname.startsWith("/admin/vendor-ads") || pathname.startsWith("/admin/fbk") || pathname.startsWith("/admin/boat-configurator") || pathname.startsWith("/admin/reputation") || pathname.startsWith("/admin/authenticity") || pathname.startsWith("/admin/suppliers") || pathname.startsWith("/admin/franchise") || pathname.startsWith("/admin/auctions")) return "marketplace";
+  if (pathname.startsWith("/admin/delivery") || pathname.startsWith("/admin/drivers") || pathname.startsWith("/admin/returns") || pathname.startsWith("/admin/shipping") || pathname.startsWith("/admin/shipping-carriers") || pathname.startsWith("/admin/locations") || pathname.startsWith("/admin/warehouses") || pathname.startsWith("/admin/pickup-points") || pathname.startsWith("/admin/dropoff-zones") || pathname.startsWith("/admin/warranty") || pathname.startsWith("/admin/field-team") || pathname.startsWith("/admin/cj-dropshipping") || pathname.startsWith("/admin/forecasting") || pathname.startsWith("/admin/fraud")) return "operations";
+  if (pathname.startsWith("/admin/settings") || pathname.startsWith("/admin/staff") || pathname.startsWith("/admin/roles") || pathname.startsWith("/admin/features") || pathname.startsWith("/admin/mobile") || pathname.startsWith("/admin/site-doctor") || pathname.startsWith("/admin/audit-log") || pathname.startsWith("/admin/ai") || pathname.startsWith("/admin/api-keys") || pathname.startsWith("/admin/webhooks") || pathname.startsWith("/admin/white-label") || pathname.startsWith("/admin/languages") || pathname.startsWith("/admin/ai-assistant") || pathname.startsWith("/admin/chat") || pathname.startsWith("/api/docs")) return "system";
   return "dashboard";
 }
 

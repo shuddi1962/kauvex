@@ -3040,3 +3040,727 @@ model CreditLine {
 
   @@map("credit_lines")
 }
+
+// ============================================================
+// V3 NEW TABLES — Local Suppliers, Sourcing, POD, Dropshipping, Art/NFT, Unique Features
+// ============================================================
+
+model LocalSupplier {
+  id                String                  @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  businessName      String                  @map("business_name")
+  contactPerson     String                  @map("contact_person")
+  email             String                  @unique
+  phone             String?
+  city              String?
+  state             String?
+  country           String                  @default("Nigeria")
+  categories        String[]                @default([])
+  coverageType      String?                 @default("state") @map("coverage_type")
+  deliveryMethod    String?                 @map("delivery_method")
+  minOrderValue     Decimal?                @default(0) @map("min_order_value") @db.Decimal(10, 2)
+  bankName          String?                 @map("bank_name")
+  bankAccount       String?                 @map("bank_account")
+  bankAccountName   String?                 @map("bank_account_name")
+  status            String?                 @default("pending")
+  commissionRate    Decimal?                @default(8.00) @map("commission_rate") @db.Decimal(5, 2)
+  verificationDocs  Json?                   @default("{}") @map("verification_docs")
+  userId            String?                 @map("user_id")
+  createdAt         DateTime                @default(now()) @map("created_at")
+  updatedAt         DateTime                @default(now()) @map("updated_at")
+
+  products          SupplierProduct[]
+  orders            SupplierOrder[]
+  coverage          SupplierCoverage[]
+  payouts           SupplierPayout[]
+
+  @@map("local_suppliers")
+}
+
+model SupplierProduct {
+  id                String         @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  supplierId        String         @map("supplier_id") @db.Uuid
+  supplier          LocalSupplier  @relation(fields: [supplierId], references: [id], onDelete: Cascade)
+  internalProductId String?        @map("internal_product_id")
+  supplierSku       String?        @map("supplier_sku")
+  supplierPrice     Decimal?       @map("supplier_price") @db.Decimal(10, 2)
+  kauvexPrice       Decimal?       @map("kauvex_price") @db.Decimal(10, 2)
+  stockQuantity     Int?           @default(0) @map("stock_quantity")
+  lowStockThreshold Int?           @default(10) @map("low_stock_threshold")
+  imageUrl          String?        @map("image_url")
+  status            String?        @default("pending")
+  createdAt         DateTime       @default(now()) @map("created_at")
+  updatedAt         DateTime       @default(now()) @map("updated_at")
+
+  @@map("supplier_products")
+}
+
+model SupplierOrder {
+  id                String         @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  supplierId        String         @map("supplier_id") @db.Uuid
+  supplier          LocalSupplier  @relation(fields: [supplierId], references: [id])
+  orderId           String?        @map("order_id")
+  status            String?        @default("pending")
+  confirmedAt       DateTime?      @map("confirmed_at")
+  trackingNumber    String?        @map("tracking_number")
+  courierName       String?        @map("courier_name")
+  shippedAt         DateTime?      @map("shipped_at")
+  deliveredAt       DateTime?      @map("delivered_at")
+  escalatedAt       DateTime?      @map("escalated_at")
+  createdAt         DateTime       @default(now()) @map("created_at")
+
+  @@map("supplier_orders")
+}
+
+model SupplierCoverage {
+  id                String         @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  supplierId        String         @map("supplier_id") @db.Uuid
+  supplier          LocalSupplier  @relation(fields: [supplierId], references: [id], onDelete: Cascade)
+  country           String?
+  state             String?
+  city              String?
+  isActive          Boolean?       @default(true) @map("is_active")
+
+  @@map("supplier_coverage")
+}
+
+model SupplierPayout {
+  id                String         @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  supplierId        String         @map("supplier_id") @db.Uuid
+  supplier          LocalSupplier  @relation(fields: [supplierId], references: [id])
+  periodStart       DateTime?      @map("period_start") @db.Date
+  periodEnd         DateTime?      @map("period_end") @db.Date
+  grossAmount       Decimal?       @map("gross_amount") @db.Decimal(10, 2)
+  commissionAmount  Decimal?       @map("commission_amount") @db.Decimal(10, 2)
+  netAmount         Decimal?       @map("net_amount") @db.Decimal(10, 2)
+  status            String?        @default("pending")
+  paidAt            DateTime?      @map("paid_at")
+  gatewayRef        String?        @map("gateway_ref")
+  createdAt         DateTime       @default(now()) @map("created_at")
+
+  @@map("supplier_payouts")
+}
+
+model SupplierNotification {
+  id                String         @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  supplierId        String?        @map("supplier_id") @db.Uuid
+  notificationType  String?        @map("notification_type")
+  title             String?
+  message           String?
+  read              Boolean?       @default(false)
+  createdAt         DateTime       @default(now()) @map("created_at")
+
+  @@map("supplier_notifications")
+}
+
+// ============================================================
+// PRODUCT SOURCING MODULE (Part 12)
+// ============================================================
+
+model SourcingResearch {
+  id                String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  productName       String?  @map("product_name")
+  category          String?
+  estimatedPrice    Decimal? @map("estimated_price") @db.Decimal(10, 2)
+  estimatedCost     Decimal? @map("estimated_cost") @db.Decimal(10, 2)
+  marginPercent     Decimal? @map("margin_percent") @db.Decimal(5, 2)
+  demandScore       Int?     @map("demand_score")
+  competitionLevel  String?  @map("competition_level")
+  recommendedChannel String? @map("recommended_channel")
+  status            String?  @default("research")
+  notes             String?
+  assignedTo        String?  @map("assigned_to")
+  createdAt         DateTime @default(now()) @map("created_at")
+  updatedAt         DateTime @default(now()) @map("updated_at")
+
+  @@map("sourcing_research")
+}
+
+model SourcingSupplier {
+  id                String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  researchId        String?  @map("research_id") @db.Uuid
+  supplierName      String?  @map("supplier_name")
+  country           String?
+  productName       String?  @map("product_name")
+  priceQuoted       Decimal? @map("price_quoted") @db.Decimal(10, 2)
+  moq               Int?
+  leadTime          String?  @map("lead_time")
+  sampleStatus      String?  @map("sample_status")
+  contractStatus    String?  @default("pending") @map("contract_status")
+  notes             String?
+  createdAt         DateTime @default(now()) @map("created_at")
+
+  @@map("sourcing_suppliers")
+}
+
+model SourcingProduct {
+  id                String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  researchId        String?  @map("research_id") @db.Uuid
+  internalProductId String?  @map("internal_product_id")
+  supplierId        String?  @map("supplier_id")
+  goLiveDate        DateTime? @map("go_live_date") @db.Date
+  firstBatchQty     Int?     @map("first_batch_qty")
+  status            String?  @default("sourcing")
+  createdAt         DateTime @default(now()) @map("created_at")
+  updatedAt         DateTime @default(now()) @map("updated_at")
+
+  @@map("sourcing_products")
+}
+
+model SourcingAiReport {
+  id                String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  reportDate        DateTime? @map("report_date") @db.Date
+  trendingProducts  Json?    @default("[]") @map("trending_products")
+  decliningProducts Json?    @default("[]") @map("declining_products")
+  recommendations   Json?    @default("[]")
+  summary           String?
+  status            String?  @default("generated")
+  createdAt         DateTime @default(now()) @map("created_at")
+
+  @@map("sourcing_ai_reports")
+}
+
+model ProductRequest {
+  id                String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  requestRef        String?  @unique @map("request_ref")
+  customerId        String?  @map("customer_id")
+  productName       String?  @map("product_name")
+  description       String?
+  referenceImageUrl String?  @map("reference_image_url")
+  budgetMin         Decimal? @map("budget_min") @db.Decimal(10, 2)
+  budgetMax         Decimal? @map("budget_max") @db.Decimal(10, 2)
+  quantity          Int?     @default(1)
+  urgency           String?  @default("normal")
+  willingToPrepay   Boolean? @default(false) @map("willing_to_prepay")
+  status            String?  @default("pending")
+  aiSearchResult    Json?    @default("{}") @map("ai_search_result")
+  assignedTo        String?  @map("assigned_to")
+  adminNotes        String?  @map("admin_notes")
+  listedProductId   String?  @map("listed_product_id")
+  createdAt         DateTime @default(now()) @map("created_at")
+  updatedAt         DateTime @default(now()) @map("updated_at")
+
+  vendorOffers      RequestVendorOffer[]
+  requestUpdates    RequestUpdate[]
+
+  @@map("product_requests")
+}
+
+model RequestVendorOffer {
+  id                String         @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  requestId         String         @map("request_id") @db.Uuid
+  request           ProductRequest @relation(fields: [requestId], references: [id], onDelete: Cascade)
+  vendorId          String?        @map("vendor_id")
+  price             Decimal?       @map("price") @db.Decimal(10, 2)
+  currency          String?        @default("USD")
+  deliveryDays      Int?           @map("delivery_days")
+  description       String?
+  images            String[]      @default([])
+  status            String?        @default("pending")
+  createdAt         DateTime       @default(now()) @map("created_at")
+
+  @@map("request_vendor_offers")
+}
+
+model RequestUpdate {
+  id                String         @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  requestId         String         @map("request_id") @db.Uuid
+  request           ProductRequest @relation(fields: [requestId], references: [id], onDelete: Cascade)
+  updateType        String?        @map("update_type")
+  message           String?
+  sentAt            DateTime?      @default(now()) @map("sent_at")
+
+  @@map("request_updates")
+}
+
+// ============================================================
+// PRINT ON DEMAND (Part 18)
+// ============================================================
+
+model PodDesign {
+  id                String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  vendorId          String?  @map("vendor_id")
+  name              String?
+  description       String?
+  designUrl         String?  @map("design_url")
+  thumbnailUrl      String?  @map("thumbnail_url")
+  tags              String[] @default([])
+  category          String?
+  isMarketplace     Boolean? @default(false) @map("is_marketplace")
+  licensePrice      Decimal? @map("license_price") @db.Decimal(10, 2)
+  licenseCount      Int?     @default(0) @map("license_count")
+  artworkData       Json?    @default("{}") @map("artwork_data")
+  createdAt         DateTime @default(now()) @map("created_at")
+  updatedAt         DateTime @default(now()) @map("updated_at")
+
+  products          PodProduct[]
+  licenses          DesignLicense[]
+
+  @@map("pod_designs")
+}
+
+model PodProduct {
+  id                String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  vendorId          String?   @map("vendor_id")
+  designId          String?   @map("design_id") @db.Uuid
+  design            PodDesign? @relation(fields: [designId], references: [id])
+  productType       String?   @map("product_type")
+  fulfillmentPartner String?  @map("fulfillment_partner")
+  externalProductId String?   @map("external_product_id")
+  variants          Json?     @default("[]")
+  retailPrice       Decimal?  @map("retail_price") @db.Decimal(10, 2)
+  baseCost          Decimal?  @map("base_cost") @db.Decimal(10, 2)
+  vendorProfit      Decimal?  @map("vendor_profit") @db.Decimal(10, 2)
+  status            String?   @default("active")
+  createdAt         DateTime  @default(now()) @map("created_at")
+  updatedAt         DateTime  @default(now()) @map("updated_at")
+
+  orders            PodOrder[]
+
+  @@map("pod_products")
+}
+
+model PodOrder {
+  id                String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  orderId           String?   @map("order_id")
+  podProductId      String?   @map("pod_product_id") @db.Uuid
+  podProduct        PodProduct? @relation(fields: [podProductId], references: [id])
+  fulfillmentPartner String?  @map("fulfillment_partner")
+  externalOrderId   String?   @map("external_order_id")
+  status            String?   @default("pending")
+  trackingNumber    String?   @map("tracking_number")
+  submittedAt       DateTime? @map("submitted_at")
+  shippedAt         DateTime? @map("shipped_at")
+  createdAt         DateTime  @default(now()) @map("created_at")
+
+  @@map("pod_orders")
+}
+
+model DesignLicense {
+  id                String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  designId          String    @map("design_id") @db.Uuid
+  design            PodDesign @relation(fields: [designId], references: [id])
+  buyerVendorId     String?   @map("buyer_vendor_id")
+  pricePaid         Decimal?  @map("price_paid") @db.Decimal(10, 2)
+  designerEarning   Decimal?  @map("designer_earning") @db.Decimal(10, 2)
+  kauvexCommission  Decimal?  @map("kauvex_commission") @db.Decimal(10, 2)
+  createdAt         DateTime  @default(now()) @map("created_at")
+
+  @@map("design_licenses")
+}
+
+// ============================================================
+// VENDOR DROPSHIPPING MARKETPLACE (Part 29)
+// ============================================================
+
+model VendorDropshipConnection {
+  id                String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  vendorId          String?  @map("vendor_id")
+  source            String?  // ebay | etsy
+  accessToken       String?  @map("access_token")
+  refreshToken      String?  @map("refresh_token")
+  tokenExpiresAt    DateTime? @map("token_expires_at")
+  sourceAccountId   String?  @map("source_account_id")
+  sourceAccountName String?  @map("source_account_name")
+  status            String?  @default("active")
+  complianceAcceptedAt DateTime? @map("compliance_accepted_at")
+  createdAt         DateTime @default(now()) @map("created_at")
+  updatedAt         DateTime @default(now()) @map("updated_at")
+
+  @@map("vendor_dropship_connections")
+}
+
+model VendorDropshipProduct {
+  id                String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  vendorId          String?  @map("vendor_id")
+  source            String?  // cj | aliexpress | ebay | etsy
+  sourceProductId   String?  @map("source_product_id")
+  internalProductId String?  @map("internal_product_id")
+  sourcePrice       Decimal? @map("source_price") @db.Decimal(10, 2)
+  vendorPrice       Decimal? @map("vendor_price") @db.Decimal(10, 2)
+  markupPercent     Decimal? @map("markup_percent") @db.Decimal(5, 2)
+  sharedCatalogId   String?  @map("shared_catalog_id")
+  status            String?  @default("active")
+  lastSync          DateTime? @map("last_sync")
+  createdAt         DateTime @default(now()) @map("created_at")
+  updatedAt         DateTime @default(now()) @map("updated_at")
+
+  @@map("vendor_dropship_products")
+}
+
+model VendorDropshipOrder {
+  id                String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  orderId           String?  @map("order_id")
+  vendorId          String?  @map("vendor_id")
+  dropshipProductId String?  @map("dropship_product_id") @db.Uuid
+  source            String?
+  sourceOrderId     String?  @map("source_order_id")
+  sourceStatus      String?  @map("source_status")
+  trackingNumber    String?  @map("tracking_number")
+  trackingUrl       String?  @map("tracking_url")
+  kauvexDropshipFee Decimal? @map("kauvex_dropship_fee") @db.Decimal(10, 2)
+  vendorProfit      Decimal? @map("vendor_profit") @db.Decimal(10, 2)
+  submittedAt       DateTime? @map("submitted_at")
+  createdAt         DateTime @default(now()) @map("created_at")
+
+  @@map("vendor_dropship_orders")
+}
+
+// ============================================================
+// SHARED SOURCES (AliExpress)
+// ============================================================
+
+model AliexpressProduct {
+  id                String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  aliexpressProductId String? @unique @map("aliexpress_product_id")
+  supplierPrice     Decimal? @map("supplier_price") @db.Decimal(10, 2)
+  lastPriceSync     DateTime? @map("last_price_sync")
+  lastStockSync     DateTime? @map("last_stock_sync")
+  stockStatus       String?  @map("stock_status")
+  shippingMethods   Json?    @default("[]") @map("shipping_methods")
+  createdAt         DateTime @default(now()) @map("created_at")
+  updatedAt         DateTime @default(now()) @map("updated_at")
+
+  @@map("aliexpress_products")
+}
+
+model AliexpressOrder {
+  id                String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  kauvexOrderId     String?  @map("kauvex_order_id")
+  aliexpressOrderId String?  @map("aliexpress_order_id")
+  status            String?  @default("pending")
+  trackingNumber    String?  @map("tracking_number")
+  submittedAt       DateTime? @map("submitted_at")
+  lastSync          DateTime? @map("last_sync")
+  createdAt         DateTime @default(now()) @map("created_at")
+
+  @@map("aliexpress_orders")
+}
+
+// ============================================================
+// LIVE COMMERCE (Part 19.1)
+// ============================================================
+
+model LiveComment {
+  id                String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  streamId          String?  @map("stream_id")
+  userId            String?  @map("user_id")
+  message           String?
+  createdAt         DateTime @default(now()) @map("created_at")
+
+  @@map("live_comments")
+}
+
+model LiveGift {
+  id                String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  streamId          String?  @map("stream_id")
+  senderId          String?  @map("sender_id")
+  giftType          String?  @map("gift_type")
+  giftValue         Decimal? @map("gift_value") @db.Decimal(10, 2)
+  createdAt         DateTime @default(now()) @map("created_at")
+
+  @@map("live_gifts")
+}
+
+model LiveAnalytics {
+  id                String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  streamId          String?  @map("stream_id")
+  peakViewers       Int?     @default(0) @map("peak_viewers")
+  totalViewers      Int?     @default(0) @map("total_viewers")
+  totalOrders       Int?     @default(0) @map("total_orders")
+  totalRevenue      Decimal? @map("total_revenue") @db.Decimal(12, 2)
+  startedAt         DateTime? @map("started_at")
+  endedAt           DateTime? @map("ended_at")
+  createdAt         DateTime @default(now()) @map("created_at")
+
+  @@map("live_analytics")
+}
+
+// ============================================================
+// GROUP BUY (Part 19.3)
+// ============================================================
+
+model GroupBuy {
+  id                String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  productId         String?  @map("product_id")
+  variantId         String?  @map("variant_id")
+  regularPrice      Decimal? @map("regular_price") @db.Decimal(10, 2)
+  groupPrice        Decimal? @map("group_price") @db.Decimal(10, 2)
+  targetCount       Int?     @default(5) @map("target_count")
+  currentCount      Int?     @default(1) @map("current_count")
+  expiresAt         DateTime? @map("expires_at")
+  status            String?  @default("active")
+  createdBy         String?  @map("created_by")
+  createdAt         DateTime @default(now()) @map("created_at")
+
+  participants      GroupBuyParticipant[]
+
+  @@map("group_buys")
+}
+
+model GroupBuyParticipant {
+  id                String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  groupBuyId        String   @map("group_buy_id") @db.Uuid
+  groupBuy          GroupBuy @relation(fields: [groupBuyId], references: [id], onDelete: Cascade)
+  userId            String?  @map("user_id")
+  orderId           String?  @map("order_id")
+  joinedAt          DateTime @default(now()) @map("joined_at")
+
+  @@map("group_buy_participants")
+}
+
+// ============================================================
+// PRICE HISTORY & DEAL ALERTS (Part 19.6)
+// ============================================================
+
+model PriceHistory {
+  id                String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  productId         String?  @map("product_id")
+  variantId         String?  @map("variant_id")
+  price             Decimal  @map("price") @db.Decimal(10, 2)
+  currency          String?  @default("USD")
+  recordedAt        DateTime @default(now()) @map("recorded_at")
+
+  @@map("price_history")
+}
+
+model PriceAlert {
+  id                String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  customerId        String?  @map("customer_id")
+  productId         String?  @map("product_id")
+  targetPrice       Decimal? @map("target_price") @db.Decimal(10, 2)
+  currentPrice      Decimal? @map("current_price") @db.Decimal(10, 2)
+  status            String?  @default("active")
+  notifiedAt        DateTime? @map("notified_at")
+  createdAt         DateTime @default(now()) @map("created_at")
+
+  @@map("price_alerts")
+}
+
+// ============================================================
+// SUBSCRIPTION BOXES (Part 19.10)
+// ============================================================
+
+model BoxShipment {
+  id                String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  subscriptionId    String?  @map("subscription_id")
+  boxName           String?  @map("box_name")
+  shipmentDate      DateTime? @map("shipment_date") @db.Date
+  products          Json?    @default("[]")
+  trackingNumber    String?  @map("tracking_number")
+  status            String?  @default("pending")
+  createdAt         DateTime @default(now()) @map("created_at")
+
+  @@map("box_shipments")
+}
+
+// ============================================================
+// KAUVEX ORIGINALS (Part 19.13)
+// ============================================================
+
+model KauvexOriginal {
+  id                String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  productId         String?  @map("product_id")
+  manufacturerId    String?  @map("manufacturer_id")
+  originalCost      Decimal? @map("original_cost") @db.Decimal(10, 2)
+  retailPrice       Decimal? @map("retail_price") @db.Decimal(10, 2)
+  marginPercent     Decimal? @map("margin_percent") @db.Decimal(5, 2)
+  monthlySales      Int?     @default(0) @map("monthly_sales")
+  status            String?  @default("candidate") // candidate | active | discontinued
+  launchedAt        DateTime? @map("launched_at")
+  createdAt         DateTime @default(now()) @map("created_at")
+  updatedAt         DateTime @default(now()) @map("updated_at")
+
+  @@map("kauvex_originals")
+}
+
+// ============================================================
+// VENDOR MENTORSHIP (Part 19.8)
+// ============================================================
+
+model MentorshipSession {
+  id                String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  mentorId          String?  @map("mentor_id")
+  menteeId          String?  @map("mentee_id")
+  topic             String?
+  description       String?
+  price             Decimal? @map("price") @db.Decimal(10, 2)
+  currency          String?  @default("USD")
+  scheduledAt       DateTime? @map("scheduled_at")
+  durationMinutes   Int?     @map("duration_minutes")
+  meetingLink       String?  @map("meeting_link")
+  status            String?  @default("scheduled")
+  mentorEarning     Decimal? @map("mentor_earning") @db.Decimal(10, 2)
+  kauvexCommission  Decimal? @map("kauvex_commission") @db.Decimal(10, 2)
+  rating            Int?
+  review            String?
+  completedAt       DateTime? @map("completed_at")
+  createdAt         DateTime @default(now()) @map("created_at")
+
+  @@map("mentorship_sessions")
+}
+
+// ============================================================
+// CARBON OFFSETS (Part 19.14)
+// ============================================================
+
+model CarbonOffset {
+  id                String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  orderId           String?  @map("order_id")
+  customerId        String?  @map("customer_id")
+  co2Estimate       Decimal? @map("co2_estimate") @db.Decimal(10, 2)
+  offsetAmount      Decimal? @map("offset_amount") @db.Decimal(10, 2)
+  currency          String?  @default("USD")
+  treesPlanted      Int?     @default(0) @map("trees_planted")
+  partnerNgo        String?  @map("partner_ngo")
+  certificateUrl    String?  @map("certificate_url")
+  createdAt         DateTime @default(now()) @map("created_at")
+
+  @@map("carbon_offsets")
+}
+
+// ============================================================
+// COMPETITION INTELLIGENCE (Part 19.7)
+// ============================================================
+
+model CompetitorMonitor {
+  id                String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  vendorId          String?  @map("vendor_id")
+  competitorName    String?  @map("competitor_name")
+  competitorUrl     String?  @map("competitor_url")
+  monitoredProducts Json?    @default("[]") @map("monitored_products")
+  lastScanAt        DateTime? @map("last_scan_at")
+  status            String?  @default("active")
+  createdAt         DateTime @default(now()) @map("created_at")
+  updatedAt         DateTime @default(now()) @map("updated_at")
+
+  @@map("competitor_monitors")
+}
+
+model CompetitorPriceChange {
+  id                String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  monitorId         String?  @map("monitor_id")
+  productName       String?  @map("product_name")
+  oldPrice          Decimal? @map("old_price") @db.Decimal(10, 2)
+  newPrice          Decimal? @map("new_price") @db.Decimal(10, 2)
+  currency          String?  @default("USD")
+  detectedAt        DateTime @default(now()) @map("detected_at")
+
+  @@map("competitor_price_changes")
+}
+
+// ============================================================
+// ART & NFT MARKETPLACE (Part 30)
+// ============================================================
+
+model ArtListing {
+  id                String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  creatorId         String?  @map("creator_id")
+  title             String?
+  description       String?
+  category          String?
+  tags              String[] @default([])
+  previewUrl        String?  @map("preview_url")
+  fileUrl           String?  @map("file_url")
+  fileType          String?  @map("file_type")
+  mode              String?  @default("A") // A = digital download, B = NFT
+  isLimitedEdition  Boolean? @default(false) @map("is_limited_edition")
+  editionSize       Int?     @map("edition_size")
+  editionSold       Int?     @default(0) @map("edition_sold")
+  status            String?  @default("active")
+  createdAt         DateTime @default(now()) @map("created_at")
+  updatedAt         DateTime @default(now()) @map("updated_at")
+
+  licenses          ArtLicense[]
+  purchases         ArtPurchase[]
+
+  @@map("art_listings")
+}
+
+model ArtLicense {
+  id                String     @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  listingId         String     @map("listing_id") @db.Uuid
+  listing           ArtListing @relation(fields: [listingId], references: [id], onDelete: Cascade)
+  licenseType       String?    @map("license_type") // personal | commercial | extended | exclusive
+  price             Decimal?   @map("price") @db.Decimal(10, 2)
+  currency          String?    @default("USD")
+  purchases         ArtPurchase[]
+
+  @@map("art_licenses")
+}
+
+model ArtPurchase {
+  id                String     @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  listingId         String     @map("listing_id") @db.Uuid
+  listing           ArtListing @relation(fields: [listingId], references: [id])
+  licenseId         String?    @map("license_id") @db.Uuid
+  license           ArtLicense? @relation(fields: [licenseId], references: [id])
+  buyerId           String?    @map("buyer_id")
+  orderId           String?    @map("order_id")
+  pricePaid         Decimal?   @map("price_paid") @db.Decimal(10, 2)
+  creatorEarning    Decimal?   @map("creator_earning") @db.Decimal(10, 2)
+  kauvexCommission  Decimal?   @map("kauvex_commission") @db.Decimal(10, 2)
+  licenseCertificateUrl String? @map("license_certificate_url")
+  downloadUrl       String?    @map("download_url")
+  downloadCount     Int?       @default(0) @map("download_count")
+  createdAt         DateTime   @default(now()) @map("created_at")
+
+  @@map("art_purchases")
+}
+
+// Mode B (NFT) — future use
+model NftToken {
+  id                String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  listingId         String?  @map("listing_id")
+  tokenStandard     String?  @map("token_standard") // ERC-721 | ERC-1155
+  contractAddress   String?  @map("contract_address")
+  tokenId           String?  @map("token_id")
+  blockchain        String?  @default("polygon")
+  ipfsMetadataUri   String?  @map("ipfs_metadata_uri")
+  ipfsMediaUri      String?  @map("ipfs_media_uri")
+  royaltyPercent    Decimal? @map("royalty_percent") @db.Decimal(5, 2)
+  mintedAt          DateTime? @map("minted_at")
+  currentOwnerWallet String? @map("current_owner_wallet")
+  createdAt         DateTime @default(now()) @map("created_at")
+
+  @@map("nft_tokens")
+}
+
+model NftSale {
+  id                String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  tokenId           String?  @map("token_id")
+  saleType          String?  @map("sale_type") // fixed | auction | reserve
+  price             Decimal? @map("price") @db.Decimal(20, 8)
+  currency          String?  // ETH | MATIC | USDC
+  sellerWallet      String?  @map("seller_wallet")
+  buyerWallet       String?  @map("buyer_wallet")
+  royaltyPaid       Decimal? @map("royalty_paid") @db.Decimal(20, 8)
+  transactionHash   String?  @map("transaction_hash")
+  createdAt         DateTime @default(now()) @map("created_at")
+
+  @@map("nft_sales")
+}
+
+model NftAuction {
+  id                String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  tokenId           String?  @map("token_id")
+  startingPrice     Decimal? @map("starting_price") @db.Decimal(20, 8)
+  reservePrice      Decimal? @map("reserve_price") @db.Decimal(20, 8)
+  currentBid        Decimal? @map("current_bid") @db.Decimal(20, 8)
+  currentBidderWallet String? @map("current_bidder_wallet")
+  endsAt            DateTime? @map("ends_at")
+  status            String?  @default("active")
+  createdAt         DateTime @default(now()) @map("created_at")
+
+  @@map("nft_auctions")
+}
+
+model CreatorWallet {
+  id                String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  creatorId         String?  @unique @map("creator_id")
+  walletAddress     String?  @map("wallet_address")
+  walletType        String?  @map("wallet_type") // metamask | trustwallet | coinbase
+  verifiedAt        DateTime? @map("verified_at")
+  createdAt         DateTime @default(now()) @map("created_at")
+
+  @@map("creator_wallets")
+}

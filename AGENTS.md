@@ -99,21 +99,30 @@ Key V2 Enterprise+ tables: erp_accounts, journal_entries, cost_centers, budgets,
 - [x] Phase 3 (Search+AI): Complete
 - [x] Phase 4 (Logistics): Complete
 - [x] Phase 5 (Platform): Complete
-- [x] V2 Enterprise+ (Sections 86-116): Complete — 24 new admin pages, ~60 DB tables, 25 Prisma models added
+- [x] V2 Enterprise+ (Sections 86-116): Complete
+- [x] V3 Local Supplier Portal (Part 11): Complete
+- [x] V3 Sourcing Module (Part 12): Complete
+- [x] V3 POD System (Part 18): Complete
+- [x] V3 Unique Features (Part 19): Complete
+- [x] V3 Vendor Dropshipping (Part 29): Complete
+- [x] V3 Art Marketplace (Part 30): Complete
 
-## Recent Enhancements (June 2026)
-- Product detail page: Back-in-Stock notification, Call Request, Loyalty Points display, Product Bundles, Buy Box Other Sellers
-- Age verification modal for restricted storefronts
-- Gift certificate purchase page + redemption at checkout
-- Digital downloads in account section
-- Vendor settings page rewritten with DB persistence, bank details, notifications
-- Vendor shipping page rewritten with DB persistence, regional zone selector
-- Admin bundles management page (create/manage product bundles)
-- New homepage sections: BestSellers, NewArrivals, FeaturedBrands, Testimonials
-- **V2 Enterprise+ (24 new admin pages)**: ERP Dashboard, Procurement/POs, Supplier Network, RFQ System, BNPL, Vendor Financing, Affiliate Marketing, Social Commerce, Live Shopping, Auction Marketplace, Subscription Commerce, Digital Products & Licenses, Email Marketing, AI Shopping Assistant, Internal Chat, Multi-Language System, Franchise/Reseller Network, Product Authenticity, Marketplace Insurance, Credit System, Vendor Reputation, Demand Forecasting, Returns Fraud Detection
-- **V2 Enterprise+ DB migration**: `supabase/migrations/00009_kcc_v2_enterprise.sql` — 60 tables (ERP, procurement, B2B, BNPL, financing, affiliates, social, auctions, subscriptions, digital products, email, CRM, AI, franchises, reputation, authenticity, insurance, credit, forecasting, fraud)
-- **Prisma schema**: Updated to 3030 lines with all V2 Enterprise+ models (generated successfully)
-- **Nav sidebar**: Updated admin-shell with 6 nav groups covering all V2 Enterprise+ pages
+## Recent Enhancements (July 2026)
+- **V3 Database**: 40+ new Prisma models (local suppliers, sourcing, POD, dropshipping, art/NFT, group buy, price alerts, live commerce, mentorship, carbon offsets, competition intel, Kauvex Originals, subscription boxes)
+- **Local Supplier Portal** (`/supplier/`): Registration, login, dashboard, products, orders, earnings, coverage management
+- **Product Sourcing Module**: Admin sourcing dashboard, product research pipeline, customer product requests (`/request-product/`), AI sourcing agent foundation, landed cost calculator
+- **Print on Demand (POD) System** (`/vendor/pod/`): Design studio with Fabric.js canvas (text/image/AI tools), POD products management, orders, analytics dashboard
+- **POD Design Marketplace** (`/pod-marketplace/`): Browse & license designs from creators, apply to POD products
+- **Vendor Dropshipping Marketplace** (`/vendor/dropshipping/`): Multi-source product import (CJ, AliExpress, eBay, Etsy), per-vendor OAuth for eBay/Etsy, shared catalog integration
+- **Live Commerce** (`/live/`): Active live streams grid, upcoming streams, one-tap purchase
+- **Group Buy** (`/group-buy/`): Social shopping deals, invite friends, unlock lower prices
+- **Concierge Shopping Assistant** (`/concierge/`): AI-powered personal shopping assistant chat
+- **Digital Art Marketplace** (`/art-marketplace/`): Buy/sell digital art & illustrations, commercial licenses, instant download
+- **Kauvex Originals tracker**: Admin product sourcing pipeline for private label
+- **Vendor Mentorship marketplace**: Peer-to-peer paid mentorship sessions
+- **Carbon footprint tracker**: Per-order CO2 estimates with tree planting offsets
+- **Price history & deal alerts**: 90-day price charts, target price notifications
+- **Supabase Cron Jobs**: `supabase/migrations/00010_kcc_v3_cron_jobs.sql` — 5 automated functions for supplier escalation, price alerts, group buy expiry, price history recording, daily cleanup
 
 ## Database Migration Instructions
 1. Apply SQL migration: `cd supabase && supabase migration up`

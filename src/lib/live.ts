@@ -1,6 +1,7 @@
 import { prisma } from '@/lib/db'
 
 export async function createLiveStream(data: {
+  creatorId: string
   vendorId: string
   title: string
   description?: string
@@ -9,6 +10,7 @@ export async function createLiveStream(data: {
 }) {
   return prisma.liveStream.create({
     data: {
+      creatorId: data.creatorId,
       vendorId: data.vendorId,
       title: data.title,
       description: data.description,

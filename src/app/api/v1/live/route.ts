@@ -57,10 +57,11 @@ export async function POST(request: NextRequest) {
     const action = body.action;
 
     if (action === "create" || !action) {
-      if (!body.vendorId || !body.title) {
-        return errorResponse("Missing required fields: vendorId, title", 400);
+      if (!body.vendorId || !body.title || !body.creatorId) {
+        return errorResponse("Missing required fields: vendorId, title, creatorId", 400);
       }
       const stream = await createLiveStream({
+        creatorId: body.creatorId,
         vendorId: body.vendorId,
         title: body.title,
         description: body.description,

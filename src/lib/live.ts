@@ -26,7 +26,7 @@ export async function getActiveLiveStreams() {
     where: { status: 'live' },
     include: {
       vendor: { select: { id: true, businessName: true, storeSlug: true } },
-      products: { include: { product: { select: { id: true, name: true, images: true, salePrice: true, regularPrice: true } } } }
+      products: true
     },
     orderBy: { startedAt: 'desc' }
   })
@@ -43,7 +43,7 @@ export async function getUpcomingLiveStreams() {
 export async function getVendorLiveStreams(vendorId: string) {
   return prisma.liveStream.findMany({
     where: { vendorId },
-    include: { products: { include: { product: true } }, comments: { take: 20, orderBy: { createdAt: 'desc' } } },
+    include: { products: true, comments: { take: 20, orderBy: { createdAt: 'desc' } } },
     orderBy: { createdAt: 'desc' }
   })
 }
@@ -53,7 +53,7 @@ export async function getLiveStreamById(id: string) {
     where: { id },
     include: {
       vendor: true,
-      products: { include: { product: true } },
+      products: true,
       comments: { orderBy: { createdAt: 'desc' }, take: 50 }
     }
   })

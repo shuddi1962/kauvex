@@ -99,5 +99,5 @@ export async function updateLiveViewerCount(streamId: string, count: number) {
 }
 
 export async function getLiveAnalytics(streamId: string) {
-  return prisma.liveAnalytics.findUnique({ where: { streamId } })
+  return prisma.liveAnalytics.findFirst({ where: { streamId } })
 }

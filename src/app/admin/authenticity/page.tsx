@@ -78,7 +78,7 @@ export default function AuthenticityPage() {
   );
 
   const handleGenerate = () => {
-    const newCodes = [];
+    const newCodes: any[] = [];
     for (let i = 0; i < genForm.quantity; i++) {
       const id = String(codes.length + newCodes.length + 1);
       const rand = Math.random().toString(36).substring(2, 10).toUpperCase();

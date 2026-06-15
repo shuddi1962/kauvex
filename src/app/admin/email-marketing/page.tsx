@@ -435,7 +435,7 @@ export default function EmailMarketingPage() {
             <div className="space-y-3 text-sm text-text-2">
               <div className="p-3 bg-green-50 rounded-lg">
                 <p className="font-medium text-green-700">Best Performer</p>
-                <p className="text-xs text-green-600 mt-0.5">"Welcome Series - New Customers" has the highest open rate at 69.5%.</p>
+                <p className="text-xs text-green-600 mt-0.5">{'\u201C'}Welcome Series - New Customers{'\u201D'} has the highest open rate at 69.5%.</p>
               </div>
               <div className="p-3 bg-blue/5 rounded-lg">
                 <p className="font-medium text-blue">Revenue Impact</p>

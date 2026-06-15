@@ -425,13 +425,13 @@ function SearchPageInner() {
                 {viewMode === "grid" ? (
                   <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
                     {pagedResults.map((product) => (
-                      <ProductCard key={product.id} product={product} isSponsored={isSponsoredProduct(product.id, "search_results")} formatPrice={formatPrice} formatNGN={formatNGN} currency={currency} />
+                      <ProductCard key={product.id} product={product} isSponsored={isSponsoredProduct(product.id)} formatPrice={formatPrice} formatNGN={formatNGN} currency={currency} />
                     ))}
                   </div>
                 ) : (
                   <div className="space-y-3">
                     {pagedResults.map((product) => (
-                      <ProductRow key={product.id} product={product} isSponsored={isSponsoredProduct(product.id, "search_results")} formatPrice={formatPrice} formatNGN={formatNGN} currency={currency} />
+                      <ProductRow key={product.id} product={product} isSponsored={isSponsoredProduct(product.id)} formatPrice={formatPrice} formatNGN={formatNGN} currency={currency} />
                     ))}
                   </div>
                 )}

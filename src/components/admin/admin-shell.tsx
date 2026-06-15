@@ -13,7 +13,7 @@ import {
   Wrench, ClipboardList, ImageIcon, Sparkles, ChevronRight, Star,
   RefreshCw, UserCog, MapPinOff, Building2, Handshake, Radio,
   Gavel, Repeat, Download, Bot, MessageCircle, Languages,
-  Shield, BadgePercent, TrendingUp, Scan, FileBadge,
+  TrendingUp, Scan, QrCode,
 } from "lucide-react";
 import { AdminStorefrontFilter } from "@/components/admin/storefront-filter";
 

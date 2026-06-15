@@ -64,8 +64,9 @@ export async function getMarketplaceDesigns(category?: string) {
 export async function purchaseDesignLicense(designId: string, buyerVendorId: string) {
   const design = await prisma.podDesign.findUnique({ where: { id: designId } })
   if (!design || !design.licensePrice) throw new Error('Design not available')
-  const kauvexCommission = design.licensePrice * 0.2
-  const designerEarning = design.licensePrice - kauvexCommission
+  const price = Number(design.licensePrice)
+  const kauvexCommission = price * 0.2
+  const designerEarning = price - kauvexCommission
   const license = await prisma.designLicense.create({
     data: {
       designId,

@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import {
   LayoutDashboard,
   Package,
@@ -17,7 +17,9 @@ import {
   LogOut,
   ChevronRight,
   ShieldCheck,
+  ExternalLink,
 } from "lucide-react";
+import { useAuthStore } from "@/store/auth-store";
 
 const sidebarLinks = [
   { label: "Overview", href: "/account", icon: LayoutDashboard },
@@ -36,6 +38,17 @@ const sidebarLinks = [
 
 export default function AccountLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
+  const router = useRouter();
+  const { user, signOut } = useAuthStore();
+
+  const initials = user?.name
+    ? user.name.split(" ").map(n => n[0]).join("").slice(0, 2).toUpperCase()
+    : user?.email?.slice(0, 2).toUpperCase() || "U";
+
+  const handleSignOut = async () => {
+    await signOut();
+    router.push("/");
+  };
 
   return (
     <div className="bg-off-white min-h-screen">
@@ -58,11 +71,11 @@ export default function AccountLayout({ children }: { children: React.ReactNode 
             <div className="bg-white rounded-xl border border-border p-5 mb-4">
               <div className="flex items-center gap-3 mb-3">
                 <div className="w-12 h-12 rounded-full bg-gradient-to-br from-blue-400 to-blue-600 flex items-center justify-center text-white font-syne font-700 text-lg">
-                  JD
+                  {initials}
                 </div>
                 <div>
-                  <h3 className="font-syne font-700 text-sm text-text-1">John Doe</h3>
-                  <p className="text-xs text-text-3">john@example.com</p>
+                  <h3 className="font-syne font-700 text-sm text-text-1">{user?.name || "Account"}</h3>
+                  <p className="text-xs text-text-3">{user?.email || ""}</p>
                 </div>
               </div>
               <div className="flex items-center gap-2 px-2 py-1 bg-blue-50 rounded-md">
@@ -70,6 +83,13 @@ export default function AccountLayout({ children }: { children: React.ReactNode 
                 <span className="text-xs font-medium text-blue">Gold Member</span>
                 <span className="text-xs text-text-4 ml-auto">2,450 pts</span>
               </div>
+              <Link
+                href="/"
+                className="flex items-center gap-2 mt-3 px-2 py-1.5 text-xs text-blue font-medium hover:bg-blue-50 rounded-md transition-colors"
+              >
+                <ExternalLink className="w-3.5 h-3.5" />
+                View Storefront
+              </Link>
             </div>
 
             {/* Navigation */}
@@ -92,7 +112,10 @@ export default function AccountLayout({ children }: { children: React.ReactNode 
                   </Link>
                 );
               })}
-              <button className="flex items-center gap-3 px-4 py-3 text-sm text-red hover:bg-red-50 w-full transition-colors">
+              <button
+                onClick={handleSignOut}
+                className="flex items-center gap-3 px-4 py-3 text-sm text-red hover:bg-red-50 w-full transition-colors"
+              >
                 <LogOut className="w-4 h-4" />
                 Sign Out
               </button>

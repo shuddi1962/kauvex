@@ -18,7 +18,7 @@ export default function SponsoredProductsSection({
   subtitle = "Featured products from our trusted vendors",
   maxShown = 4,
 }: SponsoredProductsSectionProps) {
-  const sponsoredIds = useMemo(() => getSponsoredProductIds("homepage_middle"), []);
+  const sponsoredIds = useMemo(() => getSponsoredProductIds(), []);
   const sponsoredProducts = useMemo(
     () => products.filter((p) => sponsoredIds.includes(p.id)).slice(0, maxShown),
     [sponsoredIds, maxShown]

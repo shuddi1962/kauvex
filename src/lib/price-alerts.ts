@@ -58,13 +58,16 @@ export async function getUserPriceAlerts(customerId: string) {
 
 export async function checkPriceAlerts() {
   const alerts = await prisma.priceAlert.findMany({
-    where: { status: 'active' },
-    include: { product: { select: { id: true, name: true, salePrice: true, regularPrice: true } } }
+    where: { status: 'active' }
   })
 
   const triggered: any[] = []
   for (const alert of alerts) {
-    const currentPrice = Number(alert.product?.salePrice || alert.product?.regularPrice || 0)
+    const product = alert.productId ? await prisma.product.findUnique({
+      where: { id: alert.productId },
+      select: { id: true, name: true, salePrice: true, regularPrice: true }
+    }) : null
+    const currentPrice = Number(product?.salePrice || product?.regularPrice || 0)
     if (currentPrice <= Number(alert.targetPrice)) {
       await prisma.priceAlert.update({
         where: { id: alert.id },

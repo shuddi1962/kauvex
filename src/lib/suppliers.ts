@@ -130,7 +130,7 @@ export async function getSupplierCoverage(supplierId: string) {
 
 export async function calculateSupplierPayout(supplierId: string, periodStart: Date, periodEnd: Date) {
   const supplier = await prisma.localSupplier.findUnique({ where: { id: supplierId } })
-  const commissionRate = supplier?.commissionRate || 8
+  const commissionRate = Number(supplier?.commissionRate || 8)
   const grossAmount = 0
   const commissionAmount = grossAmount * (commissionRate / 100)
   return { grossAmount, commissionAmount, netAmount: grossAmount - commissionAmount }

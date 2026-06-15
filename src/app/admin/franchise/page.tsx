@@ -5,7 +5,7 @@ import AdminShell from "@/components/admin/admin-shell";
 import {
   Users, Store, Percent, DollarSign, Search, Plus,
   CheckCircle, XCircle, UserPlus, TrendingUp, MapPin,
-  ChevronRight, ChevronDown, Hierarchy, Briefcase,
+  ChevronRight, ChevronDown, Briefcase,
 } from "lucide-react";
 
 interface Agent {

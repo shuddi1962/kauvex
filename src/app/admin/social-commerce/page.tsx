@@ -3,7 +3,7 @@
 import { useState } from "react";
 import {
   Users, Image, ShoppingBag, BarChart3, Plus, Eye, Edit, Trash2,
-  CheckCircle, XCircle, Instagram, Youtube, Music, Camera, Heart,
+  CheckCircle, XCircle, Smartphone, Video, Music, Camera, Heart,
   MessageCircle, Star, ExternalLink, Users2,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -84,7 +84,7 @@ const seedProducts = [
 ];
 
 const contentIcons: Record<string, React.ElementType> = {
-  video: Youtube, image: Camera, reel: Music, story: Instagram,
+  video: Video, image: Camera, reel: Music, story: Smartphone,
 };
 
 export default function AdminSocialCommercePage() {

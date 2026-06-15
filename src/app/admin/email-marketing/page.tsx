@@ -6,7 +6,7 @@ import {
   Mail, Plus, Search, Send, BarChart3, FileText,
   Users, TrendingUp, Clock, Eye, MousePointerClick,
   AlertCircle, CheckCircle, XCircle, Edit3, Copy,
-  Trash2, Play, Pause, List, Template,
+  Trash2, Play, Pause, List,
 } from "lucide-react";
 
 interface CampaignItem {

@@ -26,7 +26,7 @@ alwaysApply: true
 - Centralized: one DB, one admin, one vendor login
 
 ## Key Directories
-- /prisma/schema.prisma — Full database schema (150+ models)
+- /prisma/schema.prisma — Full database schema (3030 lines, 110+ models)
 - /prisma/seeds/roles.ts — RBAC seed script
 - /lib/permissions.ts — RBAC permission system
 - /lib/storefront-context.tsx — Storefront context provider
@@ -44,7 +44,7 @@ alwaysApply: true
 - /lib/validators/ — Zod validation schemas
 - /components/home/ — Homepage section components (8 sections)
 - /components/search/ — Voice search + barcode scanner
-- /app/admin/ — Admin panel routes (warehouses, FBK, ads, mobile, audit log)
+- /app/admin/ — Admin panel routes (60+ pages: commerce, sales, marketing, marketplace, operations, system)
 - /app/admin/analytics/ — Analytics dashboards (realtime, search, BI)
 - /app/vendor/ — Vendor panel routes
 - /app/vendor/store-builder/ — Store builder with plan-gated features
@@ -59,15 +59,18 @@ alwaysApply: true
 4. kauvex.com/au — Australia AUD
 5. kauvex.com/ng — Nigeria NGN
 
-## New Database Tables (via Supabase migration)
-All new tables are defined in supabase/migrations/00002_kcc_phase1_new_tables.sql.
-Run `supabase migration up` to apply.
+## Database Migrations
+- 00001_kcc_core.sql — Core schema (users, products, orders, etc.)
+- 00002_kcc_phase1_new_tables.sql — Phase 1 tables
+- 00003_kcc_phase2_homepage.sql — Homepage sections
+- 00004_kcc_phase3_search_ai.sql — Search + AI features
+- 00005_kcc_phase4_logistics.sql — Logistics tables
+- 00006_kcc_phase5_platform.sql — Platform features
+- 00007_kcc_phase5b.sql — Phase 5b additions
+- 00008_kcc_v4.sql — V4 migration
+- 00009_kcc_v2_enterprise.sql — V2 Enterprise+ (ERP, Procurement, Suppliers, RFQ, B2B, BNPL, Vendor Financing, Affiliates, Social Commerce, Live Shopping, Auctions, Subscriptions, Digital Products, Email Marketing, AI Assistant, Chat, Multi-Language, Franchise, Reputation, Authenticity, Tax, Accounting, Insurance, Credit, Forecasting, Fraud Detection) — ~60 tables, 60+ indexes
 
-Key tables: vendor_stores, warehouses, warehouse_inventory, shipments, shipping_carriers,
-ad_campaigns, ad_metrics, shared_catalog_products, vendor_offers, buy_box_winners,
-roles, permissions, api_keys, webhooks, analytics_events, daily_metrics, homepage_sections,
-loyalty_programs, white_label_clients, vendor_plans, vendor_payouts, abandoned_carts,
-product_bundles, gift_certificates, call_requests, consent_logs, audit_logs
+Key V2 Enterprise+ tables: erp_accounts, journal_entries, cost_centers, budgets, procurement_suppliers, supplier_products, purchase_orders, po_items, rfqs, rfq_responses, b2b_companies, b2b_users, b2b_price_tiers, b2b_quotes, b2b_invoices, bnpl_plans, bnpl_credit_scores, bnpl_contracts, bnpl_payments, vendor_financing_applications, vendor_financing_repayments, affiliate_groups, affiliate_commissions, affiliate_payouts, social_creators, social_content, social_content_products, live_streams, live_stream_products, auctions, auction_bids, auction_watchlists, subscription_plans, customer_subscriptions, subscription_orders, digital_products, license_keys, email_templates, email_campaigns, email_campaign_logs, email_lists, email_subscribers, crm_tickets, crm_messages, crm_pipelines, crm_deals, crm_tasks, ai_conversations, demand_forecasts, fraud_checks, conversations, conversation_participants, messages, languages, translation_keys, translations, pos_terminals, pos_sessions, franchise_agents, franchise_mini_stores, product_geo_visibility, vendor_reputation_scores, product_authenticity_codes, accounting_invoices, accounting_invoice_items, general_ledger, insurance_policies, insurance_claims, credit_applications, credit_lines
 
 ## CS-Cart Addon Equivalents (Native Builds)
 - Live Search: PostgreSQL full-text search + autocomplete
@@ -96,6 +99,7 @@ product_bundles, gift_certificates, call_requests, consent_logs, audit_logs
 - [x] Phase 3 (Search+AI): Complete
 - [x] Phase 4 (Logistics): Complete
 - [x] Phase 5 (Platform): Complete
+- [x] V2 Enterprise+ (Sections 86-116): Complete — 24 new admin pages, ~60 DB tables, 25 Prisma models added
 
 ## Recent Enhancements (June 2026)
 - Product detail page: Back-in-Stock notification, Call Request, Loyalty Points display, Product Bundles, Buy Box Other Sellers
@@ -106,8 +110,13 @@ product_bundles, gift_certificates, call_requests, consent_logs, audit_logs
 - Vendor shipping page rewritten with DB persistence, regional zone selector
 - Admin bundles management page (create/manage product bundles)
 - New homepage sections: BestSellers, NewArrivals, FeaturedBrands, Testimonials
+- **V2 Enterprise+ (24 new admin pages)**: ERP Dashboard, Procurement/POs, Supplier Network, RFQ System, BNPL, Vendor Financing, Affiliate Marketing, Social Commerce, Live Shopping, Auction Marketplace, Subscription Commerce, Digital Products & Licenses, Email Marketing, AI Shopping Assistant, Internal Chat, Multi-Language System, Franchise/Reseller Network, Product Authenticity, Marketplace Insurance, Credit System, Vendor Reputation, Demand Forecasting, Returns Fraud Detection
+- **V2 Enterprise+ DB migration**: `supabase/migrations/00009_kcc_v2_enterprise.sql` — 60 tables (ERP, procurement, B2B, BNPL, financing, affiliates, social, auctions, subscriptions, digital products, email, CRM, AI, franchises, reputation, authenticity, insurance, credit, forecasting, fraud)
+- **Prisma schema**: Updated to 3030 lines with all V2 Enterprise+ models (generated successfully)
+- **Nav sidebar**: Updated admin-shell with 6 nav groups covering all V2 Enterprise+ pages
 
 ## Database Migration Instructions
 1. Apply SQL migration: `cd supabase && supabase migration up`
 2. Generate Prisma client: `npx prisma generate`
 3. Seed roles: POST to `/api/setup/seed-roles` with Bearer token matching SEED_SECRET env var
+4. V2 Enterprise+ (migration 00009) must be applied manually via Supabase Dashboard SQL Editor — copy contents of `supabase/migrations/00009_kcc_v2_enterprise.sql` and paste into project `stbgamqenraauqpgtbkv`

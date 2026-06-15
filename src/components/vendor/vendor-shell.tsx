@@ -7,8 +7,10 @@ import {
   LayoutDashboard, Package, ShoppingCart, Store,
   Megaphone, Settings, Bell, ChevronDown, BarChart3,
   Menu, ArrowLeft, DollarSign, Truck, Sparkles, RefreshCw,
+  Search, ExternalLink, LogOut, ChevronLeft,
 } from "lucide-react";
 import { VendorStorefrontFilter } from "@/components/admin/storefront-filter";
+import { useAuthStore } from "@/store/auth-store";
 
 type SectionKey = "dashboard" | "products" | "orders" | "store" | "marketing" | "settings";
 
@@ -112,8 +114,15 @@ export default function VendorShell({ children, title, subtitle }: VendorShellPr
   const router = useRouter();
   const [dropdownOpen, setDropdownOpen] = useState<SectionKey | null>(null);
   const [mobileNavOpen, setMobileNavOpen] = useState(false);
-  const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [sidebarOpen, setSidebarOpen] = useState(true);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [notifOpen, setNotifOpen] = useState(false);
+  const [profileOpen, setProfileOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
+  const searchRef = useRef<HTMLDivElement>(null);
+  const notifRef = useRef<HTMLDivElement>(null);
+  const profileRef = useRef<HTMLDivElement>(null);
+  const { user, signOut } = useAuthStore();
 
   const activeSection = detectSection(pathname);
   const currentSection = topNav.find(s => s.key === activeSection);
@@ -122,6 +131,12 @@ export default function VendorShell({ children, title, subtitle }: VendorShellPr
     function handleClickOutside(e: MouseEvent) {
       if (dropdownRef.current && !dropdownRef.current.contains(e.target as Node)) {
         setDropdownOpen(null);
+      }
+      if (notifRef.current && !notifRef.current.contains(e.target as Node)) {
+        setNotifOpen(false);
+      }
+      if (profileRef.current && !profileRef.current.contains(e.target as Node)) {
+        setProfileOpen(false);
       }
     }
     document.addEventListener("mousedown", handleClickOutside);
@@ -156,7 +171,7 @@ export default function VendorShell({ children, title, subtitle }: VendorShellPr
           <span className="font-bold text-xs tracking-tight hidden sm:block">Vendor Hub</span>
         </Link>
 
-        <div ref={dropdownRef} className="flex-1 flex items-center gap-0.5 overflow-x-auto no-scrollbar">
+        <div ref={dropdownRef} className="flex-1 flex items-center gap-0.5 overflow-visible">
           {topNav.map((sec) => {
             const Icon = sec.icon;
             const isActive = activeSection === sec.key;
@@ -208,16 +223,80 @@ export default function VendorShell({ children, title, subtitle }: VendorShellPr
 
         <div className="flex items-center gap-2 shrink-0">
           <VendorStorefrontFilter />
-          <button className="relative p-1.5 hover:bg-white/10 rounded-lg">
-            <Bell size={15} className="text-white/60" />
-            <span className="absolute -top-0.5 -right-0.5 w-3.5 h-3.5 bg-purple-500 text-white text-[7px] font-bold rounded-full flex items-center justify-center">3</span>
-          </button>
-          <div className="flex items-center gap-2 pl-2 ml-1 border-l border-white/10">
-            <div className="w-7 h-7 rounded-full bg-purple-600 flex items-center justify-center">
-              <span className="text-white text-[9px] font-bold">VS</span>
-            </div>
-            <span className="text-[10px] font-semibold hidden lg:block">Vendor</span>
-            <ChevronDown size={12} className="text-white/40" />
+
+          {/* Search */}
+          <div ref={searchRef} className="relative hidden md:block">
+            <Search size={12} className="absolute left-2.5 top-1/2 -translate-y-1/2 text-white/30" />
+            <input
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === "Enter" && searchQuery.trim()) {
+                  router.push(`/vendor?q=${encodeURIComponent(searchQuery.trim())}`);
+                }
+              }}
+              placeholder="Search..."
+              className="w-32 h-7 bg-white/10 rounded-lg pl-8 pr-2 text-[10px] text-white placeholder:text-white/30 border border-white/10 focus:outline-none focus:border-white/30"
+            />
+          </div>
+
+          {/* Notifications */}
+          <div ref={notifRef} className="relative">
+            <button onClick={() => setNotifOpen(!notifOpen)} className="relative p-1.5 hover:bg-white/10 rounded-lg">
+              <Bell size={15} className="text-white/60" />
+              <span className="absolute -top-0.5 -right-0.5 w-3.5 h-3.5 bg-purple-500 text-white text-[7px] font-bold rounded-full flex items-center justify-center">3</span>
+            </button>
+            {notifOpen && (
+              <div className="absolute right-0 top-full mt-1 bg-white rounded-xl shadow-xl border border-border py-2 min-w-[240px] z-50">
+                <p className="px-3 py-1.5 text-[11px] font-semibold text-gray-900">Notifications</p>
+                <div className="px-3 py-4 text-center text-[11px] text-gray-500">No new notifications</div>
+              </div>
+            )}
+          </div>
+
+          {/* Profile */}
+          <div ref={profileRef} className="relative">
+            <button onClick={() => setProfileOpen(!profileOpen)} className="flex items-center gap-2 pl-2 ml-1 border-l border-white/10">
+              <div className="w-7 h-7 rounded-full bg-purple-600 flex items-center justify-center">
+                <span className="text-white text-[9px] font-bold">
+                  {user?.name ? user.name.split(" ").map(n => n[0]).join("").slice(0, 2).toUpperCase() : "VS"}
+                </span>
+              </div>
+              <span className="text-[10px] font-semibold hidden lg:block">{user?.name || "Vendor"}</span>
+              <ChevronDown size={12} className={`text-white/40 transition-transform ${profileOpen ? "rotate-180" : ""}`} />
+            </button>
+            {profileOpen && (
+              <div className="absolute right-0 top-full mt-1 bg-white rounded-xl shadow-xl border border-border py-1.5 min-w-[200px] z-50">
+                <div className="px-3 py-2 border-b border-border">
+                  <p className="text-xs font-semibold text-gray-900">{user?.name || "Vendor"}</p>
+                  <p className="text-[10px] text-gray-500">{user?.email || ""}</p>
+                </div>
+                <Link
+                  href="/vendor/settings"
+                  onClick={() => setProfileOpen(false)}
+                  className="flex items-center gap-2 px-3 py-1.5 text-xs text-gray-700 hover:bg-gray-50"
+                >
+                  <Settings size={12} />
+                  Settings
+                </Link>
+                <Link
+                  href="https://kauvex.com"
+                  target="_blank"
+                  onClick={() => setProfileOpen(false)}
+                  className="flex items-center gap-2 px-3 py-1.5 text-xs text-gray-700 hover:bg-gray-50"
+                >
+                  <ExternalLink size={12} />
+                  View Store
+                </Link>
+                <button
+                  onClick={() => { signOut(); setProfileOpen(false); }}
+                  className="w-full flex items-center gap-2 px-3 py-1.5 text-xs text-red-600 hover:bg-red-50"
+                >
+                  <LogOut size={12} />
+                  Logout
+                </button>
+              </div>
+            )}
           </div>
         </div>
       </div>
@@ -236,7 +315,7 @@ export default function VendorShell({ children, title, subtitle }: VendorShellPr
               </span>
             )}
             <button onClick={() => setSidebarOpen(!sidebarOpen)} className="p-1 hover:bg-gray-100 rounded">
-              <ChevronDown size={12} className={`text-text-4 transition-transform ${!sidebarOpen ? "rotate-180" : ""}`} />
+              <ChevronLeft size={12} className={`text-text-4 transition-transform ${!sidebarOpen ? "rotate-180" : ""}`} />
             </button>
           </div>
 

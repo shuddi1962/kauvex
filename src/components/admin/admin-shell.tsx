@@ -13,9 +13,10 @@ import {
   Wrench, ClipboardList, ImageIcon, Sparkles, ChevronRight, Star,
   RefreshCw, UserCog, MapPinOff, Building2, Handshake, Radio,
   Gavel, Repeat, Download, Bot, MessageCircle, Languages,
-  TrendingUp, Scan, QrCode,
+  TrendingUp, Scan, QrCode, ExternalLink, LogOut,
 } from "lucide-react";
 import { AdminStorefrontFilter } from "@/components/admin/storefront-filter";
+import { useAuthStore } from "@/store/auth-store";
 
 type SectionKey = "dashboard" | "commerce" | "sales" | "marketing" | "content" | "marketplace" | "operations" | "system";
 
@@ -233,8 +234,15 @@ export default function AdminShell({ children, title, subtitle }: AdminShellProp
   const router = useRouter();
   const [dropdownOpen, setDropdownOpen] = useState<SectionKey | null>(null);
   const [mobileNavOpen, setMobileNavOpen] = useState(false);
-  const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [sidebarOpen, setSidebarOpen] = useState(true);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [notifOpen, setNotifOpen] = useState(false);
+  const [profileOpen, setProfileOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
+  const searchRef = useRef<HTMLDivElement>(null);
+  const notifRef = useRef<HTMLDivElement>(null);
+  const profileRef = useRef<HTMLDivElement>(null);
+  const { user, signOut } = useAuthStore();
 
   const activeSection = detectSection(pathname);
   const currentSection = topNavSections.find(s => s.key === activeSection);
@@ -243,6 +251,12 @@ export default function AdminShell({ children, title, subtitle }: AdminShellProp
     function handleClickOutside(e: MouseEvent) {
       if (dropdownRef.current && !dropdownRef.current.contains(e.target as Node)) {
         setDropdownOpen(null);
+      }
+      if (notifRef.current && !notifRef.current.contains(e.target as Node)) {
+        setNotifOpen(false);
+      }
+      if (profileRef.current && !profileRef.current.contains(e.target as Node)) {
+        setProfileOpen(false);
       }
     }
     document.addEventListener("mousedown", handleClickOutside);
@@ -278,7 +292,7 @@ export default function AdminShell({ children, title, subtitle }: AdminShellProp
           <span className="text-[9px] text-orange font-medium bg-white/10 px-1.5 py-0.5 rounded hidden md:block">Admin</span>
         </Link>
 
-        <div ref={dropdownRef} className="flex-1 flex items-center gap-0.5 overflow-x-auto no-scrollbar">
+        <div ref={dropdownRef} className="flex-1 flex items-center gap-0.5 overflow-visible">
           {topNavSections.map((sec) => {
             const Icon = sec.icon;
             const isActive = activeSection === sec.key;
@@ -330,22 +344,82 @@ export default function AdminShell({ children, title, subtitle }: AdminShellProp
 
         <div className="flex items-center gap-1.5 shrink-0">
           <AdminStorefrontFilter />
-          <div className="relative hidden md:block">
+
+          {/* Search */}
+          <div ref={searchRef} className="relative hidden md:block">
             <Search size={12} className="absolute left-2.5 top-1/2 -translate-y-1/2 text-white/30" />
-            <input placeholder="Search..." className="w-36 h-8 bg-white/10 rounded-lg pl-8 pr-2.5 text-xs text-white placeholder:text-white/30 border border-white/10 focus:outline-none focus:border-white/30" />
+            <input
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === "Enter" && searchQuery.trim()) {
+                  router.push(`/admin?q=${encodeURIComponent(searchQuery.trim())}`);
+                }
+              }}
+              placeholder="Search..."
+              className="w-36 h-8 bg-white/10 rounded-lg pl-8 pr-2.5 text-xs text-white placeholder:text-white/30 border border-white/10 focus:outline-none focus:border-white/30"
+            />
           </div>
-          <button className="relative p-1.5 hover:bg-white/10 rounded-lg">
-            <Bell size={15} className="text-white/60" />
-            <span className="absolute top-0.5 right-0.5 w-1.5 h-1.5 bg-orange rounded-full" />
-          </button>
-          <div className="flex items-center gap-2 pl-2 ml-1 border-l border-white/10">
-            <div className="w-7 h-7 rounded-full bg-gradient-to-br from-blue to-blue-600 flex items-center justify-center">
-              <span className="text-white text-[9px] font-bold">SA</span>
-            </div>
-            <div className="hidden lg:block">
-              <p className="text-[11px] font-semibold text-white leading-tight">Super Admin</p>
-            </div>
-            <ChevronDown size={12} className="text-white/40" />
+
+          {/* Notifications */}
+          <div ref={notifRef} className="relative">
+            <button onClick={() => setNotifOpen(!notifOpen)} className="relative p-1.5 hover:bg-white/10 rounded-lg">
+              <Bell size={15} className="text-white/60" />
+              <span className="absolute top-0.5 right-0.5 w-1.5 h-1.5 bg-orange rounded-full" />
+            </button>
+            {notifOpen && (
+              <div className="absolute right-0 top-full mt-1 bg-white rounded-xl shadow-xl border border-border py-2 min-w-[260px] z-50">
+                <p className="px-3 py-1.5 text-[11px] font-semibold text-gray-900">Notifications</p>
+                <div className="px-3 py-4 text-center text-[11px] text-gray-500">No new notifications</div>
+              </div>
+            )}
+          </div>
+
+          {/* Profile */}
+          <div ref={profileRef} className="relative">
+            <button onClick={() => setProfileOpen(!profileOpen)} className="flex items-center gap-2 pl-2 ml-1 border-l border-white/10">
+              <div className="w-7 h-7 rounded-full bg-gradient-to-br from-blue to-blue-600 flex items-center justify-center">
+                <span className="text-white text-[9px] font-bold">
+                  {user?.name ? user.name.split(" ").map(n => n[0]).join("").slice(0, 2).toUpperCase() : "SA"}
+                </span>
+              </div>
+              <div className="hidden lg:block">
+                <p className="text-[11px] font-semibold text-white leading-tight">{user?.name || "Super Admin"}</p>
+              </div>
+              <ChevronDown size={12} className={`text-white/40 transition-transform ${profileOpen ? "rotate-180" : ""}`} />
+            </button>
+            {profileOpen && (
+              <div className="absolute right-0 top-full mt-1 bg-white rounded-xl shadow-xl border border-border py-1.5 min-w-[200px] z-50">
+                <div className="px-3 py-2 border-b border-border">
+                  <p className="text-xs font-semibold text-gray-900">{user?.name || "Admin"}</p>
+                  <p className="text-[10px] text-gray-500">{user?.email || ""}</p>
+                </div>
+                <Link
+                  href="/admin/settings"
+                  onClick={() => setProfileOpen(false)}
+                  className="flex items-center gap-2 px-3 py-1.5 text-xs text-gray-700 hover:bg-gray-50"
+                >
+                  <Settings size={12} />
+                  Settings
+                </Link>
+                <Link
+                  href="https://kauvex.com"
+                  target="_blank"
+                  onClick={() => setProfileOpen(false)}
+                  className="flex items-center gap-2 px-3 py-1.5 text-xs text-gray-700 hover:bg-gray-50"
+                >
+                  <ExternalLink size={12} />
+                  View Storefront
+                </Link>
+                <button
+                  onClick={() => { signOut(); setProfileOpen(false); }}
+                  className="w-full flex items-center gap-2 px-3 py-1.5 text-xs text-red-600 hover:bg-red-50"
+                >
+                  <LogOut size={12} />
+                  Logout
+                </button>
+              </div>
+            )}
           </div>
         </div>
       </div>

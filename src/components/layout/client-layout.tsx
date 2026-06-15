@@ -16,12 +16,12 @@ import CampaignPopup from "@/components/popups/campaign-popup";
 
 export default function ClientLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
-  const isAdmin = pathname.startsWith("/admin");
+  const isDashboard = pathname.startsWith("/admin") || pathname.startsWith("/vendor") || pathname.startsWith("/account") || pathname.startsWith("/auth");
   const [isSticky, setIsSticky] = useState(false);
   const [showScrollTop, setShowScrollTop] = useState(false);
 
   useEffect(() => {
-    if (isAdmin) return;
+    if (isDashboard) return;
 
     const handleScroll = () => {
       const scrollY = window.scrollY;
@@ -31,14 +31,14 @@ export default function ClientLayout({ children }: { children: React.ReactNode }
 
     window.addEventListener("scroll", handleScroll, { passive: true });
     return () => window.removeEventListener("scroll", handleScroll);
-  }, [isAdmin]);
+  }, [isDashboard]);
 
   const scrollToTop = () => {
     window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
-  // Admin routes get no frontend chrome
-  if (isAdmin) {
+  // Dashboard routes get no frontend chrome
+  if (isDashboard) {
     return <>{children}</>;
   }
 

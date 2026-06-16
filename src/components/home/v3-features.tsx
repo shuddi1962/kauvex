@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { Radio, Users, Palette, Image as ImageIcon, Sparkles, Package } from "lucide-react";
+import { Radio, Users, Palette, Image as ImageIcon, Sparkles, Package, Diamond } from "lucide-react";
 
 const features = [
   {
@@ -45,6 +45,13 @@ const features = [
     title: "Request a Product",
     desc: "Can't find it? Tell us what you need and we'll source it for you.",
     gradient: "from-emerald-500 to-teal-600",
+  },
+  {
+    href: "/nft-marketplace",
+    icon: Diamond,
+    title: "NFT Marketplace",
+    desc: "Buy, sell & collect unique digital artworks as NFTs on Ethereum & Polygon.",
+    gradient: "from-purple-900 to-indigo-900",
   },
 ];
 

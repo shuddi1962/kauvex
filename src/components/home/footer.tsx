@@ -197,6 +197,7 @@ export default function Footer() {
               <li><Link href="/concierge" className="text-sm text-white/40 hover:text-white transition-colors">Concierge AI</Link></li>
               <li><Link href="/request-product" className="text-sm text-white/40 hover:text-white transition-colors">Request a Product</Link></li>
               <li><Link href="/deals" className="text-sm text-white/40 hover:text-white transition-colors">Today&apos;s Deals</Link></li>
+              <li><Link href="/nft-marketplace" className="text-sm text-white/40 hover:text-white transition-colors">NFT Marketplace</Link></li>
             </ul>
           </div>
 

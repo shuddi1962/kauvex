@@ -120,9 +120,11 @@ Key V2 Enterprise+ tables: erp_accounts, journal_entries, cost_centers, budgets,
 - **Group Buy** (`/group-buy/`): Social shopping deals, invite friends, unlock lower prices
 - **Concierge Shopping Assistant** (`/concierge/`): AI-powered personal shopping assistant chat
 - **Digital Art Marketplace** (`/art-marketplace/`): Buy/sell digital art & illustrations, commercial licenses, instant download
+- **NFT Marketplace** (`/nft-marketplace/`): Buy, sell & collect NFTs on Ethereum & Polygon with wallet support
 - **Kauvex Originals tracker**: Admin product sourcing pipeline for private label
 - **Vendor Mentorship marketplace**: Peer-to-peer paid mentorship sessions
 - **Carbon footprint tracker**: Per-order CO2 estimates with tree planting offsets
+- **NFT Marketplace**: Full blockchain-ready NFT support with Prisma models, API routes, lib functions, and admin/frontend pages
 - **Price history & deal alerts**: 90-day price charts, target price notifications
 - **Supabase Cron Jobs**: `supabase/migrations/00010_kcc_v3_cron_jobs.sql` — 5 automated functions for supplier escalation, price alerts, group buy expiry, price history recording, daily cleanup
 

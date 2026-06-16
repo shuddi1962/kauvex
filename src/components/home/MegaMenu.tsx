@@ -132,6 +132,12 @@ const staticCategories = [
         icon: "📦",
         description: "Can't find it? We'll source it for you",
       },
+      {
+        label: "NFT Marketplace",
+        href: "/nft-marketplace",
+        icon: "🌟",
+        description: "Buy, sell & collect unique digital artworks as NFTs",
+      },
     ],
   },
 ];

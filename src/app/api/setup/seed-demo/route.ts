@@ -106,12 +106,15 @@ export async function POST(request: NextRequest) {
     const brandMap = new Map((dbBrands || []).map((b: any) => [b.name, b.id]));
 
     // 4. Seed shared catalog products (with images)
-    for (const p of SHARED_CATALOG_PRODUCTS) {
+    const seedTs = Date.now();
+    for (let pi = 0; pi < SHARED_CATALOG_PRODUCTS.length; pi++) {
+      const p = SHARED_CATALOG_PRODUCTS[pi];
       const { data: existing } = await admin.from("shared_catalog_products").select("id").eq("title", p.title).maybeSingle();
       if (!existing) {
         const catId = catMap.get(CATEGORIES[p.catIndex].name);
         const brandId = brandMap.get(p.brand);
         const { error } = await admin.from("shared_catalog_products").insert({
+          master_product_id: `scp-${seedTs}-${pi}`,
           title: p.title,
           brand: p.brand,
           category_id: catId,
@@ -168,7 +171,7 @@ export async function POST(request: NextRequest) {
           user_id: userId,
           shop_name: vu.shopName,
           shop_slug: vu.shopSlug,
-          status: "active",
+          status: "approved",
           vendor_tier: "silver",
           commission: 12,
         });
@@ -226,10 +229,10 @@ export async function POST(request: NextRequest) {
               sku: `SKU-${vendor.shop_slug.substring(0, 3).toUpperCase()}-${Date.now().toString(36)}`,
               regular_price: Math.round(50000 + Math.random() * 300000),
               vendor_id: vendor.id,
-              status: "active",
+              status: "published",
               images: [],
               tags: [cp.brand],
-              product_type: "simple",
+              type: "simple",
             });
             if (!error) log.push(`Product created: ${cp.title} for ${vendor.shop_slug}`);
           }
@@ -262,14 +265,14 @@ export async function POST(request: NextRequest) {
 
     // 8. Seed university lessons
     const lessons = [
-      { title: "Send to Kauvex - Workflow overview", category: "Fulfillment", contentType: "video", durationMinutes: 15, sortOrder: 1, description: "Learn how to send your inventory to Kauvex fulfillment centers and manage inbound shipments." },
-      { title: "Intro to listing products", category: "List Products", contentType: "article", durationMinutes: 10, sortOrder: 2, description: "Understand the basics of creating product listings on Kauvex marketplace." },
-      { title: "Learn what you need before you list", category: "Prepare to Sell", contentType: "article", durationMinutes: 8, sortOrder: 3, description: "Gather all required information and documents before listing your products." },
-      { title: "Fulfill customer orders directly", category: "Merchant Fulfillment", contentType: "video", durationMinutes: 20, sortOrder: 4, description: "Step-by-step guide to shipping orders directly to customers." },
-      { title: "Account Health and compliance", category: "Account Health", contentType: "article", durationMinutes: 12, sortOrder: 5, description: "Monitor your account health metrics and maintain compliance with Kauvex policies." },
-      { title: "Advertise with Kauvex", category: "Advertising", contentType: "video", durationMinutes: 25, sortOrder: 6, description: "Create and manage advertising campaigns to boost your product visibility." },
-      { title: "Manage your inventory", category: "Inventory", contentType: "article", durationMinutes: 15, sortOrder: 7, description: "Track stock levels, set reorder alerts, and manage multi-warehouse inventory." },
-      { title: "Analyze product and brand performance", category: "Analytics", contentType: "video", durationMinutes: 18, sortOrder: 8, description: "Use Kauvex analytics tools to measure and improve your sales performance." },
+      { title: "Send to Kauvex - Workflow overview", category: "Fulfillment", content_type: "video", duration_minutes: 15, sort_order: 1, description: "Learn how to send your inventory to Kauvex fulfillment centers and manage inbound shipments." },
+      { title: "Intro to listing products", category: "List Products", content_type: "article", duration_minutes: 10, sort_order: 2, description: "Understand the basics of creating product listings on Kauvex marketplace." },
+      { title: "Learn what you need before you list", category: "Prepare to Sell", content_type: "article", duration_minutes: 8, sort_order: 3, description: "Gather all required information and documents before listing your products." },
+      { title: "Fulfill customer orders directly", category: "Merchant Fulfillment", content_type: "video", duration_minutes: 20, sort_order: 4, description: "Step-by-step guide to shipping orders directly to customers." },
+      { title: "Account Health and compliance", category: "Account Health", content_type: "article", duration_minutes: 12, sort_order: 5, description: "Monitor your account health metrics and maintain compliance with Kauvex policies." },
+      { title: "Advertise with Kauvex", category: "Advertising", content_type: "video", duration_minutes: 25, sort_order: 6, description: "Create and manage advertising campaigns to boost your product visibility." },
+      { title: "Manage your inventory", category: "Inventory", content_type: "article", duration_minutes: 15, sort_order: 7, description: "Track stock levels, set reorder alerts, and manage multi-warehouse inventory." },
+      { title: "Analyze product and brand performance", category: "Analytics", content_type: "video", duration_minutes: 18, sort_order: 8, description: "Use Kauvex analytics tools to measure and improve your sales performance." },
     ];
     for (const l of lessons) {
       const { data: existing } = await admin.from("kv_university_lessons").select("id").eq("title", l.title).maybeSingle();
@@ -282,11 +285,11 @@ export async function POST(request: NextRequest) {
 
     // 9. Seed restricted categories
     const restrictions = [
-      { categoryName: "Supplements", requiresApproval: true, allowedConditions: ["new"], requiredDocs: ["purchase_invoice"], notes: "FDA registration required" },
-      { brandName: "Caterpillar", brandId: brandMap.get("Caterpillar"), requiresApproval: true, allowedConditions: ["new", "refurbished"], requiredDocs: ["purchase_invoice", "brand_auth_letter"], notes: "Authorized dealer only" },
+      { category_name: "Supplements", requires_approval: true, allowed_conditions: ["new"], required_docs: ["purchase_invoice"], notes: "FDA registration required" },
+      { brand_name: "Caterpillar", brand_id: brandMap.get("Caterpillar"), requires_approval: true, allowed_conditions: ["new", "refurbished"], required_docs: ["purchase_invoice", "brand_auth_letter"], notes: "Authorized dealer only" },
     ];
     for (const r of restrictions) {
-      const slugToCheck = r.categoryName || r.brandName;
+      const slugToCheck = r.category_name || r.brand_name;
       const { data: existing } = await admin.from("kv_restricted_categories").select("id").eq("category_name", slugToCheck).maybeSingle();
       if (!existing) {
         const { error } = await admin.from("kv_restricted_categories").insert(r as any);
@@ -296,41 +299,49 @@ export async function POST(request: NextRequest) {
     }
 
     // 10. Seed approval requests
-    const pendingReqs = [
-      { vendorId: "demo", contactEmail: "vendor@kauvex.com", categoryName: "Supplements", brandName: "Generic", status: "pending" },
-      { vendorId: "demo", contactEmail: "vendor2@kauvex.com", categoryName: "Electronics", brandName: "Sony", status: "approved" },
-    ];
-    for (const req of pendingReqs) {
-      const { error } = await admin.from("kv_approval_requests").insert(req);
-      if (error) log.push(`Approval req: ${error.message}`);
-      else log.push(`Approval request created`);
+    if (allVendors && allVendors.length > 1) {
+      const pendingReqs = [
+        { vendor_id: allVendors[0].id, contact_email: "vendor@kauvex.com", category_name: "Supplements", brand_name: "Generic", status: "pending" },
+        { vendor_id: allVendors[1].id, contact_email: "vendor2@kauvex.com", category_name: "Electronics", brand_name: "Sony", status: "approved" },
+      ];
+      for (const req of pendingReqs) {
+        const { error } = await admin.from("kv_approval_requests").insert(req);
+        if (error) log.push(`Approval req: ${error.message}`);
+        else log.push(`Approval request created`);
+      }
     }
 
     // 11. Seed brand registry entries
-    const brandsToRegister = [
-      { vendorId: "demo", brandName: "SecureTech Pro", trademarkNumber: "TM2024-001", trademarkCountry: "US", status: "approved", brandWebsite: "https://securetech.example.com" },
-      { vendorId: "demo", brandName: "PowerPlus", trademarkNumber: "TM2024-002", trademarkCountry: "NG", status: "pending", brandWebsite: "https://powerplus.example.com" },
-    ];
-    for (const br of brandsToRegister) {
-      const { data: existing } = await admin.from("kv_brand_registry").select("id").eq("brand_name", br.brandName).maybeSingle();
-      if (!existing) {
-        const { error } = await admin.from("kv_brand_registry").insert(br);
-        if (error) log.push(`Brand registry ${br.brandName}: ${error.message}`);
-        else log.push(`Brand registry created: ${br.brandName}`);
+    if (allVendors && allVendors.length > 0) {
+      const brandsToRegister = [
+        { vendor_id: allVendors[0].id, brand_name: "SecureTech Pro", trademark_number: "TM2024-001", trademark_country: "US", status: "approved", brand_website: "https://securetech.example.com" },
+        { vendor_id: allVendors[1]?.id || allVendors[0].id, brand_name: "PowerPlus", trademark_number: "TM2024-002", trademark_country: "NG", status: "pending", brand_website: "https://powerplus.example.com" },
+      ];
+      for (const br of brandsToRegister) {
+        const { data: existing } = await admin.from("kv_brand_registry").select("id").eq("brand_name", br.brand_name).maybeSingle();
+        if (!existing) {
+          const { error } = await admin.from("kv_brand_registry").insert(br);
+          if (error) log.push(`Brand registry ${br.brand_name}: ${error.message}`);
+          else log.push(`Brand registry created: ${br.brand_name}`);
+        }
       }
     }
 
     // 12. Seed business customers
-    const bizCusts = [
-      { customerId: "demo-cust-1", companyName: "Lagos Marine Services Ltd", taxId: "RC123456", businessType: "Marine Services", verifiedAt: new Date().toISOString() },
-      { customerId: "demo-cust-2", companyName: "Secure Solutions Inc", taxId: "RC789012", businessType: "Security Services" },
-    ];
-    for (const bc of bizCusts) {
-      const { data: existing } = await admin.from("kv_business_customers").select("id").eq("customer_id", bc.customerId).maybeSingle();
-      if (!existing) {
-        const { error } = await admin.from("kv_business_customers").insert(bc as any);
-        if (error) log.push(`Business customer: ${error.message}`);
-        else log.push(`Business customer created: ${bc.companyName}`);
+    const { data: authUsers } = await admin.auth.admin.listUsers();
+    const demoAuthIds = (authUsers?.users?.slice(0, 2) || []).map((u: any) => u.id);
+    if (demoAuthIds.length > 0) {
+      const bizCusts = [
+        { customer_id: demoAuthIds[0], company_name: "Lagos Marine Services Ltd", tax_id: "RC123456", business_type: "Marine Services", verified_at: new Date().toISOString() },
+        { customer_id: demoAuthIds[demoAuthIds.length - 1], company_name: "Secure Solutions Inc", tax_id: "RC789012", business_type: "Security Services" },
+      ];
+      for (const bc of bizCusts) {
+        const { data: existing } = await admin.from("kv_business_customers").select("id").eq("customer_id", bc.customer_id).maybeSingle();
+        if (!existing) {
+          const { error } = await admin.from("kv_business_customers").insert(bc as any);
+          if (error) log.push(`Business customer: ${error.message}`);
+          else log.push(`Business customer created: ${bc.company_name}`);
+        }
       }
     }
 
@@ -348,9 +359,9 @@ export async function POST(request: NextRequest) {
 
     // 14. Seed A+ content
     const { data: brandRegBrands } = await admin.from("kv_brand_registry").select("id").eq("status", "approved");
-    if (brandRegBrands && brandRegBrands.length > 0) {
+    if (brandRegBrands && brandRegBrands.length > 0 && allVendors && allVendors.length > 0) {
       const { error } = await admin.from("kv_aplus_content").insert({
-        vendor_id: "demo",
+        vendor_id: allVendors[0].id,
         brand_id: brandRegBrands[0].id,
         title: "Premium Marine Products",
         modules: [

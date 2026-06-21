@@ -1,24 +1,18 @@
 "use client";
-
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Link from "next/link";
 import VendorShell from "@/components/vendor/vendor-shell";
-import {
-  DollarSign, ShoppingCart, Package, TrendingUp, BarChart3, Settings,
-  Store, Truck, Megaphone, Eye, Plus, CreditCard, Bell, Users,
-  MessageSquare, Heart, Star, Shield, RefreshCw, Wallet,
-  ChevronDown, Clock, Award, ArrowUp, ArrowDown, Zap,
-} from "lucide-react";
+import { DollarSign, ShoppingCart, Package, TrendingUp, BarChart3, Settings, Store, Truck, Megaphone, Eye, Plus, CreditCard, Bell, Users, MessageSquare, Heart, Star, Shield, RefreshCw, Wallet, ChevronDown, Clock, Award, ArrowUp, ArrowDown, Zap, X, Sparkles, GraduationCap, Globe, MonitorSmartphone, Percent, AlertTriangle, Target, BookOpen, Lightbulb } from "lucide-react";
 
 const kpis = [
   { label: "Daily Sales", value: "₦284,500", change: "+12.3%", up: true, icon: DollarSign, color: "bg-emerald-100 text-emerald-700" },
-  { label: "Weekly Sales", value: "₦1,890,000", change: "+8.7%", up: true, icon: TrendingUp, color: "bg-blue-100 text-blue" },
-  { label: "Monthly Sales", value: "₦4,250,000", change: "+18.5%", up: true, icon: DollarSign, color: "bg-purple-100 text-purple-700" },
+  { label: "Buy Box Win Rate", value: "78%", change: "+5.2%", up: true, icon: Target, color: "bg-blue-100 text-blue" },
+  { label: "Out of Stock", value: "3", change: "", up: false, icon: AlertTriangle, color: "bg-red-100 text-red-600" },
+  { label: "Total Balance", value: "₦1,234,500", change: "+18.5%", up: true, icon: Wallet, color: "bg-purple-100 text-purple-700" },
   { label: "Pending Orders", value: "23", change: "-5", up: false, icon: Clock, color: "bg-amber-100 text-amber-700" },
   { label: "Shipped Orders", value: "133", change: "+12", up: true, icon: Truck, color: "bg-green-100 text-green-700" },
-  { label: "Returned Orders", value: "4", change: "-2", up: false, icon: RefreshCw, color: "bg-red-100 text-red-600" },
-  { label: "Conversion Rate", value: "3.2%", change: "+0.4%", up: true, icon: TrendingUp, color: "bg-cyan-100 text-cyan-700" },
-  { label: "Profit Margin", value: "34%", change: "+2.1%", up: true, icon: Wallet, color: "bg-teal-100 text-teal-700" },
+  { label: "Days of Supply", value: "14.2", change: "+2.1", up: true, icon: Package, color: "bg-cyan-100 text-cyan-700" },
+  { label: "Conversion Rate", value: "3.2%", change: "+0.4%", up: true, icon: TrendingUp, color: "bg-teal-100 text-teal-700" },
 ];
 
 const topProducts = [
@@ -36,23 +30,53 @@ const recentOrders = [
   { id: "ORD-2024-3838", customer: "MarinePro", items: 2, total: "₦178,000", status: "Delivered", date: "1d ago" },
 ];
 
-const modules = [
-  { label: "Revenue", icon: DollarSign, href: "/vendor/earnings", color: "bg-emerald-500", desc: "Daily, weekly, monthly earnings" },
-  { label: "Orders", icon: ShoppingCart, href: "/vendor/orders", color: "bg-blue", desc: "Manage & fulfill orders" },
-  { label: "Products", icon: Package, href: "/vendor/products", color: "bg-purple-600", desc: "Add & manage products" },
-  { label: "Inventory", icon: BarChart3, href: "/vendor/products", color: "bg-cyan-600", desc: "Stock levels & alerts" },
-  { label: "Returns", icon: RefreshCw, href: "/vendor/orders", color: "bg-orange", desc: "Returns & refunds" },
-  { label: "Advertising", icon: Megaphone, href: "/vendor/advertising", color: "bg-pink-600", desc: "Campaigns & spend" },
-  { label: "Analytics", icon: TrendingUp, href: "/vendor/analytics", color: "bg-teal-600", desc: "Performance reports" },
-  { label: "Reviews", icon: Star, href: "/vendor/dashboard", color: "bg-amber-500", desc: "Customer feedback" },
-  { label: "Messages", icon: MessageSquare, href: "/vendor/dashboard", color: "bg-indigo-600", desc: "Customer inbox" },
-  { label: "Payments", icon: Wallet, href: "/vendor/earnings", color: "bg-green-600", desc: "Payouts & history" },
-  { label: "Account Health", icon: Shield, href: "/vendor/dashboard", color: "bg-red-500", desc: "Performance metrics" },
-  { label: "Subscription", icon: CreditCard, href: "/vendor/subscription", color: "bg-violet-600", desc: "Plan & billing" },
+const quickActions = [
+  { label: "Match Competitive Price", icon: Zap, color: "bg-orange/10 text-orange", desc: "3 products above Buy Box price", href: "/vendor/inventory" },
+  { label: "Restock Now", icon: Package, color: "bg-red-100 text-red-600", desc: "2 products approaching stockout", href: "/vendor/inventory/replenishment-alerts" },
+  { label: "Promote with Coupons", icon: Percent, color: "bg-green-100 text-green-700", desc: "Create a coupon campaign", href: "/vendor/promotions" },
+  { label: "Create a Coupon", icon: Plus, color: "bg-purple-100 text-purple-700", desc: "Discount %, code, expiry", href: "/vendor/promotions" },
+];
+
+const growthOpportunities = [
+  { label: "New Selection Recommendations", icon: Lightbulb, desc: "5 trending products in your category" },
+  { label: "Global Product Demand", icon: Globe, desc: "Expand to UK, CA, AU storefronts" },
+  { label: "Categories with Insights", icon: BarChart3, desc: "Category trend data available" },
+  { label: "Add More Products", icon: Plus, desc: "Shortcut to product creation" },
+];
+
+const onboardingCards = [
+  { label: "Free webinars to grow your store", icon: MonitorSmartphone, desc: "Learn from Kauvex experts" },
+  { label: "Grow your business globally", icon: Globe, desc: "Expand to other storefronts" },
+  { label: "Tutorials and Training", icon: GraduationCap, desc: "Kauvex Seller University" },
 ];
 
 export default function VendorDashboard() {
   const [activeModule, setActiveModule] = useState("overview");
+  const [dismissedCards, setDismissedCards] = useState<string[]>([]);
+  const [couponModal, setCouponModal] = useState(false);
+
+  const healthMetrics = [
+    { label: "Order Defect Rate", value: "1.2%", target: "< 2%", status: "good" },
+    { label: "Late Shipment Rate", value: "2.8%", target: "< 4%", status: "good" },
+    { label: "Cancellation Rate", value: "0.5%", target: "< 2.5%", status: "good" },
+    { label: "Customer Response", value: "98%", target: "> 90%", status: "good" },
+    { label: "Return Rate", value: "3.1%", target: "< 5%", status: "at_risk" },
+  ];
+
+  const modules = [
+    { label: "Revenue", icon: DollarSign, href: "/vendor/earnings", color: "bg-emerald-500", desc: "Daily, weekly, monthly earnings" },
+    { label: "Orders", icon: ShoppingCart, href: "/vendor/orders", color: "bg-blue", desc: "Manage & fulfill orders" },
+    { label: "Products", icon: Package, href: "/vendor/products", color: "bg-purple-600", desc: "Add & manage products" },
+    { label: "Inventory", icon: BarChart3, href: "/vendor/inventory", color: "bg-cyan-600", desc: "Stock levels & alerts" },
+    { label: "Returns", icon: RefreshCw, href: "/vendor/orders", color: "bg-orange", desc: "Returns & refunds" },
+    { label: "Advertising", icon: Megaphone, href: "/vendor/advertising", color: "bg-pink-600", desc: "Campaigns & spend" },
+    { label: "Analytics", icon: TrendingUp, href: "/vendor/analytics", color: "bg-teal-600", desc: "Performance reports" },
+    { label: "Account Health", icon: Shield, href: "/vendor/account-health", color: "bg-red-500", desc: "Performance metrics" },
+    { label: "University", icon: GraduationCap, href: "/vendor/university", color: "bg-indigo-600", desc: "Seller training" },
+    { label: "B2B Central", icon: Store, href: "/vendor/b2b", color: "bg-violet-600", desc: "Wholesale selling" },
+    { label: "Brand Registry", icon: Award, href: "/vendor/brand-registry", color: "bg-amber-500", desc: "Brand protection" },
+    { label: "Reports", icon: BarChart3, href: "/vendor/reports", color: "bg-green-600", desc: "Sales & inventory reports" },
+  ];
 
   return (
     <VendorShell title="Seller Central" subtitle="Manage your entire business from one dashboard">
@@ -74,7 +98,7 @@ export default function VendorDashboard() {
           </div>
         </div>
 
-        {/* KPI Grid */}
+        {/* TOP STATUS BAR */}
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
           {kpis.map(kpi => {
             const Icon = kpi.icon;
@@ -94,6 +118,98 @@ export default function VendorDashboard() {
             );
           })}
         </div>
+
+        {/* QUICK ACTION CARDS */}
+        <div className="grid lg:grid-cols-4 gap-3">
+          {quickActions.map(qa => {
+            const Icon = qa.icon;
+            return (
+              <Link key={qa.label} href={qa.href} className="bg-white rounded-xl border border-border p-4 hover:shadow-md transition-all group">
+                <div className="flex items-center gap-3 mb-2">
+                  <div className={`w-8 h-8 rounded-lg ${qa.color} flex items-center justify-center`}>
+                    <Icon size={15} />
+                  </div>
+                  <span className="text-xs font-bold text-text-1 group-hover:text-orange transition-colors">{qa.label}</span>
+                </div>
+                <p className="text-[10px] text-text-4">{qa.desc}</p>
+              </Link>
+            );
+          })}
+        </div>
+
+        {/* GROWTH OPPORTUNITIES */}
+        <div className="bg-white rounded-xl border border-border p-5">
+          <h3 className="font-bold text-sm flex items-center gap-2 mb-4 text-text-1">
+            <Sparkles size={15} className="text-orange" /> Growth Opportunities
+          </h3>
+          <div className="grid lg:grid-cols-4 gap-3">
+            {growthOpportunities.map(go => {
+              const Icon = go.icon;
+              return (
+                <div key={go.label} className="p-3 bg-gradient-to-br from-orange-50 to-amber-50 rounded-xl border border-orange/10 hover:shadow-sm transition-all cursor-pointer">
+                  <Icon size={18} className="text-orange mb-2" />
+                  <p className="text-xs font-bold text-text-1 mb-1">{go.label}</p>
+                  <p className="text-[10px] text-text-4">{go.desc}</p>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+
+        {/* ONBOARDING / TUTORIAL CARDS */}
+        {onboardingCards.filter(c => !dismissedCards.includes(c.label)).length > 0 && (
+          <div className="grid lg:grid-cols-3 gap-3">
+            {onboardingCards.map(card => {
+              if (dismissedCards.includes(card.label)) return null;
+              const Icon = card.icon;
+              return (
+                <div key={card.label} className="bg-white rounded-xl border border-border p-4 flex items-start gap-3">
+                  <div className="w-8 h-8 rounded-lg bg-indigo-100 text-indigo-600 flex items-center justify-center shrink-0">
+                    <Icon size={15} />
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <p className="text-xs font-bold text-text-1">{card.label}</p>
+                    <p className="text-[10px] text-text-4">{card.desc}</p>
+                  </div>
+                  <button onClick={() => setDismissedCards(prev => [...prev, card.label])} className="p-1 hover:bg-gray-100 rounded shrink-0">
+                    <X size={12} className="text-text-4" />
+                  </button>
+                </div>
+              );
+            })}
+          </div>
+        )}
+
+        {/* Coupon Modal */}
+        {couponModal && (
+          <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center" onClick={() => setCouponModal(false)}>
+            <div className="bg-white rounded-2xl p-6 w-full max-w-md" onClick={e => e.stopPropagation()}>
+              <div className="flex items-center justify-between mb-4">
+                <h3 className="font-bold text-lg">Create a Coupon</h3>
+                <button onClick={() => setCouponModal(false)} className="p-1 hover:bg-gray-100 rounded"><X size={18} /></button>
+              </div>
+              <div className="space-y-3">
+                <div>
+                  <label className="text-xs font-semibold text-text-2 block mb-1">Discount %</label>
+                  <input type="number" placeholder="10" className="w-full h-10 px-3 border border-border rounded-lg text-sm" />
+                </div>
+                <div>
+                  <label className="text-xs font-semibold text-text-2 block mb-1">Coupon Code</label>
+                  <input placeholder="SUMMER10" className="w-full h-10 px-3 border border-border rounded-lg text-sm" />
+                </div>
+                <div>
+                  <label className="text-xs font-semibold text-text-2 block mb-1">Expiry Date</label>
+                  <input type="date" className="w-full h-10 px-3 border border-border rounded-lg text-sm" />
+                </div>
+                <div>
+                  <label className="text-xs font-semibold text-text-2 block mb-1">Usage Limit</label>
+                  <input type="number" placeholder="100" className="w-full h-10 px-3 border border-border rounded-lg text-sm" />
+                </div>
+                <button className="w-full h-11 bg-orange text-white font-bold rounded-xl hover:bg-orange/90">Create Coupon</button>
+              </div>
+            </div>
+          </div>
+        )}
 
         <div className="grid lg:grid-cols-3 gap-6">
           {/* Top Selling Products */}
@@ -156,15 +272,10 @@ export default function VendorDashboard() {
               <h3 className="font-bold text-sm flex items-center gap-2 text-text-1">
                 <Shield size={15} className="text-orange" /> Account Health
               </h3>
+              <Link href="/vendor/account-health" className="text-[10px] text-orange font-semibold hover:underline">Details</Link>
             </div>
             <div className="space-y-3">
-              {[
-                { label: "Order Defect Rate", value: "1.2%", target: "< 2%", status: "good" },
-                { label: "Late Shipment Rate", value: "2.8%", target: "< 4%", status: "good" },
-                { label: "Cancellation Rate", value: "0.5%", target: "< 2.5%", status: "good" },
-                { label: "Customer Response", value: "98%", target: "> 90%", status: "good" },
-                { label: "Return Rate", value: "3.1%", target: "< 5%", status: "at_risk" },
-              ].map(m => (
+              {healthMetrics.map(m => (
                 <div key={m.label} className="flex items-center justify-between text-xs">
                   <span className="text-text-4">{m.label}</span>
                   <div className="flex items-center gap-2">
@@ -184,47 +295,6 @@ export default function VendorDashboard() {
                 </div>
                 <p className="text-[9px] text-text-4">Overall Health Score — Good standing</p>
               </div>
-            </div>
-          </div>
-        </div>
-
-        {/* Ad Spend & Store Followers */}
-        <div className="grid lg:grid-cols-2 gap-6">
-          <div className="bg-white rounded-xl border border-border p-5">
-            <h3 className="font-bold text-sm flex items-center gap-2 mb-4 text-text-1">
-              <Megaphone size={15} className="text-orange" /> Ad Spend
-            </h3>
-            <div className="flex items-end gap-6">
-              <div>
-                <p className="text-2xl font-bold text-text-1">₦156,000</p>
-                <p className="text-xs text-text-4">This month</p>
-              </div>
-              <div className="flex items-center gap-4 text-xs text-text-4">
-                <span className="flex items-center gap-1"><div className="w-2 h-2 rounded-full bg-blue" /> CPC: ₦450</span>
-                <span className="flex items-center gap-1"><div className="w-2 h-2 rounded-full bg-orange" /> CPM: ₦12,500</span>
-              </div>
-            </div>
-            <div className="mt-3 h-12 bg-gray-50 rounded-lg flex items-center justify-center border border-border">
-              <span className="text-[10px] text-text-4">Ad performance chart</span>
-            </div>
-          </div>
-          <div className="bg-white rounded-xl border border-border p-5">
-            <h3 className="font-bold text-sm flex items-center gap-2 mb-4 text-text-1">
-              <Heart size={15} className="text-orange" /> Store Followers
-            </h3>
-            <div className="flex items-end gap-6">
-              <div>
-                <p className="text-2xl font-bold text-text-1">1,247</p>
-                <p className="text-xs text-text-4">Total followers</p>
-              </div>
-              <div className="flex items-center gap-2 text-xs text-green-600 font-semibold">
-                <ArrowUp size={12} /> +12 this week
-              </div>
-            </div>
-            <div className="flex gap-2 mt-3">
-              {["Product Launch", "Flash Sale", "New Arrival"].map(alert => (
-                <span key={alert} className="text-[9px] bg-gray-100 text-text-4 px-2 py-1 rounded-lg">{alert}</span>
-              ))}
             </div>
           </div>
         </div>

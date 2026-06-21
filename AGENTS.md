@@ -51,6 +51,30 @@ alwaysApply: true
 - /app/vendor/fbk/ — FBK enrollment and management
 - /app/vendor/advertising/ — Ad campaign manager
 - /app/api/v1/ — REST API v1 (17 route groups)
+- /app/vendor/inventory/ — Full inventory management (FBK + merchant)
+- /app/vendor/inventory/replenishment-alerts/ — Reorder threshold alerts
+- /app/vendor/products/add/ — Catalog matching entry point
+- /app/vendor/products/bulk-upload/ — CSV bulk product upload
+- /app/vendor/products/approval-request/ — Gated category approval requests
+- /app/vendor/products/[id]/edit/ — Tabbed listing editor
+- /app/vendor/products/[id]/offer/ — Multi-storefront offer management
+- /app/vendor/orders/reports/ — Order reports & exports
+- /app/vendor/advertising/campaigns/new/ — Campaign creation wizard
+- /app/vendor/advertising/campaigns/[id]/ — Campaign performance detail
+- /app/vendor/settings/permissions/ — Granular user permission grid
+- /app/vendor/settings/permissions/history/ — Permission change audit log
+- /app/vendor/settings/api-access/ — API key & third-party app management
+- /app/vendor/university/ — Kauvex Seller University
+- /app/vendor/b2b/ — B2B Central (wholesale, quotes, volume tiers)
+- /app/vendor/brand-registry/ — Brand Registry enrollment & counterfeit reporting
+- /app/vendor/a-plus-content/ — A+ Content module-based page builder
+- /app/vendor/account-health/ — Account health dashboard & notifications
+- /app/vendor/channels/ — Multi-Channel Integration Hub (eBay/Etsy sync)
+- /app/vendor/reports/ — Reports Repository & custom report builder
+- /app/admin/catalog/restricted-categories/ — Category/brand gating management
+- /app/admin/catalog/approval-requests/ — Vendor approval queue
+- /app/admin/university/ — University lesson content management
+- /app/admin/brand-registry/ — Brand application review & approval
 
 ## Default Storefronts
 1. kauvex.com — Global USD (DEFAULT)
@@ -108,8 +132,9 @@ Key V2 Enterprise+ tables: erp_accounts, journal_entries, cost_centers, budgets,
 - [x] V3 Art Marketplace (Part 30): Complete
 - [x] Navigation integration (header, footer, homepage, dashboards): Complete
 - [x] Admin pages for POD, Art Marketplace, Group Buy: Complete
+- [x] Phase 11 (Seller Central Full): Complete
 
-## Recent Enhancements (July 2026)
+## Recent Enhancements (August 2026)
 - **V3 Database**: 40+ new Prisma models (local suppliers, sourcing, POD, dropshipping, art/NFT, group buy, price alerts, live commerce, mentorship, carbon offsets, competition intel, Kauvex Originals, subscription boxes)
 - **Local Supplier Portal** (`/supplier/`): Registration, login, dashboard, products, orders, earnings, coverage management
 - **Product Sourcing Module**: Admin sourcing dashboard, product research pipeline, customer product requests (`/request-product/`), AI sourcing agent foundation, landed cost calculator
@@ -127,6 +152,9 @@ Key V2 Enterprise+ tables: erp_accounts, journal_entries, cost_centers, budgets,
 - **NFT Marketplace**: Full blockchain-ready NFT support with Prisma models, API routes, lib functions, and admin/frontend pages
 - **Price history & deal alerts**: 90-day price charts, target price notifications
 - **Supabase Cron Jobs**: `supabase/migrations/00010_kcc_v3_cron_jobs.sql` — 5 automated functions for supplier escalation, price alerts, group buy expiry, price history recording, daily cleanup
+- **Seller Central (Phase 11)**: `supabase/migrations/00011_kcc_seller_central.sql` — 9 new tables for restricted categories, approval requests, university lessons/progress, business customers, B2B volume tiers, brand registry, authorized sellers, counterfeit reports, A+ content, and multi-channel product sync
+
+- **Phase 11 (Seller Central Full Replication)**: Amazon-style vendor dashboard with enhanced widgets, catalog matching with gated categories, multi-storefront offer management, bulk CSV upload, tabbed listing editor (8 tabs), full inventory management with FBK tools, orders with returns/claims/RMA, full Campaign Manager with 6-step wizard, granular user permissions matrix, Kauvex Seller University, B2B Central (quotes/volume tiers), Reports Repository (custom reports builder), Brand Registry (enrollment/counterfeit reporting), A+ Content module builder, Account Health dashboard with deactivation warnings, and Multi-Channel Integration Hub (eBay/Etsy product sync)
 
 ## Navigation & UI Links
 - **Footer**: All V3 features linked under "Explore" section

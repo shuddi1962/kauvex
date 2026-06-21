@@ -8,11 +8,13 @@ import {
   Megaphone, Settings, Bell, ChevronDown, BarChart3,
   Menu, ArrowLeft, DollarSign, Truck, Sparkles, RefreshCw,
   Search, ExternalLink, LogOut, ChevronLeft,
+  GraduationCap, Shield, Award, Globe, FileText,
+  Building2, BookOpen, Users,
 } from "lucide-react";
 import { VendorStorefrontFilter } from "@/components/admin/storefront-filter";
 import { useAuthStore } from "@/store/auth-store";
 
-type SectionKey = "dashboard" | "products" | "orders" | "store" | "marketing" | "settings";
+type SectionKey = "dashboard" | "products" | "orders" | "inventory" | "store" | "marketing" | "b2b" | "brand" | "learning" | "health" | "reports" | "channels" | "settings";
 
 interface NavItem {
   label: string;
@@ -65,7 +67,23 @@ const topNav: { key: SectionKey; label: string; icon: React.ElementType; groups:
     key: "orders", label: "Orders", icon: ShoppingCart,
     groups: [
       { title: "Orders", items: [
-        { label: "All Orders", href: "/vendor/orders" },
+        { label: "Manage Orders", href: "/vendor/orders" },
+        { label: "Order Reports", href: "/vendor/orders/reports" },
+        { label: "Manage Returns", href: "/vendor/orders" },
+      ]},
+    ],
+  },
+  {
+    key: "inventory", label: "Inventory", icon: BarChart3,
+    groups: [
+      { title: "Inventory", items: [
+        { label: "All Inventory", href: "/vendor/inventory" },
+        { label: "Replenishment Alerts", href: "/vendor/inventory/replenishment-alerts" },
+      ]},
+      { title: "Fulfillment", items: [
+        { label: "FBK Dashboard", href: "/vendor/fbk" },
+        { label: "FBK Inventory", href: "/vendor/inventory" },
+        { label: "Shipments", href: "/vendor/fbk/inbound" },
       ]},
     ],
   },
@@ -86,8 +104,64 @@ const topNav: { key: SectionKey; label: string; icon: React.ElementType; groups:
     groups: [
       { title: "Advertising", items: [
         { label: "Campaigns", href: "/vendor/advertising" },
+        { label: "Create Campaign", href: "/vendor/advertising/campaigns/new" },
         { label: "Analytics", href: "/vendor/advertising/analytics" },
         { label: "Promotions", href: "/vendor/promotions" },
+      ]},
+      { title: "Brand", items: [
+        { label: "A+ Content", href: "/vendor/a-plus-content", badge: "New" },
+      ]},
+    ],
+  },
+  {
+    key: "b2b", label: "B2B", icon: Building2,
+    groups: [
+      { title: "B2B Central", items: [
+        { label: "Dashboard", href: "/vendor/b2b" },
+        { label: "Manage Quotes", href: "/vendor/b2b" },
+        { label: "Business Profile", href: "/vendor/b2b" },
+      ]},
+    ],
+  },
+  {
+    key: "brand", label: "Brand", icon: Award,
+    groups: [
+      { title: "Brand Registry", items: [
+        { label: "Enroll Brand", href: "/vendor/brand-registry" },
+        { label: "A+ Content", href: "/vendor/a-plus-content" },
+      ]},
+    ],
+  },
+  {
+    key: "learning", label: "Learn", icon: GraduationCap,
+    groups: [
+      { title: "Education", items: [
+        { label: "Seller University", href: "/vendor/university" },
+      ]},
+    ],
+  },
+  {
+    key: "health", label: "Health", icon: Shield,
+    groups: [
+      { title: "Account Health", items: [
+        { label: "Performance Dashboard", href: "/vendor/account-health" },
+      ]},
+    ],
+  },
+  {
+    key: "reports", label: "Reports", icon: FileText,
+    groups: [
+      { title: "Reporting", items: [
+        { label: "Reports Repository", href: "/vendor/reports" },
+      ]},
+    ],
+  },
+  {
+    key: "channels", label: "Channels", icon: Globe,
+    groups: [
+      { title: "Multi-Channel", items: [
+        { label: "Connected Channels", href: "/vendor/channels", badge: "New" },
+        { label: "Unified Orders", href: "/vendor/channels" },
       ]},
     ],
   },
@@ -98,6 +172,8 @@ const topNav: { key: SectionKey; label: string; icon: React.ElementType; groups:
         { label: "Profile", href: "/vendor/settings" },
         { label: "Subscription", href: "/vendor/subscription" },
         { label: "Staff", href: "/vendor/dashboard/staff" },
+        { label: "Permissions", href: "/vendor/settings/permissions", badge: "New" },
+        { label: "API Access", href: "/vendor/settings/api-access" },
       ]},
     ],
   },
@@ -107,8 +183,15 @@ function detectSection(pathname: string): SectionKey {
   if (pathname === "/vendor/dashboard" || pathname === "/vendor/analytics" || pathname === "/vendor/earnings") return "dashboard";
   if (pathname.startsWith("/vendor/products") || pathname.startsWith("/vendor/catalog") || pathname.startsWith("/vendor/fbk") || pathname.startsWith("/vendor/shipping") || pathname.startsWith("/vendor/pod") || pathname.startsWith("/vendor/dropshipping") || pathname.startsWith("/pod-marketplace")) return "products";
   if (pathname.startsWith("/vendor/orders")) return "orders";
+  if (pathname.startsWith("/vendor/inventory")) return "inventory";
   if (pathname.startsWith("/vendor/store-builder") || pathname.startsWith("/vendor/shop")) return "store";
-  if (pathname.startsWith("/vendor/advertising") || pathname.startsWith("/vendor/promotions")) return "marketing";
+  if (pathname.startsWith("/vendor/advertising") || pathname.startsWith("/vendor/promotions") || pathname.startsWith("/vendor/a-plus-content")) return "marketing";
+  if (pathname.startsWith("/vendor/b2b")) return "b2b";
+  if (pathname.startsWith("/vendor/brand-registry")) return "brand";
+  if (pathname.startsWith("/vendor/university")) return "learning";
+  if (pathname.startsWith("/vendor/account-health")) return "health";
+  if (pathname.startsWith("/vendor/reports")) return "reports";
+  if (pathname.startsWith("/vendor/channels")) return "channels";
   if (pathname.startsWith("/vendor/settings") || pathname.startsWith("/vendor/subscription") || pathname.startsWith("/vendor/dashboard/staff")) return "settings";
   return "dashboard";
 }

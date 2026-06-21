@@ -3764,3 +3764,166 @@ model CreatorWallet {
 
   @@map("creator_wallets")
 }
+
+// ============================================================
+// SELLER CENTRAL MODELS (Phase 11)
+// ============================================================
+
+model RestrictedCategory {
+  id                String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  categoryId        String?  @map("category_id")
+  brandId           String?  @map("brand_id")
+  categoryName      String?  @map("category_name")
+  brandName         String?  @map("brand_name")
+  requiresApproval  Boolean  @default(true) @map("requires_approval")
+  allowedConditions String[] @map("allowed_conditions")
+  requiredDocs      String[] @map("required_docs")
+  notes             String?
+  isActive          Boolean  @default(true) @map("is_active")
+  createdBy         String?  @map("created_by")
+  createdAt         DateTime @default(now()) @map("created_at")
+  updatedAt         DateTime @default(now()) @map("updated_at")
+  @@map("kv_restricted_categories")
+}
+
+model ApprovalRequest {
+  id                String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  vendorId          String   @map("vendor_id")
+  restrictedCatId   String?  @map("restricted_cat_id")
+  categoryName      String?  @map("category_name")
+  brandName         String?  @map("brand_name")
+  contactEmail      String?  @map("contact_email")
+  documents         Json?    @default("[]")
+  notes             String?
+  status            String   @default("pending")
+  reviewedBy        String?  @map("reviewed_by")
+  rejectionReason   String?  @map("rejection_reason")
+  createdAt         DateTime @default(now()) @map("created_at")
+  updatedAt         DateTime @default(now()) @map("updated_at")
+  @@map("kv_approval_requests")
+}
+
+model UniversityLesson {
+  id              String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  title           String
+  description     String?  @db.Text
+  category        String?
+  contentType     String?  @map("content_type")
+  contentUrl      String?  @map("content_url")
+  contentBody     String?  @db.Text @map("content_body")
+  durationMinutes Int?     @map("duration_minutes")
+  sortOrder       Int?     @default(0) @map("sort_order")
+  status          String?  @default("published")
+  createdBy       String?  @map("created_by")
+  createdAt       DateTime @default(now()) @map("created_at")
+  progress        UniversityProgress[]
+  @@map("kv_university_lessons")
+}
+
+model UniversityProgress {
+  id            String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  vendorUserId  String   @map("vendor_user_id")
+  lessonId      String   @map("lesson_id") @db.Uuid
+  completedAt   DateTime? @map("completed_at")
+  createdAt     DateTime @default(now()) @map("created_at")
+  lesson        UniversityLesson @relation(fields: [lessonId], references: [id])
+  @@unique([vendorUserId, lessonId])
+  @@map("kv_university_progress")
+}
+
+model BusinessCustomer {
+  id              String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  customerId      String   @unique @map("customer_id")
+  companyName     String?  @map("company_name")
+  taxId           String?  @map("tax_id")
+  businessType    String?  @map("business_type")
+  verifiedAt      DateTime? @map("verified_at")
+  createdAt       DateTime @default(now()) @map("created_at")
+  @@map("kv_business_customers")
+}
+
+model B2BVolumeTier {
+  id              String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  productId       String   @map("product_id")
+  vendorId        String   @map("vendor_id")
+  minQuantity     Int      @map("min_quantity")
+  discountPercent Decimal  @map("discount_percent") @db.Decimal(5, 2)
+  createdAt       DateTime @default(now()) @map("created_at")
+  @@map("kv_b2b_volume_tiers")
+}
+
+model BrandRegistry {
+  id              String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  vendorId        String   @map("vendor_id")
+  brandName       String   @unique @map("brand_name")
+  trademarkNumber String?  @map("trademark_number")
+  trademarkCountry String?  @map("trademark_country")
+  trademarkDocUrl String?  @map("trademark_doc_url")
+  brandWebsite    String?  @map("brand_website")
+  productImages   Json?    @default("[]") @map("product_images")
+  status          String?  @default("pending")
+  approvedAt      DateTime? @map("approved_at")
+  reviewedBy      String?  @map("reviewed_by")
+  rejectionReason String?  @map("rejection_reason")
+  createdAt       DateTime @default(now()) @map("created_at")
+  authorizedSellers BrandAuthorizedSeller[]
+  counterfeitReports CounterfeitReport[]
+  aplusContent      AplusContent[]
+  @@map("kv_brand_registry")
+}
+
+model BrandAuthorizedSeller {
+  id            String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  brandId       String   @map("brand_id") @db.Uuid
+  vendorId      String   @map("vendor_id")
+  authorizedBy  String?  @map("authorized_by")
+  createdAt     DateTime @default(now()) @map("created_at")
+  brand         BrandRegistry @relation(fields: [brandId], references: [id])
+  @@map("kv_brand_authorized_sellers")
+}
+
+model CounterfeitReport {
+  id                String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  brandId           String   @map("brand_id") @db.Uuid
+  reportedProductId String?  @map("reported_product_id")
+  reportedVendorId  String?  @map("reported_vendor_id")
+  reporterVendorId  String?  @map("reporter_vendor_id")
+  evidence          Json?    @default("[]")
+  description       String?  @db.Text
+  status            String?  @default("open")
+  adminDecision     String?  @map("admin_decision")
+  adminNotes        String?  @map("admin_notes")
+  createdAt         DateTime @default(now()) @map("created_at")
+  brand             BrandRegistry @relation(fields: [brandId], references: [id])
+  @@map("kv_counterfeit_reports")
+}
+
+model AplusContent {
+  id                 String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  vendorId           String   @map("vendor_id")
+  brandId            String?  @map("brand_id") @db.Uuid
+  title              String
+  modules            Json?    @default("[]")
+  appliedProductIds  String[] @map("applied_product_ids")
+  status             String?  @default("draft")
+  adminNotes         String?  @map("admin_notes")
+  createdAt          DateTime @default(now()) @map("created_at")
+  brand              BrandRegistry? @relation(fields: [brandId], references: [id])
+  @@map("kv_aplus_content")
+}
+
+model ChannelProductSync {
+  id                  String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  vendorId            String   @map("vendor_id")
+  kauvexProductId     String   @map("kauvex_product_id")
+  channel             String
+  channelListingId    String?  @map("channel_listing_id")
+  syncInventory       Boolean  @default(true) @map("sync_inventory")
+  syncPrice           Boolean  @default(true) @map("sync_price")
+  channelSpecificPrice Decimal? @map("channel_specific_price") @db.Decimal(12, 2)
+  lastSynced          DateTime? @map("last_synced")
+  status              String?  @default("active")
+  createdAt           DateTime @default(now()) @map("created_at")
+  @@unique([vendorId, kauvexProductId, channel])
+  @@map("kv_channel_product_sync")
+}

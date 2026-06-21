@@ -7,7 +7,9 @@ export async function GET(request: NextRequest) {
     const { searchParams } = new URL(request.url);
     const search = searchParams.get("search") || "";
     const page = parseInt(searchParams.get("page") || "1");
-    const limit = parseInt(searchParams.get("limit") || "50");
+    const limit = parseInt(searchParams.get("limit") || "24");
+    const categoryId = searchParams.get("category_id") || "";
+    const brand = searchParams.get("brand") || "";
     const offset = (page - 1) * limit;
 
     let query = insforge.database
@@ -18,6 +20,12 @@ export async function GET(request: NextRequest) {
 
     if (search) {
       query = query.or(`title.ilike.%${search}%,brand.ilike.%${search}%`);
+    }
+    if (categoryId) {
+      query = query.eq("category_id", categoryId);
+    }
+    if (brand) {
+      query = query.ilike("brand", `%${brand}%`);
     }
 
     const { data, error, count } = await query.range(offset, offset + limit - 1);

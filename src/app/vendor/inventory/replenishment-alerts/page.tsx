@@ -1,28 +1,51 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect, useCallback } from "react";
 import Link from "next/link";
 import {
   ArrowLeft, Bell, BellOff, Plus, Trash2, Save, Mail, MessageSquare,
-  Package, AlertTriangle, ToggleLeft, ToggleRight,
+  Package, AlertTriangle, Loader2, RefreshCw, Search,
 } from "lucide-react";
+import { insforge } from "@/lib/insforge";
 import VendorShell from "@/components/vendor/vendor-shell";
 
-const demoProducts = [
-  { id: 1, sku: "GPS-MAR-7", name: "Marine GPS Navigator 7-inch", currentQty: 50, threshold: 10, emailAlert: true, smsAlert: false },
-  { id: 2, sku: "ANCH-12MM", name: "Yacht Anchor Chain 12mm", currentQty: 120, threshold: 20, emailAlert: true, smsAlert: true },
-  { id: 3, sku: "LED-NAV-SET", name: "LED Navigation Light Set", currentQty: 0, threshold: 15, emailAlert: true, smsAlert: false },
-  { id: 4, sku: "VHF-RADIO-DSC", name: "Marine VHF Radio DSC", currentQty: 15, threshold: 5, emailAlert: false, smsAlert: false },
-  { id: 5, sku: "COVER-HVY-DTY", name: "Boat Cover Heavy Duty", currentQty: 5, threshold: 10, emailAlert: true, smsAlert: true },
-  { id: 6, sku: "FISH-FD-50LB", name: "Premium Fish Food 50lb", currentQty: 200, threshold: 50, emailAlert: true, smsAlert: false },
-  { id: 7, sku: "ROD-FIBER-12", name: "Fiberglass Fishing Rod 12ft", currentQty: 8, threshold: 5, emailAlert: false, smsAlert: true },
-  { id: 8, sku: "ECHO-SOUNDER", name: "Fishfinder Echo Sounder", currentQty: 0, threshold: 20, emailAlert: true, smsAlert: false },
-];
+interface AlertProduct {
+  id: string;
+  sku: string;
+  name: string;
+  currentQty: number;
+  threshold: number;
+  emailAlert: boolean;
+  smsAlert: boolean;
+}
+
+const ALERTS_STORAGE_KEY = "kauvex_replenishment_alerts";
+
+function loadLocalAlerts(): AlertProduct[] {
+  if (typeof window === "undefined") return [];
+  try {
+    const raw = localStorage.getItem(ALERTS_STORAGE_KEY);
+    return raw ? JSON.parse(raw) : [];
+  } catch {
+    return [];
+  }
+}
+
+function saveLocalAlerts(alerts: AlertProduct[]) {
+  try {
+    localStorage.setItem(ALERTS_STORAGE_KEY, JSON.stringify(alerts));
+  } catch {}
+}
 
 export default function ReplenishmentAlertsPage() {
-  const [products, setProducts] = useState(demoProducts);
-  const [newSku, setNewSku] = useState("");
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [products, setProducts] = useState<AlertProduct[]>([]);
+  const [allProducts, setAllProducts] = useState<{ id: string; name: string; sku: string }[]>([]);
+  const [searchTerm, setSearchTerm] = useState("");
+  const [showSearchResults, setShowSearchResults] = useState(false);
   const [newThreshold, setNewThreshold] = useState(10);
+  const [saving, setSaving] = useState(false);
   const [toast, setToast] = useState<{ type: "success" | "error"; message: string } | null>(null);
 
   const showToast = (type: "success" | "error", message: string) => {
@@ -30,42 +53,163 @@ export default function ReplenishmentAlertsPage() {
     setTimeout(() => setToast(null), 3000);
   };
 
-  const updateThreshold = (id: number, val: number) => {
-    setProducts(prev => prev.map(p => p.id === id ? { ...p, threshold: Math.max(0, val) } : p));
-  };
+  const fetchData = useCallback(async () => {
+    setLoading(true);
+    setError(null);
+    try {
+      const { data: { user } } = await insforge.auth.getCurrentUser();
+      if (!user) { setLoading(false); return; }
 
-  const toggleEmail = (id: number) => {
-    setProducts(prev => prev.map(p => p.id === id ? { ...p, emailAlert: !p.emailAlert } : p));
-    showToast("success", "Email alert preference updated");
-  };
+      const [prodRes, invRes] = await Promise.all([
+        insforge.database.from("products").select("id, name, sku, status").eq("vendor_id", user.id).order("name"),
+        insforge.database.from("product_inventory").select("product_id, quantity, low_stock_threshold"),
+      ]);
 
-  const toggleSms = (id: number) => {
-    setProducts(prev => prev.map(p => p.id === id ? { ...p, smsAlert: !p.smsAlert } : p));
-    showToast("success", "SMS alert preference updated");
-  };
+      if (prodRes.data) {
+        setAllProducts(prodRes.data.map((p: any) => ({ id: p.id, name: p.name, sku: p.sku || "" })));
+      }
 
-  const removeProduct = (id: number) => {
-    setProducts(prev => prev.filter(p => p.id !== id));
-    showToast("success", "Product removed from alerts");
-  };
+      const localAlerts = loadLocalAlerts();
+      const localIds = new Set(localAlerts.map(a => a.id));
 
-  const addProduct = () => {
-    if (!newSku.trim()) { showToast("error", "Enter a product SKU"); return; }
-    const newId = Math.max(...products.map(p => p.id)) + 1;
-    setProducts(prev => [...prev, {
-      id: newId,
-      sku: newSku.trim().toUpperCase(),
-      name: `New Product (${newSku.trim()})`,
+      const dbAlerts: AlertProduct[] = [];
+      if (prodRes.data && invRes.data) {
+        for (const p of prodRes.data) {
+          if (localIds.has(p.id)) continue;
+          const inv = invRes.data.find((i: any) => i.product_id === p.id);
+          if (inv && inv.low_stock_threshold != null && inv.low_stock_threshold > 0) {
+            dbAlerts.push({
+              id: p.id,
+              sku: p.sku || "",
+              name: p.name,
+              currentQty: inv.quantity ?? 0,
+              threshold: inv.low_stock_threshold,
+              emailAlert: true,
+              smsAlert: false,
+            });
+          }
+        }
+      }
+
+      const merged = [...dbAlerts, ...localAlerts.filter(a => !dbAlerts.some(d => d.id === a.id))];
+      setProducts(merged);
+    } catch (e: any) {
+      console.error("Fetch error:", e);
+      setError(e.message || "Failed to load data");
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  useEffect(() => { fetchData(); }, [fetchData]);
+
+  const searchedProducts = searchTerm.trim()
+    ? allProducts.filter(p =>
+        p.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        p.sku.toLowerCase().includes(searchTerm.toLowerCase())
+      ).slice(0, 10)
+    : [];
+
+  const addProduct = (product: { id: string; name: string; sku: string }) => {
+    if (products.some(p => p.id === product.id)) {
+      showToast("error", "Product already has an alert configured");
+      return;
+    }
+    const newAlert: AlertProduct = {
+      id: product.id,
+      sku: product.sku,
+      name: product.name,
       currentQty: 0,
       threshold: newThreshold,
       emailAlert: true,
       smsAlert: false,
-    }]);
-    setNewSku("");
+    };
+    const updated = [...products, newAlert];
+    setProducts(updated);
+    saveLocalAlerts(updated.filter(a => a.sku !== "" || true));
+    setSearchTerm("");
+    setShowSearchResults(false);
     showToast("success", "Product added to replenishment alerts");
   };
 
-  const needsReplenishment = (product: typeof demoProducts[0]) => product.currentQty <= product.threshold;
+  const updateThreshold = (id: string, val: number) => {
+    const updated = products.map(p => p.id === id ? { ...p, threshold: Math.max(0, val) } : p);
+    setProducts(updated);
+    saveLocalAlerts(updated);
+  };
+
+  const toggleEmail = (id: string) => {
+    const updated = products.map(p => p.id === id ? { ...p, emailAlert: !p.emailAlert } : p);
+    setProducts(updated);
+    saveLocalAlerts(updated);
+    showToast("success", "Email alert preference updated");
+  };
+
+  const toggleSms = (id: string) => {
+    const updated = products.map(p => p.id === id ? { ...p, smsAlert: !p.smsAlert } : p);
+    setProducts(updated);
+    saveLocalAlerts(updated);
+    showToast("success", "SMS alert preference updated");
+  };
+
+  const removeProduct = (id: string) => {
+    const updated = products.filter(p => p.id !== id);
+    setProducts(updated);
+    saveLocalAlerts(updated);
+    showToast("success", "Product removed from alerts");
+  };
+
+  const saveAll = async () => {
+    setSaving(true);
+    try {
+      for (const p of products) {
+        const { error: err } = await insforge.database
+          .from("product_inventory")
+          .upsert({
+            product_id: p.id,
+            low_stock_threshold: p.threshold,
+            quantity: p.currentQty,
+            location_name: "default",
+          }, { onConflict: "product_id, location_name" });
+
+        if (err) console.error(`Failed to save threshold for ${p.name}:`, err);
+      }
+
+      saveLocalAlerts(products);
+      showToast("success", "All thresholds saved to database");
+    } catch (e: any) {
+      showToast("error", e.message || "Failed to save thresholds");
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const needsReplenishment = (product: AlertProduct) => product.currentQty <= product.threshold;
+
+  if (loading) {
+    return (
+      <VendorShell title="Replenishment Alerts" subtitle="Set reorder thresholds and get notified when stock is low">
+        <div className="flex items-center justify-center py-20">
+          <Loader2 className="animate-spin text-orange" size={32} />
+        </div>
+      </VendorShell>
+    );
+  }
+
+  if (error) {
+    return (
+      <VendorShell title="Replenishment Alerts" subtitle="Set reorder thresholds and get notified when stock is low">
+        <div className="flex flex-col items-center justify-center py-20 text-center">
+          <AlertTriangle size={40} className="text-red-400 mb-3" />
+          <p className="text-sm font-semibold text-text-1 mb-1">Failed to load data</p>
+          <p className="text-xs text-text-4 mb-4">{error}</p>
+          <button onClick={fetchData} className="flex items-center gap-1.5 px-4 h-9 bg-orange text-white text-xs font-bold rounded-xl hover:bg-orange/90 transition-colors">
+            <RefreshCw size={13} /> Retry
+          </button>
+        </div>
+      </VendorShell>
+    );
+  }
 
   return (
     <VendorShell title="Replenishment Alerts" subtitle="Set reorder thresholds and get notified when stock is low">
@@ -84,18 +228,42 @@ export default function ReplenishmentAlertsPage() {
         {/* Add new product */}
         <div className="bg-white rounded-xl border border-border p-5">
           <h3 className="font-bold text-sm text-text-1 mb-3">Add Product to Alerts</h3>
-          <div className="flex items-end gap-3">
-            <div className="flex-1">
-              <label className="text-xs font-semibold text-text-2 block mb-1">Product SKU</label>
-              <input value={newSku} onChange={e => setNewSku(e.target.value)} onKeyDown={e => e.key === "Enter" && addProduct()}
-                placeholder="Enter SKU" className="w-full h-10 px-3 text-sm border border-border rounded-lg font-mono" />
+          <div className="flex items-end gap-3 relative">
+            <div className="flex-1 relative">
+              <label className="text-xs font-semibold text-text-2 block mb-1">Search Product</label>
+              <div className="relative">
+                <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-text-4" />
+                <input value={searchTerm} onChange={e => { setSearchTerm(e.target.value); setShowSearchResults(true); }}
+                  onFocus={() => setShowSearchResults(true)}
+                  placeholder="Search by product name or SKU..."
+                  className="w-full h-10 pl-10 pr-4 text-sm border border-border rounded-lg" />
+              </div>
+              {showSearchResults && searchTerm.trim() && (
+                <div className="absolute z-20 left-0 right-0 top-full mt-1 bg-white border border-border rounded-xl shadow-xl max-h-48 overflow-y-auto">
+                  {searchedProducts.length === 0 ? (
+                    <div className="p-3 text-xs text-text-4 text-center">No products found</div>
+                  ) : (
+                    searchedProducts.map(p => (
+                      <button key={p.id} onClick={() => addProduct(p)}
+                        className="flex items-center gap-2 w-full px-3 py-2.5 text-xs text-text-1 hover:bg-gray-50 text-left transition-colors">
+                        <Package size={13} className="text-text-4 shrink-0" />
+                        <div>
+                          <p className="font-medium">{p.name}</p>
+                          <p className="text-[10px] text-text-4 font-mono">{p.sku}</p>
+                        </div>
+                        <Plus size={13} className="ml-auto text-orange shrink-0" />
+                      </button>
+                    ))
+                  )}
+                </div>
+              )}
             </div>
             <div className="w-32">
               <label className="text-xs font-semibold text-text-2 block mb-1">Reorder Threshold</label>
               <input type="number" value={newThreshold} onChange={e => setNewThreshold(Number(e.target.value) || 0)}
                 className="w-full h-10 px-3 text-sm border border-border rounded-lg" />
             </div>
-            <button onClick={addProduct}
+            <button onClick={() => showToast("error", "Select a product from the search results")}
               className="flex items-center gap-1.5 h-10 px-5 bg-orange text-white text-xs font-bold rounded-xl hover:bg-orange/90 transition-colors shrink-0">
               <Plus size={14} /> Add
             </button>
@@ -199,9 +367,10 @@ export default function ReplenishmentAlertsPage() {
               <span>Stock OK: {products.filter(p => !needsReplenishment(p)).length} products</span>
             </div>
           </div>
-          <button onClick={() => showToast("success", "All alert preferences saved")}
-            className="flex items-center gap-1.5 px-4 h-9 bg-orange text-white text-xs font-bold rounded-xl hover:bg-orange/90 transition-colors">
-            <Save size={13} /> Save All
+          <button onClick={saveAll} disabled={saving}
+            className="flex items-center gap-1.5 px-4 h-9 bg-orange text-white text-xs font-bold rounded-xl hover:bg-orange/90 transition-colors disabled:opacity-50">
+            {saving ? <Loader2 size={13} className="animate-spin" /> : <Save size={13} />}
+            {saving ? "Saving..." : "Save All"}
           </button>
         </div>
       </div>

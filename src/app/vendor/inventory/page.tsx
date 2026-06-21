@@ -1,26 +1,36 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect, useCallback } from "react";
 import Link from "next/link";
 import {
   Search, Package, Image as ImageIcon, Edit, Trash2, Copy, Plus,
   ChevronDown, MoreHorizontal, Filter, X, Eye, Sliders, Check,
   AlertTriangle, DollarSign, Truck, TrendingUp, BarChart3, Box,
   Warehouse, ShoppingCart, Printer, Megaphone, ToggleLeft, ToggleRight,
-  Minus,
+  Minus, Loader2, RefreshCw,
 } from "lucide-react";
+import { insforge } from "@/lib/insforge";
 import VendorShell from "@/components/vendor/vendor-shell";
 
-const demoProducts = [
-  { id: "PRD-001", image: null, sku: "GPS-MAR-7", name: "Marine GPS Navigator 7-inch", condition: "New", productId: "PROD-12345", dateCreated: "2026-01-15", availableQty: 50, estimatedFee: 3.50, price: 49.99, shipping: 5.99, pricingStatus: "Competitive", businessPrice: 42.00, saved: false },
-  { id: "PRD-002", image: null, sku: "ANCH-12MM", name: "Yacht Anchor Chain 12mm", condition: "New", productId: "PROD-12346", dateCreated: "2026-02-10", availableQty: 120, estimatedFee: 5.20, price: 34.99, shipping: 8.99, pricingStatus: "Below Buy Box", businessPrice: 28.00, saved: false },
-  { id: "PRD-003", image: null, sku: "LED-NAV-SET", name: "LED Navigation Light Set", condition: "Refurbished", productId: "PROD-12347", dateCreated: "2026-03-05", availableQty: 0, estimatedFee: 2.80, price: 24.99, shipping: 4.99, pricingStatus: "Suppressed", businessPrice: 18.00, saved: false },
-  { id: "PRD-004", image: null, sku: "VHF-RADIO-DSC", name: "Marine VHF Radio DSC", condition: "Used - Like New", productId: "PROD-12348", dateCreated: "2026-03-20", availableQty: 15, estimatedFee: 4.10, price: 89.99, shipping: 6.99, pricingStatus: "Competitive", businessPrice: 72.00, saved: true },
-  { id: "PRD-005", image: null, sku: "COVER-HVY-DTY", name: "Boat Cover Heavy Duty", condition: "New", productId: "PROD-12349", dateCreated: "2026-04-01", availableQty: 5, estimatedFee: 6.75, price: 129.99, shipping: 12.99, pricingStatus: "Below Buy Box", businessPrice: 98.00, saved: false },
-  { id: "PRD-006", image: null, sku: "FISH-FD-50LB", name: "Premium Fish Food 50lb", condition: "New", productId: "PROD-12350", dateCreated: "2026-04-15", availableQty: 200, estimatedFee: 2.15, price: 39.99, shipping: 7.99, pricingStatus: "Competitive", businessPrice: 31.00, saved: false },
-  { id: "PRD-007", image: null, sku: "ROD-FIBER-12", name: "Fiberglass Fishing Rod 12ft", condition: "Collectible", productId: "PROD-12351", dateCreated: "2026-05-01", availableQty: 8, estimatedFee: 8.50, price: 149.99, shipping: 10.99, pricingStatus: "Premium", businessPrice: 115.00, saved: true },
-  { id: "PRD-008", image: null, sku: "ECHO-SOUNDER", name: "Fishfinder Echo Sounder", condition: "New", productId: "PROD-12352", dateCreated: "2026-05-20", availableQty: 0, estimatedFee: 3.90, price: 79.99, shipping: 6.99, pricingStatus: "Suppressed", businessPrice: 58.00, saved: false },
-];
+interface InventoryItem {
+  id: string;
+  image: string | null;
+  sku: string;
+  name: string;
+  condition: string;
+  productId: string;
+  dateCreated: string;
+  availableQty: number;
+  estimatedFee: number;
+  price: number;
+  shipping: number;
+  pricingStatus: string;
+  businessPrice: number;
+  saved: boolean;
+  status: string;
+  fulfillmentType: string;
+  source: "product" | "offer";
+}
 
 const statusFilterOptions = ["All", "Active", "Inactive", "Suppressed"];
 const fulfilledByOptions = ["All", "Merchant", "FBK"];
@@ -59,6 +69,9 @@ const columns = [
 ];
 
 export default function VendorInventoryPage() {
+  const [loading, setLoading] = useState(true);
+  const [items, setItems] = useState<InventoryItem[]>([]);
+  const [vendorId, setVendorId] = useState<string | null>(null);
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState("All");
   const [fulfilledBy, setFulfilledBy] = useState("All");
@@ -69,18 +82,103 @@ export default function VendorInventoryPage() {
   const [openDropdown, setOpenDropdown] = useState<string | null>(null);
   const [selectedRows, setSelectedRows] = useState<string[]>([]);
   const [toast, setToast] = useState<{ type: "success" | "error"; message: string } | null>(null);
+  const [error, setError] = useState<string | null>(null);
 
   const showToast = (type: "success" | "error", message: string) => {
     setToast({ type, message });
     setTimeout(() => setToast(null), 3000);
   };
 
-  const filtered = demoProducts.filter(p => {
+  const fetchData = useCallback(async () => {
+    setLoading(true);
+    setError(null);
+    try {
+      const { data: { user } } = await insforge.auth.getCurrentUser();
+      if (!user) { setLoading(false); return; }
+      setVendorId(user.id);
+
+      const [prodRes, offerRes, invRes] = await Promise.all([
+        insforge.database.from("products").select("*").eq("vendor_id", user.id).order("created_at", { ascending: false }),
+        insforge.database.from("vendor_offers").select("*, shared_catalog_products(*)").eq("vendor_id", user.id).order("created_at", { ascending: false }),
+        insforge.database.from("product_inventory").select("*"),
+      ]);
+
+      const result: InventoryItem[] = [];
+
+      if (prodRes.data) {
+        for (const p of prodRes.data) {
+          const inv = (invRes.data || []).find((i: any) => i.product_id === p.id);
+          const img = p.images && Array.isArray(p.images) && p.images.length > 0 ? p.images[0] : null;
+          const qty = inv?.quantity ?? p.stock_quantity ?? 0;
+          const price = Number(p.sale_price ?? p.regular_price ?? 0);
+          result.push({
+            id: p.id,
+            image: img,
+            sku: p.sku || "",
+            name: p.name,
+            condition: "New",
+            productId: p.id.slice(0, 8).toUpperCase(),
+            dateCreated: p.created_at?.slice(0, 10) || "",
+            availableQty: qty,
+            estimatedFee: 0,
+            price,
+            shipping: 0,
+            pricingStatus: qty === 0 ? "Suppressed" : price > 0 ? "Competitive" : "N/A",
+            businessPrice: Number(p.cost_price ?? 0),
+            saved: false,
+            status: p.status || "active",
+            fulfillmentType: "Merchant",
+            source: "product",
+          });
+        }
+      }
+
+      if (offerRes.data) {
+        for (const o of offerRes.data) {
+          const shared = (o as any).shared_catalog_products;
+          const img = shared?.images && Array.isArray(shared.images) && shared.images.length > 0 ? shared.images[0] : null;
+          const qty = o.inventory ?? 0;
+          const price = Number(o.price ?? 0);
+          result.push({
+            id: o.id,
+            image: img,
+            sku: shared?.masterProductId?.slice(0, 8).toUpperCase() || "",
+            name: shared?.title || `Shared Product ${o.sharedProductId.slice(0, 8)}`,
+            condition: o.condition || "New",
+            productId: o.sharedProductId.slice(0, 8).toUpperCase(),
+            dateCreated: o.created_at?.slice(0, 10) || "",
+            availableQty: qty,
+            estimatedFee: 0,
+            price,
+            shipping: 0,
+            pricingStatus: !o.isActive ? "Suppressed" : qty === 0 ? "Suppressed" : price > 0 ? "Competitive" : "N/A",
+            businessPrice: 0,
+            saved: false,
+            status: o.isActive ? "active" : "inactive",
+            fulfillmentType: o.fulfillmentType || "Merchant",
+            source: "offer",
+          });
+        }
+      }
+
+      setItems(result);
+    } catch (e: any) {
+      console.error("Fetch error:", e);
+      setError(e.message || "Failed to load inventory");
+      showToast("error", e.message || "Failed to load inventory");
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  useEffect(() => { fetchData(); }, [fetchData]);
+
+  const filtered = items.filter(p => {
     if (search && !p.name.toLowerCase().includes(search.toLowerCase()) && !p.sku.toLowerCase().includes(search.toLowerCase())) return false;
     if (statusFilter === "Suppressed" && p.pricingStatus !== "Suppressed") return false;
-    if (statusFilter === "Active" && p.availableQty === 0) return false;
-    if (statusFilter === "Inactive" && p.availableQty > 0) return false;
-    if (fulfilledBy !== "All") return false;
+    if (statusFilter === "Active" && (p.availableQty === 0 || p.status !== "active")) return false;
+    if (statusFilter === "Inactive" && (p.availableQty > 0 || p.status === "active")) return false;
+    if (fulfilledBy !== "All" && p.fulfillmentType !== fulfilledBy) return false;
     return true;
   });
 
@@ -100,32 +198,123 @@ export default function VendorInventoryPage() {
     }
   };
 
+  const handleDelete = async (id: string) => {
+    const item = items.find(i => i.id === id);
+    if (!item || !confirm("Delete this inventory item?")) return;
+    try {
+      if (item.source === "product") {
+        await insforge.database.from("products").delete().eq("id", id);
+      } else {
+        await insforge.database.from("vendor_offers").delete().eq("id", id);
+      }
+      showToast("success", "Item deleted");
+      await fetchData();
+    } catch (e: any) {
+      showToast("error", e.message || "Failed to delete");
+    }
+  };
+
+  const toggleStatus = async (id: string) => {
+    const item = items.find(i => i.id === id);
+    if (!item) return;
+    try {
+      if (item.source === "product") {
+        const newStatus = item.status === "active" ? "draft" : "active";
+        await insforge.database.from("products").update({ status: newStatus, updated_at: new Date().toISOString() }).eq("id", id);
+      } else {
+        await insforge.database.from("vendor_offers").update({ isActive: item.status !== "active" }).eq("id", id);
+      }
+      showToast("success", "Status toggled");
+      await fetchData();
+    } catch (e: any) {
+      showToast("error", e.message || "Failed to toggle status");
+    }
+  };
+
+  const matchLowPrice = async (id: string) => {
+    showToast("success", "Price matching initiated for this item");
+  };
+
+  const bulkEdit = () => {
+    if (selectedRows.length === 0) return;
+    showToast("success", `Bulk edit initiated for ${selectedRows.length} items`);
+  };
+
+  const bulkDelete = async () => {
+    if (selectedRows.length === 0 || !confirm(`Delete ${selectedRows.length} selected items?`)) return;
+    try {
+      const products = selectedRows.filter(id => items.find(i => i.id === id)?.source === "product");
+      const offers = selectedRows.filter(id => items.find(i => i.id === id)?.source === "offer");
+      if (products.length > 0) {
+        await insforge.database.from("products").delete().in("id", products);
+      }
+      if (offers.length > 0) {
+        await insforge.database.from("vendor_offers").delete().in("id", offers);
+      }
+      showToast("success", `${selectedRows.length} items deleted`);
+      setSelectedRows([]);
+      await fetchData();
+    } catch (e: any) {
+      showToast("error", e.message || "Bulk delete failed");
+    }
+  };
+
+  const bulkToggleFulfillment = async () => {
+    const offerIds = selectedRows.filter(id => items.find(i => i.id === id)?.source === "offer");
+    if (offerIds.length === 0) {
+      showToast("error", "Select shared catalog offers to toggle fulfillment");
+      return;
+    }
+    try {
+      for (const id of offerIds) {
+        const item = items.find(i => i.id === id);
+        const newType = item?.fulfillmentType === "FBK" ? "merchant" : "FBK";
+        await insforge.database.from("vendor_offers").update({ fulfillmentType: newType }).eq("id", id);
+      }
+      showToast("success", `Fulfillment toggled for ${offerIds.length} items`);
+      setSelectedRows([]);
+      await fetchData();
+    } catch (e: any) {
+      showToast("error", e.message || "Failed to toggle fulfillment");
+    }
+  };
+
   const bulkActions = [
-    { label: "Edit Selected", action: () => showToast("success", "Bulk edit initiated") },
-    { label: "Delete Selected", action: () => showToast("error", "Bulk delete not available in demo") },
-    { label: "Toggle Fulfillment", action: () => showToast("success", "Fulfillment toggled for selected") },
+    { label: "Edit Selected", action: bulkEdit },
+    { label: "Delete Selected", action: bulkDelete },
+    { label: "Toggle Fulfillment", action: bulkToggleFulfillment },
     { label: "Create Removal Order", action: () => showToast("success", "Removal order created") },
     { label: "Create Fulfillment Order", action: () => showToast("success", "Fulfillment order created") },
     { label: "Print Labels", action: () => showToast("success", "Labels queued for printing") },
   ];
 
-  const rowActions = [
-    { label: "Edit", icon: Edit, action: () => showToast("success", "Edit mode opened") },
-    { label: "Manage Images", icon: ImageIcon, action: () => showToast("success", "Image manager opened") },
-    { label: "Copy Listing", icon: Copy, action: () => showToast("success", "Listing copied") },
-    { label: "Add Another Condition", icon: Plus, action: () => showToast("success", "Condition added") },
-    { label: "Toggle Fulfillment", icon: Truck, action: () => showToast("success", "Fulfillment toggled") },
-    { label: "Match Low Price", icon: Minus, action: () => showToast("success", "Price matched") },
-    { label: "Create Removal Order", icon: Trash2, action: () => showToast("success", "Removal order created") },
-    { label: "Create Fulfillment Order", icon: ShoppingCart, action: () => showToast("success", "Fulfillment order created") },
-    { label: "Print Labels", icon: Printer, action: () => showToast("success", "Labels queued") },
-    { label: "Close Listing", icon: X, action: () => showToast("error", "Listing closed") },
-    { label: "Delete", icon: Trash2, action: () => showToast("error", "Listing deleted") },
-    { label: "Advertise", icon: Megaphone, action: () => showToast("success", "Ad campaign created") },
-  ];
-
   const cellClasses = "p-3 text-xs text-text-1";
   const headerClass = "text-left p-3 text-[10px] font-semibold text-text-4 uppercase whitespace-nowrap";
+
+  if (loading) {
+    return (
+      <VendorShell title="Inventory" subtitle="Manage your product inventory and listings">
+        <div className="flex items-center justify-center py-20">
+          <Loader2 className="animate-spin text-orange" size={32} />
+        </div>
+      </VendorShell>
+    );
+  }
+
+  if (error && items.length === 0) {
+    return (
+      <VendorShell title="Inventory" subtitle="Manage your product inventory and listings">
+        <div className="flex flex-col items-center justify-center py-20 text-center">
+          <AlertTriangle size={40} className="text-red-400 mb-3" />
+          <p className="text-sm font-semibold text-text-1 mb-1">Failed to load inventory</p>
+          <p className="text-xs text-text-4 mb-4">{error}</p>
+          <button onClick={fetchData} className="flex items-center gap-1.5 px-4 h-9 bg-orange text-white text-xs font-bold rounded-xl hover:bg-orange/90 transition-colors">
+            <RefreshCw size={13} /> Retry
+          </button>
+        </div>
+      </VendorShell>
+    );
+  }
 
   return (
     <VendorShell title="Inventory" subtitle="Manage your product inventory and listings">
@@ -310,7 +499,6 @@ export default function VendorInventoryPage() {
                         <input type="checkbox" checked={selectedRows.includes(p.id)} onChange={() => toggleRowSelect(p.id)} className="rounded" />
                       </td>
                       {colDefs.filter(c => c.visible).map(col => {
-                        const v = col.key as keyof typeof p;
                         return (
                           <td key={col.key} className={cellClasses}>
                             {col.key === "image" ? (
@@ -343,8 +531,10 @@ export default function VendorInventoryPage() {
                               <button onClick={() => showToast("success", "Saved item toggled")}>
                                 {p.saved ? <Check size={14} className="text-orange" /> : <div className="w-3.5 h-3.5 border border-border rounded" />}
                               </button>
+                            ) : col.key === "fulfillmentType" ? (
+                              <span className="text-xs">{p.fulfillmentType}</span>
                             ) : (
-                              <span className="text-xs">{String(p[v as keyof typeof p] ?? "")}</span>
+                              <span className="text-xs">{String((p as any)[col.key] ?? "")}</span>
                             )}
                           </td>
                         );
@@ -355,13 +545,30 @@ export default function VendorInventoryPage() {
                         </button>
                         {openDropdown === p.id && (
                           <div className="absolute right-0 top-full mt-1 z-20 w-48 bg-white border border-border rounded-xl shadow-xl py-1" onMouseLeave={() => setOpenDropdown(null)}>
-                            {rowActions.map(act => (
-                              <button key={act.label} onClick={() => { act.action(); setOpenDropdown(null); }}
-                                className="flex items-center gap-2.5 w-full px-4 py-2 text-xs text-text-2 hover:bg-gray-50 transition-colors">
-                                <act.icon size={13} className="text-text-4" />
-                                {act.label}
-                              </button>
-                            ))}
+                            <Link href={p.source === "product" ? `/vendor/products/${p.id}/edit` : `/vendor/products/${p.id}/edit`}
+                              className="flex items-center gap-2.5 w-full px-4 py-2 text-xs text-text-2 hover:bg-gray-50 transition-colors">
+                              <Edit size={13} className="text-text-4" /> Edit
+                            </Link>
+                            <button onClick={() => { handleDelete(p.id); setOpenDropdown(null); }}
+                              className="flex items-center gap-2.5 w-full px-4 py-2 text-xs text-text-2 hover:bg-red-50 transition-colors">
+                              <Trash2 size={13} className="text-red-400" /> Delete
+                            </button>
+                            <button onClick={() => { toggleStatus(p.id); setOpenDropdown(null); }}
+                              className="flex items-center gap-2.5 w-full px-4 py-2 text-xs text-text-2 hover:bg-gray-50 transition-colors">
+                              <ToggleRight size={13} className="text-text-4" /> {p.status === "active" ? "Deactivate" : "Activate"}
+                            </button>
+                            <button onClick={() => { matchLowPrice(p.id); setOpenDropdown(null); }}
+                              className="flex items-center gap-2.5 w-full px-4 py-2 text-xs text-text-2 hover:bg-gray-50 transition-colors">
+                              <Minus size={13} className="text-text-4" /> Match Low Price
+                            </button>
+                            <button onClick={() => { showToast("success", "Listing copied"); setOpenDropdown(null); }}
+                              className="flex items-center gap-2.5 w-full px-4 py-2 text-xs text-text-2 hover:bg-gray-50 transition-colors">
+                              <Copy size={13} className="text-text-4" /> Copy Listing
+                            </button>
+                            <button onClick={() => { showToast("success", "Ad campaign wizard opened"); setOpenDropdown(null); }}
+                              className="flex items-center gap-2.5 w-full px-4 py-2 text-xs text-text-2 hover:bg-gray-50 transition-colors">
+                              <Megaphone size={13} className="text-text-4" /> Advertise
+                            </button>
                           </div>
                         )}
                       </td>
@@ -376,7 +583,7 @@ export default function VendorInventoryPage() {
           </div>
 
           <div className="flex items-center justify-between">
-            <p className="text-xs text-text-4">{filtered.length} of {demoProducts.length} items</p>
+            <p className="text-xs text-text-4">{filtered.length} of {items.length} items</p>
             <div className="flex items-center gap-2">
               <Link href="/vendor/inventory/replenishment-alerts" className="flex items-center gap-1.5 px-4 h-9 border border-border text-xs font-semibold rounded-xl hover:bg-gray-50 transition-colors">
                 <AlertTriangle size={13} /> Replenishment Alerts

@@ -57,19 +57,20 @@ export async function POST(request: NextRequest) {
     }
 
     // Ensure the product exists in shared_catalog_products (FK constraint)
-    // Auto-create with placeholder data if not found (handles demo & arbitrary products)
+    // Auto-create with placeholder data if not found
     const { data: existingProduct } = await sb.from("shared_catalog_products").select("id").eq("id", body!.shared_product_id).maybeSingle();
     if (!existingProduct) {
-      const { error: createErr } = await adminDb.from("shared_catalog_products").insert({
-        id: body!.shared_product_id,
-        title: "Marketplace Product",
-        brand: "Generic",
-        description: "Listed via vendor offers",
-        images: [],
-        is_active: true,
-        category_id: null,
+      const supaUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
+      const svcKey = process.env.SUPABASE_SERVICE_ROLE_KEY!;
+      const res = await fetch(`${supaUrl}/rest/v1/shared_catalog_products`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json", apikey: svcKey, Authorization: `Bearer ${svcKey}`, Prefer: "return=minimal" },
+        body: JSON.stringify({ id: body!.shared_product_id, master_product_id: body!.shared_product_id, title: "Marketplace Product" }),
       });
-      if (createErr) return errorResponse("Failed to create catalog entry: " + createErr.message, 400);
+      if (!res.ok && res.status !== 409) {
+        const text = await res.text();
+        return errorResponse("Failed to create catalog entry: " + text, 400);
+      }
     }
 
     const { data: existing } = await sb

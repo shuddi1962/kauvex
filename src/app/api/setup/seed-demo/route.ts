@@ -44,30 +44,30 @@ const BRANDS = [
 ];
 
 const SHARED_CATALOG_PRODUCTS = [
-  { title: "Hikvision 4MP IP Dome Camera DS-2CD2143G2-I", brand: "Hikvision", catIndex: 0, price: 85000, sku: "HIK-4MP-DOME-01", upc: "846352000128", ean: "5901234567890", isbn: "9780141036144" },
-  { title: "Dahua 8MP IR Bullet Network Camera", brand: "Dahua", catIndex: 0, price: 95000, sku: "DAH-8MP-BULL-01", upc: "732628000233", ean: "5901234567891", isbn: "9780061120084" },
-  { title: "Hikvision NVR 16-Channel 4K", brand: "Hikvision", catIndex: 0, price: 320000, sku: "HIK-NVR16-4K-01", upc: "846352000135", ean: "5901234567892", isbn: "9780451524935" },
-  { title: "Bosch Fire Alarm Control Panel FPA-5000", brand: "Bosch", catIndex: 1, price: 450000, sku: "BOS-FPA5000-01", upc: "720754000449", ean: "5901234567893", isbn: "9780143039433" },
-  { title: "Honeywell Addressable Smoke Detector", brand: "Honeywell", catIndex: 1, price: 25000, sku: "HON-ADRSMK-01", upc: "562216000551", ean: "5901234567894", isbn: "9780545010221" },
-  { title: "ZKTeco Biometric Access Control F18", brand: "ZKTeco", catIndex: 2, price: 85000, sku: "ZKT-F18-ACCESS-01", upc: "693104000662", ean: "5901234567895", isbn: "9780439708184" },
-  { title: "Hikvision Face Recognition Terminal", brand: "Hikvision", catIndex: 2, price: 210000, sku: "HIK-FACEREC-01", upc: "846352000142", ean: "5901234567896", isbn: "9780060935467" },
-  { title: "Yamaha 4-Stroke Outboard F25", brand: "Yamaha", catIndex: 6, price: 1850000, sku: "YAM-F25-4STR-01", upc: "789452000773", ean: "5901234567897", isbn: "9780743273565" },
-  { title: "Mercury 15HP Outboard Engine", brand: "Mercury", catIndex: 6, price: 1250000, sku: "MER-15HP-OUT-01", upc: "849563000884", ean: "5901234567898", isbn: "9780316769488" },
-  { title: "Suzuki Marine DF20A Outboard", brand: "Suzuki Marine", catIndex: 6, price: 1450000, sku: "SUZ-DF20A-01", upc: "912375000995", ean: "5901234567899", isbn: "9780064401889" },
-  { title: "TP-Link WiFi 6 Router Archer AX73", brand: "TP-Link", catIndex: 4, price: 65000, sku: "TPL-AX73-WIFI6-01", upc: "693536405110", ean: "5901234567800", isbn: "9780142407332" },
-  { title: "Cisco Catalyst 2960X Switch 48-Port", brand: "Cisco", catIndex: 4, price: 580000, sku: "CIS-2960X-48P-01", upc: "887658000115", ean: "5901234567801", isbn: "9780399501487" },
-  { title: "Marine GPS Navigator Garmin", brand: "Mercury", catIndex: 5, price: 420000, sku: "MAR-GPS-GARMIN-01", upc: "753759000226", ean: "5901234567802", isbn: "9780141036144" },
-  { title: "Yacht Anchor Chain 12mm Galvanized", brand: "Yamaha", catIndex: 5, price: 185000, sku: "YAC-ANCHOR-12MM-01", upc: "694112000337", ean: "5901234567803", isbn: "9780061120084" },
-  { title: "LED Navigation Light Set", brand: "Honeywell", catIndex: 5, price: 45000, sku: "LED-NAVLIGHT-01", upc: "847263000448", ean: "5901234567804", isbn: "9780451524935" },
-  { title: "Marine VHF Radio ICOM M330", brand: "Bosch", catIndex: 5, price: 180000, sku: "MAR-VHF-ICOM-01", upc: "794526000559", ean: "5901234567805", isbn: "9780143039433" },
-  { title: "Boat Cover Heavy Duty 600D", brand: "Mercury", catIndex: 5, price: 95000, sku: "BOAT-COVER-600D-01", upc: "563214000660", ean: "5901234567806", isbn: "9780545010221" },
-  { title: "Solar Panel 450W Monocrystalline", brand: "Caterpillar", catIndex: 3, price: 280000, sku: "SOL-450W-MONO-01", upc: "842167000771", ean: "5901234567807", isbn: "9780439708184" },
-  { title: "UPS APC Smart-UPS 1500VA", brand: "Caterpillar", catIndex: 10, price: 350000, sku: "APC-SUPS-1500VA-01", upc: "731304000882", ean: "5901234567808", isbn: "9780060935467" },
-  { title: "Honeywell Safety Goggles Professional", brand: "Honeywell", catIndex: 7, price: 8500, sku: "HON-SAFEGOG-01", upc: "625814000993", ean: "5901234567809", isbn: "9780743273565" },
-  { title: "Bosch Industrial Heat Gun GHG 600", brand: "Bosch", catIndex: 9, price: 45000, sku: "BOS-HEATGUN-600-01", upc: "736518000104", ean: "5901234567810", isbn: "9780316769488" },
-  { title: "Axis Communications P1445-LE 12MP", brand: "Axis", catIndex: 0, price: 420000, sku: "AXIS-P1445LE-01", upc: "849627000215", ean: "5901234567811", isbn: "9780064401889" },
-  { title: "Caterpillar Dredge Pump 6-inch", brand: "Caterpillar", catIndex: 11, price: 2850000, sku: "CAT-DREDGE-6IN-01", upc: "958473000326", ean: "5901234567812", isbn: "9780142407332" },
-  { title: "ZKTeco Time Attendance TA100C", brand: "ZKTeco", catIndex: 2, price: 65000, sku: "ZKT-TA100C-01", upc: "693104000437", ean: "5901234567813", isbn: "9780399501487" },
+  { title: "Hikvision 4MP IP Dome Camera DS-2CD2143G2-I", brand: "Hikvision", catIndex: 0, price: 89.99, sku: "HIK-4MP-DOME-01", upc: "846352000128", ean: "5901234567890", isbn: "9780141036144" },
+  { title: "Dahua 8MP IR Bullet Network Camera", brand: "Dahua", catIndex: 0, price: 74.99, sku: "DAH-8MP-BULL-01", upc: "732628000233", ean: "5901234567891", isbn: "9780061120084" },
+  { title: "Hikvision NVR 16-Channel 4K", brand: "Hikvision", catIndex: 0, price: 299.99, sku: "HIK-NVR16-4K-01", upc: "846352000135", ean: "5901234567892", isbn: "9780451524935" },
+  { title: "Bosch Fire Alarm Control Panel FPA-5000", brand: "Bosch", catIndex: 1, price: 149.99, sku: "BOS-FPA5000-01", upc: "720754000449", ean: "5901234567893", isbn: "9780143039433" },
+  { title: "Honeywell Addressable Smoke Detector", brand: "Honeywell", catIndex: 1, price: 24.99, sku: "HON-ADRSMK-01", upc: "562216000551", ean: "5901234567894", isbn: "9780545010221" },
+  { title: "ZKTeco Biometric Access Control F18", brand: "ZKTeco", catIndex: 2, price: 199.99, sku: "ZKT-F18-ACCESS-01", upc: "693104000662", ean: "5901234567895", isbn: "9780439708184" },
+  { title: "Hikvision Face Recognition Terminal", brand: "Hikvision", catIndex: 2, price: 449.99, sku: "HIK-FACEREC-01", upc: "846352000142", ean: "5901234567896", isbn: "9780060935467" },
+  { title: "Yamaha 4-Stroke Outboard F25", brand: "Yamaha", catIndex: 6, price: 2499.99, sku: "YAM-F25-4STR-01", upc: "789452000773", ean: "5901234567897", isbn: "9780743273565" },
+  { title: "Mercury 15HP Outboard Engine", brand: "Mercury", catIndex: 6, price: 1799.99, sku: "MER-15HP-OUT-01", upc: "849563000884", ean: "5901234567898", isbn: "9780316769488" },
+  { title: "Suzuki Marine DF20A Outboard", brand: "Suzuki Marine", catIndex: 6, price: 2199.99, sku: "SUZ-DF20A-01", upc: "912375000995", ean: "5901234567899", isbn: "9780064401889" },
+  { title: "TP-Link WiFi 6 Router Archer AX73", brand: "TP-Link", catIndex: 4, price: 59.99, sku: "TPL-AX73-WIFI6-01", upc: "693536405110", ean: "5901234567800", isbn: "9780142407332" },
+  { title: "Cisco Catalyst 2960X Switch 48-Port", brand: "Cisco", catIndex: 4, price: 899.99, sku: "CIS-2960X-48P-01", upc: "887658000115", ean: "5901234567801", isbn: "9780399501487" },
+  { title: "Marine GPS Navigator Garmin", brand: "Mercury", catIndex: 5, price: 399.99, sku: "MAR-GPS-GARMIN-01", upc: "753759000226", ean: "5901234567802", isbn: "9780141036144" },
+  { title: "Yacht Anchor Chain 12mm Galvanized", brand: "Yamaha", catIndex: 5, price: 129.99, sku: "YAC-ANCHOR-12MM-01", upc: "694112000337", ean: "5901234567803", isbn: "9780061120084" },
+  { title: "LED Navigation Light Set", brand: "Honeywell", catIndex: 5, price: 34.99, sku: "LED-NAVLIGHT-01", upc: "847263000448", ean: "5901234567804", isbn: "9780451524935" },
+  { title: "Marine VHF Radio ICOM M330", brand: "Bosch", catIndex: 5, price: 179.99, sku: "MAR-VHF-ICOM-01", upc: "794526000559", ean: "5901234567805", isbn: "9780143039433" },
+  { title: "Boat Cover Heavy Duty 600D", brand: "Mercury", catIndex: 5, price: 89.99, sku: "BOAT-COVER-600D-01", upc: "563214000660", ean: "5901234567806", isbn: "9780545010221" },
+  { title: "Solar Panel 450W Monocrystalline", brand: "Caterpillar", catIndex: 3, price: 199.99, sku: "SOL-450W-MONO-01", upc: "842167000771", ean: "5901234567807", isbn: "9780439708184" },
+  { title: "UPS APC Smart-UPS 1500VA", brand: "Caterpillar", catIndex: 10, price: 229.99, sku: "APC-SUPS-1500VA-01", upc: "731304000882", ean: "5901234567808", isbn: "9780060935467" },
+  { title: "Honeywell Safety Goggles Professional", brand: "Honeywell", catIndex: 7, price: 12.99, sku: "HON-SAFEGOG-01", upc: "625814000993", ean: "5901234567809", isbn: "9780743273565" },
+  { title: "Bosch Industrial Heat Gun GHG 600", brand: "Bosch", catIndex: 9, price: 49.99, sku: "BOS-HEATGUN-600-01", upc: "736518000104", ean: "5901234567810", isbn: "9780316769488" },
+  { title: "Axis Communications P1445-LE 12MP", brand: "Axis", catIndex: 0, price: 549.99, sku: "AXIS-P1445LE-01", upc: "849627000215", ean: "5901234567811", isbn: "9780064401889" },
+  { title: "Caterpillar Dredge Pump 6-inch", brand: "Caterpillar", catIndex: 11, price: 3499.99, sku: "CAT-DREDGE-6IN-01", upc: "958473000326", ean: "5901234567812", isbn: "9780142407332" },
+  { title: "ZKTeco Time Attendance TA100C", brand: "ZKTeco", catIndex: 2, price: 149.99, sku: "ZKT-TA100C-01", upc: "693104000437", ean: "5901234567813", isbn: "9780399501487" },
 ];
 
 export async function POST(request: NextRequest) {
@@ -204,7 +204,7 @@ export async function POST(request: NextRequest) {
         // Assign ~7-10 products per vendor
         const productsForVendor = allCatalog.slice(vi * 8, vi * 8 + 8);
         for (const cp of productsForVendor) {
-          const basePrice = Math.round(50000 + Math.random() * 200000);
+          const basePrice = Math.round((10 + Math.random() * 490) * 100) / 100;
           const { data: existing } = await admin.from("vendor_offers").select("id")
             .eq("shared_product_id", cp.id)
             .eq("vendor_id", vendor.id)
@@ -238,7 +238,7 @@ export async function POST(request: NextRequest) {
               name: cp.title,
               slug,
               sku: `SKU-${vendor.shop_slug.substring(0, 3).toUpperCase()}-${Date.now().toString(36)}`,
-              regular_price: Math.round(50000 + Math.random() * 300000),
+              regular_price: Math.round((10 + Math.random() * 490) * 100) / 100,
               vendor_id: vendor.id,
               status: "published",
               images: [],

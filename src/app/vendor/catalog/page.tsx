@@ -4,6 +4,7 @@ import { useState, useEffect, useCallback } from "react";
 import Link from "next/link";
 import VendorShell from "@/components/vendor/vendor-shell";
 import { Search, Plus, Package, Grid3X3, List, Check, X, Loader2, AlertCircle, CheckCircle, ShoppingCart, ChevronRight, ChevronLeft, ChevronLast, Filter } from "lucide-react";
+import { formatPrice } from "@/lib/utils";
 
 interface CatalogProduct {
   id: string;
@@ -22,18 +23,18 @@ interface CatalogProduct {
 }
 
 const DEMO_PRODUCTS: CatalogProduct[] = [
-  { id: "demo-001", title: "Hikvision 4MP IP Dome Camera DS-2CD2143G2-I", brand: "Hikvision", category_id: "cat-surveillance", images: [], seller_count: 4, is_active: true, sku: "HIK-4MP-DOME-01", upc: "846352000128", ean: "5901234567890", isbn: "9780141036144", lowestPrice: 85000 },
-  { id: "demo-002", title: "Dahua 8MP IR Bullet Network Camera", brand: "Dahua", category_id: "cat-surveillance", images: [], seller_count: 3, is_active: true, sku: "DAH-8MP-BULL-01", upc: "732628000233", ean: "5901234567891", isbn: "9780061120084", lowestPrice: 72000 },
-  { id: "demo-003", title: "Bosch Fire Alarm Control Panel FPA-5000", brand: "Bosch", category_id: "cat-fire", images: [], seller_count: 2, is_active: true, sku: "BOS-FPA5000-01", upc: "720754000449", ean: "5901234567893", isbn: "9780451524935", lowestPrice: 45000 },
-  { id: "demo-004", title: "Honeywell Addressable Smoke Detector", brand: "Honeywell", category_id: "cat-fire", images: [], seller_count: 5, is_active: true, sku: "HON-ADRSMK-01", upc: "562216000551", ean: "5901234567894", isbn: "9780143039433", lowestPrice: 12000 },
-  { id: "demo-005", title: "ZKTeco Biometric Access Control F18", brand: "ZKTeco", category_id: "cat-access", images: [], seller_count: 3, is_active: true, sku: "ZKT-F18-ACCESS-01", upc: "693104000662", ean: "5901234567895", isbn: "9780545010221", lowestPrice: 35000 },
-  { id: "demo-006", title: "Yamaha 4-Stroke Outboard F25", brand: "Yamaha", category_id: "cat-marine", images: [], seller_count: 1, is_active: true, sku: "YAM-F25-4STR-01", upc: "789452000773", ean: "5901234567897", isbn: "9780439708184", lowestPrice: 250000 },
-  { id: "demo-007", title: "TP-Link WiFi 6 Router Archer AX73", brand: "TP-Link", category_id: "cat-networking", images: [], seller_count: 6, is_active: true, sku: "TPL-AX73-WIFI6-01", upc: "693536405110", ean: "5901234567800", isbn: "9780060935467", lowestPrice: 28000 },
-  { id: "demo-008", title: "Cisco Catalyst 2960X Switch 48-Port", brand: "Cisco", category_id: "cat-networking", images: [], seller_count: 2, is_active: true, sku: "CIS-2960X-48P-01", upc: "887658000115", ean: "5901234567801", isbn: "9780743273565", lowestPrice: 180000 },
-  { id: "demo-009", title: "Marine GPS Navigator Garmin", brand: "Mercury", category_id: "cat-marine", images: [], seller_count: 3, is_active: true, sku: "MAR-GPS-GARMIN-01", upc: "753759000226", ean: "5901234567802", isbn: "9780316769488", lowestPrice: 95000 },
-  { id: "demo-010", title: "Solar Panel 450W Monocrystalline", brand: "Caterpillar", category_id: "cat-solar", images: [], seller_count: 2, is_active: true, sku: "SOL-450W-MONO-01", upc: "842167000771", ean: "5901234567807", isbn: "9780064401889", lowestPrice: 65000 },
-  { id: "demo-011", title: "UPS APC Smart-UPS 1500VA", brand: "Caterpillar", category_id: "cat-ups", images: [], seller_count: 4, is_active: true, sku: "APC-SUPS-1500VA-01", upc: "731304000882", ean: "5901234567808", isbn: "9780142407332", lowestPrice: 55000 },
-  { id: "demo-012", title: "Honeywell Safety Goggles Professional", brand: "Honeywell", category_id: "cat-safety", images: [], seller_count: 8, is_active: true, sku: "HON-SAFEGOG-01", upc: "625814000993", ean: "5901234567809", isbn: "9780399501487", lowestPrice: 5000 },
+  { id: "demo-001", title: "Hikvision 4MP IP Dome Camera DS-2CD2143G2-I", brand: "Hikvision", category_id: "cat-surveillance", images: [], seller_count: 4, is_active: true, sku: "HIK-4MP-DOME-01", upc: "846352000128", ean: "5901234567890", isbn: "9780141036144", lowestPrice: 89.99 },
+  { id: "demo-002", title: "Dahua 8MP IR Bullet Network Camera", brand: "Dahua", category_id: "cat-surveillance", images: [], seller_count: 3, is_active: true, sku: "DAH-8MP-BULL-01", upc: "732628000233", ean: "5901234567891", isbn: "9780061120084", lowestPrice: 74.99 },
+  { id: "demo-003", title: "Bosch Fire Alarm Control Panel FPA-5000", brand: "Bosch", category_id: "cat-fire", images: [], seller_count: 2, is_active: true, sku: "BOS-FPA5000-01", upc: "720754000449", ean: "5901234567893", isbn: "9780451524935", lowestPrice: 149.99 },
+  { id: "demo-004", title: "Honeywell Addressable Smoke Detector", brand: "Honeywell", category_id: "cat-fire", images: [], seller_count: 5, is_active: true, sku: "HON-ADRSMK-01", upc: "562216000551", ean: "5901234567894", isbn: "9780143039433", lowestPrice: 24.99 },
+  { id: "demo-005", title: "ZKTeco Biometric Access Control F18", brand: "ZKTeco", category_id: "cat-access", images: [], seller_count: 3, is_active: true, sku: "ZKT-F18-ACCESS-01", upc: "693104000662", ean: "5901234567895", isbn: "9780545010221", lowestPrice: 199.99 },
+  { id: "demo-006", title: "Yamaha 4-Stroke Outboard F25", brand: "Yamaha", category_id: "cat-marine", images: [], seller_count: 1, is_active: true, sku: "YAM-F25-4STR-01", upc: "789452000773", ean: "5901234567897", isbn: "9780439708184", lowestPrice: 2499.99 },
+  { id: "demo-007", title: "TP-Link WiFi 6 Router Archer AX73", brand: "TP-Link", category_id: "cat-networking", images: [], seller_count: 6, is_active: true, sku: "TPL-AX73-WIFI6-01", upc: "693536405110", ean: "5901234567800", isbn: "9780060935467", lowestPrice: 59.99 },
+  { id: "demo-008", title: "Cisco Catalyst 2960X Switch 48-Port", brand: "Cisco", category_id: "cat-networking", images: [], seller_count: 2, is_active: true, sku: "CIS-2960X-48P-01", upc: "887658000115", ean: "5901234567801", isbn: "9780743273565", lowestPrice: 899.99 },
+  { id: "demo-009", title: "Marine GPS Navigator Garmin", brand: "Mercury", category_id: "cat-marine", images: [], seller_count: 3, is_active: true, sku: "MAR-GPS-GARMIN-01", upc: "753759000226", ean: "5901234567802", isbn: "9780316769488", lowestPrice: 399.99 },
+  { id: "demo-010", title: "Solar Panel 450W Monocrystalline", brand: "Caterpillar", category_id: "cat-solar", images: [], seller_count: 2, is_active: true, sku: "SOL-450W-MONO-01", upc: "842167000771", ean: "5901234567807", isbn: "9780064401889", lowestPrice: 199.99 },
+  { id: "demo-011", title: "UPS APC Smart-UPS 1500VA", brand: "Caterpillar", category_id: "cat-ups", images: [], seller_count: 4, is_active: true, sku: "APC-SUPS-1500VA-01", upc: "731304000882", ean: "5901234567808", isbn: "9780142407332", lowestPrice: 229.99 },
+  { id: "demo-012", title: "Honeywell Safety Goggles Professional", brand: "Honeywell", category_id: "cat-safety", images: [], seller_count: 8, is_active: true, sku: "HON-SAFEGOG-01", upc: "625814000993", ean: "5901234567809", isbn: "9780399501487", lowestPrice: 12.99 },
 ];
 
 function SellModal({ product, onClose, onSuccess }: { product: CatalogProduct | null; onClose: () => void; onSuccess: () => void }) {
@@ -47,8 +48,11 @@ function SellModal({ product, onClose, onSuccess }: { product: CatalogProduct | 
   const [error, setError] = useState("");
   if (!product) return null;
 
+  const parsePrice = (v: string) => parseFloat(v.replace(/,/g, ""));
+
   const handleSubmit = async () => {
-    if (!price || parseFloat(price) <= 0) { setError("Enter a valid price"); return; }
+    const numericPrice = parsePrice(price);
+    if (!price || numericPrice <= 0) { setError("Enter a valid price"); return; }
     setError(""); setSubmitting(true);
     try {
       const tokenRes = await fetch("/api/auth/session-token");
@@ -56,7 +60,7 @@ function SellModal({ product, onClose, onSuccess }: { product: CatalogProduct | 
       const res = await fetch("/api/v1/vendors/offers", {
         method: "POST",
         headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
-        body: JSON.stringify({ shared_product_id: product.id, price: parseFloat(price), inventory: parseInt(quantity), condition, fulfillment_type: fulfillment, shipping_days: parseInt(shippingDays), warranty }),
+        body: JSON.stringify({ shared_product_id: product.id, price: numericPrice, inventory: parseInt(quantity), condition, fulfillment_type: fulfillment, shipping_days: parseInt(shippingDays), warranty }),
       });
       const json = await res.json();
       if (!res.ok) { setError(json.error || "Failed to list product"); setSubmitting(false); return; }
@@ -64,8 +68,9 @@ function SellModal({ product, onClose, onSuccess }: { product: CatalogProduct | 
     } catch { setError("Network error"); } finally { setSubmitting(false); }
   };
 
-  const commission = parseFloat(price || "0") * 0.12;
-  const earnings = parseFloat(price || "0") - commission;
+  const numericPrice = parsePrice(price || "0");
+  const commission = numericPrice * 0.12;
+  const earnings = numericPrice - commission;
 
   return (
     <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center" onClick={onClose}>
@@ -84,7 +89,10 @@ function SellModal({ product, onClose, onSuccess }: { product: CatalogProduct | 
         <div className="space-y-3 mb-4">
           <div>
             <label className="text-xs font-semibold text-text-2 block mb-1">Your Price (USD)</label>
-            <input type="number" value={price} onChange={e => setPrice(e.target.value)} placeholder="0.00" className="w-full h-10 px-3 border border-border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-orange/20" />
+            <div className="relative">
+              <span className="absolute left-3 top-1/2 -translate-y-1/2 text-sm text-text-4">$</span>
+              <input type="text" value={price} onChange={e => { const v = e.target.value.replace(/[^0-9.]/g, ""); setPrice(v); }} onBlur={() => { if (price) { const n = parseFloat(price); if (!isNaN(n)) setPrice(n.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })); } }} onFocus={() => { setPrice(price.replace(/,/g, "")); }} placeholder="0.00" className="w-full h-10 pl-7 pr-3 border border-border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-orange/20" />
+            </div>
           </div>
           <div className="grid grid-cols-2 gap-3">
             <div>
@@ -125,11 +133,11 @@ function SellModal({ product, onClose, onSuccess }: { product: CatalogProduct | 
             </select>
           </div>
         </div>
-        {price && parseFloat(price) > 0 && (
+        {price && parseFloat(price.replace(/,/g, "")) > 0 && (
           <div className="bg-amber-50 border border-amber/20 rounded-xl p-3 mb-4">
             <div className="text-xs text-amber-800 space-y-1">
-              <p>Platform commission (12%): <strong>-${commission.toFixed(2)}</strong></p>
-              <p>Your estimated earnings: <strong>${earnings.toFixed(2)}</strong></p>
+              <p>Platform commission (12%): <strong>-{formatPrice(commission, "USD")}</strong></p>
+              <p>Your estimated earnings: <strong>{formatPrice(earnings, "USD")}</strong></p>
             </div>
           </div>
         )}
@@ -281,7 +289,7 @@ export default function VendorCatalog() {
                         </div>
                         <div className="flex items-center gap-2 mt-1">
                           <span className="text-[10px] text-text-4">{product.seller_count} seller{product.seller_count !== 1 ? "s" : ""}</span>
-                          {product.lowestPrice ? <span className="text-[10px] font-bold text-orange">From ${product.lowestPrice.toLocaleString()}</span> : null}
+                          {product.lowestPrice ? <span className="text-[10px] font-bold text-orange">From {formatPrice(product.lowestPrice, "USD")}</span> : null}
                           {alreadySelling && <span className="text-[8px] px-1.5 py-0.5 rounded-full bg-green-100 text-green-700 font-medium">You Sell This</span>}
                         </div>
                       </div>

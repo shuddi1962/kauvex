@@ -25,9 +25,30 @@ export async function POST(request: NextRequest) {
 
   try {
     const sb = insforge.database;
-    const { data: profile } = await sb.from("profiles").select("vendor_id, role").eq("id", user!.id).single();
+    let { data: profile } = await sb.from("profiles").select("vendor_id, role").eq("id", user!.id).single();
+
+    // Auto-create vendor profile on first sell
     if (!profile || profile.role !== "vendor" || !profile.vendor_id) {
-      return errorResponse("Vendor access required", 403);
+      const shopSlug = `vendor-${user!.id!.slice(0, 8)}`;
+      const adminDb = createAdminClient();
+      const { data: newVendor } = await adminDb.from("vendors").insert({
+        user_id: user!.id,
+        shop_name: "My Kauvex Store",
+        shop_slug: shopSlug,
+        status: "approved",
+        vendor_tier: "bronze",
+        commission: 10,
+      }).select("*").single();
+
+      if (!newVendor) return errorResponse("Could not create vendor profile. Please contact support.", 500);
+
+      await adminDb.from("profiles").upsert({
+        id: user!.id,
+        vendor_id: newVendor.id,
+        role: "vendor",
+      }, { onConflict: "id" });
+
+      profile = { vendor_id: newVendor.id, role: "vendor" };
     }
 
     const { data: product } = await sb.from("shared_catalog_products").select("id").eq("id", body!.shared_product_id).single();

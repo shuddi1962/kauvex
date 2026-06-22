@@ -51,8 +51,11 @@ export async function POST(request: NextRequest) {
       profile = { vendor_id: newVendor.id, role: "vendor" };
     }
 
-    const { data: product } = await sb.from("shared_catalog_products").select("id").eq("id", body!.shared_product_id).single();
-    if (!product) return errorResponse("Product not found in catalog", 404);
+    // Skip DB lookup for demo products
+    if (!body!.shared_product_id.startsWith("demo-")) {
+      const { data: product } = await sb.from("shared_catalog_products").select("id").eq("id", body!.shared_product_id).single();
+      if (!product) return errorResponse("Product not found in catalog", 404);
+    }
 
     const { data: existing } = await sb
       .from("vendor_offers")

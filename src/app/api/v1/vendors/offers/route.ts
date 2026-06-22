@@ -25,16 +25,15 @@ export async function POST(request: NextRequest) {
   if (valErr) return valErr;
 
   // Convert demo product IDs to deterministic UUIDs for DB compatibility
-  const isDemoProduct = rawBody!.shared_product_id.startsWith("demo-");
-  const body = { ...rawBody!, shared_product_id: isDemoProduct ? demoToUuid(rawBody!.shared_product_id) : rawBody!.shared_product_id };
+  const body = { ...rawBody!, shared_product_id: rawBody!.shared_product_id.startsWith("demo-") ? demoToUuid(rawBody!.shared_product_id) : rawBody!.shared_product_id };
 
   try {
     const sb = insforge.database;
+    const adminDb = createAdminClient();
     let { data: profile } = await sb.from("profiles").select("vendor_id, role").eq("id", user!.id).single();
 
     // Auto-create vendor profile on first sell
     if (!profile || profile.role !== "vendor" || !profile.vendor_id) {
-      const adminDb = createAdminClient();
       const shopSlug = `vendor-${user!.id!.slice(0, 8)}-${Date.now().toString(36)}`;
       const { data: newVendor, error: vendorErr } = await adminDb.from("vendors").insert({
         user_id: user!.id,
@@ -57,10 +56,20 @@ export async function POST(request: NextRequest) {
       profile = { vendor_id: newVendor.id, role: "vendor" };
     }
 
-    // Skip DB product lookup for demo products — they don't exist in shared_catalog_products
-    if (!isDemoProduct) {
-      const { data: product } = await sb.from("shared_catalog_products").select("id").eq("id", body!.shared_product_id).single();
-      if (!product) return errorResponse("Product not found in catalog", 404);
+    // Ensure the product exists in shared_catalog_products (FK constraint)
+    // Auto-create with placeholder data if not found (handles demo & arbitrary products)
+    const { data: existingProduct } = await sb.from("shared_catalog_products").select("id").eq("id", body!.shared_product_id).maybeSingle();
+    if (!existingProduct) {
+      const { error: createErr } = await adminDb.from("shared_catalog_products").insert({
+        id: body!.shared_product_id,
+        title: "Marketplace Product",
+        brand: "Generic",
+        description: "Listed via vendor offers",
+        images: [],
+        is_active: true,
+        category_id: null,
+      });
+      if (createErr) return errorResponse("Failed to create catalog entry: " + createErr.message, 400);
     }
 
     const { data: existing } = await sb
@@ -72,7 +81,6 @@ export async function POST(request: NextRequest) {
       .maybeSingle();
     if (existing) return errorResponse("You already have an active offer for this product", 409);
 
-    const adminDb = createAdminClient();
     const { data: offer, error: offerErr } = await adminDb
       .from("vendor_offers")
       .insert({

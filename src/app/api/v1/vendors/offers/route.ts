@@ -6,7 +6,7 @@ import { determineBuyBoxWinner } from "@/lib/buybox";
 import { z } from "zod";
 
 const createOfferSchema = z.object({
-  shared_product_id: z.string().uuid(),
+  shared_product_id: z.string(),
   price: z.number().positive(),
   currency: z.string().default("USD"),
   inventory: z.number().int().min(0),
@@ -76,7 +76,7 @@ export async function GET(request: NextRequest) {
   try {
     const sb = insforge.database;
     const { data: profile } = await sb.from("profiles").select("vendor_id").eq("id", user!.id).single();
-    if (!profile?.vendor_id) return errorResponse("Vendor access required", 403);
+    if (!profile?.vendor_id) return errorResponse("You need a vendor profile to list offers. Please complete your vendor registration first.", 403);
 
     const { data: offers, error } = await sb
       .from("vendor_offers")

@@ -18,6 +18,7 @@ interface CatalogProduct {
   upc?: string;
   ean?: string;
   isbn?: string;
+  lowestPrice?: number;
 }
 
 interface Category {
@@ -34,18 +35,18 @@ interface RestrictedGate {
 }
 
 const DEMO_PRODUCTS: CatalogProduct[] = [
-  { id: "demo-001", title: "Hikvision 4MP IP Dome Camera DS-2CD2143G2-I", brand: "Hikvision", category_id: "cat-surveillance", images: [], seller_count: 4, is_active: true, sku: "HIK-4MP-DOME-01", upc: "846352000128", ean: "5901234567890", isbn: "9780141036144" },
-  { id: "demo-002", title: "Dahua 8MP IR Bullet Network Camera", brand: "Dahua", category_id: "cat-surveillance", images: [], seller_count: 3, is_active: true, sku: "DAH-8MP-BULL-01", upc: "732628000233", ean: "5901234567891", isbn: "9780061120084" },
-  { id: "demo-003", title: "Bosch Fire Alarm Control Panel FPA-5000", brand: "Bosch", category_id: "cat-fire", images: [], seller_count: 2, is_active: true, sku: "BOS-FPA5000-01", upc: "720754000449", ean: "5901234567893", isbn: "9780451524935" },
-  { id: "demo-004", title: "Honeywell Addressable Smoke Detector", brand: "Honeywell", category_id: "cat-fire", images: [], seller_count: 5, is_active: true, sku: "HON-ADRSMK-01", upc: "562216000551", ean: "5901234567894", isbn: "9780143039433" },
-  { id: "demo-005", title: "ZKTeco Biometric Access Control F18", brand: "ZKTeco", category_id: "cat-access", images: [], seller_count: 3, is_active: true, sku: "ZKT-F18-ACCESS-01", upc: "693104000662", ean: "5901234567895", isbn: "9780545010221" },
-  { id: "demo-006", title: "Yamaha 4-Stroke Outboard F25", brand: "Yamaha", category_id: "cat-marine", images: [], seller_count: 1, is_active: true, sku: "YAM-F25-4STR-01", upc: "789452000773", ean: "5901234567897", isbn: "9780439708184" },
-  { id: "demo-007", title: "TP-Link WiFi 6 Router Archer AX73", brand: "TP-Link", category_id: "cat-networking", images: [], seller_count: 6, is_active: true, sku: "TPL-AX73-WIFI6-01", upc: "693536405110", ean: "5901234567800", isbn: "9780060935467" },
-  { id: "demo-008", title: "Cisco Catalyst 2960X Switch 48-Port", brand: "Cisco", category_id: "cat-networking", images: [], seller_count: 2, is_active: true, sku: "CIS-2960X-48P-01", upc: "887658000115", ean: "5901234567801", isbn: "9780743273565" },
-  { id: "demo-009", title: "Marine GPS Navigator Garmin", brand: "Mercury", category_id: "cat-marine", images: [], seller_count: 3, is_active: true, sku: "MAR-GPS-GARMIN-01", upc: "753759000226", ean: "5901234567802", isbn: "9780316769488" },
-  { id: "demo-010", title: "Solar Panel 450W Monocrystalline", brand: "Caterpillar", category_id: "cat-solar", images: [], seller_count: 2, is_active: true, sku: "SOL-450W-MONO-01", upc: "842167000771", ean: "5901234567807", isbn: "9780064401889" },
-  { id: "demo-011", title: "UPS APC Smart-UPS 1500VA", brand: "Caterpillar", category_id: "cat-ups", images: [], seller_count: 4, is_active: true, sku: "APC-SUPS-1500VA-01", upc: "731304000882", ean: "5901234567808", isbn: "9780142407332" },
-  { id: "demo-012", title: "Honeywell Safety Goggles Professional", brand: "Honeywell", category_id: "cat-safety", images: [], seller_count: 8, is_active: true, sku: "HON-SAFEGOG-01", upc: "625814000993", ean: "5901234567809", isbn: "9780399501487" },
+  { id: "demo-001", title: "Hikvision 4MP IP Dome Camera DS-2CD2143G2-I", brand: "Hikvision", category_id: "cat-surveillance", images: [], seller_count: 4, is_active: true, sku: "HIK-4MP-DOME-01", upc: "846352000128", ean: "5901234567890", isbn: "9780141036144", lowestPrice: 85000 },
+  { id: "demo-002", title: "Dahua 8MP IR Bullet Network Camera", brand: "Dahua", category_id: "cat-surveillance", images: [], seller_count: 3, is_active: true, sku: "DAH-8MP-BULL-01", upc: "732628000233", ean: "5901234567891", isbn: "9780061120084", lowestPrice: 95000 },
+  { id: "demo-003", title: "Bosch Fire Alarm Control Panel FPA-5000", brand: "Bosch", category_id: "cat-fire", images: [], seller_count: 2, is_active: true, sku: "BOS-FPA5000-01", upc: "720754000449", ean: "5901234567893", isbn: "9780451524935", lowestPrice: 180000 },
+  { id: "demo-004", title: "Honeywell Addressable Smoke Detector", brand: "Honeywell", category_id: "cat-fire", images: [], seller_count: 5, is_active: true, sku: "HON-ADRSMK-01", upc: "562216000551", ean: "5901234567894", isbn: "9780143039433", lowestPrice: 25000 },
+  { id: "demo-005", title: "ZKTeco Biometric Access Control F18", brand: "ZKTeco", category_id: "cat-access", images: [], seller_count: 3, is_active: true, sku: "ZKT-F18-ACCESS-01", upc: "693104000662", ean: "5901234567895", isbn: "9780545010221", lowestPrice: 120000 },
+  { id: "demo-006", title: "Yamaha 4-Stroke Outboard F25", brand: "Yamaha", category_id: "cat-marine", images: [], seller_count: 1, is_active: true, sku: "YAM-F25-4STR-01", upc: "789452000773", ean: "5901234567897", isbn: "9780439708184", lowestPrice: 650000 },
+  { id: "demo-007", title: "TP-Link WiFi 6 Router Archer AX73", brand: "TP-Link", category_id: "cat-networking", images: [], seller_count: 6, is_active: true, sku: "TPL-AX73-WIFI6-01", upc: "693536405110", ean: "5901234567800", isbn: "9780060935467", lowestPrice: 45000 },
+  { id: "demo-008", title: "Cisco Catalyst 2960X Switch 48-Port", brand: "Cisco", category_id: "cat-networking", images: [], seller_count: 2, is_active: true, sku: "CIS-2960X-48P-01", upc: "887658000115", ean: "5901234567801", isbn: "9780743273565", lowestPrice: 280000 },
+  { id: "demo-009", title: "Marine GPS Navigator Garmin", brand: "Mercury", category_id: "cat-marine", images: [], seller_count: 3, is_active: true, sku: "MAR-GPS-GARMIN-01", upc: "753759000226", ean: "5901234567802", isbn: "9780316769488", lowestPrice: 350000 },
+  { id: "demo-010", title: "Solar Panel 450W Monocrystalline", brand: "Caterpillar", category_id: "cat-solar", images: [], seller_count: 2, is_active: true, sku: "SOL-450W-MONO-01", upc: "842167000771", ean: "5901234567807", isbn: "9780064401889", lowestPrice: 220000 },
+  { id: "demo-011", title: "UPS APC Smart-UPS 1500VA", brand: "Caterpillar", category_id: "cat-ups", images: [], seller_count: 4, is_active: true, sku: "APC-SUPS-1500VA-01", upc: "731304000882", ean: "5901234567808", isbn: "9780142407332", lowestPrice: 175000 },
+  { id: "demo-012", title: "Honeywell Safety Goggles Professional", brand: "Honeywell", category_id: "cat-safety", images: [], seller_count: 8, is_active: true, sku: "HON-SAFEGOG-01", upc: "625814000993", ean: "5901234567809", isbn: "9780399501487", lowestPrice: 12000 },
 ];
 
 const DEMO_CATEGORIES: Category[] = [
@@ -112,18 +113,8 @@ function SellModal({ product, onClose, onSuccess }: SellModalProps) {
   };
 
   if (success) {
-    return (
-      <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center" onClick={onClose}>
-        <div className="bg-white rounded-2xl shadow-2xl w-full max-w-md mx-4 p-8 text-center" onClick={e => e.stopPropagation()}>
-          <div className="w-16 h-16 rounded-full bg-green-100 flex items-center justify-center mx-auto mb-4">
-            <CheckCircle className="w-8 h-8 text-green-600" />
-          </div>
-          <h3 className="font-bold text-lg text-text-1 mb-2">Product Listed!</h3>
-          <p className="text-sm text-text-4 mb-4">{product.title} is now live on the marketplace.</p>
-          <button onClick={onClose} className="px-6 py-2.5 bg-orange text-white text-sm font-bold rounded-xl hover:bg-orange/90">Done</button>
-        </div>
-      </div>
-    );
+    window.location.href = `/vendor/products/${product.id}/offer`;
+    return null;
   }
 
   const commission = parseFloat(price || "0") * 0.12;
@@ -459,6 +450,7 @@ export default function AddProductPage() {
                         </div>
                         <div className="flex items-center gap-2 mt-1.5">
                           <span className="text-[10px] text-text-4">{product.seller_count} seller{product.seller_count !== 1 ? "s" : ""}</span>
+                          {product.lowestPrice && <span className="text-[10px] font-bold text-orange">From ₦{product.lowestPrice.toLocaleString()}</span>}
                           {gated && <span className="text-[8px] px-1.5 py-0.5 rounded-full bg-amber-100 text-amber-700 font-medium">Gated</span>}
                         </div>
                         <div className="mt-3">
@@ -526,7 +518,7 @@ export default function AddProductPage() {
               <Search size={18} />
             </div>
             <h3 className="font-bold text-sm text-text-1 mb-1">Search & Match</h3>
-            <p className="text-xs text-text-4">Find your product in the shared catalog and start selling with one click.</p>
+            <p className="text-xs text-text-4">Find your product in the catalog, see current lowest prices, and start selling with one click.</p>
           </Link>
           <Link href="/vendor/products" className="bg-white rounded-xl border border-border p-5 hover:shadow-md transition-all group">
             <div className="w-10 h-10 rounded-xl bg-purple-100 text-purple-700 flex items-center justify-center mb-3 group-hover:scale-110 transition-transform">

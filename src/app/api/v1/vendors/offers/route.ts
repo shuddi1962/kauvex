@@ -110,7 +110,7 @@ export async function GET(request: NextRequest) {
 
     const { data: offers, error } = await sb
       .from("vendor_offers")
-      .select("*, shared_catalog_products!inner(title, brand, images)")
+      .select("*, shared_catalog_products(title, brand, images)")
       .eq("vendor_id", profile.vendor_id)
       .order("created_at", { ascending: false });
 

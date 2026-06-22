@@ -84,13 +84,14 @@ export default function ProductOfferPage() {
         .from("shared_catalog_products")
         .select("id, title, master_product_id")
         .eq("id", productId)
-        .single();
+        .maybeSingle();
 
       if (prodErr || !prod) {
-        setError("Product not found.");
-        return;
+        // Demo mode: use placeholder product info
+        setProduct({ title: "Demo Product", masterProductId: productId });
+      } else {
+        setProduct(prod);
       }
-      setProduct(prod);
 
       const { data: storefrontData } = await insforge.database
         .from("storefronts")

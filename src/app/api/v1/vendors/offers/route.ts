@@ -3,6 +3,7 @@ import { successResponse, errorResponse, getAuthUser, validateBody } from "@/lib
 import { createAdminClient } from "@/lib/supabase/admin";
 import { insforge } from "@/lib/insforge";
 import { determineBuyBoxWinner } from "@/lib/buybox";
+import { demoToUuid } from "@/lib/utils";
 import { z } from "zod";
 
 const createOfferSchema = z.object({
@@ -20,8 +21,12 @@ export async function POST(request: NextRequest) {
   const { user, error: authErr } = await getAuthUser(request);
   if (authErr) return authErr;
 
-  const { data: body, error: valErr } = await validateBody(request, createOfferSchema);
+  const { data: rawBody, error: valErr } = await validateBody(request, createOfferSchema);
   if (valErr) return valErr;
+
+  // Convert demo product IDs to deterministic UUIDs for DB compatibility
+  const isDemoProduct = rawBody!.shared_product_id.startsWith("demo-");
+  const body = { ...rawBody!, shared_product_id: isDemoProduct ? demoToUuid(rawBody!.shared_product_id) : rawBody!.shared_product_id };
 
   try {
     const sb = insforge.database;
@@ -52,8 +57,8 @@ export async function POST(request: NextRequest) {
       profile = { vendor_id: newVendor.id, role: "vendor" };
     }
 
-    // Skip DB lookup for demo products
-    if (!body!.shared_product_id.startsWith("demo-")) {
+    // Skip DB product lookup for demo products — they don't exist in shared_catalog_products
+    if (!isDemoProduct) {
       const { data: product } = await sb.from("shared_catalog_products").select("id").eq("id", body!.shared_product_id).single();
       if (!product) return errorResponse("Product not found in catalog", 404);
     }

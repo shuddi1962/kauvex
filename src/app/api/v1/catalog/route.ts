@@ -1,6 +1,7 @@
 import { NextRequest } from "next/server";
 import { insforge } from "@/lib/insforge";
 import { errorResponse, paginatedResponse } from "@/lib/api-helpers";
+import { demoToUuid } from "@/lib/utils";
 
 interface DemoProduct {
   id: string;
@@ -464,7 +465,7 @@ export async function GET(request: NextRequest) {
     const categoryName = resolveCategoryName(categoryId);
     let filtered = filterDemoProducts(demoProducts, search, categoryName, brand);
     const total = filtered.length;
-    filtered = filtered.slice(offset, offset + limit);
+    filtered = filtered.slice(offset, offset + limit).map(p => ({ ...p, id: demoToUuid(p.id) }));
 
     return paginatedResponse(filtered, total, page, limit);
   } catch {

@@ -17,6 +17,7 @@ interface CatalogProduct {
   sku?: string;
   upc?: string;
   ean?: string;
+  isbn?: string;
 }
 
 interface Category {
@@ -33,18 +34,18 @@ interface RestrictedGate {
 }
 
 const DEMO_PRODUCTS: CatalogProduct[] = [
-  { id: "demo-001", title: "Hikvision 4MP IP Dome Camera DS-2CD2143G2-I", brand: "Hikvision", category_id: "cat-surveillance", images: [], seller_count: 4, is_active: true, sku: "HIK-4MP-DOME-01", upc: "846352000128", ean: "5901234567890" },
-  { id: "demo-002", title: "Dahua 8MP IR Bullet Network Camera", brand: "Dahua", category_id: "cat-surveillance", images: [], seller_count: 3, is_active: true, sku: "DAH-8MP-BULL-01", upc: "732628000233", ean: "5901234567891" },
-  { id: "demo-003", title: "Bosch Fire Alarm Control Panel FPA-5000", brand: "Bosch", category_id: "cat-fire", images: [], seller_count: 2, is_active: true, sku: "BOS-FPA5000-01", upc: "720754000449", ean: "5901234567893" },
-  { id: "demo-004", title: "Honeywell Addressable Smoke Detector", brand: "Honeywell", category_id: "cat-fire", images: [], seller_count: 5, is_active: true, sku: "HON-ADRSMK-01", upc: "562216000551", ean: "5901234567894" },
-  { id: "demo-005", title: "ZKTeco Biometric Access Control F18", brand: "ZKTeco", category_id: "cat-access", images: [], seller_count: 3, is_active: true, sku: "ZKT-F18-ACCESS-01", upc: "693104000662", ean: "5901234567895" },
-  { id: "demo-006", title: "Yamaha 4-Stroke Outboard F25", brand: "Yamaha", category_id: "cat-marine", images: [], seller_count: 1, is_active: true, sku: "YAM-F25-4STR-01", upc: "789452000773", ean: "5901234567897" },
-  { id: "demo-007", title: "TP-Link WiFi 6 Router Archer AX73", brand: "TP-Link", category_id: "cat-networking", images: [], seller_count: 6, is_active: true, sku: "TPL-AX73-WIFI6-01", upc: "693536405110", ean: "5901234567800" },
-  { id: "demo-008", title: "Cisco Catalyst 2960X Switch 48-Port", brand: "Cisco", category_id: "cat-networking", images: [], seller_count: 2, is_active: true, sku: "CIS-2960X-48P-01", upc: "887658000115", ean: "5901234567801" },
-  { id: "demo-009", title: "Marine GPS Navigator Garmin", brand: "Mercury", category_id: "cat-marine", images: [], seller_count: 3, is_active: true, sku: "MAR-GPS-GARMIN-01", upc: "753759000226", ean: "5901234567802" },
-  { id: "demo-010", title: "Solar Panel 450W Monocrystalline", brand: "Caterpillar", category_id: "cat-solar", images: [], seller_count: 2, is_active: true, sku: "SOL-450W-MONO-01", upc: "842167000771", ean: "5901234567807" },
-  { id: "demo-011", title: "UPS APC Smart-UPS 1500VA", brand: "Caterpillar", category_id: "cat-ups", images: [], seller_count: 4, is_active: true, sku: "APC-SUPS-1500VA-01", upc: "731304000882", ean: "5901234567808" },
-  { id: "demo-012", title: "Honeywell Safety Goggles Professional", brand: "Honeywell", category_id: "cat-safety", images: [], seller_count: 8, is_active: true, sku: "HON-SAFEGOG-01", upc: "625814000993", ean: "5901234567809" },
+  { id: "demo-001", title: "Hikvision 4MP IP Dome Camera DS-2CD2143G2-I", brand: "Hikvision", category_id: "cat-surveillance", images: [], seller_count: 4, is_active: true, sku: "HIK-4MP-DOME-01", upc: "846352000128", ean: "5901234567890", isbn: "9780141036144" },
+  { id: "demo-002", title: "Dahua 8MP IR Bullet Network Camera", brand: "Dahua", category_id: "cat-surveillance", images: [], seller_count: 3, is_active: true, sku: "DAH-8MP-BULL-01", upc: "732628000233", ean: "5901234567891", isbn: "9780061120084" },
+  { id: "demo-003", title: "Bosch Fire Alarm Control Panel FPA-5000", brand: "Bosch", category_id: "cat-fire", images: [], seller_count: 2, is_active: true, sku: "BOS-FPA5000-01", upc: "720754000449", ean: "5901234567893", isbn: "9780451524935" },
+  { id: "demo-004", title: "Honeywell Addressable Smoke Detector", brand: "Honeywell", category_id: "cat-fire", images: [], seller_count: 5, is_active: true, sku: "HON-ADRSMK-01", upc: "562216000551", ean: "5901234567894", isbn: "9780143039433" },
+  { id: "demo-005", title: "ZKTeco Biometric Access Control F18", brand: "ZKTeco", category_id: "cat-access", images: [], seller_count: 3, is_active: true, sku: "ZKT-F18-ACCESS-01", upc: "693104000662", ean: "5901234567895", isbn: "9780545010221" },
+  { id: "demo-006", title: "Yamaha 4-Stroke Outboard F25", brand: "Yamaha", category_id: "cat-marine", images: [], seller_count: 1, is_active: true, sku: "YAM-F25-4STR-01", upc: "789452000773", ean: "5901234567897", isbn: "9780439708184" },
+  { id: "demo-007", title: "TP-Link WiFi 6 Router Archer AX73", brand: "TP-Link", category_id: "cat-networking", images: [], seller_count: 6, is_active: true, sku: "TPL-AX73-WIFI6-01", upc: "693536405110", ean: "5901234567800", isbn: "9780060935467" },
+  { id: "demo-008", title: "Cisco Catalyst 2960X Switch 48-Port", brand: "Cisco", category_id: "cat-networking", images: [], seller_count: 2, is_active: true, sku: "CIS-2960X-48P-01", upc: "887658000115", ean: "5901234567801", isbn: "9780743273565" },
+  { id: "demo-009", title: "Marine GPS Navigator Garmin", brand: "Mercury", category_id: "cat-marine", images: [], seller_count: 3, is_active: true, sku: "MAR-GPS-GARMIN-01", upc: "753759000226", ean: "5901234567802", isbn: "9780316769488" },
+  { id: "demo-010", title: "Solar Panel 450W Monocrystalline", brand: "Caterpillar", category_id: "cat-solar", images: [], seller_count: 2, is_active: true, sku: "SOL-450W-MONO-01", upc: "842167000771", ean: "5901234567807", isbn: "9780064401889" },
+  { id: "demo-011", title: "UPS APC Smart-UPS 1500VA", brand: "Caterpillar", category_id: "cat-ups", images: [], seller_count: 4, is_active: true, sku: "APC-SUPS-1500VA-01", upc: "731304000882", ean: "5901234567808", isbn: "9780142407332" },
+  { id: "demo-012", title: "Honeywell Safety Goggles Professional", brand: "Honeywell", category_id: "cat-safety", images: [], seller_count: 8, is_active: true, sku: "HON-SAFEGOG-01", upc: "625814000993", ean: "5901234567809", isbn: "9780399501487" },
 ];
 
 const DEMO_CATEGORIES: Category[] = [
@@ -273,7 +274,8 @@ export default function AddProductPage() {
             (p.brand && p.brand.toLowerCase().includes(q)) ||
             (p.sku && p.sku.toLowerCase().includes(q)) ||
             (p.upc && p.upc.toLowerCase().includes(q)) ||
-            (p.ean && p.ean.toLowerCase().includes(q))
+            (p.ean && p.ean.toLowerCase().includes(q)) ||
+            (p.isbn && p.isbn.toLowerCase().includes(q))
           );
         }
         if (categoryFilter) {
@@ -386,7 +388,7 @@ export default function AddProductPage() {
           <div className="relative">
             <Search size={16} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-text-4" />
             <input value={search} onChange={e => { setSearch(e.target.value); }}
-              placeholder="Search by product name, brand, or category..."
+              placeholder="Search by product name, brand, SKU, UPC, EAN, or ISBN..."
               className="w-full h-12 pl-10 pr-4 text-sm border border-border rounded-xl focus:outline-none focus:ring-2 focus:ring-orange/20" />
           </div>
 
@@ -449,7 +451,12 @@ export default function AddProductPage() {
                         </div>
                         <p className="text-xs font-bold text-text-1 leading-tight line-clamp-2">{product.title}</p>
                         <p className="text-[10px] text-text-4 mt-1">{product.brand || "Generic"}</p>
-                        {product.sku && <p className="text-[9px] text-gray-400 mt-0.5">SKU: {product.sku}</p>}
+                        <div className="flex flex-wrap gap-x-2 gap-y-0.5 mt-0.5">
+                          {product.sku && <span className="text-[9px] text-gray-400">SKU: {product.sku}</span>}
+                          {product.upc && <span className="text-[9px] text-gray-400">UPC: {product.upc}</span>}
+                          {product.ean && <span className="text-[9px] text-gray-400">EAN: {product.ean}</span>}
+                          {product.isbn && <span className="text-[9px] text-gray-400">ISBN: {product.isbn}</span>}
+                        </div>
                         <div className="flex items-center gap-2 mt-1.5">
                           <span className="text-[10px] text-text-4">{product.seller_count} seller{product.seller_count !== 1 ? "s" : ""}</span>
                           {gated && <span className="text-[8px] px-1.5 py-0.5 rounded-full bg-amber-100 text-amber-700 font-medium">Gated</span>}

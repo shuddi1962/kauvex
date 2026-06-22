@@ -4,7 +4,7 @@ import Link from "next/link";
 import VendorShell from "@/components/vendor/vendor-shell";
 import { insforge } from "@/lib/insforge";
 import { formatPrice } from "@/lib/utils";
-import { Search, Plus, Upload, Package, X, ChevronRight, AlertCircle, Check, Loader2, CheckCircle, ShoppingCart, ChevronLeft, ChevronLast, Filter } from "lucide-react";
+import { Search, Plus, Upload, Package, ChevronRight, AlertCircle, Check, Loader2, CheckCircle, ChevronLeft, ChevronLast, Filter } from "lucide-react";
 
 interface CatalogProduct {
   id: string;
@@ -63,156 +63,6 @@ const DEMO_CATEGORIES: Category[] = [
 
 const DEMO_BRANDS = ["Hikvision", "Dahua", "Bosch", "Honeywell", "ZKTeco", "Yamaha", "Mercury", "TP-Link", "Cisco", "Caterpillar", "Axis"];
 
-interface SellModalProps {
-  product: CatalogProduct | null;
-  onClose: () => void;
-  onSuccess: () => void;
-}
-
-function SellModal({ product, onClose, onSuccess }: SellModalProps) {
-  const [price, setPrice] = useState("");
-  const [quantity, setQuantity] = useState("1");
-  const [condition, setCondition] = useState("new");
-  const [fulfillment, setFulfillment] = useState("merchant");
-  const [shippingDays, setShippingDays] = useState("5");
-  const [warranty, setWarranty] = useState("no_warranty");
-  const [submitting, setSubmitting] = useState(false);
-  const [error, setError] = useState("");
-  const [success, setSuccess] = useState(false);
-
-  if (!product) return null;
-
-  const parsePrice = (v: string) => parseFloat(v.replace(/,/g, ""));
-
-  const handleSubmit = async () => {
-    const numericPrice = parsePrice(price);
-    if (!price || numericPrice <= 0) { setError("Enter a valid price"); return; }
-    setError("");
-    setSubmitting(true);
-    try {
-      const tokenRes = await fetch("/api/auth/session-token");
-      const { token } = await tokenRes.json();
-      const res = await fetch("/api/v1/vendors/offers", {
-        method: "POST",
-        headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
-        body: JSON.stringify({
-          shared_product_id: product.id,
-          price: numericPrice,
-          inventory: parseInt(quantity),
-          condition,
-          fulfillment_type: fulfillment,
-          shipping_days: parseInt(shippingDays),
-          warranty,
-        }),
-      });
-      const json = await res.json();
-      if (!res.ok) { setError(json.error || "Failed to list product"); setSubmitting(false); return; }
-      setSuccess(true);
-      onSuccess();
-    } catch {
-      setError("Network error. Please try again.");
-    } finally {
-      setSubmitting(false);
-    }
-  };
-
-  if (success) {
-    window.location.href = `/vendor/products/${product.id}/offer`;
-    return null;
-  }
-
-  const numericPrice = parsePrice(price || "0");
-  const commission = numericPrice * 0.12;
-  const earnings = numericPrice - commission;
-
-  return (
-    <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center" onClick={onClose}>
-      <div className="bg-white rounded-2xl shadow-2xl w-full max-w-lg mx-4 p-6 max-h-[90vh] overflow-y-auto" onClick={e => e.stopPropagation()}>
-        <div className="flex items-center justify-between mb-4">
-          <h3 className="font-bold text-lg text-text-1">Sell This Product</h3>
-          <button onClick={onClose} className="p-1 hover:bg-gray-100 rounded-lg"><X size={18} /></button>
-        </div>
-        <div className="flex items-center gap-3 p-3 bg-gray-50 rounded-xl mb-4">
-          {product.images?.[0] ? (
-            <img src={product.images[0]} className="w-10 h-10 rounded object-cover" alt="" />
-          ) : (
-            <div className="w-10 h-10 rounded bg-gray-200 flex items-center justify-center"><Package size={16} className="text-text-4" /></div>
-          )}
-          <div>
-            <p className="text-sm font-bold text-text-1">{product.title}</p>
-            <p className="text-xs text-text-4">{product.brand || "Generic"}</p>
-          </div>
-        </div>
-        <div className="space-y-3 mb-4">
-          <div>
-            <label className="text-xs font-semibold text-text-2 block mb-1">Your Price (USD)</label>
-            <div className="relative">
-              <span className="absolute left-3 top-1/2 -translate-y-1/2 text-sm text-text-4">$</span>
-              <input type="text" value={price} onChange={e => { const v = e.target.value.replace(/[^0-9.]/g, ""); setPrice(v); }} onBlur={() => { if (price) { const n = parsePrice(price); if (!isNaN(n)) setPrice(n.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })); } }} onFocus={() => { setPrice(price.replace(/,/g, "")); }} placeholder="0.00" className="w-full h-10 pl-7 pr-3 border border-border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-orange/20" />
-            </div>
-          </div>
-          <div className="grid grid-cols-2 gap-3">
-            <div>
-              <label className="text-xs font-semibold text-text-2 block mb-1">Quantity</label>
-              <input type="number" value={quantity} onChange={e => setQuantity(e.target.value)} placeholder="1" className="w-full h-10 px-3 border border-border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-orange/20" />
-            </div>
-            <div>
-              <label className="text-xs font-semibold text-text-2 block mb-1">Condition</label>
-              <select value={condition} onChange={e => setCondition(e.target.value)} className="w-full h-10 px-3 border border-border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-orange/20 bg-white">
-                <option value="new">New</option>
-                <option value="like_new">Like New</option>
-                <option value="used_good">Used - Good</option>
-                <option value="refurbished">Refurbished</option>
-              </select>
-            </div>
-          </div>
-          <div className="grid grid-cols-2 gap-3">
-            <div>
-              <label className="text-xs font-semibold text-text-2 block mb-1">Fulfillment</label>
-              <select value={fulfillment} onChange={e => setFulfillment(e.target.value)} className="w-full h-10 px-3 border border-border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-orange/20 bg-white">
-                <option value="merchant">Merchant Fulfilled</option>
-                <option value="FBK">FBK (Kauvex Fulfilled)</option>
-              </select>
-            </div>
-            <div>
-              <label className="text-xs font-semibold text-text-2 block mb-1">Delivery (days)</label>
-              <input type="number" value={shippingDays} onChange={e => setShippingDays(e.target.value)} placeholder="5" className="w-full h-10 px-3 border border-border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-orange/20" />
-            </div>
-          </div>
-          <div>
-            <label className="text-xs font-semibold text-text-2 block mb-1">Warranty</label>
-            <select value={warranty} onChange={e => setWarranty(e.target.value)} className="w-full h-10 px-3 border border-border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-orange/20 bg-white">
-              <option value="no_warranty">No Warranty</option>
-              <option value="3_months">3 Months</option>
-              <option value="6_months">6 Months</option>
-              <option value="1_year">1 Year</option>
-              <option value="2_years">2 Years</option>
-            </select>
-          </div>
-        </div>
-        {price && parsePrice(price) > 0 && (
-          <div className="bg-amber-50 border border-amber/20 rounded-xl p-3 mb-4">
-            <div className="text-xs text-amber-800 space-y-1">
-              <p>Platform commission (12%): <strong>-{formatPrice(commission, "USD")}</strong></p>
-              <p>Your estimated earnings: <strong>{formatPrice(earnings, "USD")}</strong></p>
-            </div>
-          </div>
-        )}
-        {error && (
-          <div className="bg-red-50 border border-red/20 rounded-xl p-3 flex items-start gap-2 mb-4">
-            <AlertCircle size={14} className="text-red shrink-0 mt-0.5" />
-            <p className="text-xs text-red-700">{error}</p>
-          </div>
-        )}
-        <button onClick={handleSubmit} disabled={submitting} className="w-full h-11 bg-orange text-white text-sm font-bold rounded-xl hover:bg-orange/90 transition-colors flex items-center justify-center gap-2 disabled:opacity-50">
-          {submitting ? <Loader2 size={15} className="animate-spin" /> : <ShoppingCart size={15} />}
-          {submitting ? "Listing..." : "List This Product"}
-        </button>
-      </div>
-    </div>
-  );
-}
-
 export default function AddProductPage() {
   const [search, setSearch] = useState("");
   const [debouncedSearch, setDebouncedSearch] = useState("");
@@ -224,7 +74,6 @@ export default function AddProductPage() {
   const [page, setPage] = useState(1);
   const [pageSize] = useState(24);
   const [myOffers, setMyOffers] = useState<Set<string>>(new Set());
-  const [sellProduct, setSellProduct] = useState<CatalogProduct | null>(null);
   const [categories, setCategories] = useState<Category[]>([]);
   const [brands, setBrands] = useState<string[]>([]);
   const [restrictedGates, setRestrictedGates] = useState<RestrictedGate[]>([]);
@@ -463,11 +312,13 @@ export default function AddProductPage() {
                         </div>
                         <div className="mt-3">
                           {alreadySelling ? (
-                            <span className="w-full h-8 flex items-center justify-center gap-1 text-[10px] font-semibold text-green-600 bg-green-50 rounded-lg"><Check size={11} /> You Sell This</span>
+                            <Link href={`/vendor/products/${product.id}/offer`} className="w-full h-8 flex items-center justify-center gap-1 text-[10px] font-semibold text-green-600 bg-green-50 rounded-lg">
+                              <Check size={11} /> You Sell This
+                            </Link>
                           ) : (
-                            <button onClick={() => setSellProduct(product)} className="w-full h-8 bg-orange text-white text-[10px] font-bold rounded-lg hover:bg-orange/90 transition-colors flex items-center justify-center gap-1">
-                              <Plus size={11} /> Sell This
-                            </button>
+                            <Link href={`/vendor/products/approval-request?productId=${product.id}&brand=${encodeURIComponent(product.brand || "")}&category=${encodeURIComponent(product.category_id || "")}`} className="w-full h-8 bg-orange text-white text-[10px] font-bold rounded-lg hover:bg-orange/90 transition-colors flex items-center justify-center gap-1">
+                              <Plus size={11} /> List Product
+                            </Link>
                           )}
                         </div>
                       </div>
@@ -563,26 +414,6 @@ export default function AddProductPage() {
           <Link href="/vendor/products/bulk-upload" className="shrink-0 px-4 py-2 bg-orange text-white text-xs font-bold rounded-xl hover:bg-orange/90">Bulk Upload</Link>
         </div>
       </div>
-
-      {sellProduct && <SellModal product={sellProduct} onClose={() => { setSellProduct(null); }} onSuccess={() => {
-        const fetchMyOffers = async () => {
-          try {
-            const tokenRes = await fetch("/api/auth/session-token");
-            const { token } = await tokenRes.json();
-            if (!token) return;
-            const res = await fetch("/api/v1/vendors/offers", {
-              headers: { Authorization: `Bearer ${token}` },
-            });
-            const json = await res.json();
-            if (json.data) {
-              const offered = new Set<string>();
-              (json.data as any[]).forEach((o: any) => offered.add(o.shared_product_id));
-              setMyOffers(offered);
-            }
-          } catch {}
-        };
-        fetchMyOffers();
-      }} />}
     </VendorShell>
   );
 }

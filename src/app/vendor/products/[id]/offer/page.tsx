@@ -373,19 +373,55 @@ export default function ProductOfferPage() {
               <label className="text-xs font-semibold text-text-2 block mb-1">
                 Your Price ({offers.find((o) => o.checked)?.currencyCode || "USD"})
               </label>
-              <input
-                type="number"
-                step="0.01"
-                value={yourPrice}
-                onChange={(e) => {
-                  const val = Number(e.target.value) || 0;
-                  setYourPrice(val);
-                  setOffers((prev) =>
-                    prev.map((o) => (o.checked ? { ...o, yourPrice: val } : o)),
-                  );
-                }}
-                className="w-full h-10 px-3 border border-border rounded-lg text-sm"
-              />
+              <div className="relative">
+                <span className="absolute left-3 top-1/2 -translate-y-1/2 text-sm text-text-4">$</span>
+                <input
+                  type="text"
+                  value={yourPrice ? yourPrice.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 }) : ""}
+                  onChange={(e) => {
+                    const v = e.target.value.replace(/[^0-9.]/g, "");
+                    const val = parseFloat(v) || 0;
+                    setYourPrice(val);
+                    setOffers((prev) =>
+                      prev.map((o) => (o.checked ? { ...o, yourPrice: val } : o)),
+                    );
+                  }}
+                  placeholder="0.00"
+                  className="w-full h-10 pl-7 pr-3 border border-border rounded-lg text-sm"
+                />
+              </div>
+            </div>
+            <div>
+              <label className="text-xs font-semibold text-text-2 block mb-1">Available Stock (units)</label>
+              <div className="flex items-center gap-1">
+                <button
+                  onClick={() => {
+                    const qty = Math.max(0, (offers.find((o) => o.checked)?.quantity || 0) - 1);
+                    setOffers((prev) => prev.map((o) => (o.checked ? { ...o, quantity: qty } : o)));
+                  }}
+                  className="p-1.5 hover:bg-gray-100 rounded-lg border border-border"
+                >
+                  <Minus size={13} />
+                </button>
+                <input
+                  type="number"
+                  value={offers.find((o) => o.checked)?.quantity || 0}
+                  onChange={(e) => {
+                    const qty = Math.max(0, parseInt(e.target.value) || 0);
+                    setOffers((prev) => prev.map((o) => (o.checked ? { ...o, quantity: qty } : o)));
+                  }}
+                  className="w-full h-10 px-2 text-center text-sm border border-border rounded-lg font-mono"
+                />
+                <button
+                  onClick={() => {
+                    const qty = (offers.find((o) => o.checked)?.quantity || 0) + 1;
+                    setOffers((prev) => prev.map((o) => (o.checked ? { ...o, quantity: qty } : o)));
+                  }}
+                  className="p-1.5 hover:bg-gray-100 rounded-lg border border-border"
+                >
+                  <Plus size={13} />
+                </button>
+              </div>
             </div>
             <div>
               <label className="text-xs font-semibold text-text-2 block mb-1">Item Condition</label>

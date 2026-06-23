@@ -23,7 +23,16 @@ const footerColumns = [
       { label: "Deals & Offers", url: "/deals" },
       { label: "Brands", url: "/brands" },
       { label: "Gift Cards", url: "/shop" },
-
+    ],
+  },
+  {
+    title: "Explore",
+    links: [
+      { label: "Kauvex Express", url: "/express" },
+      { label: "Send a Package", url: "/express/book" },
+      { label: "Track Shipment", url: "/express/track" },
+      { label: "Express for Business", url: "/express/business" },
+      { label: "Become a Courier Partner", url: "/logistics/register" },
     ],
   },
   {

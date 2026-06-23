@@ -9,6 +9,7 @@ import LocationOverrideModal from "@/components/geo/location-override-modal";
 const currencies = ["USD", "NGN", "GBP", "EUR", "GHS", "CAD", "AUD", "ZAR", "KES", "JPY", "CNY"];
 
 const topLinks = [
+  { label: "Kauvex Express", href: "/express" },
   { label: "Sell on KAUVEX", href: "/sell" },
   { label: "B2B/Wholesale", href: "/wholesale" },
   { label: "Affiliate Program", href: "/affiliate" },

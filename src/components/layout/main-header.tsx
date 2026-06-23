@@ -8,6 +8,7 @@ import {
   User,
   Package,
   X,
+  Truck,
 } from "lucide-react";
 import { useCartStore } from "@/store/cart-store";
 import { useUIStore } from "@/store/ui-store";
@@ -83,6 +84,14 @@ export default function MainHeader() {
 
         {/* Right Icons */}
         <div className="flex items-center gap-0.5">
+          <Link
+            href="/express"
+            className="flex flex-col items-center gap-0.5 px-2.5 py-1.5 rounded-lg hover:bg-gray-50 transition-colors group"
+          >
+            <Truck size={20} className="text-text-3 group-hover:text-orange transition-colors" />
+            <span className="text-[10px] text-text-4 hidden lg:block">Express</span>
+          </Link>
+
           <Link
             href="/track-order"
             className="flex flex-col items-center gap-0.5 px-2.5 py-1.5 rounded-lg hover:bg-gray-50 transition-colors group"

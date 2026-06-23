@@ -14,6 +14,7 @@ import {
   RefreshCw, UserCog, MapPinOff, Building2, Handshake, Radio,
   Gavel, Repeat, Download, Bot, MessageCircle, Languages,
   TrendingUp, Scan, QrCode, ExternalLink, LogOut,
+  Route, DollarSign, Landmark, Briefcase, ShieldAlert, Globe2,
 } from "lucide-react";
 import { AdminStorefrontFilter } from "@/components/admin/storefront-filter";
 import { useAuthStore } from "@/store/auth-store";
@@ -173,11 +174,26 @@ const topNavSections: { key: SectionKey; label: string; icon: React.ElementType;
     key: "operations", label: "Operations", icon: Truck,
     groups: [
       { title: "Logistics", items: [
-        { label: "Delivery", href: "/admin/delivery" },
+        { label: "Logistics Dashboard", href: "/admin/logistics" },
+        { label: "Delivery Management", href: "/admin/delivery" },
         { label: "Drivers", href: "/admin/drivers" },
         { label: "Shipping Zones", href: "/admin/shipping" },
         { label: "Shipping Carriers", href: "/admin/shipping-carriers" },
         { label: "Returns", href: "/admin/returns" },
+        { label: "Partners", href: "/admin/logistics/partners" },
+        { label: "Rate Cards", href: "/admin/logistics/rates" },
+        { label: "Dispatch Settings", href: "/admin/logistics/dispatch" },
+        { label: "Insurance & Liability", href: "/admin/logistics/insurance" },
+        { label: "Payouts", href: "/admin/logistics/payouts" },
+        { label: "FBK Oversight", href: "/admin/logistics/fbk" },
+        { label: "Express Analytics", href: "/admin/logistics/express" },
+        { label: "Coverage Gaps", href: "/admin/logistics/gaps" },
+        { label: "Packaging", href: "/admin/logistics/packaging", badge: "New" },
+        { label: "HS Codes", href: "/admin/shipping/hs-codes", badge: "New" },
+        { label: "Restricted Items", href: "/admin/shipping/restrictions", badge: "New" },
+        { label: "Surge Pricing", href: "/admin/shipping/surge-pricing", badge: "New" },
+        { label: "Business Accounts", href: "/admin/shipping/business-accounts", badge: "New" },
+        { label: "Network Map", href: "/admin/logistics/map", badge: "New" },
       ]},
       { title: "Warehouse", items: [
         { label: "Locations", href: "/admin/locations" },
@@ -230,7 +246,7 @@ function detectSection(pathname: string): SectionKey {
   if (pathname.startsWith("/admin/marketing") || pathname.startsWith("/admin/email-marketing") || pathname.startsWith("/admin/advertising") || pathname.startsWith("/admin/banners") || pathname.startsWith("/admin/popups") || pathname.startsWith("/admin/seo") || pathname.startsWith("/admin/affiliates") || pathname.startsWith("/admin/social-commerce") || pathname.startsWith("/admin/live-shopping")) return "marketing";
   if (pathname.startsWith("/admin/homepage") || pathname.startsWith("/admin/page-editor") || pathname.startsWith("/admin/menu") || pathname.startsWith("/admin/footer") || pathname.startsWith("/admin/media") || pathname.startsWith("/admin/pages")) return "content";
   if (pathname.startsWith("/admin/storefronts") || pathname.startsWith("/admin/vendors") || pathname.startsWith("/admin/vendor-ads") || pathname.startsWith("/admin/fbk") || pathname.startsWith("/admin/boat-configurator") || pathname.startsWith("/admin/reputation") || pathname.startsWith("/admin/authenticity") || pathname.startsWith("/admin/suppliers") || pathname.startsWith("/admin/franchise") || pathname.startsWith("/admin/auctions") || pathname.startsWith("/admin/sourcing") || pathname.startsWith("/admin/pod") || pathname.startsWith("/admin/art-marketplace") || pathname.startsWith("/admin/group-buy") || pathname.startsWith("/admin/nft") || pathname.startsWith("/admin/catalog") || pathname.startsWith("/admin/brand-registry") || pathname.startsWith("/admin/university")) return "marketplace";
-  if (pathname.startsWith("/admin/delivery") || pathname.startsWith("/admin/drivers") || pathname.startsWith("/admin/returns") || pathname.startsWith("/admin/shipping") || pathname.startsWith("/admin/shipping-carriers") || pathname.startsWith("/admin/locations") || pathname.startsWith("/admin/warehouses") || pathname.startsWith("/admin/pickup-points") || pathname.startsWith("/admin/dropoff-zones") || pathname.startsWith("/admin/warranty") || pathname.startsWith("/admin/field-team") || pathname.startsWith("/admin/cj-dropshipping") || pathname.startsWith("/admin/forecasting") || pathname.startsWith("/admin/fraud")) return "operations";
+  if (pathname.startsWith("/admin/delivery") || pathname.startsWith("/admin/drivers") || pathname.startsWith("/admin/returns") || pathname.startsWith("/admin/shipping") || pathname.startsWith("/admin/shipping-carriers") || pathname.startsWith("/admin/shipping/hs-codes") || pathname.startsWith("/admin/shipping/restrictions") || pathname.startsWith("/admin/shipping/surge-pricing") || pathname.startsWith("/admin/shipping/business-accounts") || pathname.startsWith("/admin/logistics") || pathname.startsWith("/admin/locations") || pathname.startsWith("/admin/warehouses") || pathname.startsWith("/admin/pickup-points") || pathname.startsWith("/admin/dropoff-zones") || pathname.startsWith("/admin/warranty") || pathname.startsWith("/admin/field-team") || pathname.startsWith("/admin/cj-dropshipping") || pathname.startsWith("/admin/forecasting") || pathname.startsWith("/admin/fraud")) return "operations";
   if (pathname.startsWith("/admin/settings") || pathname.startsWith("/admin/staff") || pathname.startsWith("/admin/roles") || pathname.startsWith("/admin/features") || pathname.startsWith("/admin/mobile") || pathname.startsWith("/admin/site-doctor") || pathname.startsWith("/admin/audit-log") || pathname.startsWith("/admin/ai") || pathname.startsWith("/admin/api-keys") || pathname.startsWith("/admin/webhooks") || pathname.startsWith("/admin/white-label") || pathname.startsWith("/admin/languages") || pathname.startsWith("/admin/ai-assistant") || pathname.startsWith("/admin/chat") || pathname.startsWith("/api/docs")) return "system";
   return "dashboard";
 }

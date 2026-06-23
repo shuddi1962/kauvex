@@ -3927,3 +3927,459 @@ model ChannelProductSync {
   @@unique([vendorId, kauvexProductId, channel])
   @@map("kv_channel_product_sync")
 }
+
+// ============================================================
+// SECTION: PHASE 14 — COMPLETE SHIPPING & LOGISTICS
+// ============================================================
+
+model LogisticsPartner {
+  id                  String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  partnerType         String    @map("partner_type")
+  // rider | driver | courier_business | freight_company
+  accountHolderName   String    @map("account_holder_name")
+  businessName        String?   @map("business_name")
+  email               String?   @unique
+  phone               String
+  governmentIdUrl     String?   @map("government_id_url")
+  businessRegDocUrl   String?   @map("business_reg_doc_url")
+  vehicleRegUrl       String?   @map("vehicle_reg_url")
+  vehicleInsUrl       String?   @map("vehicle_ins_url")
+  vehicleType         String?   @map("vehicle_type")
+  maxWeightKg         Decimal?  @map("max_weight_kg") @db.Decimal(10, 2)
+  maxVolumeM3         Decimal?  @map("max_volume_m3") @db.Decimal(10, 2)
+  baseCity            String    @map("base_city")
+  baseState           String?   @map("base_state")
+  baseCountry         String    @map("base_country")
+  serviceRadiusKm     Int?      @map("service_radius_km")
+  bankName            String?   @map("bank_name")
+  bankAccountNumber   String?   @map("bank_account_number")
+  bankAccountName     String?   @map("bank_account_name")
+  bvn                 String?
+  payoutSchedule      String    @default("weekly") @map("payout_schedule")
+  // daily | weekly | bi_weekly
+  status              String    @default("pending")
+  // pending | active | suspended | banned
+  tier                String    @default("new")
+  // new | verified | trusted | premium
+  jobsCompleted       Int       @default(0) @map("jobs_completed")
+  rating              Decimal?  @default(0) @db.Decimal(3, 2) @map("rating")
+  acceptanceRate      Decimal?  @default(0) @db.Decimal(5, 2) @map("acceptance_rate")
+  onTimeRate          Decimal?  @default(0) @db.Decimal(5, 2) @map("on_time_rate")
+  isOnline            Boolean   @default(false) @map("is_online")
+  currentLat          Decimal?  @map("current_lat") @db.Decimal(10, 6)
+  currentLng          Decimal?  @map("current_lng") @db.Decimal(10, 6)
+  lastHeartbeat       DateTime? @map("last_heartbeat")
+  totalEarnings       Decimal   @default(0) @map("total_earnings") @db.Decimal(12, 2)
+  walletBalance       Decimal   @default(0) @map("wallet_balance") @db.Decimal(12, 2)
+  incidentCount       Int       @default(0) @map("incident_count")
+  approvedAt          DateTime? @map("approved_at")
+  notes               String?   @db.Text
+  createdAt           DateTime  @default(now()) @map("created_at")
+  updatedAt           DateTime  @updatedAt @map("updated_at")
+
+  @@map("kv_logistics_partners")
+}
+
+model LogisticsJob {
+  id                  String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  jobNumber           String    @unique @map("job_number")
+  orderId             String?   @map("order_id")
+  expressShipmentId   String?   @map("express_shipment_id")
+  tier                String    @map("tier")
+  // tier_1 | tier_2 | tier_3
+  partnerId           String?   @map("partner_id") @db.Uuid
+  partnerType         String?   @map("partner_type")
+  carrierCode         String?   @map("carrier_code")
+  // carrier API code for Tier 3 fallback
+  pickupAddress       String?   @map("pickup_address") @db.Text
+  pickupCity          String?   @map("pickup_city")
+  pickupCountry       String?   @map("pickup_country")
+  pickupLat           Decimal?  @map("pickup_lat") @db.Decimal(10, 6)
+  pickupLng           Decimal?  @map("pickup_lng") @db.Decimal(10, 6)
+  dropoffAddress      String?   @map("dropoff_address") @db.Text
+  dropoffCity         String?   @map("dropoff_city")
+  dropoffCountry      String?   @map("dropoff_country")
+  dropoffLat          Decimal?  @map("dropoff_lat") @db.Decimal(10, 6)
+  dropoffLng          Decimal?  @map("dropoff_lng") @db.Decimal(10, 6)
+  weightKg            Decimal?  @map("weight_kg") @db.Decimal(10, 3)
+  distanceKm          Decimal?  @map("distance_km") @db.Decimal(10, 2)
+  declaredValue       Decimal?  @map("declared_value") @db.Decimal(12, 2)
+  payoutAmount        Decimal?  @map("payout_amount") @db.Decimal(10, 2)
+  platformFee         Decimal?  @map("platform_fee") @db.Decimal(10, 2)
+  status              String    @default("pending")
+  // pending | offered | accepted | heading_to_pickup |
+  // arrived_at_pickup | picked_up | in_transit |
+  // arrived_at_delivery | out_for_delivery | delivered |
+  // failed | returned | cancelled
+  offeredTo           String[]  @map("offered_to")
+  // partner IDs that were offered this job
+  acceptanceDeadline  DateTime? @map("acceptance_deadline")
+  pickedUpAt          DateTime? @map("picked_up_at")
+  deliveredAt         DateTime? @map("delivered_at")
+  failureReason       String?   @map("failure_reason")
+  proofOfDelivery     String?   @map("proof_of_delivery")
+  // photo URL
+  deliveryPin         String?   @map("delivery_pin")
+  signatureRequired   Boolean   @default(false) @map("signature_required")
+  customerNotifiedAt  DateTime? @map("customer_notified_at")
+  notes               String?   @db.Text
+  createdAt           DateTime  @default(now()) @map("created_at")
+  updatedAt           DateTime  @updatedAt @map("updated_at")
+
+  partner LogisticsPartner? @relation(fields: [partnerId], references: [id])
+
+  @@map("kv_logistics_jobs")
+}
+
+model ShippingProfile {
+  id                  String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  vendorId            String    @map("vendor_id")
+  profileName         String    @map("profile_name")
+  isDefault           Boolean   @default(false) @map("is_default")
+  carrierSelection    Json?     @default("[]") @map("carrier_selection")
+  // [{code, type: 'kauvex'|'own', accountNumber?, apiKey?, handoffMethod?}]
+  unitSystem          String    @default("metric") @map("unit_system")
+  // metric | imperial
+  dimWeightDivisor    Int       @default(5000) @map("dim_weight_divisor")
+  priceLogic          String    @default("realtime") @map("price_logic")
+  // realtime | flat_table | free_shipping
+  flatRates           Json?     @default("[]") @map("flat_rates")
+  // [{weightMin, weightMax, zone, price}]
+  freeShippingMin     Decimal?  @map("free_shipping_min") @db.Decimal(12, 2)
+  markupPercent       Decimal?  @map("markup_percent") @db.Decimal(5, 2)
+  markupFixed         Decimal?  @map("markup_fixed") @db.Decimal(10, 2)
+  handlingFee         Decimal?  @default(0) @map("handling_fee") @db.Decimal(10, 2)
+  fragileHandling     Boolean   @default(false) @map("fragile_handling")
+  containsBatteries   Boolean   @default(false) @map("contains_batteries")
+  containsLiquids     Boolean   @default(false) @map("contains_liquids")
+  tempSensitive       Boolean   @default(false) @map("temp_sensitive")
+  ageVerification     Boolean   @default(false) @map("age_verification")
+  isHighValue         Boolean   @default(false) @map("is_high_value")
+  coverageCountries   String[]  @map("coverage_countries")
+  excludedRegions     String[]  @map("excluded_regions")
+  shipToSameCity      String?   @map("ship_to_same_city")
+  shipToSameState     String?   @map("ship_to_same_state")
+  shipToOtherStates   String?   @map("ship_to_other_states")
+  shipInternational   String?   @map("ship_international")
+  // estimated delivery time strings
+  isActive            Boolean   @default(true) @map("is_active")
+  createdAt           DateTime  @default(now()) @map("created_at")
+  updatedAt           DateTime  @updatedAt @map("updated_at")
+
+  @@map("kv_shipping_profiles")
+}
+
+model FBKDebt {
+  id                  String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  vendorId            String    @map("vendor_id")
+  debtType            String    @map("debt_type")
+  // storage | inbound | pick_pack | removal
+  amount              Decimal   @db.Decimal(10, 2)
+  interestAmount      Decimal   @default(0) @map("interest_amount") @db.Decimal(10, 2)
+  periodStart         DateTime? @map("period_start")
+  periodEnd           DateTime? @map("period_end")
+  status              String    @default("outstanding")
+  // outstanding | partial | cleared | written_off
+  recoveryFromSales   Decimal   @default(0) @map("recovery_from_sales") @db.Decimal(12, 2)
+  notes               String?   @db.Text
+  createdAt           DateTime  @default(now()) @map("created_at")
+  clearedAt           DateTime? @map("cleared_at")
+
+  @@map("kv_ship_fbk_debt")
+}
+
+model InsuranceReserve {
+  id                  String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  shipmentId          String    @map("shipment_id")
+  shipmentType        String    @map("shipment_type")
+  // marketplace | express | fbk
+  declaredValue       Decimal   @map("declared_value") @db.Decimal(12, 2)
+  premiumAmount       Decimal   @map("premium_amount") @db.Decimal(10, 2)
+  premiumRate         Decimal   @map("premium_rate") @db.Decimal(5, 4)
+  status              String    @default("active")
+  // active | claimed | expired
+  claimAmount         Decimal?  @map("claim_amount") @db.Decimal(12, 2)
+  claimStatus         String?   @map("claim_status")
+  claimApprovedAt     DateTime? @map("claim_approved_at")
+  createdAt           DateTime  @default(now()) @map("created_at")
+
+  @@map("kv_ship_insurance_reserve")
+}
+
+model CustomsDocument {
+  id                  String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  shipmentId          String    @map("shipment_id")
+  shipmentType        String    @map("shipment_type")
+  documentType        String    @map("document_type")
+  // commercial_invoice | packing_list | cn22 | cn23 | air_waybill | bill_of_lading
+  documentUrl         String?   @map("document_url") @db.Text
+  hsCodes             Json?     @default("[]") @map("hs_codes")
+  declaredValue       Decimal?  @map("declared_value") @db.Decimal(12, 2)
+  currency            String?   @default("NGN")
+  incoterm            String?   @default("DAP")
+  originCountry       String?   @map("origin_country")
+  destCountry         String?   @map("dest_country")
+  customsStatus       String    @default("pending") @map("customs_status")
+  // pending | submitted | cleared | held | rejected
+  dutiesEstimated     Decimal?  @map("duties_estimated") @db.Decimal(12, 2)
+  dutiesActual        Decimal?  @map("duties_actual") @db.Decimal(12, 2)
+  dutiesPaidBy        String?   @default("customer") @map("duties_paid_by")
+  // customer | vendor | kauvex
+  awbNumber           String?   @map("awb_number")
+  bolReference        String?   @map("bol_reference")
+  createdAt           DateTime  @default(now()) @map("created_at")
+
+  @@map("kv_ship_customs_documents")
+}
+
+model HsCode {
+  id                  String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  categoryId          String?   @map("category_id")
+  productId           String?   @map("product_id")
+  hsCode              String    @map("hs_code")
+  description         String?   @db.Text
+  notes               String?   @db.Text
+  createdAt           DateTime  @default(now()) @map("created_at")
+
+  @@map("kv_ship_hs_codes")
+}
+
+model RestrictedItem {
+  id                  String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  itemDescription     String    @map("item_description")
+  restrictionType     String    @map("restriction_type")
+  // global | country_specific
+  countryCode         String?   @map("country_code")
+  restrictionLevel    String    @map("restriction_level")
+  // soft_warning | hard_block
+  reason              String?   @db.Text
+  isActive            Boolean   @default(true) @map("is_active")
+  createdAt           DateTime  @default(now()) @map("created_at")
+
+  @@map("kv_ship_restricted_items")
+}
+
+model DropoffManifest {
+  id                  String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  vendorId            String    @map("vendor_id")
+  hubId               String?   @map("hub_id")
+  orderIds            String[]  @map("order_ids")
+  waybillNumbers      String[]  @map("waybill_numbers")
+  totalPackages       Int       @map("total_packages")
+  totalWeightKg       Decimal?  @map("total_weight_kg") @db.Decimal(10, 3)
+  status              String    @default("pending") @map("status")
+  // pending | received | partial | discrepancy
+  droppedOffAt        DateTime? @map("dropped_off_at")
+  receivedBy          String?   @map("received_by")
+  discrepancyNotes    String?   @map("discrepancy_notes") @db.Text
+  createdAt           DateTime  @default(now()) @map("created_at")
+
+  @@map("kv_ship_dropoff_manifests")
+}
+
+model PackagingElement {
+  id                  String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  category            String    @map("category")
+  // outer | inner | seal | insert | label
+  name                String
+  sizeCode            String?   @map("size_code")
+  dimensionsCm        Json?     @map("dimensions_cm")
+  maxWeightKg         Decimal?  @map("max_weight_kg") @db.Decimal(10, 3)
+  unitCost            Decimal?  @map("unit_cost") @db.Decimal(10, 2)
+  isKauvexBranded     Boolean   @default(false) @map("is_kauvex_branded")
+  isActive            Boolean   @default(true) @map("is_active")
+  createdAt           DateTime  @default(now()) @map("created_at")
+
+  @@map("kv_ship_packaging_elements")
+}
+
+model PackagingAddOn {
+  id                  String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  name                String
+  description         String?   @db.Text
+  price               Decimal   @db.Decimal(10, 2)
+  availableFor        String    @default("all") @map("available_for")
+  // fbk | express | all
+  isActive            Boolean   @default(true) @map("is_active")
+  createdAt           DateTime  @default(now()) @map("created_at")
+
+  @@map("kv_ship_packaging_add_ons")
+}
+
+model OrderPackaging {
+  id                  String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  orderId             String    @map("order_id")
+  fulfillmentType     String    @map("fulfillment_type")
+  // fbk | fbm | supplier | cj | pod | express
+  outerPackagingId    String?   @map("outer_packaging_id") @db.Uuid
+  innerProtection     Json?     @default("[]") @map("inner_protection")
+  sealType            String?   @map("seal_type")
+  inserts             Json?     @default("[]")
+  addOns              Json?     @default("[]") @map("add_ons")
+  packagingCost       Decimal?  @map("packaging_cost") @db.Decimal(10, 2)
+  kauvexBranded       Boolean   @default(true) @map("kauvex_branded")
+  vendorBranded       Boolean   @default(false) @map("vendor_branded")
+  whiteLabel          Boolean   @default(false) @map("white_label")
+  giftMessage         String?   @map("gift_message") @db.Text
+  createdAt           DateTime  @default(now()) @map("created_at")
+
+  @@map("kv_ship_order_packaging")
+}
+
+model SurgePeriod {
+  id                  String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  name                String
+  startDatetime       DateTime  @map("start_datetime")
+  endDatetime         DateTime  @map("end_datetime")
+  surgeMultiplier     Decimal   @default(1.5) @map("surge_multiplier") @db.Decimal(5, 2)
+  applicableTiers     String[]  @map("applicable_tiers")
+  applicableRegions   String[]  @map("applicable_regions")
+  isActive            Boolean   @default(true) @map("is_active")
+  createdAt           DateTime  @default(now()) @map("created_at")
+
+  @@map("kv_ship_surge_periods")
+}
+
+model CoverageGap {
+  id                  String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  city                String
+  state               String?
+  country             String
+  gapSeverity         String    @map("gap_severity")
+  // critical | moderate | minor
+  demandScore         Int       @default(0) @map("demand_score")
+  partnerCount        Int       @default(0) @map("partner_count")
+  recruitmentLaunched Boolean   @default(false) @map("recruitment_campaign_launched")
+  createdAt           DateTime  @default(now()) @map("created_at")
+  updatedAt           DateTime  @updatedAt @map("updated_at")
+
+  @@map("kv_ship_coverage_gaps")
+}
+
+model BusinessAccount {
+  id                  String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  companyName         String    @map("company_name")
+  contactName         String    @map("contact_name")
+  contactEmail        String    @unique @map("contact_email")
+  contactPhone        String    @map("contact_phone")
+  billingType         String    @default("per_shipment") @map("billing_type")
+  // per_shipment | monthly_invoice | prepaid_wallet
+  walletBalance       Decimal   @default(0) @map("wallet_balance") @db.Decimal(12, 2)
+  volumeTier          String    @default("bronze") @map("volume_tier")
+  // bronze | silver | gold | platinum
+  discountPercent     Decimal   @default(0) @map("discount_percent") @db.Decimal(5, 2)
+  monthlyInvoiceDay   Int       @default(1) @map("monthly_invoice_day")
+  paymentTermsDays    Int       @default(30) @map("payment_terms_days")
+  apiAccess           Boolean   @default(false) @map("api_access")
+  customWaybillBrand  Boolean   @default(false) @map("custom_waybill_branding")
+  status              String    @default("active")
+  createdAt           DateTime  @default(now()) @map("created_at")
+
+  @@map("kv_ship_business_accounts")
+}
+
+model ExpressShipment {
+  id                  String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  waybillNumber       String    @unique @map("waybill_number")
+  senderName          String    @map("sender_name")
+  senderPhone         String    @map("sender_phone")
+  senderEmail         String?   @map("sender_email")
+  businessAccountId   String?   @map("business_account_id") @db.Uuid
+  receiverName        String    @map("receiver_name")
+  receiverPhone       String    @map("receiver_phone")
+  pickupAddress       String?   @map("pickup_address") @db.Text
+  pickupCity          String?   @map("pickup_city")
+  pickupCountry       String    @map("pickup_country")
+  pickupLat           Decimal?  @map("pickup_lat") @db.Decimal(10, 6)
+  pickupLng           Decimal?  @map("pickup_lng") @db.Decimal(10, 6)
+  dropoffAddress      String?   @map("dropoff_address") @db.Text
+  dropoffCity         String?   @map("dropoff_city")
+  dropoffCountry      String    @map("dropoff_country")
+  dropoffLat          Decimal?  @map("dropoff_lat") @db.Decimal(10, 6)
+  dropoffLng          Decimal?  @map("dropoff_lng") @db.Decimal(10, 6)
+  contentsType        String?   @map("contents_type")
+  contentsDescription String?   @map("contents_description") @db.Text
+  weightKg            Decimal?  @map("weight_kg") @db.Decimal(10, 3)
+  lengthCm            Decimal?  @map("length_cm") @db.Decimal(10, 2)
+  widthCm             Decimal?  @map("width_cm") @db.Decimal(10, 2)
+  heightCm            Decimal?  @map("height_cm") @db.Decimal(10, 2)
+  dimensionalWeight   Decimal?  @map("dimensional_weight_kg") @db.Decimal(10, 3)
+  chargeableWeight    Decimal?  @map("chargeable_weight_kg") @db.Decimal(10, 3)
+  declaredValue       Decimal?  @map("declared_value") @db.Decimal(12, 2)
+  currency            String?   @default("NGN")
+  serviceLevel        String?   @map("service_level")
+  // economy | standard | express | same_day
+  tier                String?   @map("tier")
+  carrierUsed         String?   @map("carrier_used")
+  pricePaid           Decimal?  @map("price_paid") @db.Decimal(12, 2)
+  insurancePurchased  Boolean   @default(false) @map("insurance_purchased")
+  insurancePremium    Decimal?  @map("insurance_premium") @db.Decimal(10, 2)
+  packForMe           Boolean   @default(false) @map("pack_for_me")
+  packForMeFee        Decimal?  @map("pack_for_me_fee") @db.Decimal(10, 2)
+  specialInstructions String?   @map("special_instructions") @db.Text
+  signatureRequired   Boolean   @default(false) @map("signature_required")
+  paymentStatus       String    @default("pending") @map("payment_status")
+  paymentReference    String?   @map("payment_reference")
+  logisticsJobId      String?   @map("logistics_job_id") @db.Uuid
+  status              String    @default("pending") @map("status")
+  // pending | picked_up | in_transit | out_for_delivery | delivered | failed | returned
+  waybillUrl          String?   @map("waybill_url") @db.Text
+  createdAt           DateTime  @default(now()) @map("created_at")
+
+  @@map("kv_ship_express_shipments")
+}
+
+model RateCard {
+  id                  String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  tier                String    @map("tier")
+  // tier_1 | tier_2 | tier_3_air | tier_3_sea
+  originCountry       String    @map("origin_country")
+  destCountry         String    @map("destination_country")
+  originCity          String?   @map("origin_city")
+  destCity            String?   @map("destination_city")
+  weightMinKg         Decimal?  @map("weight_min_kg") @db.Decimal(10, 3)
+  weightMaxKg         Decimal?  @map("weight_max_kg") @db.Decimal(10, 3)
+  baseRate            Decimal   @map("base_rate") @db.Decimal(12, 2)
+  currency            String    @default("NGN")
+  partnerPayoutPct    Decimal?  @map("partner_payout_percent") @db.Decimal(5, 2)
+  kauvexFeePct        Decimal?  @map("kauvex_fee_percent") @db.Decimal(5, 2)
+  isActive            Boolean   @default(true) @map("is_active")
+  createdAt           DateTime  @default(now()) @map("created_at")
+
+  @@map("kv_ship_rate_cards")
+}
+
+model PickupWindow {
+  id                  String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  vendorId            String    @map("vendor_id")
+  dayOfWeek           Int       @map("day_of_week")
+  // 0=Sunday .. 6=Saturday
+  isAvailable         Boolean   @default(true) @map("is_available")
+  openTime            String?   @map("open_time")
+  // HH:MM format
+  closeTime           String?   @map("close_time")
+  createdAt           DateTime  @default(now()) @map("created_at")
+  updatedAt           DateTime  @updatedAt @map("updated_at")
+
+  @@map("kv_ship_pickup_windows")
+}
+
+model PartnerPayout {
+  id                  String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  partnerId           String    @map("partner_id") @db.Uuid
+  amount              Decimal   @db.Decimal(12, 2)
+  deductionAmount     Decimal   @default(0) @map("deduction_amount") @db.Decimal(12, 2)
+  netAmount           Decimal   @db.Decimal(12, 2) @map("net_amount")
+  status              String    @default("pending")
+  // pending | processing | paid | failed
+  payoutReference     String?   @map("payout_reference")
+  periodStart         DateTime? @map("period_start")
+  periodEnd           DateTime? @map("period_end")
+  paidAt              DateTime? @map("paid_at")
+  notes               String?   @db.Text
+  createdAt           DateTime  @default(now()) @map("created_at")
+
+  partner LogisticsPartner @relation(fields: [partnerId], references: [id])
+
+  @@map("kv_ship_partner_payouts")
+}

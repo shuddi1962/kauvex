@@ -172,6 +172,16 @@ const mainNav = [
   },
   { label: "New Arrivals", href: "/new-arrivals" },
   {
+    label: "Express",
+    href: "/express",
+    children: [
+      { label: "Send a Package", href: "/express/book" },
+      { label: "Track Shipment", href: "/express/track" },
+      { label: "Express for Business", href: "/express/business" },
+      { label: "Courier Partner", href: "/logistics/register" },
+    ],
+  },
+  {
     label: "Brands",
     href: "/brands",
     children: [

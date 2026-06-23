@@ -128,24 +128,22 @@ export async function POST(request: NextRequest) {
       }).maybeSingle();
 
       const demoProducts = [
-        { name: "Wireless Bluetooth Headphones", sku: `DEMO-${body!.store_slug}-001`, price: 45000, stock_quantity: 50 },
-        { name: "Premium Leather Wallet", sku: `DEMO-${body!.store_slug}-002`, price: 12500, stock_quantity: 100 },
-        { name: "Portable Power Bank 20000mAh", sku: `DEMO-${body!.store_slug}-003`, price: 22000, stock_quantity: 75 },
-        { name: "Organic Green Tea Set", sku: `DEMO-${body!.store_slug}-004`, price: 8500, stock_quantity: 200 },
-        { name: "Stainless Steel Water Bottle", sku: `DEMO-${body!.store_slug}-005`, price: 15000, stock_quantity: 150 },
+        { name: "Wireless Bluetooth Headphones", slug: `demo-headphones-${body!.store_slug}`, sku: `DEMO-${body!.store_slug}-001`, price: 45000 },
+        { name: "Premium Leather Wallet", slug: `demo-wallet-${body!.store_slug}`, sku: `DEMO-${body!.store_slug}-002`, price: 12500 },
+        { name: "Portable Power Bank 20000mAh", slug: `demo-powerbank-${body!.store_slug}`, sku: `DEMO-${body!.store_slug}-003`, price: 22000 },
+        { name: "Organic Green Tea Set", slug: `demo-tea-${body!.store_slug}`, sku: `DEMO-${body!.store_slug}-004`, price: 8500 },
+        { name: "Stainless Steel Water Bottle", slug: `demo-bottle-${body!.store_slug}`, sku: `DEMO-${body!.store_slug}-005`, price: 15000 },
       ];
       for (const dp of demoProducts) {
         await adminDb.from("products").insert({
           vendor_id: vendor!.id,
           name: dp.name,
+          slug: dp.slug,
           sku: dp.sku,
-          description: dp.name,
           regular_price: dp.price,
-          sale_price: dp.price,
-          stock_quantity: dp.stock_quantity,
-          status: "active",
-          created_at: new Date().toISOString(),
-          updated_at: new Date().toISOString(),
+          status: "published",
+          images: [],
+          type: "simple",
         });
       }
     }

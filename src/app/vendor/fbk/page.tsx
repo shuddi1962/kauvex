@@ -96,23 +96,15 @@ export default function FbkPage() {
           .eq("vendor_id", vendorProfile.id)
           .maybeSingle();
 
-        // DEMO ONLY: auto-create enrollment if missing
+        // DEMO ONLY: auto-create enrollment via API if missing
         if (!enrollData) {
-          const { data: newEnroll } = await insforge.database
-            .from("fbk_enrollments")
-            .insert({
-              vendor_id: vendorProfile.id,
-              status: "active",
-              monthly_fee: 0,
-              pick_pack_fee: 0,
-              storage_fee: 0,
-              returns_fee: 0,
-              terms_accepted_at: new Date().toISOString(),
-              approved_at: new Date().toISOString(),
-            })
-            .select()
-            .single();
-          enrollData = newEnroll;
+          try {
+            const res = await fetch("/api/v1/fbk/enroll", { method: "POST", headers: { "Content-Type": "application/json" } });
+            if (res.ok) {
+              const json = await res.json();
+              enrollData = json.data;
+            }
+          } catch { /* ignore */ }
         }
 
         setEnrollment(enrollData || null);

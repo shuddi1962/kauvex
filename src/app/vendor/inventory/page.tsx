@@ -171,31 +171,12 @@ export default function VendorInventoryPage() {
         }
       }
 
-      // DEMO ONLY: seed demo products if inventory is empty
-      if (result.length === 0 && vendorProfile?.id) {
-        const demoProducts = [
-          { name: "Wireless Bluetooth Headphones", slug: `demo-headphones-${user.id.slice(0, 6)}`, sku: `DEMO-${user.id.slice(0, 6)}-001`, price: 45000 },
-          { name: "Premium Leather Wallet", slug: `demo-wallet-${user.id.slice(0, 6)}`, sku: `DEMO-${user.id.slice(0, 6)}-002`, price: 12500 },
-          { name: "Portable Power Bank 20000mAh", slug: `demo-powerbank-${user.id.slice(0, 6)}`, sku: `DEMO-${user.id.slice(0, 6)}-003`, price: 22000 },
-          { name: "Organic Green Tea Set", slug: `demo-tea-${user.id.slice(0, 6)}`, sku: `DEMO-${user.id.slice(0, 6)}-004`, price: 8500 },
-          { name: "Stainless Steel Water Bottle", slug: `demo-bottle-${user.id.slice(0, 6)}`, sku: `DEMO-${user.id.slice(0, 6)}-005`, price: 15000 },
-        ];
-        for (const dp of demoProducts) {
-          await insforge.database.from("products").insert({
-            vendor_id: vendorProfile.id,
-            name: dp.name,
-            slug: dp.slug,
-            sku: dp.sku,
-            regular_price: dp.price,
-            status: "published",
-            images: [],
-            type: "simple",
-            created_at: new Date().toISOString(),
-            updated_at: new Date().toISOString(),
-          }).maybeSingle();
-        }
-        // Reload to pick up the new products
-        return fetchData();
+      // DEMO ONLY: seed demo products via API if inventory is empty
+      if (result.length === 0) {
+        try {
+          await fetch("/api/v1/vendors/seed-demo", { method: "POST" });
+          return fetchData();
+        } catch { /* ignore */ }
       }
 
       setItems(result);
@@ -368,58 +349,88 @@ export default function VendorInventoryPage() {
       )}
 
       <div className="flex gap-5">
-        {/* LEFT SIDEBAR */}
-        <div className="w-52 shrink-0 space-y-4">
-          {/* Listing Tools */}
-          <div className="bg-white rounded-xl border border-border overflow-hidden">
-            <div className="px-4 py-2.5 border-b border-border bg-gray-50/50">
-              <p className="text-[10px] font-bold text-text-4 uppercase tracking-wider">Listing Tools</p>
-            </div>
-            <div className="p-2 space-y-0.5">
-              {listingTools.map(tool => (
-                <button key={tool.label} onClick={() => setActiveListingTool(tool.label)}
-                  className={`flex items-center gap-2.5 w-full px-3 py-2 rounded-lg text-xs font-medium transition-colors ${
-                    activeListingTool === tool.label
-                      ? "bg-orange/10 text-orange font-bold"
-                      : "text-text-3 hover:bg-gray-50 hover:text-text-1"
-                  }`}>
-                  <tool.icon size={14} />
-                  {tool.label}
-                </button>
-              ))}
-            </div>
-          </div>
-
-          {/* Fulfillment Tools */}
-          <div className="bg-white rounded-xl border border-border overflow-hidden">
-            <div className="px-4 py-2.5 border-b border-border bg-gray-50/50">
-              <p className="text-[10px] font-bold text-text-4 uppercase tracking-wider">Fulfillment Tools</p>
-            </div>
-            <div className="p-2 space-y-0.5">
-              {fulfillmentTools.map(tool => {
-                const isLink = tool.href;
-                const isActive = activeFulfillmentTool === tool.label;
-                const content = (
-                  <div className={`flex items-center gap-2.5 w-full px-3 py-2 rounded-lg text-xs font-medium transition-colors ${isActive ? "bg-orange/10 text-orange font-bold" : "text-text-3 hover:bg-gray-50 hover:text-text-1"}`}>
+          {/* LEFT SIDEBAR */}
+          <div className="w-52 shrink-0 space-y-4">
+            {/* Listing Tools */}
+            <div className="bg-white rounded-xl border border-border overflow-hidden">
+              <div className="px-4 py-2.5 border-b border-border bg-gray-50/50">
+                <p className="text-[10px] font-bold text-text-4 uppercase tracking-wider">Listing Tools</p>
+              </div>
+              <div className="p-2 space-y-0.5">
+                {listingTools.map(tool => (
+                  <button key={tool.label} onClick={() => {
+                    setActiveListingTool(tool.label);
+                    setActiveFulfillmentTool(null);
+                  }}
+                    className={`flex items-center gap-2.5 w-full px-3 py-2 rounded-lg text-xs font-medium transition-colors ${
+                      activeListingTool === tool.label && !activeFulfillmentTool
+                        ? "bg-orange/10 text-orange font-bold"
+                        : "text-text-3 hover:bg-gray-50 hover:text-text-1"
+                    }`}>
                     <tool.icon size={14} />
                     {tool.label}
-                  </div>
-                );
-                return isLink ? (
-                  <Link key={tool.label} href={tool.href}>{content}</Link>
-                ) : (
-                  <button key={tool.label} onClick={() => {
-                    setActiveFulfillmentTool(activeFulfillmentTool === tool.label ? null : tool.label);
-                    setActiveListingTool("All Inventory");
-                  }}>{content}</button>
-                );
-              })}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {/* Fulfillment Tools */}
+            <div className="bg-white rounded-xl border border-border overflow-hidden">
+              <div className="px-4 py-2.5 border-b border-border bg-gray-50/50">
+                <p className="text-[10px] font-bold text-text-4 uppercase tracking-wider">Fulfillment Tools</p>
+              </div>
+              <div className="p-2 space-y-0.5">
+                {fulfillmentTools.map(tool => {
+                  const isLink = tool.href;
+                  const isActive = activeFulfillmentTool === tool.label;
+                  const content = (
+                    <div className={`flex items-center gap-2.5 w-full px-3 py-2 rounded-lg text-xs font-medium transition-colors ${isActive ? "bg-orange/10 text-orange font-bold" : "text-text-3 hover:bg-gray-50 hover:text-text-1"}`}>
+                      <tool.icon size={14} />
+                      {tool.label}
+                    </div>
+                  );
+                  return isLink ? (
+                    <Link key={tool.label} href={tool.href}>{content}</Link>
+                  ) : (
+                    <button key={tool.label} onClick={() => {
+                      setActiveFulfillmentTool(activeFulfillmentTool === tool.label ? null : tool.label);
+                      setActiveListingTool("All Inventory");
+                    }}>{content}</button>
+                  );
+                })}
+              </div>
             </div>
           </div>
-        </div>
 
         {/* MAIN CONTENT */}
         <div className="flex-1 min-w-0 space-y-4">
+          {/* Active Tool Header */}
+          {activeFulfillmentTool && (
+            <div className="flex items-start gap-3 p-4 bg-orange/5 border border-orange/20 rounded-xl">
+              <div className="w-9 h-9 rounded-lg bg-orange/10 flex items-center justify-center shrink-0">
+                <Package size={16} className="text-orange" />
+              </div>
+              <div>
+                <p className="text-sm font-bold text-text-1">{activeFulfillmentTool}</p>
+                <p className="text-xs text-text-4 mt-0.5">
+                  {activeFulfillmentTool === "Manage Inventory" && "Edit stock quantities for your products"}
+                  {activeFulfillmentTool === "FBK Inventory" && "Products fulfilled by KAUVEX warehouses"}
+                  {activeFulfillmentTool === "Remove Unfulfillable" && "Remove unfulfillable or damaged inventory"}
+                  {activeFulfillmentTool === "FBK Opportunities" && "Products eligible for FBK fulfillment"}
+                </p>
+              </div>
+              <button onClick={() => setActiveFulfillmentTool(null)} className="ml-auto p-1 hover:bg-orange/10 rounded-lg">
+                <X size={14} className="text-text-4" />
+              </button>
+            </div>
+          )}
+
+          {activeListingTool !== "All Inventory" && !activeFulfillmentTool && (
+            <div className="flex items-start gap-3 p-4 bg-blue/5 border border-blue/20 rounded-xl">
+              <p className="text-sm font-bold text-text-1">{activeListingTool}</p>
+            </div>
+          )}
+
           {/* Search + Filters bar */}
           <div className="flex items-center gap-3">
             <div className="relative flex-1">
@@ -640,6 +651,51 @@ export default function VendorInventoryPage() {
               </Link>
             </div>
           </div>
+
+          {/* Potential Duplicates View */}
+          {activeListingTool === "Potential Duplicates" && (
+            <div className="bg-white rounded-xl border border-border p-6 text-center">
+              <Copy size={32} className="mx-auto text-text-4 mb-3" />
+              <p className="text-sm font-semibold text-text-1 mb-1">No Potential Duplicates Found</p>
+              <p className="text-xs text-text-4">All your listings appear to be unique. We&apos;ll alert you if we detect any duplicates.</p>
+            </div>
+          )}
+
+          {/* Add a Variation View */}
+          {activeListingTool === "Add a Variation" && (
+            <div className="bg-white rounded-xl border border-border p-6">
+              <h3 className="font-syne font-bold text-sm mb-4">Add a Product Variation</h3>
+              <p className="text-xs text-text-4 mb-4">Create variations like size, color, or material for an existing product.</p>
+              <div className="space-y-3 max-w-md">
+                <div>
+                  <label className="text-[10px] font-semibold text-text-4 block mb-1">Parent Product</label>
+                  <select className="w-full h-9 px-3 text-xs border border-border rounded-lg bg-white">
+                    <option value="">Select a product to add variation to...</option>
+                    {items.map(i => (
+                      <option key={i.id} value={i.id}>{i.name}</option>
+                    ))}
+                  </select>
+                </div>
+                <div>
+                  <label className="text-[10px] font-semibold text-text-4 block mb-1">Variation Type</label>
+                  <select className="w-full h-9 px-3 text-xs border border-border rounded-lg bg-white">
+                    <option>Size</option>
+                    <option>Color</option>
+                    <option>Material</option>
+                    <option>Style</option>
+                  </select>
+                </div>
+                <div>
+                  <label className="text-[10px] font-semibold text-text-4 block mb-1">Variation Name</label>
+                  <input type="text" placeholder="e.g. Large, Red, Cotton" className="w-full h-9 px-3 text-xs border border-border rounded-lg" />
+                </div>
+                <button onClick={() => showToast("success", "Variation added to product")}
+                  className="px-4 h-9 bg-orange text-white text-xs font-bold rounded-xl hover:bg-orange/90 transition-colors">
+                  Add Variation
+                </button>
+              </div>
+            </div>
+          )}
         </div>
       </div>
     </VendorShell>

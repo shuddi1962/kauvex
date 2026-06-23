@@ -18,6 +18,7 @@ import {
   AlertTriangle,
   Heart,
   X,
+  Loader2,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -32,6 +33,24 @@ const branches = [
   { id: "phc", name: "Portharcourt" },
 ];
 
+const nigerianStates = [
+  "Abia", "Adamawa", "Akwa Ibom", "Anambra", "Bauchi", "Bayelsa", "Benue", "Borno",
+  "Cross River", "Delta", "Ebonyi", "Edo", "Ekiti", "Enugu", "Gombe", "Imo",
+  "Jigawa", "Kaduna", "Kano", "Katsina", "Kebbi", "Kogi", "Kwara", "Lagos",
+  "Nassarawa", "Niger", "Ogun", "Ondo", "Osun", "Oyo", "Plateau", "Rivers",
+  "Sokoto", "Taraba", "Yobe", "Zamfara", "FCT",
+];
+
+function calcShipping(state: string, subtotal: number): number {
+  if (subtotal > 100000) return 0;
+  if (state === "Lagos") return 2500;
+  if (["Ogun", "Oyo", "Osun", "Ondo", "Ekiti"].includes(state)) return 3500;
+  if (["Rivers", "Delta", "Edo", "Bayelsa", "Akwa Ibom", "Cross River"].includes(state)) return 4000;
+  if (["Abuja", "Kaduna", "Kano", "Nassarawa", "Niger", "Plateau"].includes(state)) return 4500;
+  if (["Enugu", "Anambra", "Imo", "Abia", "Ebonyi"].includes(state)) return 4500;
+  return 5500;
+}
+
 export default function CartPage() {
   const { items, removeItem, updateQuantity, clearCart, getTotal, getItemCount } = useCartStore();
   const { formatPrice, currency } = useCurrencyStore();
@@ -42,12 +61,14 @@ export default function CartPage() {
   const [couponDiscount, setCouponDiscount] = useState(0);
   const [couponError, setCouponError] = useState("");
   const [giftWrap, setGiftWrap] = useState(false);
+  const [estState, setEstState] = useState("Lagos");
+  const [estCity, setEstCity] = useState("");
 
   useEffect(() => setMounted(true), []);
 
   const subtotal = getTotal();
   const giftWrapFee = giftWrap ? 2500 : 0;
-  const shippingEstimate = subtotal > 100000 ? 0 : 4500;
+  const shippingEstimate = calcShipping(estState, subtotal);
   const discount = couponDiscount;
   const total = subtotal - discount + shippingEstimate + giftWrapFee;
 
@@ -324,6 +345,22 @@ export default function CartPage() {
                 <Gift size={12} className="text-text-4" />
                 Add gift wrapping (₦2,500)
               </label>
+
+              {/* Shipping Estimator */}
+              <div className="mt-4 p-3 bg-gray-50 rounded-lg">
+                <p className="text-[10px] font-bold text-text-4 uppercase tracking-wider mb-2">Estimate Shipping</p>
+                <div className="flex gap-2">
+                  <select value={estState} onChange={e => setEstState(e.target.value)}
+                    className="flex-1 h-8 px-2 text-[11px] border border-border rounded-lg bg-white">
+                    {nigerianStates.map(s => <option key={s} value={s}>{s}</option>)}
+                  </select>
+                  <input value={estCity} onChange={e => setEstCity(e.target.value)} placeholder="City"
+                    className="flex-1 h-8 px-2 text-[11px] border border-border rounded-lg" />
+                </div>
+                <p className="text-[10px] text-text-4 mt-1.5">
+                  {shippingEstimate === 0 ? "FREE shipping eligible!" : `Est. shipping: ${formatPrice(shippingEstimate)}`}
+                </p>
+              </div>
 
               {/* Free Shipping Progress */}
               {shippingEstimate > 0 && (

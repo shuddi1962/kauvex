@@ -110,6 +110,46 @@ export async function POST(request: NextRequest) {
       console.error("Failed to create vendor stores:", storeErr);
     }
 
+    // DEMO ONLY: Auto-enroll vendor in FBK + seed demo products
+    // Remove before production launch — vendors should enroll manually via /vendor/fbk/enroll
+    const isDemo = true;
+    if (isDemo) {
+      const firstStore = storeInserts[0];
+      await adminDb.from("fbk_enrollments").insert({
+        vendor_id: vendor!.id,
+        vendor_store_id: firstStore?.storefront_id || null,
+        status: "active",
+        monthly_fee: 0,
+        pick_pack_fee: 0,
+        storage_fee: 0,
+        returns_fee: 0,
+        terms_accepted_at: new Date().toISOString(),
+        approved_at: new Date().toISOString(),
+      }).maybeSingle();
+
+      const demoProducts = [
+        { name: "Wireless Bluetooth Headphones", sku: `DEMO-${body!.store_slug}-001`, price: 45000, stock_quantity: 50 },
+        { name: "Premium Leather Wallet", sku: `DEMO-${body!.store_slug}-002`, price: 12500, stock_quantity: 100 },
+        { name: "Portable Power Bank 20000mAh", sku: `DEMO-${body!.store_slug}-003`, price: 22000, stock_quantity: 75 },
+        { name: "Organic Green Tea Set", sku: `DEMO-${body!.store_slug}-004`, price: 8500, stock_quantity: 200 },
+        { name: "Stainless Steel Water Bottle", sku: `DEMO-${body!.store_slug}-005`, price: 15000, stock_quantity: 150 },
+      ];
+      for (const dp of demoProducts) {
+        await adminDb.from("products").insert({
+          vendor_id: vendor!.id,
+          name: dp.name,
+          sku: dp.sku,
+          description: dp.name,
+          regular_price: dp.price,
+          sale_price: dp.price,
+          stock_quantity: dp.stock_quantity,
+          status: "active",
+          created_at: new Date().toISOString(),
+          updated_at: new Date().toISOString(),
+        });
+      }
+    }
+
     return successResponse({
       vendor_id: vendor!.id,
       shop_name: body!.store_name,

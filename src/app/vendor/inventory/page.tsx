@@ -45,11 +45,11 @@ const listingTools = [
 
 const fulfillmentTools = [
   { label: "FBK Dashboard", icon: Warehouse, href: "/vendor/fbk" },
-  { label: "Manage Inventory", icon: Box },
-  { label: "FBK Inventory", icon: Package },
-  { label: "Remove Unfulfillable", icon: Trash2 },
-  { label: "Shipments", icon: Truck, href: "/vendor/fbk" },
-  { label: "FBK Opportunities", icon: TrendingUp },
+  { label: "Manage Inventory", icon: Box, filter: "manage" },
+  { label: "FBK Inventory", icon: Package, filter: "fbk" },
+  { label: "Remove Unfulfillable", icon: Trash2, filter: "unfulfillable" },
+  { label: "Shipments", icon: Truck, href: "/vendor/fbk/inbound" },
+  { label: "FBK Opportunities", icon: TrendingUp, filter: "opportunities" },
   { label: "FBK Analytics", icon: BarChart3, href: "/vendor/fbk" },
 ];
 
@@ -78,6 +78,7 @@ export default function VendorInventoryPage() {
   const [showFilters, setShowFilters] = useState(false);
   const [showColumnCustomizer, setShowColumnCustomizer] = useState(false);
   const [activeListingTool, setActiveListingTool] = useState("All Inventory");
+  const [activeFulfillmentTool, setActiveFulfillmentTool] = useState<string | null>(null);
   const [colDefs, setColDefs] = useState(columns);
   const [openDropdown, setOpenDropdown] = useState<string | null>(null);
   const [selectedRows, setSelectedRows] = useState<string[]>([]);
@@ -179,6 +180,12 @@ export default function VendorInventoryPage() {
     if (statusFilter === "Active" && (p.availableQty === 0 || p.status !== "active")) return false;
     if (statusFilter === "Inactive" && (p.availableQty > 0 || p.status === "active")) return false;
     if (fulfilledBy !== "All" && p.fulfillmentType !== fulfilledBy) return false;
+    if (activeListingTool === "Suppressed / Inactive" && p.pricingStatus !== "Suppressed" && p.status === "active") return false;
+    if (activeListingTool === "Listing Quality" && p.pricingStatus === "Competitive") return false;
+    if (activeFulfillmentTool === "FBK Inventory" && p.fulfillmentType !== "FBK") return false;
+    if (activeFulfillmentTool === "Remove Unfulfillable" && p.availableQty > 0) return false;
+    if (activeFulfillmentTool === "FBK Opportunities" && p.fulfillmentType !== "Merchant") return false;
+    if (activeFulfillmentTool === "Manage Inventory" && p.availableQty < 1) return false;
     return true;
   });
 
@@ -355,8 +362,9 @@ export default function VendorInventoryPage() {
             <div className="p-2 space-y-0.5">
               {fulfillmentTools.map(tool => {
                 const isLink = tool.href;
+                const isActive = activeFulfillmentTool === tool.label;
                 const content = (
-                  <div className="flex items-center gap-2.5 w-full px-3 py-2 rounded-lg text-xs font-medium text-text-3 hover:bg-gray-50 hover:text-text-1 transition-colors">
+                  <div className={`flex items-center gap-2.5 w-full px-3 py-2 rounded-lg text-xs font-medium transition-colors ${isActive ? "bg-orange/10 text-orange font-bold" : "text-text-3 hover:bg-gray-50 hover:text-text-1"}`}>
                     <tool.icon size={14} />
                     {tool.label}
                   </div>
@@ -364,7 +372,10 @@ export default function VendorInventoryPage() {
                 return isLink ? (
                   <Link key={tool.label} href={tool.href}>{content}</Link>
                 ) : (
-                  <button key={tool.label} onClick={() => showToast("success", `${tool.label} opened`)}>{content}</button>
+                  <button key={tool.label} onClick={() => {
+                    setActiveFulfillmentTool(activeFulfillmentTool === tool.label ? null : tool.label);
+                    setActiveListingTool("All Inventory");
+                  }}>{content}</button>
                 );
               })}
             </div>

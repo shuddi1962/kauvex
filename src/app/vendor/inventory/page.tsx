@@ -98,9 +98,18 @@ export default function VendorInventoryPage() {
       if (!user) { setLoading(false); return; }
       setVendorId(user.id);
 
+      // Look up the vendor record to get the actual vendor UUID
+      const { data: vendorProfile } = await insforge.database
+        .from("vendors")
+        .select("id")
+        .eq("user_id", user.id)
+        .maybeSingle();
+
+      const vendorUuid = vendorProfile?.id || user.id;
+
       const [prodRes, offerRes, invRes] = await Promise.all([
-        insforge.database.from("products").select("*").eq("vendor_id", user.id).order("created_at", { ascending: false }),
-        insforge.database.from("vendor_offers").select("*, shared_catalog_products(*)").eq("vendor_id", user.id).order("created_at", { ascending: false }),
+        insforge.database.from("products").select("*").eq("vendor_id", vendorUuid).order("created_at", { ascending: false }),
+        insforge.database.from("vendor_offers").select("*, shared_catalog_products(*)").eq("vendor_id", vendorUuid).order("created_at", { ascending: false }),
         insforge.database.from("product_inventory").select("*"),
       ]);
 
@@ -160,6 +169,33 @@ export default function VendorInventoryPage() {
             source: "offer",
           });
         }
+      }
+
+      // DEMO ONLY: seed demo products if inventory is empty
+      if (result.length === 0 && vendorProfile?.id) {
+        const demoProducts = [
+          { name: "Wireless Bluetooth Headphones", slug: `demo-headphones-${user.id.slice(0, 6)}`, sku: `DEMO-${user.id.slice(0, 6)}-001`, price: 45000 },
+          { name: "Premium Leather Wallet", slug: `demo-wallet-${user.id.slice(0, 6)}`, sku: `DEMO-${user.id.slice(0, 6)}-002`, price: 12500 },
+          { name: "Portable Power Bank 20000mAh", slug: `demo-powerbank-${user.id.slice(0, 6)}`, sku: `DEMO-${user.id.slice(0, 6)}-003`, price: 22000 },
+          { name: "Organic Green Tea Set", slug: `demo-tea-${user.id.slice(0, 6)}`, sku: `DEMO-${user.id.slice(0, 6)}-004`, price: 8500 },
+          { name: "Stainless Steel Water Bottle", slug: `demo-bottle-${user.id.slice(0, 6)}`, sku: `DEMO-${user.id.slice(0, 6)}-005`, price: 15000 },
+        ];
+        for (const dp of demoProducts) {
+          await insforge.database.from("products").insert({
+            vendor_id: vendorProfile.id,
+            name: dp.name,
+            slug: dp.slug,
+            sku: dp.sku,
+            regular_price: dp.price,
+            status: "published",
+            images: [],
+            type: "simple",
+            created_at: new Date().toISOString(),
+            updated_at: new Date().toISOString(),
+          }).maybeSingle();
+        }
+        // Reload to pick up the new products
+        return fetchData();
       }
 
       setItems(result);

@@ -90,11 +90,31 @@ export default function FbkPage() {
         .single();
 
       if (vendorProfile) {
-        const { data: enrollData } = await insforge.database
+        let { data: enrollData } = await insforge.database
           .from("fbk_enrollments")
           .select("*")
           .eq("vendor_id", vendorProfile.id)
           .maybeSingle();
+
+        // DEMO ONLY: auto-create enrollment if missing
+        if (!enrollData) {
+          const { data: newEnroll } = await insforge.database
+            .from("fbk_enrollments")
+            .insert({
+              vendor_id: vendorProfile.id,
+              status: "active",
+              monthly_fee: 0,
+              pick_pack_fee: 0,
+              storage_fee: 0,
+              returns_fee: 0,
+              terms_accepted_at: new Date().toISOString(),
+              approved_at: new Date().toISOString(),
+            })
+            .select()
+            .single();
+          enrollData = newEnroll;
+        }
+
         setEnrollment(enrollData || null);
       }
 

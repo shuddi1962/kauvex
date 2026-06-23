@@ -174,8 +174,15 @@ export default function VendorInventoryPage() {
       // DEMO ONLY: seed demo products via API if inventory is empty
       if (result.length === 0) {
         try {
-          await fetch("/api/v1/vendors/seed-demo", { method: "POST" });
-          return fetchData();
+          const tokRes = await fetch("/api/auth/session-token");
+          const { token } = await tokRes.json();
+          if (token) {
+            await fetch("/api/v1/vendors/seed-demo", {
+              method: "POST",
+              headers: { Authorization: `Bearer ${token}` },
+            });
+            return fetchData();
+          }
         } catch { /* ignore */ }
       }
 

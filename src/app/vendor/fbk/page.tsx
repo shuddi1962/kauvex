@@ -99,10 +99,17 @@ export default function FbkPage() {
         // DEMO ONLY: auto-create enrollment via API if missing
         if (!enrollData) {
           try {
-            const res = await fetch("/api/v1/fbk/enroll", { method: "POST", headers: { "Content-Type": "application/json" } });
-            if (res.ok) {
-              const json = await res.json();
-              enrollData = json.data;
+            const tokRes = await fetch("/api/auth/session-token");
+            const { token } = await tokRes.json();
+            if (token) {
+              const res = await fetch("/api/v1/fbk/enroll", {
+                method: "POST",
+                headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+              });
+              if (res.ok) {
+                const json = await res.json();
+                enrollData = json.data;
+              }
             }
           } catch { /* ignore */ }
         }

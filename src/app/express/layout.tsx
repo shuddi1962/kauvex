@@ -47,7 +47,7 @@ export default function ExpressLayout({ children }: { children: React.ReactNode 
                 <span className="text-white font-syne font-700 text-lg">Kauvex Express</span>
               </div>
               <p className="text-sm text-white/60 leading-relaxed">
-                Ship anything, anywhere, fast. Powered by Nigeria's largest independent delivery network.
+                Ship anything, anywhere, fast. Powered by Nigeria&apos;s largest independent delivery network.
               </p>
             </div>
             <div>

@@ -87,7 +87,7 @@ function DashboardSidebar({ sidebarOpen, setSidebarOpen }: { sidebarOpen: boolea
         <div className="absolute bottom-0 left-0 right-0 p-3 border-t border-border">
           <div className="space-y-1">
             <div className="flex items-center justify-between px-3 py-2 text-xs">
-              <span className="text-text-4">Today's Earnings</span>
+              <span className="text-text-4">Today&apos;s Earnings</span>
               <span className="font-bold text-green-700">₦{quickEarnings.today.toLocaleString()}</span>
             </div>
             <div className="flex items-center justify-between px-3 py-2 text-xs">

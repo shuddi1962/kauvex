@@ -68,14 +68,14 @@ export default function ExpressPage() {
             <div>
               <div className="inline-flex items-center gap-2 bg-orange/10 text-orange text-xs font-semibold px-3 py-1.5 rounded-full mb-6">
                 <Package className="w-3.5 h-3.5" />
-                Nigeria's Largest Independent Delivery Network
+                Nigeria&apos;s Largest Independent Delivery Network
               </div>
               <h1 className="text-4xl lg:text-5xl xl:text-6xl font-syne font-800 text-white leading-tight mb-4">
                 Ship anything, anywhere.
                 <span className="text-orange"> Fast.</span>
               </h1>
               <p className="text-lg text-white/70 mb-8 max-w-lg leading-relaxed">
-                Powered by Nigeria's largest independent delivery network. Get instant quotes, book in minutes, and track in real-time.
+                Powered by Nigeria&apos;s largest independent delivery network. Get instant quotes, book in minutes, and track in real-time.
               </p>
               <div className="flex flex-wrap gap-4">
                 <Link href="/express/book">

@@ -35,7 +35,20 @@ alwaysApply: true
 - /lib/search-engine.ts — Client search utilities
 - /lib/security.ts — Rate limiting, 2FA, audit logging, validation
 - /lib/ai/ — AI feature modules (descriptions, SEO, recommendations)
-- /lib/shipping/ — Carrier integrations
+- /lib/shipping/ — Carrier integrations (dhl, fedex, aramex, local, gig, kwik, dhl-express-international, fedex-international, aramex-international, freight-forwarder)
+- /lib/logistics/ — Logistics engine (dispatch.ts, shipping-engine.ts, partner-tiers.ts, delivery-tiers.ts, fbk-debt.ts, terminology.ts)
+- /components/logistics/ShipmentTimeline.tsx — Unified cross-tier tracking display
+- /app/express/ — Kauvex Express public courier (landing, book, track, business)
+- /app/logistics/ — Partner portal (register, login, dashboard)
+- /app/admin/logistics/ — Full admin control panel (rates, payouts, packaging, map, insurance, gaps, fbk, express)
+- /app/admin/shipping/ — Admin shipping management (zones, surge-pricing, restrictions, hs-codes, business-accounts)
+- /app/vendor/shipping/profiles/ — Profile builder for vendor shipping rules
+- /app/vendor/shipping/dropoff/ — Drop-off manifest system
+- /app/api/v1/express/ — Express API routes (waybills, pricing, tracking)
+- /app/api/v1/logistics/ — Logistics API routes (tracking, partners, jobs, payouts)
+- /app/api/v1/shipping/insurance/ — Insurance reserve API
+- /app/api/v1/shipping/packaging/ — Packaging elements API
+- /app/api/v1/shipping/customs/ — Customs document generation API
 - /lib/cart-recovery.ts — Abandoned cart recovery engine
 - /lib/bundles.ts — Product bundle management
 - /lib/catalog-mode.ts — Catalog mode for B2B storefronts
@@ -133,6 +146,7 @@ Key V2 Enterprise+ tables: erp_accounts, journal_entries, cost_centers, budgets,
 - [x] Navigation integration (header, footer, homepage, dashboards): Complete
 - [x] Admin pages for POD, Art Marketplace, Group Buy: Complete
 - [x] Phase 11 (Seller Central Full): Complete
+- [x] Phase 14 (Complete Shipping & Logistics): Complete
 
 ## Recent Enhancements (August 2026)
 - **V3 Database**: 40+ new Prisma models (local suppliers, sourcing, POD, dropshipping, art/NFT, group buy, price alerts, live commerce, mentorship, carbon offsets, competition intel, Kauvex Originals, subscription boxes)
@@ -169,3 +183,58 @@ Key V2 Enterprise+ tables: erp_accounts, journal_entries, cost_centers, budgets,
 2. Generate Prisma client: `npx prisma generate`
 3. Seed roles: POST to `/api/setup/seed-roles` with Bearer token matching SEED_SECRET env var
 4. V2 Enterprise+ (migration 00009) must be applied manually via Supabase Dashboard SQL Editor — copy contents of `supabase/migrations/00009_kcc_v2_enterprise.sql` and paste into project `stbgamqenraauqpgtbkv`
+
+## Phase 14 Shipping & Logistics Knowledge Base
+
+**Terminology Reference:**
+  Marketplace orders → Shipping Label
+  Kauvex Express courier → Waybill
+  Intercity road freight → Consignment Note
+  International air freight → Air Waybill (AWB)
+  International sea freight → Bill of Lading (BOL)
+  Multi-item shipments → Packing List
+  International commercial sales → Commercial Invoice
+  Below $300 customs → CN22
+  Above $300 customs → CN23
+
+**Carriers available:**
+  Domestic: dhl, fedex, aramex, local, gig, kwik
+  International: dhl-international, fedex-international, aramex-international
+  Aggregator: freight-forwarder (routes not covered by single carrier)
+
+**Tier routing (determineTier):**
+  TIER_1_LOCAL → independent partners (riders/drivers) + GIG/Kwik
+  TIER_2_DOMESTIC_FREIGHT → freight partners + domestic carrier fallback
+  TIER_3_INTERNATIONAL → carrier APIs ONLY (never independent partners)
+
+**FBK Fee Triggers:**
+  Inbound handling → on warehouse receipt confirmation
+  Storage fee → monthly per unsold unit (from vendor wallet)
+  Pick & pack → deducted from sale earnings
+  Sales commission → deducted from sale earnings
+  Removal fee → on vendor stock removal request
+  Long-term surcharge → after 180 days unsold
+  Debt interest → after 30 days outstanding (2% monthly)
+
+**Key API Endpoints:**
+  POST /api/v1/express/waybills — Create express waybill
+  POST /api/v1/express/pricing — Get instant pricing quote
+  GET /api/v1/express/tracking?waybillNumber= — Track express shipment
+  GET /api/v1/logistics/tracking?shipmentId= — Get tracking timeline
+  GET /api/v1/logistics/partners — List/filter logistics partners
+  GET/POST/PATCH /api/v1/logistics/jobs — Manage delivery jobs
+  GET/POST/PATCH /api/v1/logistics/payouts — Manage partner payouts
+  GET/POST/PATCH /api/v1/shipping/insurance — Insurance reserve management
+  GET/POST /api/v1/shipping/packaging — Packaging elements & add-ons
+  POST /api/v1/shipping/customs — Generate customs documents
+  POST /api/v1/shipping/rates — Get shipping rates
+  POST /api/v1/shipping/labels — Create shipping label
+  POST /api/v1/shipping/auto-route — Auto-route shipment
+
+**Asset Ownership Milestones:**
+  Launch: zero vehicles — asset light, pure technology
+  500+ orders/day: 2-3 branded vans per major city (warehouse only)
+  2,000+ orders/day: own trucks on Lagos-Abuja + Lagos-PHC routes
+  3+ countries: lease airline cargo space
+  Dominant Nigerian market: lease first cargo aircraft
+  Pan-African: port terminal + vessel strategy

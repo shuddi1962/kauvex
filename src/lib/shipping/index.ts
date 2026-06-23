@@ -18,7 +18,57 @@ export interface ShipmentDetails {
   weight: number;
   dimensions?: { length: number; width: number; height: number };
   value?: number;
-  items: { sku: string; quantity: number; weight?: number }[];
+  items: { sku: string; quantity: number; weight?: number; hsCode?: string }[];
+}
+
+export interface CustomsRequirements {
+  requiredDocuments: string[];
+  notes: string[];
+  restrictedItems: string[];
+  dutiesApplicable: boolean;
+  estimatedDutyRate: number;
+  estimatedVatRate: number;
+}
+
+export interface CustomsDeclaration {
+  documentType: 'commercial_invoice' | 'packing_list' | 'cn22' | 'cn23';
+  documentUrl: string;
+  documentNumber: string;
+  hsCodes: { code: string; description: string; quantity: number; unitValue: number }[];
+  declaredValue: number;
+  currency: string;
+  incoterm: 'DAP' | 'DDP' | 'EXW' | 'FOB' | 'CIF';
+  originCountry: string;
+  destCountry: string;
+  weightKg: number;
+  numberOfPieces: number;
+}
+
+export interface AirWaybillResult {
+  awbNumber: string;
+  awbUrl: string;
+  carrierCode: string;
+  flightNumber?: string;
+  departureDate?: string;
+  arrivalDate?: string;
+}
+
+export interface BillOfLadingResult {
+  bolNumber: string;
+  bolUrl: string;
+  vesselName?: string;
+  voyageNumber?: string;
+  portOfLoading?: string;
+  portOfDischarge?: string;
+  containerNumber?: string;
+}
+
+export interface DutyEstimate {
+  estimatedDuties: number;
+  estimatedVat: number;
+  totalEstimated: number;
+  currency: string;
+  disclaimer: string;
 }
 
 export interface ShippingRate {
@@ -47,6 +97,11 @@ export interface CarrierInterface {
   createLabel(details: ShipmentDetails, rate: ShippingRate): Promise<{ labelUrl: string; trackingNumber: string; trackingUrl: string }>;
   trackShipment(trackingNumber: string): Promise<TrackingInfo>;
   validateAddress(address: { country: string; city: string; postalCode: string; address: string }): Promise<{ valid: boolean; suggestions?: string[] }>;
+  getCustomsRequirements?(originCountry: string, destCountry: string, itemCategory: string): Promise<CustomsRequirements>;
+  generateCustomsDeclaration?(shipmentDetails: ShipmentDetails): Promise<CustomsDeclaration>;
+  estimateDutiesAndTaxes?(itemValue: number, destCountry: string, itemCategory: string, hsCode?: string): Promise<DutyEstimate>;
+  generateAirWaybill?(shipmentDetails: ShipmentDetails): Promise<AirWaybillResult>;
+  generateBillOfLading?(shipmentDetails: ShipmentDetails): Promise<BillOfLadingResult>;
 }
 
 const carriers = new Map<string, CarrierInterface>();

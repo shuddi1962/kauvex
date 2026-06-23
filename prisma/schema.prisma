@@ -3977,6 +3977,9 @@ model LogisticsPartner {
   createdAt           DateTime  @default(now()) @map("created_at")
   updatedAt           DateTime  @updatedAt @map("updated_at")
 
+  jobs     LogisticsJob[]
+  payouts  PartnerPayout[]
+
   @@map("kv_logistics_partners")
 }
 

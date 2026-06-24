@@ -1,10 +1,12 @@
 "use client";
 
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
 
 export default function SupplierRegisterPage() {
+  const router = useRouter();
   const [step, setStep] = useState(1);
   const [form, setForm] = useState({
     businessName: "", contactPerson: "", email: "", phone: "",
@@ -12,8 +14,45 @@ export default function SupplierRegisterPage() {
     deliveryMethod: "", minOrderValue: "", bankName: "",
     bankAccount: "", bankAccountName: "", password: "",
   });
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [submitError, setSubmitError] = useState("");
 
   const update = (field: string, value: string) => setForm(f => ({ ...f, [field]: value }));
+
+  const handleSubmit = async () => {
+    setIsSubmitting(true);
+    setSubmitError("");
+    try {
+      const res = await fetch("/api/v1/suppliers", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          businessName: form.businessName,
+          contactPerson: form.contactPerson,
+          email: form.email,
+          phone: form.phone,
+          city: form.city,
+          state: form.state,
+          country: form.country,
+          categories: form.categories ? form.categories.split(",").map(c => c.trim()) : [],
+          deliveryMethod: form.deliveryMethod,
+          minOrderValue: form.minOrderValue ? Number(form.minOrderValue) : 0,
+          bankName: form.bankName,
+          bankAccount: form.bankAccount,
+          bankAccountName: form.bankAccountName,
+        }),
+      });
+      if (!res.ok) {
+        const err = await res.json();
+        throw new Error(err.error || "Registration failed");
+      }
+      router.push("/supplier/login?registered=true");
+    } catch (e: any) {
+      setSubmitError(e.message);
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-[#0A1628] to-[#1a2a4a] flex items-center justify-center p-4">
@@ -92,10 +131,27 @@ export default function SupplierRegisterPage() {
                 <select value={form.deliveryMethod} onChange={e => update('deliveryMethod', e.target.value)}
                   className="w-full h-11 px-3 rounded-lg border border-gray-300 text-sm bg-white focus:outline-none focus:border-[#FF6B00]">
                   <option value="">Select...</option>
-                  <option value="own_rider">Own Rider</option>
-                  <option value="gig">GIG Logistics</option>
-                  <option value="dhl">DHL</option>
-                  <option value="kwik">Kwik Delivery</option>
+                  <optgroup label="Own Resources">
+                    <option value="own_rider">Own Rider</option>
+                    <option value="own_account">Own Account Carrier</option>
+                  </optgroup>
+                  <optgroup label="Kauvex Network">
+                    <option value="kauvex_logistics">Kauvex Logistics Network</option>
+                  </optgroup>
+                  <optgroup label="Domestic Couriers">
+                    <option value="dhl">DHL Express</option>
+                    <option value="fedex">FedEx</option>
+                    <option value="aramex">Aramex</option>
+                    <option value="gig">GIG Logistics</option>
+                    <option value="kwik">Kwik Delivery</option>
+                    <option value="local">Local Delivery</option>
+                  </optgroup>
+                  <optgroup label="International">
+                    <option value="dhl-international">DHL International</option>
+                    <option value="fedex-international">FedEx International</option>
+                    <option value="aramex-international">Aramex International</option>
+                    <option value="freight-forwarder">Kauvex Freight Forwarder</option>
+                  </optgroup>
                   <option value="other">Other Courier</option>
                 </select>
               </div>
@@ -133,6 +189,11 @@ export default function SupplierRegisterPage() {
                   className="w-full h-11 px-3 rounded-lg border border-gray-300 text-sm focus:outline-none focus:border-[#FF6B00]" />
               </div>
             </div>
+            {submitError && (
+              <div className="bg-red-50 p-4 rounded-lg mt-4">
+                <p className="text-sm text-red-800">{submitError}</p>
+              </div>
+            )}
             <div className="bg-blue-50 p-4 rounded-lg mt-4">
               <p className="text-sm text-blue-800">
                 By registering, you agree to Kauvex&apos;s Supplier Terms. Your application will be reviewed
@@ -140,8 +201,10 @@ export default function SupplierRegisterPage() {
               </p>
             </div>
             <div className="flex justify-between pt-4">
-              <Button variant="outline" onClick={() => setStep(2)}>Back</Button>
-              <Button className="bg-[#FF6B00] hover:bg-[#e86000]">Submit Application</Button>
+              <Button variant="outline" onClick={() => setStep(2)} disabled={isSubmitting}>Back</Button>
+              <Button onClick={handleSubmit} disabled={isSubmitting} className="bg-[#FF6B00] hover:bg-[#e86000]">
+                {isSubmitting ? "Submitting..." : "Submit Application"}
+              </Button>
             </div>
           </div>
         )}

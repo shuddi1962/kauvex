@@ -5,7 +5,7 @@ import Link from "next/link";
 import {
   Building2, Users, Upload, Key, CreditCard, FileText,
   TrendingUp, BarChart3, Shield, ChevronRight, CheckCircle2,
-  Zap, Globe, Star, Loader2, ArrowLeft,
+  Zap, Globe, Star, Loader2, ArrowLeft, Tag,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 

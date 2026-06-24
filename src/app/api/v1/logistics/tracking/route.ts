@@ -1,16 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 
-const statusLabels: Record<string, string> = {
-  pending: "Order Placed",
-  picked_up: "Picked Up",
-  in_transit: "In Transit",
-  out_for_delivery: "Out for Delivery",
-  delivered: "Delivered",
-  failed: "Delivery Failed",
-  returned: "Returned to Sender",
-};
-
 function buildTimeline(express: any) {
   const stages = [
     { status: "Order Placed", completed: true, current: false },

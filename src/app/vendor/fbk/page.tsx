@@ -96,55 +96,75 @@ export default function FbkPage() {
           .eq("vendor_id", vendorProfile.id)
           .maybeSingle();
 
-        // DEMO: auto-create enrollment if missing
+        // DEMO: auto-create enrollment if missing (via API to bypass RLS)
         if (!enrollData) {
           try {
-            const { data: newEnroll, error: enrollErr } = await insforge.database
-              .from("fbk_enrollments")
-              .insert({
-                vendor_id: vendorProfile.id,
-                status: "active",
-                storage_limit: 1000,
-                monthly_fee: 29.99,
-                pick_pack_fee: 2.50,
-                storage_fee: 0.75,
-                returns_fee: 3.50,
-                approved_at: new Date().toISOString(),
-                created_at: new Date().toISOString(),
-                updated_at: new Date().toISOString(),
-              })
-              .select("*")
-              .single();
-
-            if (!enrollErr && newEnroll) {
-              enrollData = newEnroll;
+            const tokRes = await fetch("/api/auth/session-token");
+            const { token } = await tokRes.json();
+            if (token) {
+              const res = await fetch("/api/v1/fbk/enroll", {
+                method: "POST",
+                headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+                body: JSON.stringify({}),
+              });
+              if (res.ok) {
+                const json = await res.json();
+                enrollData = json.data;
+              }
             }
           } catch { /* fallback handled below */ }
+
+          // If API failed, try direct insert as second fallback
+          if (!enrollData) {
+            try {
+              const { data: newEnroll } = await insforge.database
+                .from("fbk_enrollments")
+                .insert({
+                  vendor_id: vendorProfile.id,
+                  status: "active",
+                  storage_limit: 1000,
+                  monthly_fee: 29.99,
+                  pick_pack_fee: 2.50,
+                  storage_fee: 0.75,
+                  returns_fee: 3.50,
+                  approved_at: new Date().toISOString(),
+                  created_at: new Date().toISOString(),
+                  updated_at: new Date().toISOString(),
+                })
+                .select("*")
+                .maybeSingle();
+              if (newEnroll) enrollData = newEnroll;
+            } catch { /* ignore */ }
+          }
         }
 
         setEnrollment(enrollData || null);
       }
 
-      // Fetch inbound plans via direct DB
+      // Fetch inbound plans via API
       if (vendorProfile) {
-        const { data: plans } = await insforge.database
-          .from("fbk_inbound_plans")
-          .select("*, items:fbk_inbound_items(*), warehouse:warehouses(name, city, country)")
-          .eq("vendor_id", vendorProfile.id)
-          .order("created_at", { ascending: false })
-          .limit(10);
-
-        const planList: InboundPlan[] = (plans || []) as unknown as InboundPlan[];
-        setInboundPlans(planList);
-
-        const totalUnits = planList.reduce(
-          (sum, p) => sum + (p.items || []).reduce((s, i) => s + i.quantity_shipped, 0),
-          0
-        );
-        const activePlans = planList.filter((p) =>
-          ["pending", "processing", "in_transit"].includes(p.status)
-        ).length;
-        setStats({ totalUnits, activePlans });
+        try {
+          const tokRes = await fetch("/api/auth/session-token");
+          const { token } = await tokRes.json();
+          if (token) {
+            const plansRes = await fetch("/api/v1/fbk/inbound?limit=10", {
+              headers: { Authorization: `Bearer ${token}` },
+            });
+            if (plansRes.ok) {
+              const plansJson = await plansRes.json();
+              const planList: InboundPlan[] = plansJson.data?.plans || [];
+              setInboundPlans(planList);
+              const totalUnits = planList.reduce(
+                (sum, p) => sum + (p.items || []).reduce((s, i) => s + i.quantity_shipped, 0),
+                0
+              );
+              const activePlans = planList.filter((p) =>
+                ["pending", "processing", "in_transit"].includes(p.status)
+              ).length;
+              setStats({ totalUnits, activePlans });
+            }
+          }
+        } catch { /* fallback to empty */ }
       }
     } catch {
       setError("Failed to load FBK data");

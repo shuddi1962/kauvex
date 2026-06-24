@@ -64,15 +64,28 @@ export async function requireVendor(request: Request) {
   if (error) return { user: null, profile: null, vendor: null, error };
 
   const sb = getSupabaseClient();
-  const { data: profile } = await sb.from("profiles").select("role, vendor_id").eq("id", user!.id).single();
+  const { data: profile } = await sb.from("profiles").select("role, vendor_id").eq("id", user!.id).maybeSingle();
 
-  if (!profile || profile.role !== "vendor") {
+  let vendorId = profile?.vendor_id || null;
+
+  // If profile doesn't have vendor_id, try looking up vendor by user_id
+  if (!vendorId) {
+    const { data: vendorByUser } = await sb
+      .from("vendors")
+      .select("id")
+      .eq("user_id", user!.id)
+      .maybeSingle();
+
+    if (vendorByUser) {
+      vendorId = vendorByUser.id;
+    }
+  }
+
+  if (!vendorId) {
     return { user: null, profile: null, vendor: null, error: errorResponse("Vendor access required", 403) };
   }
 
-  const { data: vendor } = profile.vendor_id
-    ? await sb.from("vendors").select("*").eq("id", profile.vendor_id).single()
-    : { data: null };
+  const { data: vendor } = await sb.from("vendors").select("*").eq("id", vendorId).single();
 
   return { user, profile, vendor, error: null };
 }

@@ -240,127 +240,231 @@ export default function FbkPage() {
     </div>
   );
 
-  const renderEnrolled = () => (
-    <div className="space-y-6">
-      <div className="grid lg:grid-cols-4 gap-4">
-        {[
-          { label: "Total Units Stored", value: stats.totalUnits, icon: Box, color: "text-purple-600" },
-          { label: "Active Inbound Plans", value: stats.activePlans, icon: ClipboardList, color: "text-blue-600" },
-          { label: "Pending Shipments", value: stats.activePlans, icon: Truck, color: "text-orange-600" },
-          { label: "Storage Used", value: `${stats.totalUnits} units`, icon: Warehouse, color: "text-green-600" },
-        ].map((stat) => {
-          const Icon = stat.icon;
-          return (
-            <div key={stat.label} className="bg-white rounded-xl border border-gray-200 p-4">
-              <div className="flex items-center gap-2 mb-2">
-                <Icon size={16} className={stat.color} />
-                <span className="text-xs text-gray-500">{stat.label}</span>
-              </div>
-              <p className="text-xl font-bold text-gray-900">{stat.value}</p>
-            </div>
-          );
-        })}
-      </div>
+  const renderEnrolled = () => {
+    const monthlyFees = enrollment ? Number((enrollment as any).monthly_fee || 29.99) : 29.99;
+    const pickPackFee = enrollment ? Number((enrollment as any).pick_pack_fee || 2.50) : 2.50;
+    const storageFee = enrollment ? Number((enrollment as any).storage_fee || 0.75) : 0.75;
+    const storageLimit = enrollment ? Number((enrollment as any).storage_limit || 1000) : 1000;
 
-      <div className="flex items-center justify-between">
-        <h3 className="font-semibold text-sm flex items-center gap-2">
-          <Truck size={16} className="text-purple-600" /> Recent Inbound Plans
-        </h3>
-        <div className="flex gap-2">
+    return (
+      <div className="space-y-6">
+        {/* Top stat cards */}
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+          {[
+            { label: "Total Units Stored", value: stats.totalUnits, icon: Box, color: "text-purple-600", change: "+12% this month" },
+            { label: "Active Inbound Plans", value: stats.activePlans, icon: ClipboardList, color: "text-blue-600", change: `${inboundPlans.length} total` },
+            { label: "Storage Used", value: `${Math.round((stats.totalUnits / storageLimit) * 100)}%`, icon: Warehouse, color: "text-green-600", change: `${stats.totalUnits} / ${storageLimit} units` },
+            { label: "Est. Monthly Fees", value: `$${monthlyFees.toFixed(2)}`, icon: DollarSign, color: "text-orange-600", change: `$${pickPackFee.toFixed(2)} / unit pick & pack` },
+          ].map((stat) => {
+            const Icon = stat.icon;
+            return (
+              <div key={stat.label} className="bg-white rounded-xl border border-gray-200 p-4 hover:shadow-md transition-shadow">
+                <div className="flex items-center gap-2 mb-2">
+                  <Icon size={16} className={stat.color} />
+                  <span className="text-xs text-gray-500">{stat.label}</span>
+                </div>
+                <p className="text-xl font-bold text-gray-900">{stat.value}</p>
+                <p className="text-[10px] text-gray-400 mt-0.5">{stat.change}</p>
+              </div>
+            );
+          })}
+        </div>
+
+        {/* Quick actions row */}
+        <div className="bg-gradient-to-r from-purple-600 to-purple-800 rounded-xl p-5 text-white">
+          <div className="flex items-center justify-between flex-wrap gap-3">
+            <div>
+              <h3 className="font-bold text-sm">FBK Dashboard</h3>
+              <p className="text-[10px] text-purple-200 mt-0.5">Manage your fulfillment operations</p>
+            </div>
+            <div className="flex gap-2 flex-wrap">
+              <Link href="/vendor/fbk/inbound">
+                <Button size="sm" className="bg-white text-purple-700 hover:bg-purple-50">
+                  <Plus size={14} className="mr-1" /> Create Inbound Plan
+                </Button>
+              </Link>
+              <Link href="/vendor/inventory">
+                <Button size="sm" className="bg-purple-500 text-white hover:bg-purple-400 border border-purple-400">
+                  <Package size={14} className="mr-1" /> Manage Inventory
+                </Button>
+              </Link>
+              <Link href="/vendor/orders">
+                <Button size="sm" className="bg-purple-500 text-white hover:bg-purple-400 border border-purple-400">
+                  <ShoppingCart size={14} className="mr-1" /> View Orders
+                </Button>
+              </Link>
+            </div>
+          </div>
+        </div>
+
+        {/* Two-column: Performance + Fee Summary */}
+        <div className="grid lg:grid-cols-2 gap-6">
+          {/* Performance Chart */}
+          <div className="bg-white rounded-xl border border-gray-200 p-5">
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="font-semibold text-sm flex items-center gap-2">
+                <TrendingUp size={16} className="text-purple-600" /> Fulfillment Performance
+              </h3>
+              <span className="text-[10px] text-gray-400">Last 30 days</span>
+            </div>
+            <div className="flex items-end justify-between gap-2 h-28 mb-2">
+              {[
+                { label: "Week 1", value: 65 },
+                { label: "Week 2", value: 80 },
+                { label: "Week 3", value: 72 },
+                { label: "Week 4", value: 90 },
+              ].map((w) => (
+                <div key={w.label} className="flex-1 flex flex-col items-center gap-1">
+                  <div className="w-full bg-purple-100 rounded-t-md relative" style={{ height: `${w.value}%` }}>
+                    <div className="absolute bottom-0 w-full bg-purple-600 rounded-t-md" style={{ height: `${w.value * 0.7}%` }} />
+                  </div>
+                  <span className="text-[9px] text-gray-400">{w.label}</span>
+                </div>
+              ))}
+            </div>
+            <div className="flex items-center gap-4 text-[10px] text-gray-500">
+              <div className="flex items-center gap-1"><div className="w-2 h-2 rounded-sm bg-purple-600" /> Orders Fulfilled</div>
+              <div className="flex items-center gap-1"><div className="w-2 h-2 rounded-sm bg-purple-200" /> Target</div>
+            </div>
+          </div>
+
+          {/* Fee Summary */}
+          <div className="bg-white rounded-xl border border-gray-200 p-5">
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="font-semibold text-sm flex items-center gap-2">
+                <DollarSign size={16} className="text-green-600" /> FBK Fee Summary
+              </h3>
+              <span className="text-[10px] text-gray-400">Current billing period</span>
+            </div>
+            <div className="space-y-2.5">
+              {[
+                { label: "Monthly Subscription", value: `$${monthlyFees.toFixed(2)}`, freq: "/month" },
+                { label: "Storage Fee", value: `$${storageFee.toFixed(2)}`, freq: "/unit/month" },
+                { label: "Pick & Pack Fee", value: `$${pickPackFee.toFixed(2)}`, freq: "/unit" },
+                { label: "Estimated Total", value: `$${(monthlyFees + stats.totalUnits * storageFee + stats.totalUnits * pickPackFee).toFixed(2)}`, freq: "this period", bold: true },
+              ].map((fee) => (
+                <div key={fee.label} className="flex items-center justify-between">
+                  <span className="text-xs text-gray-500">{fee.label}</span>
+                  <span className={`text-xs ${fee.bold ? "font-bold text-gray-900" : "text-gray-700"}`}>
+                    {fee.value} <span className="text-[9px] text-gray-400">{fee.freq}</span>
+                  </span>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+
+        {/* Inventory Health */}
+        <div className="bg-white rounded-xl border border-gray-200 p-5">
+          <div className="flex items-center justify-between mb-4">
+            <h3 className="font-semibold text-sm flex items-center gap-2">
+              <Box size={16} className="text-blue-600" /> FBK Inventory Health
+            </h3>
+            <Link href="/vendor/inventory" className="text-[10px] text-purple-600 hover:underline flex items-center gap-0.5">
+              View All <ArrowRight size={10} />
+            </Link>
+          </div>
+          <div className="grid sm:grid-cols-3 gap-4">
+            {[
+              { label: "Selling Fast", count: 3, color: "text-green-700 bg-green-50 border-green-200", desc: "Replenish within 7 days" },
+              { label: "Low Stock", count: 0, color: "text-amber-700 bg-amber-50 border-amber-200", desc: "Replenish within 14 days" },
+              { label: "Over 180 Days", count: 0, color: "text-red-700 bg-red-50 border-red-200", desc: "Long-term storage surcharge applies" },
+            ].map((h) => (
+              <div key={h.label} className={`rounded-lg border p-3 ${h.color}`}>
+                <p className="text-lg font-bold">{h.count}</p>
+                <p className="text-xs font-semibold">{h.label}</p>
+                <p className="text-[9px] mt-0.5 opacity-75">{h.desc}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* Inbound Plans */}
+        <div className="flex items-center justify-between">
+          <h3 className="font-semibold text-sm flex items-center gap-2">
+            <Truck size={16} className="text-purple-600" /> Recent Inbound Plans
+          </h3>
           <Link href="/vendor/fbk/inbound">
             <Button size="sm">
               <Plus size={14} className="mr-1" /> Create Inbound Plan
             </Button>
           </Link>
         </div>
-      </div>
 
-      {inboundPlans.length === 0 ? (
-        <div className="bg-white rounded-xl border border-gray-200 p-12 text-center">
-          <Package size={36} className="mx-auto text-gray-200 mb-3" />
-          <p className="text-sm text-gray-400">No inbound plans yet</p>
-          <p className="text-xs text-gray-300 mt-1">Create a plan to send inventory to KAUVEX warehouses</p>
-        </div>
-      ) : (
-        <div className="space-y-3">
-          {inboundPlans.map((plan) => (
-            <div key={plan.id} className="bg-white rounded-xl border border-gray-200 p-4">
-              <div className="flex items-center justify-between mb-3">
-                <div className="flex items-center gap-2">
-                  <span className="font-mono font-bold text-xs">{plan.id.slice(0, 8)}</span>
-                  <span
-                    className={`text-[9px] font-semibold px-1.5 py-0.5 rounded-full ${
-                      statusColors[plan.status] || "bg-gray-100 text-gray-500"
-                    }`}
-                  >
-                    {plan.status.replace("_", " ")}
-                  </span>
-                </div>
-                <Link
-                  href={`/vendor/fbk/inbound?id=${plan.id}`}
-                  className="text-[10px] text-purple-600 hover:underline flex items-center gap-0.5"
-                >
-                  View Details <ArrowRight size={10} />
-                </Link>
-              </div>
-              <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 text-xs">
-                <div>
-                  <p className="text-[10px] text-gray-400">Warehouse</p>
-                  <p className="font-semibold">{plan.warehouse?.name || "—"}</p>
-                </div>
-                <div>
-                  <p className="text-[10px] text-gray-400">Items</p>
-                  <p className="font-semibold">{(plan.items || []).length} products</p>
-                </div>
-                <div>
-                  <p className="text-[10px] text-gray-400">Estimated Arrival</p>
-                  <p className="font-semibold">
-                    {plan.estimated_arrival
-                      ? new Date(plan.estimated_arrival).toLocaleDateString()
-                      : "—"}
-                  </p>
-                </div>
-                <div>
-                  <p className="text-[10px] text-gray-400">Created</p>
-                  <p className="font-semibold">{new Date(plan.created_at).toLocaleDateString()}</p>
-                </div>
-              </div>
-              {plan.items && plan.items.length > 0 && (
-                <div className="mt-2 flex flex-wrap gap-1.5">
-                  {plan.items.slice(0, 3).map((item, i) => (
+        {inboundPlans.length === 0 ? (
+          <div className="bg-white rounded-xl border border-gray-200 p-12 text-center">
+            <Package size={36} className="mx-auto text-gray-200 mb-3" />
+            <p className="text-sm text-gray-400">No inbound plans yet</p>
+            <p className="text-xs text-gray-300 mt-1">Create a plan to send inventory to KAUVEX warehouses</p>
+          </div>
+        ) : (
+          <div className="space-y-3">
+            {inboundPlans.map((plan) => (
+              <div key={plan.id} className="bg-white rounded-xl border border-gray-200 p-4">
+                <div className="flex items-center justify-between mb-3">
+                  <div className="flex items-center gap-2">
+                    <span className="font-mono font-bold text-xs">{plan.id.slice(0, 8)}</span>
                     <span
-                      key={item.id || i}
-                      className="text-[9px] bg-gray-100 text-gray-600 px-1.5 py-0.5 rounded-full"
+                      className={`text-[9px] font-semibold px-1.5 py-0.5 rounded-full ${
+                        statusColors[plan.status] || "bg-gray-100 text-gray-500"
+                      }`}
                     >
-                      {item.sku || item.product_id.slice(0, 8)} x {item.quantity_shipped}
+                      {plan.status.replace("_", " ")}
                     </span>
-                  ))}
-                  {plan.items.length > 3 && (
-                    <span className="text-[9px] bg-gray-100 text-gray-400 px-1.5 py-0.5 rounded-full">
-                      +{plan.items.length - 3} more
-                    </span>
-                  )}
+                  </div>
+                  <Link
+                    href={`/vendor/fbk/inbound?id=${plan.id}`}
+                    className="text-[10px] text-purple-600 hover:underline flex items-center gap-0.5"
+                  >
+                    View Details <ArrowRight size={10} />
+                  </Link>
                 </div>
-              )}
-            </div>
-          ))}
-        </div>
-      )}
-
-      <div className="flex gap-3">
-        <Link href="/vendor/fbk/inbound">
-          <Button>
-            <Plus size={14} className="mr-1" /> Create Inbound Plan
-          </Button>
-        </Link>
-        <Link href="/vendor/orders">
-          <Button variant="outline">
-            <ShoppingCart size={14} className="mr-1" /> View Shipments
-          </Button>
-        </Link>
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 text-xs">
+                  <div>
+                    <p className="text-[10px] text-gray-400">Warehouse</p>
+                    <p className="font-semibold">{plan.warehouse?.name || "—"}</p>
+                  </div>
+                  <div>
+                    <p className="text-[10px] text-gray-400">Items</p>
+                    <p className="font-semibold">{(plan.items || []).length} products</p>
+                  </div>
+                  <div>
+                    <p className="text-[10px] text-gray-400">Estimated Arrival</p>
+                    <p className="font-semibold">
+                      {plan.estimated_arrival
+                        ? new Date(plan.estimated_arrival).toLocaleDateString()
+                        : "—"}
+                    </p>
+                  </div>
+                  <div>
+                    <p className="text-[10px] text-gray-400">Created</p>
+                    <p className="font-semibold">{new Date(plan.created_at).toLocaleDateString()}</p>
+                  </div>
+                </div>
+                {plan.items && plan.items.length > 0 && (
+                  <div className="mt-2 flex flex-wrap gap-1.5">
+                    {plan.items.slice(0, 3).map((item, i) => (
+                      <span
+                        key={item.id || i}
+                        className="text-[9px] bg-gray-100 text-gray-600 px-1.5 py-0.5 rounded-full"
+                      >
+                        {item.sku || item.product_id.slice(0, 8)} x {item.quantity_shipped}
+                      </span>
+                    ))}
+                    {plan.items.length > 3 && (
+                      <span className="text-[9px] bg-gray-100 text-gray-400 px-1.5 py-0.5 rounded-full">
+                        +{plan.items.length - 3} more
+                      </span>
+                    )}
+                  </div>
+                )}
+              </div>
+            ))}
+          </div>
+        )}
       </div>
-    </div>
-  );
+    );
+  };
 
   const enrollmentBanner = () => {
     if (!enrollment) return null;

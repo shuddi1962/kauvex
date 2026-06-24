@@ -673,30 +673,65 @@ export default function VendorInventoryPage() {
                           <MoreHorizontal size={14} className="text-text-4" />
                         </button>
                         {openDropdown === p.id && (
-                          <div className="absolute right-0 top-full mt-1 z-20 w-48 bg-white border border-border rounded-xl shadow-xl py-1" onMouseLeave={() => setOpenDropdown(null)}>
-                            <Link href={p.source === "product" ? `/vendor/products/${p.id}/edit` : `/vendor/products/${p.id}/edit`}
+                          <div className="absolute right-0 top-full mt-1 z-20 w-56 bg-white border border-border rounded-xl shadow-xl py-1 max-h-80 overflow-y-auto" onMouseLeave={() => setOpenDropdown(null)}>
+                            <Link href={`/vendor/products/${p.id}/edit`}
                               className="flex items-center gap-2.5 w-full px-4 py-2 text-xs text-text-2 hover:bg-gray-50 transition-colors">
                               <Edit size={13} className="text-text-4" /> Edit
                             </Link>
-                            <button onClick={() => { handleDelete(p.id); setOpenDropdown(null); }}
-                              className="flex items-center gap-2.5 w-full px-4 py-2 text-xs text-text-2 hover:bg-red-50 transition-colors">
-                              <Trash2 size={13} className="text-red-400" /> Delete
-                            </button>
-                            <button onClick={() => { toggleStatus(p.id); setOpenDropdown(null); }}
+                            <button onClick={() => { showToast("success", "Manage images opened"); setOpenDropdown(null); }}
                               className="flex items-center gap-2.5 w-full px-4 py-2 text-xs text-text-2 hover:bg-gray-50 transition-colors">
-                              <ToggleRight size={13} className="text-text-4" /> {p.status === "active" ? "Deactivate" : "Activate"}
-                            </button>
-                            <button onClick={() => { matchLowPrice(p.id); setOpenDropdown(null); }}
-                              className="flex items-center gap-2.5 w-full px-4 py-2 text-xs text-text-2 hover:bg-gray-50 transition-colors">
-                              <Minus size={13} className="text-text-4" /> Match Low Price
+                              <ImageIcon size={13} className="text-text-4" /> Manage Images
                             </button>
                             <button onClick={() => { showToast("success", "Listing copied"); setOpenDropdown(null); }}
                               className="flex items-center gap-2.5 w-full px-4 py-2 text-xs text-text-2 hover:bg-gray-50 transition-colors">
                               <Copy size={13} className="text-text-4" /> Copy Listing
                             </button>
+                            <button onClick={() => { showToast("success", "Add another condition dialog opened"); setOpenDropdown(null); }}
+                              className="flex items-center gap-2.5 w-full px-4 py-2 text-xs text-text-2 hover:bg-gray-50 transition-colors">
+                              <Plus size={13} className="text-text-4" /> Add Another Condition
+                            </button>
+                            <div className="border-t border-border my-1" />
+                            <button onClick={() => { showToast("success", "Fulfillment changed to Merchant"); setOpenDropdown(null); }}
+                              className="flex items-center gap-2.5 w-full px-4 py-2 text-xs text-text-2 hover:bg-gray-50 transition-colors">
+                              <Truck size={13} className="text-text-4" /> Change to Fulfilled by Merchant
+                            </button>
+                            <Link href="/vendor/fbk/inbound"
+                              className="flex items-center gap-2.5 w-full px-4 py-2 text-xs text-text-2 hover:bg-gray-50 transition-colors">
+                              <Box size={13} className="text-text-4" /> Send/Replenish Inventory
+                            </Link>
+                            <Link href="/vendor/inventory/replenishment-alerts"
+                              className="flex items-center gap-2.5 w-full px-4 py-2 text-xs text-text-2 hover:bg-gray-50 transition-colors">
+                              <AlertTriangle size={13} className="text-text-4" /> Set Replenishment Alerts
+                            </Link>
+                            <button onClick={() => { matchLowPrice(p.id); setOpenDropdown(null); }}
+                              className="flex items-center gap-2.5 w-full px-4 py-2 text-xs text-text-2 hover:bg-gray-50 transition-colors">
+                              <Minus size={13} className="text-text-4" /> Match Low Price
+                            </button>
+                            <div className="border-t border-border my-1" />
+                            <button onClick={() => { showToast("success", "Removal order created"); setOpenDropdown(null); }}
+                              className="flex items-center gap-2.5 w-full px-4 py-2 text-xs text-text-2 hover:bg-gray-50 transition-colors">
+                              <Trash2 size={13} className="text-text-4" /> Create Removal Order
+                            </button>
+                            <button onClick={() => { showToast("success", "Fulfillment order created"); setOpenDropdown(null); }}
+                              className="flex items-center gap-2.5 w-full px-4 py-2 text-xs text-text-2 hover:bg-gray-50 transition-colors">
+                              <ShoppingCart size={13} className="text-text-4" /> Create Fulfillment Order
+                            </button>
+                            <button onClick={() => { showToast("success", "Labels queued for printing"); setOpenDropdown(null); }}
+                              className="flex items-center gap-2.5 w-full px-4 py-2 text-xs text-text-2 hover:bg-gray-50 transition-colors">
+                              <Printer size={13} className="text-text-4" /> Print Item Labels
+                            </button>
+                            <div className="border-t border-border my-1" />
+                            <button onClick={() => { toggleStatus(p.id); setOpenDropdown(null); }}
+                              className="flex items-center gap-2.5 w-full px-4 py-2 text-xs text-text-2 hover:bg-gray-50 transition-colors">
+                              <X size={13} className="text-text-4" /> Close Listing
+                            </button>
+                            <button onClick={() => { handleDelete(p.id); setOpenDropdown(null); }}
+                              className="flex items-center gap-2.5 w-full px-4 py-2 text-xs text-text-2 hover:bg-red-50 transition-colors">
+                              <Trash2 size={13} className="text-red-400" /> Delete Product &amp; Listing
+                            </button>
                             <button onClick={() => { showToast("success", "Ad campaign wizard opened"); setOpenDropdown(null); }}
                               className="flex items-center gap-2.5 w-full px-4 py-2 text-xs text-text-2 hover:bg-gray-50 transition-colors">
-                              <Megaphone size={13} className="text-text-4" /> Advertise
+                              <Megaphone size={13} className="text-text-4" /> Advertise Listing
                             </button>
                           </div>
                         )}

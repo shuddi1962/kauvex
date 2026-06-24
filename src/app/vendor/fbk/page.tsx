@@ -83,11 +83,30 @@ export default function FbkPage() {
       const { data: { user } } = await insforge.auth.getCurrentUser();
       if (!user) { setLoading(false); return; }
 
-      const { data: vendorProfile } = await insforge.database
+      let { data: vendorProfile } = await insforge.database
         .from("vendors")
         .select("id")
         .eq("user_id", user.id)
         .maybeSingle();
+
+      // Auto-create vendor record if missing
+      if (!vendorProfile) {
+        try {
+          const slug = user.id.slice(0, 8);
+          const { data: newVendor } = await insforge.database
+            .from("vendors")
+            .insert({
+              user_id: user.id,
+              shop_name: (user.email || "vendor").split("@")[0] + "'s Store",
+              shop_slug: `shop-${slug}`,
+              status: "active",
+              created_at: new Date().toISOString(),
+            })
+            .select("id")
+            .maybeSingle();
+          if (newVendor) vendorProfile = newVendor;
+        } catch { /* ignore */ }
+      }
 
       if (vendorProfile) {
         let { data: enrollData } = await insforge.database

@@ -99,16 +99,54 @@ export default function VendorInventoryPage() {
       if (!user) { setLoading(false); return; }
 
       // Look up the vendor record to get the actual vendor UUID
-      const { data: vendorProfile } = await insforge.database
+      let { data: vendorProfile } = await insforge.database
         .from("vendors")
         .select("id")
         .eq("user_id", user.id)
         .maybeSingle();
 
+      // Auto-create vendor record if missing
       if (!vendorProfile) {
-        setLoading(false);
-        setError("Complete your vendor profile setup first");
-        return;
+        try {
+          const tokRes = await fetch("/api/auth/session-token");
+          const { token } = await tokRes.json();
+          if (token) {
+            const regRes = await fetch("/api/v1/vendors/register", {
+              method: "POST",
+              headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+              body: JSON.stringify({ shop_name: (user.email || user.id).split("@")[0] + "'s Store" }),
+            });
+            if (regRes.ok) {
+              const regJson = await regRes.json();
+              vendorProfile = regJson.data || { id: regJson.vendor?.id };
+            }
+          }
+        } catch { /* ignore */ }
+
+        // Fallback: direct DB insert
+        if (!vendorProfile?.id) {
+          try {
+            const slug = user.id.slice(0, 8);
+            const { data: newVendor } = await insforge.database
+              .from("vendors")
+              .insert({
+                user_id: user.id,
+                shop_name: (user.email || "vendor").split("@")[0] + "'s Store",
+                shop_slug: `shop-${slug}`,
+                status: "active",
+                created_at: new Date().toISOString(),
+              })
+              .select("id")
+              .maybeSingle();
+            if (newVendor) vendorProfile = newVendor;
+          } catch { /* ignore */ }
+        }
+
+        if (!vendorProfile?.id) {
+          setLoading(false);
+          setError("Could not create vendor profile. Please contact support.");
+          return;
+        }
       }
 
       setVendorId(vendorProfile.id);

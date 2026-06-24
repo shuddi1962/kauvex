@@ -53,34 +53,35 @@ export default function FbkEnrollPage() {
     init();
   }, []);
 
-  const ensureWarehouses = async () => {
-    const { data: existing } = await insforge.database
-      .from("warehouses")
-      .select("id")
-      .eq("status", "active")
-      .limit(1);
-    if (existing && existing.length > 0) return;
-
-    const demos = [
-      { name: "KAUVEX Lagos Main Hub", code: "LOS-001", type: "standard", address: "42 Warehouse Road, Ikeja", city: "Lagos", state: "Lagos", country: "Nigeria", postalCode: "100001" },
-      { name: "KAUVEX Abuja Hub", code: "ABV-001", type: "standard", address: "15 Trade Zone, Central Area", city: "Abuja", state: "FCT", country: "Nigeria", postalCode: "900001" },
-      { name: "KAUVEX Port Harcourt Hub", code: "PHC-001", type: "standard", address: "8 Industrial Layout", city: "Port Harcourt", state: "Rivers", country: "Nigeria", postalCode: "500001" },
-    ];
-    for (const w of demos) {
-      await insforge.database.from("warehouses").insert({ ...w, status: "active", created_at: new Date().toISOString(), updated_at: new Date().toISOString() });
-    }
-  };
-
   const init = async () => {
     try {
       const { data: { user } } = await insforge.auth.getCurrentUser();
       if (!user) return;
 
-      const { data: vendorProfile } = await insforge.database
+      let { data: vendorProfile } = await insforge.database
         .from("vendors")
         .select("id, business_name, phone, address")
         .eq("user_id", user.id)
         .maybeSingle();
+
+      // Auto-create vendor record if missing
+      if (!vendorProfile) {
+        try {
+          const slug = user.id.slice(0, 8);
+          const { data: newVendor } = await insforge.database
+            .from("vendors")
+            .insert({
+              user_id: user.id,
+              shop_name: (user.email || "vendor").split("@")[0] + "'s Store",
+              shop_slug: `shop-${slug}`,
+              status: "active",
+              created_at: new Date().toISOString(),
+            })
+            .select("id, business_name, phone, address")
+            .maybeSingle();
+          if (newVendor) vendorProfile = newVendor;
+        } catch { /* ignore */ }
+      }
 
       if (vendorProfile) {
         setBusinessName(vendorProfile.business_name || "");
@@ -88,15 +89,12 @@ export default function FbkEnrollPage() {
         setPhone(vendorProfile.phone || "");
       }
 
-      await ensureWarehouses();
-
-      const { data: whData } = await insforge.database
-        .from("warehouses")
-        .select("id, name, city, state, country")
-        .eq("status", "active")
-        .order("name");
-
-      if (whData) setWarehouses(whData);
+      // Fetch warehouses via API (bypasses RLS)
+      const whRes = await fetch("/api/warehouses?status=active");
+      if (whRes.ok) {
+        const whJson = await whRes.json();
+        setWarehouses(whJson.warehouses || []);
+      }
     } catch {
       // fallback
     } finally {

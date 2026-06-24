@@ -74,6 +74,13 @@ const features = [
     desc: "Buy, sell & collect unique digital artworks as NFTs on Ethereum & Polygon.",
     gradient: "from-purple-900 to-indigo-900",
   },
+  {
+    href: "/supplier/register",
+    icon: Building2,
+    title: "Supplier Portal",
+    desc: "Local suppliers, register and manage your products, orders and earnings.",
+    gradient: "from-green-600 to-emerald-700",
+  },
 ];
 
 export default function V3FeaturesSection() {

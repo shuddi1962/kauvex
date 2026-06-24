@@ -17,6 +17,7 @@ const socialLinks = [
 const sellLinks = [
   { label: "Start Selling", url: "/sell" },
   { label: "Vendor Dashboard", url: "/vendor/dashboard" },
+  { label: "Supplier Portal", url: "/supplier/register" },
   { label: "B2B/Wholesale", url: "/wholesale" },
   { label: "Affiliate Program", url: "/affiliate" },
   { label: "Advertising", url: "/advertise" },
@@ -196,6 +197,7 @@ export default function Footer() {
               <li><Link href="/express/track" className="text-sm text-white/40 hover:text-white transition-colors">Track a Package</Link></li>
               <li><Link href="/express/business" className="text-sm text-white/40 hover:text-white transition-colors">Express for Business</Link></li>
               <li><Link href="/logistics/register" className="text-sm text-white/40 hover:text-white transition-colors">Become a Partner</Link></li>
+              <li><Link href="/logistics/login" className="text-sm text-white/40 hover:text-white transition-colors">Partner Login</Link></li>
               <li><Link href="/express/faq" className="text-sm text-white/40 hover:text-white transition-colors">Express FAQ</Link></li>
               <li><Link href="/express/coverage" className="text-sm text-white/40 hover:text-white transition-colors">Coverage Areas</Link></li>
               <li><Link href="/vendor/fbk" className="text-sm text-white/40 hover:text-white transition-colors">FBK Fulfillment</Link></li>

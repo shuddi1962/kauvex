@@ -131,6 +131,11 @@ const staticCategories = [
         href: "/vendor/shipping/profiles",
         description: "Set your delivery rules, rates, and coverage zones",
       },
+      {
+        label: "Partner Login",
+        href: "/logistics/login",
+        description: "Logistics partner dashboard sign-in",
+      },
     ],
   },
   {
@@ -179,6 +184,12 @@ const staticCategories = [
         href: "/nft-marketplace",
         icon: "🌟",
         description: "Buy, sell & collect unique digital artworks as NFTs",
+      },
+      {
+        label: "Supplier Portal",
+        href: "/supplier/register",
+        icon: "🏭",
+        description: "Register as a local supplier and manage your products",
       },
     ],
   },

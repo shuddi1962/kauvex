@@ -33,6 +33,13 @@ const footerColumns = [
       { label: "Track Shipment", url: "/express/track" },
       { label: "Express for Business", url: "/express/business" },
       { label: "Become a Courier Partner", url: "/logistics/register" },
+      { label: "Kauvex Live", url: "/live" },
+      { label: "Group Buy", url: "/group-buy" },
+      { label: "POD Marketplace", url: "/pod-marketplace" },
+      { label: "Art Marketplace", url: "/art-marketplace" },
+      { label: "NFT Marketplace", url: "/nft-marketplace" },
+      { label: "Concierge AI", url: "/concierge" },
+      { label: "Request Product", url: "/request-product" },
     ],
   },
   {
@@ -40,6 +47,7 @@ const footerColumns = [
     links: [
       { label: "Sell on KAUVEX", url: "/sell" },
       { label: "Vendor Dashboard", url: "/vendor/dashboard" },
+      { label: "Supplier Portal", url: "/supplier/register" },
       { label: "B2B/Wholesale", url: "/wholesale" },
       { label: "Affiliate Program", url: "/affiliate" },
       { label: "Advertising", url: "/advertise" },

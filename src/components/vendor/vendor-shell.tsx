@@ -44,6 +44,8 @@ const topNav: { key: SectionKey; label: string; icon: React.ElementType; groups:
       { title: "Products", items: [
         { label: "All Products", href: "/vendor/products" },
         { label: "Add Product", href: "/vendor/products" },
+        { label: "Bulk Upload", href: "/vendor/products/bulk-upload", badge: "New" },
+        { label: "Approval Requests", href: "/vendor/products/approval-request" },
         { label: "Shared Catalog", href: "/vendor/catalog", badge: "Sell" },
         { label: "AI Tools", href: "/vendor/ai-tools" },
       ]},
@@ -52,6 +54,7 @@ const topNav: { key: SectionKey; label: string; icon: React.ElementType; groups:
         { label: "Design Studio", href: "/vendor/pod/design-studio", badge: "New" },
         { label: "My Products", href: "/vendor/pod/products" },
         { label: "Orders", href: "/vendor/pod/orders" },
+        { label: "Analytics", href: "/vendor/pod/analytics" },
         { label: "Design Marketplace", href: "/pod-marketplace" },
       ]},
       { title: "Dropshipping", items: [
@@ -60,6 +63,8 @@ const topNav: { key: SectionKey; label: string; icon: React.ElementType; groups:
       { title: "Fulfillment", items: [
         { label: "FBK", href: "/vendor/fbk" },
         { label: "Shipping", href: "/vendor/shipping" },
+        { label: "Drop-off", href: "/vendor/shipping/dropoff" },
+        { label: "Pickup", href: "/vendor/shipping/pickup" },
       ]},
     ],
   },
@@ -106,6 +111,7 @@ const topNav: { key: SectionKey; label: string; icon: React.ElementType; groups:
         { label: "Campaigns", href: "/vendor/advertising" },
         { label: "Create Campaign", href: "/vendor/advertising/campaigns/new" },
         { label: "Analytics", href: "/vendor/advertising/analytics" },
+        { label: "Ad Wallet", href: "/vendor/advertising/wallet" },
         { label: "Promotions", href: "/vendor/promotions" },
       ]},
       { title: "Brand", items: [
@@ -173,6 +179,7 @@ const topNav: { key: SectionKey; label: string; icon: React.ElementType; groups:
         { label: "Subscription", href: "/vendor/subscription" },
         { label: "Staff", href: "/vendor/dashboard/staff" },
         { label: "Permissions", href: "/vendor/settings/permissions", badge: "New" },
+        { label: "Permission History", href: "/vendor/settings/permissions/history" },
         { label: "API Access", href: "/vendor/settings/api-access" },
       ]},
     ],

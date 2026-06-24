@@ -48,8 +48,9 @@ export async function POST(request: NextRequest) {
       .insert({
         vendor_id: vendor!.id,
         vendor_store_id: body!.vendor_store_id || null,
-        status: "pending",
+        status: "active",
         storage_limit: body!.storage_limit || null,
+        approved_at: new Date().toISOString(),
       })
       .select("*")
       .single();

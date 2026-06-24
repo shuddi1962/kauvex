@@ -60,6 +60,24 @@ export default function FbkInboundPage() {
     init();
   }, []);
 
+  const ensureWarehouses = async () => {
+    const { data: existing } = await insforge.database
+      .from("warehouses")
+      .select("id")
+      .eq("status", "active")
+      .limit(1);
+    if (existing && existing.length > 0) return;
+
+    const demos = [
+      { name: "KAUVEX Lagos Main Hub", code: "LOS-001", type: "standard", address: "42 Warehouse Road, Ikeja", city: "Lagos", state: "Lagos", country: "Nigeria", postalCode: "100001" },
+      { name: "KAUVEX Abuja Hub", code: "ABV-001", type: "standard", address: "15 Trade Zone, Central Area", city: "Abuja", state: "FCT", country: "Nigeria", postalCode: "900001" },
+      { name: "KAUVEX Port Harcourt Hub", code: "PHC-001", type: "standard", address: "8 Industrial Layout", city: "Port Harcourt", state: "Rivers", country: "Nigeria", postalCode: "500001" },
+    ];
+    for (const w of demos) {
+      await insforge.database.from("warehouses").insert({ ...w, status: "active", created_at: new Date().toISOString(), updated_at: new Date().toISOString() });
+    }
+  };
+
   const init = async () => {
     try {
       const { data: { user } } = await insforge.auth.getCurrentUser();
@@ -69,7 +87,7 @@ export default function FbkInboundPage() {
         .from("vendors")
         .select("id")
         .eq("user_id", user.id)
-        .single();
+        .maybeSingle();
 
       if (vendorProfile) {
         const { data: productData } = await insforge.database
@@ -80,6 +98,8 @@ export default function FbkInboundPage() {
 
         if (productData) setProducts(productData);
       }
+
+      await ensureWarehouses();
 
       const { data: whData } = await insforge.database
         .from("warehouses")

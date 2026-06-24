@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { Truck, Bike, Car, Building2, Users, Star, TrendingUp, Shield, CheckCircle2, ArrowRight, Zap } from "lucide-react";
+import { Truck, Bike, Car, Building2, Users, Star, TrendingUp, Shield, CheckCircle2, ArrowRight, Zap, Package, Globe } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
 const partnerTypes = [

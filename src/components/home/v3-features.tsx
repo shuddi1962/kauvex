@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { Radio, Users, Palette, Image as ImageIcon, Sparkles, Package, Diamond } from "lucide-react";
+import { Radio, Users, Palette, Image as ImageIcon, Sparkles, Package, Diamond, Truck, Warehouse, Building2 } from "lucide-react";
 
 const features = [
   {
@@ -17,6 +17,13 @@ const features = [
     title: "Group Buy",
     desc: "Buy together, save more! Invite friends and unlock lower prices.",
     gradient: "from-purple-600 to-indigo-700",
+  },
+  {
+    href: "/express",
+    icon: Truck,
+    title: "Kauvex Express",
+    desc: "Ship anything, anywhere, fast. Instant quotes, real-time tracking, same-day delivery.",
+    gradient: "from-orange-600 to-red-600",
   },
   {
     href: "/pod-marketplace",
@@ -38,6 +45,20 @@ const features = [
     title: "Concierge AI",
     desc: "AI-powered personal shopping assistant. Tell me what you need, I'll find it.",
     gradient: "from-[#0A1628] to-[#FF6B00]",
+  },
+  {
+    href: "/express/business",
+    icon: Building2,
+    title: "Express for Business",
+    desc: "Volume discounts, API access, team accounts, and dedicated support.",
+    gradient: "from-blue-600 to-indigo-700",
+  },
+  {
+    href: "/vendor/fbk",
+    icon: Warehouse,
+    title: "FBK Fulfillment",
+    desc: "Store inventory with us — we pick, pack, and ship your orders on your behalf.",
+    gradient: "from-[#0A1628] to-navy-900",
   },
   {
     href: "/request-product",
@@ -62,11 +83,11 @@ export default function V3FeaturesSection() {
         <div className="text-center mb-8">
           <h2 className="text-2xl lg:text-3xl font-bold text-[#0A1628] tracking-tight">Explore Kauvex</h2>
           <p className="text-sm text-gray-500 mt-2 max-w-2xl mx-auto">
-            Discover unique ways to shop, sell, and create on the Kauvex platform.
+            Discover unique ways to shop, sell, ship, and create on the Kauvex platform.
           </p>
         </div>
 
-        <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
+        <div className="grid sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
           {features.map((f) => {
             const Icon = f.icon;
             return (

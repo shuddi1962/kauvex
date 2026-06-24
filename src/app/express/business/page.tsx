@@ -1,22 +1,13 @@
-import type { Metadata } from "next";
+"use client";
+
+import { useState } from "react";
 import Link from "next/link";
 import {
-  Building2, Users, Upload, Key, Tag, CreditCard, FileText,
+  Building2, Users, Upload, Key, CreditCard, FileText,
   TrendingUp, BarChart3, Shield, ChevronRight, CheckCircle2,
-  Zap, Globe, Download, Settings, Star,
+  Zap, Globe, Star, Loader2, ArrowLeft,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
-
-export const metadata: Metadata = {
-  title: "Kauvex Express for Business — Shipping Solutions for Companies",
-  description:
-    "Save on shipping with volume discounts, team access, bulk upload, API integration, and custom waybill branding. Create a free business account.",
-  openGraph: {
-    title: "Kauvex Express for Business",
-    description: "Volume discounts, team access, API integration, and custom waybill branding.",
-    type: "website",
-  },
-};
 
 const features = [
   {
@@ -31,103 +22,108 @@ const features = [
   },
   {
     icon: Upload,
-    title: "Bulk Upload",
-    desc: "Ship up to 500 packages at once with CSV upload. Process in minutes.",
+    title: "Bulk Shipment Upload",
+    desc: "Upload CSV with multiple shipments and book them all at once.",
   },
   {
     icon: Key,
     title: "API Access",
-    desc: "Integrate Kauvex Express directly into your platform with our REST API.",
+    desc: "Integrate Kauvex Express into your own order management or e-commerce system.",
   },
   {
     icon: Tag,
     title: "Custom Waybill Branding",
-    desc: "Put your logo and colors on every waybill and tracking page.",
+    desc: "Your company logo on waybills instead of Kauvex branding.",
   },
   {
     icon: FileText,
-    title: "Automated Reports",
-    desc: "Monthly shipping reports with spend analysis, delivery performance, and more.",
+    title: "Monthly Invoicing",
+    desc: "Consolidate all shipments into one monthly invoice with 30-day payment terms.",
   },
 ];
 
 const billingOptions = [
-  {
-    title: "Pay-Per-Shipment",
-    desc: "No commitment. Pay as you ship with standard rates.",
-    features: ["No monthly fees", "Standard pricing", "Pay via card or bank transfer"],
-  },
-  {
-    title: "Monthly Invoice",
-    desc: "Centralized monthly billing with consolidated invoice.",
-    features: ["Net 30 terms", "Consolidated invoice", "Dedicated account manager"],
-  },
-  {
-    title: "Prepaid Credit Wallet",
-    desc: "Pre-fund your wallet and unlock volume discount tiers.",
-    features: ["Volume-based pricing", "Auto-recharge option", "Best rates from Bronze to Platinum"],
-  },
+  { title: "Pay-Per-Shipment", desc: "Pay as you go with card or bank transfer. No commitment.", popular: false },
+  { title: "Monthly Invoice", desc: "Consolidated monthly bill with 30-day terms. Ideal for 50+ shipments/month.", popular: true },
+  { title: "Prepaid Wallet", desc: "Top up in bulk and get volume discounts. Best rates for frequent shippers.", popular: false },
 ];
 
 const volumeTiers = [
-  {
-    tier: "Bronze",
-    min: "₦0 – ₦100,000",
-    discount: "0%",
-    color: "bg-amber-50 border-amber-200",
-    badge: "bg-amber-100 text-amber-800",
-  },
-  {
-    tier: "Silver",
-    min: "₦100,001 – ₦500,000",
-    discount: "5%",
-    color: "bg-gray-50 border-gray-300",
-    badge: "bg-gray-200 text-gray-800",
-  },
-  {
-    tier: "Gold",
-    min: "₦500,001 – ₦2,000,000",
-    discount: "10%",
-    color: "bg-yellow-50 border-yellow-300",
-    badge: "bg-yellow-100 text-yellow-800",
-    featured: true,
-  },
-  {
-    tier: "Platinum",
-    min: "₦2,000,001+",
-    discount: "15%",
-    color: "bg-blue-50 border-blue-300",
-    badge: "bg-blue-100 text-blue-800",
-  },
+  { tier: "Bronze", volume: "10–49/mo", discount: "5%", support: "Standard business" },
+  { tier: "Silver", volume: "50–199/mo", discount: "10%", support: "Priority support" },
+  { tier: "Gold", volume: "200–499/mo", discount: "15%", support: "Priority support" },
+  { tier: "Platinum", volume: "500+/mo", discount: "Negotiated", support: "Dedicated manager" },
 ];
 
-export default function BusinessPage() {
+export default function ExpressBusinessPage() {
+  const [showForm, setShowForm] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
+  const [submitted, setSubmitted] = useState(false);
+  const [error, setError] = useState("");
+  const [form, setForm] = useState({
+    companyName: "", contactName: "", email: "", phone: "",
+    monthlyShipments: "10-49", billingType: "per_shipment",
+  });
+
+  const update = (field: string, value: string) => setForm(prev => ({ ...prev, [field]: value }));
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setSubmitting(true);
+    setError("");
+    try {
+      const res = await fetch("/api/v1/shipping/business-accounts", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          company_name: form.companyName,
+          contact_name: form.contactName,
+          contact_email: form.email,
+          contact_phone: form.phone,
+          billing_type: form.billingType,
+        }),
+      });
+      const json = await res.json();
+      if (!res.ok) throw new Error(json.error || "Registration failed");
+      setSubmitted(true);
+    } catch (e: any) {
+      setError(e.message || "Something went wrong. Please try again.");
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
   return (
-    <div>
-      <section className="bg-navy relative overflow-hidden">
-        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,_rgba(255,107,0,0.12)_0%,_transparent_60%)]" />
-        <div className="max-w-7xl mx-auto px-4 py-16 lg:py-24 relative">
+    <div className="bg-off-white min-h-screen">
+      <div className="bg-white border-b border-border">
+        <div className="max-w-7xl mx-auto px-4 py-3 flex items-center gap-2 text-sm text-text-3">
+          <Link href="/" className="hover:text-blue">Home</Link>
+          <span>/</span>
+          <Link href="/express" className="hover:text-blue">Express</Link>
+          <span>/</span>
+          <span className="text-text-1 font-medium">For Business</span>
+        </div>
+      </div>
+
+      {/* Hero */}
+      <section className="bg-gradient-to-br from-navy to-navy/90 text-white py-16 lg:py-20">
+        <div className="max-w-7xl mx-auto px-4">
           <div className="max-w-3xl">
-            <div className="inline-flex items-center gap-2 bg-orange/10 text-orange text-xs font-semibold px-3 py-1.5 rounded-full mb-4">
-              <Building2 className="w-3.5 h-3.5" />
-              Kauvex Express for Business
+            <div className="w-14 h-14 rounded-xl bg-orange flex items-center justify-center mb-5">
+              <Building2 className="w-7 h-7 text-white" />
             </div>
-            <h1 className="text-4xl lg:text-5xl font-syne font-800 text-white leading-tight mb-4">
-              Shipping infrastructure for
-              <span className="text-orange"> growing businesses</span>
-            </h1>
-            <p className="text-lg text-white/70 mb-8 max-w-xl leading-relaxed">
-              Save up to 15% on shipping with volume discounts. Manage your team, upload bulk orders, integrate via API, and brand every waybill.
+            <h1 className="text-3xl lg:text-5xl font-syne font-800 mb-3">Shipping that scales with your business</h1>
+            <p className="text-lg text-white/70 mb-8">
+              Volume discounts, team access, API integration, and dedicated support.
+              Trusted by hundreds of businesses across Nigeria.
             </p>
-            <div className="flex flex-wrap gap-4">
+            <div className="flex flex-wrap gap-3">
+              <Button onClick={() => setShowForm(true)} size="xl" className="bg-orange hover:bg-orange-600 text-white text-base px-8">
+                Create Free Account <ChevronRight className="w-4 h-4 ml-1" />
+              </Button>
               <Link href="/express/book">
-                <Button size="lg" className="bg-orange hover:bg-orange-600 text-base px-8">
-                  Create Business Account <ChevronRight className="w-4 h-4 ml-1" />
-                </Button>
-              </Link>
-              <Link href="/contact">
-                <Button variant="outline" size="lg" className="border-white/20 text-white hover:bg-white/10 text-base px-8">
-                  Talk to Sales
+                <Button variant="outline" size="xl" className="border-white/30 text-white hover:bg-white/10 text-base px-8">
+                  Book a Shipment
                 </Button>
               </Link>
             </div>
@@ -135,24 +131,20 @@ export default function BusinessPage() {
         </div>
       </section>
 
-      <section className="py-20 bg-white">
+      {/* Features */}
+      <section className="py-16 lg:py-20 bg-white">
         <div className="max-w-7xl mx-auto px-4">
-          <div className="text-center mb-12">
-            <h2 className="text-3xl lg:text-4xl font-syne font-700 text-text-1 mb-3">Everything your business needs</h2>
-            <p className="text-text-3 max-w-2xl mx-auto">
-              From team management to API integration, Kauvex Express scales with your shipping volume.
-            </p>
-          </div>
-          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+          <h2 className="text-2xl lg:text-3xl font-syne font-700 text-center text-text-1 mb-12">Everything your business needs</h2>
+          <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
             {features.map((f) => {
               const Icon = f.icon;
               return (
-                <div key={f.title} className="rounded-xl border border-border p-6 hover:shadow-medium transition-shadow">
-                  <div className="w-11 h-11 rounded-lg bg-orange-50 flex items-center justify-center mb-4">
-                    <Icon className="w-5.5 h-5.5 text-orange" />
+                <div key={f.title} className="bg-off-white rounded-xl p-6 border border-border">
+                  <div className="w-10 h-10 rounded-lg bg-orange-50 flex items-center justify-center mb-3">
+                    <Icon className="w-5 h-5 text-orange" />
                   </div>
-                  <h3 className="font-syne font-700 text-base text-text-1 mb-1">{f.title}</h3>
-                  <p className="text-sm text-text-4">{f.desc}</p>
+                  <h3 className="font-syne font-600 text-sm text-text-1 mb-1">{f.title}</h3>
+                  <p className="text-xs text-text-4">{f.desc}</p>
                 </div>
               );
             })}
@@ -160,145 +152,150 @@ export default function BusinessPage() {
         </div>
       </section>
 
-      <section className="py-20 bg-off-white">
+      {/* Billing */}
+      <section className="py-16 lg:py-20 bg-off-white">
         <div className="max-w-7xl mx-auto px-4">
-          <div className="text-center mb-12">
-            <h2 className="text-3xl lg:text-4xl font-syne font-700 text-text-1 mb-3">Flexible billing for every scale</h2>
-            <p className="text-text-3 max-w-2xl mx-auto">
-              Whether you ship 10 or 10,000 packages a month, we have a billing option that works for you.
-            </p>
-          </div>
-          <div className="grid md:grid-cols-3 gap-6">
+          <h2 className="text-2xl lg:text-3xl font-syne font-700 text-center text-text-1 mb-4">Billing that fits your volume</h2>
+          <p className="text-text-3 text-center max-w-xl mx-auto mb-10">Choose the billing method that works best for your business size.</p>
+          <div className="grid md:grid-cols-3 gap-6 max-w-4xl mx-auto">
             {billingOptions.map((opt) => (
-              <div key={opt.title} className="bg-white rounded-xl border border-border p-6 hover:shadow-medium transition-shadow">
-                <div className="flex items-center gap-3 mb-4">
-                  <div className="w-10 h-10 rounded-lg bg-orange-50 flex items-center justify-center">
-                    {opt.title === "Pay-Per-Shipment" ? <CreditCard className="w-5 h-5 text-orange" /> :
-                     opt.title === "Monthly Invoice" ? <FileText className="w-5 h-5 text-orange" /> :
-                     <Star className="w-5 h-5 text-orange" />}
-                  </div>
-                  <h3 className="font-syne font-700 text-base text-text-1">{opt.title}</h3>
-                </div>
-                <p className="text-sm text-text-4 mb-4">{opt.desc}</p>
-                <ul className="space-y-2">
-                  {opt.features.map((f) => (
-                    <li key={f} className="text-xs text-text-3 flex items-start gap-2">
-                      <CheckCircle2 className="w-3.5 h-3.5 text-success mt-0.5 shrink-0" />
-                      {f}
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      <section className="py-20 bg-white">
-        <div className="max-w-7xl mx-auto px-4">
-          <div className="text-center mb-12">
-            <h2 className="text-3xl lg:text-4xl font-syne font-700 text-text-1 mb-3">Volume discount tiers</h2>
-            <p className="text-text-3 max-w-2xl mx-auto">
-              Pre-fund your wallet and unlock progressively better rates as your shipping volume grows.
-            </p>
-          </div>
-          <div className="grid md:grid-cols-4 gap-4">
-            {volumeTiers.map((t) => (
-              <div key={t.tier} className={`rounded-xl border p-6 text-center ${t.color} ${t.featured ? "ring-2 ring-orange relative" : ""}`}>
-                {t.featured && (
-                  <div className="absolute -top-3 left-1/2 -translate-x-1/2">
-                    <span className="text-xs font-bold bg-orange text-white px-3 py-1 rounded-full">Most Popular</span>
-                  </div>
+              <div key={opt.title} className={`bg-white rounded-xl border ${opt.popular ? "border-orange ring-1 ring-orange" : "border-border"} p-6 relative`}>
+                {opt.popular && (
+                  <span className="absolute -top-2.5 left-1/2 -translate-x-1/2 bg-orange text-white text-[10px] font-bold px-3 py-1 rounded-full">Most Popular</span>
                 )}
-                <p className={`inline-flex text-xs font-bold px-2.5 py-0.5 rounded-full mb-3 ${t.badge}`}>{t.tier}</p>
-                <p className="text-sm text-text-4 mb-2">{t.min}</p>
-                <p className="text-3xl font-syne font-800 text-text-1">{t.discount}</p>
-                <p className="text-xs text-text-4 mt-1">discount</p>
+                <h3 className="font-syne font-700 text-sm text-text-1 mb-2">{opt.title}</h3>
+                <p className="text-xs text-text-4">{opt.desc}</p>
               </div>
             ))}
           </div>
         </div>
       </section>
 
-      <section className="py-20 bg-navy">
+      {/* Volume Tiers */}
+      <section className="py-16 lg:py-20 bg-white">
         <div className="max-w-7xl mx-auto px-4">
-          <div className="grid lg:grid-cols-2 gap-12 items-center">
-            <div>
-              <div className="inline-flex items-center gap-2 bg-orange/10 text-orange text-xs font-semibold px-3 py-1.5 rounded-full mb-4">
-                <BarChart3 className="w-3.5 h-3.5" />
-                Analytics Dashboard
-              </div>
-              <h2 className="text-3xl lg:text-4xl font-syne font-700 text-white mb-4">Know your shipping data</h2>
-              <p className="text-white/60 mb-6 leading-relaxed">
-                Get full visibility into your shipping operations with real-time analytics. Track spend trends, delivery performance, carrier breakdowns, and more — all in one dashboard.
-              </p>
-              <ul className="space-y-3">
-                {[
-                  "Monthly spend reports with per-team breakdown",
-                  "On-time delivery rate & carrier performance",
-                  "Top destinations & route optimization insights",
-                  "Export raw data as CSV or PDF",
-                ].map((item) => (
-                  <li key={item} className="flex items-start gap-2 text-sm text-white/70">
-                    <CheckCircle2 className="w-4 h-4 text-orange mt-0.5 shrink-0" />
-                    {item}
-                  </li>
+          <h2 className="text-2xl lg:text-3xl font-syne font-700 text-center text-text-1 mb-4">Volume discount tiers</h2>
+          <p className="text-text-3 text-center max-w-xl mx-auto mb-10">The more you ship, the less you pay per package.</p>
+          <div className="max-w-3xl mx-auto overflow-x-auto">
+            <table className="w-full text-sm border-collapse">
+              <thead>
+                <tr className="bg-gray-50">
+                  <th className="text-left px-4 py-3 font-semibold text-text-1">Tier</th>
+                  <th className="text-left px-4 py-3 font-semibold text-text-1">Monthly Volume</th>
+                  <th className="text-left px-4 py-3 font-semibold text-text-1">Discount</th>
+                  <th className="text-left px-4 py-3 font-semibold text-text-1">Support</th>
+                </tr>
+              </thead>
+              <tbody>
+                {volumeTiers.map((t) => (
+                  <tr key={t.tier} className="border-t border-border">
+                    <td className="px-4 py-3 font-semibold text-text-1">{t.tier}</td>
+                    <td className="px-4 py-3 text-text-2">{t.volume}</td>
+                    <td className="px-4 py-3 text-orange font-semibold">{t.discount}</td>
+                    <td className="px-4 py-3 text-text-3">{t.support}</td>
+                  </tr>
                 ))}
-              </ul>
-            </div>
-            <div className="bg-white/5 rounded-2xl border border-white/10 p-6 lg:p-8">
-              <div className="space-y-4">
-                <div className="flex items-center justify-between">
-                  <p className="text-sm text-white/50">Monthly Spend</p>
-                  <p className="text-2xl font-syne font-800 text-orange">₦2,450,000</p>
-                </div>
-                <div className="h-40 flex items-end gap-2">
-                  {[35, 45, 30, 55, 40, 60, 50, 70, 65, 80, 75, 90].map((h, i) => (
-                    <div key={i} className="flex-1 bg-orange/30 rounded-t-sm" style={{ height: `${h}%` }} />
-                  ))}
-                </div>
-                <div className="grid grid-cols-3 gap-4 pt-4 border-t border-white/10">
-                  <div>
-                    <p className="text-xs text-white/40">Shipments</p>
-                    <p className="text-lg font-syne font-700 text-white">1,247</p>
-                  </div>
-                  <div>
-                    <p className="text-xs text-white/40">On-Time Rate</p>
-                    <p className="text-lg font-syne font-700 text-success">96.3%</p>
-                  </div>
-                  <div>
-                    <p className="text-xs text-white/40">Avg. Cost</p>
-                    <p className="text-lg font-syne font-700 text-white">₦1,964</p>
-                  </div>
-                </div>
-              </div>
-            </div>
+              </tbody>
+            </table>
           </div>
         </div>
       </section>
 
-      <section className="py-20 bg-white">
-        <div className="max-w-7xl mx-auto px-4">
-          <div className="bg-gradient-to-r from-orange to-orange-600 rounded-2xl p-8 lg:p-12 text-center">
-            <h2 className="text-2xl lg:text-3xl font-syne font-700 text-white mb-2">Ready to transform your shipping?</h2>
-            <p className="text-white/80 mb-6 max-w-lg mx-auto">
-              Create a business account in minutes. No minimum volume required.
-            </p>
-            <div className="flex flex-wrap gap-4 justify-center">
+      {/* Registration Form */}
+      {showForm && !submitted && (
+        <section className="py-16 bg-off-white">
+          <div className="max-w-lg mx-auto px-4">
+            <div className="bg-white rounded-2xl border border-border p-6 lg:p-8">
+              <div className="flex items-center justify-between mb-6">
+                <h2 className="text-xl font-syne font-700 text-text-1">Create Business Account</h2>
+                <button onClick={() => setShowForm(false)} className="text-sm text-text-4 hover:text-text-2"><ArrowLeft className="w-4 h-4" /></button>
+              </div>
+              <form onSubmit={handleSubmit} className="space-y-4">
+                <div>
+                  <label className="block text-xs font-semibold text-text-3 mb-1">Company Name</label>
+                  <input type="text" required value={form.companyName} onChange={e => update("companyName", e.target.value)} placeholder="Your Company Ltd" className="w-full h-10 px-3 border border-border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-orange/20 focus:border-orange" />
+                </div>
+                <div>
+                  <label className="block text-xs font-semibold text-text-3 mb-1">Contact Name</label>
+                  <input type="text" required value={form.contactName} onChange={e => update("contactName", e.target.value)} placeholder="John Doe" className="w-full h-10 px-3 border border-border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-orange/20 focus:border-orange" />
+                </div>
+                <div className="grid grid-cols-2 gap-3">
+                  <div>
+                    <label className="block text-xs font-semibold text-text-3 mb-1">Email</label>
+                    <input type="email" required value={form.email} onChange={e => update("email", e.target.value)} placeholder="john@company.com" className="w-full h-10 px-3 border border-border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-orange/20 focus:border-orange" />
+                  </div>
+                  <div>
+                    <label className="block text-xs font-semibold text-text-3 mb-1">Phone</label>
+                    <input type="tel" required value={form.phone} onChange={e => update("phone", e.target.value)} placeholder="08031234567" className="w-full h-10 px-3 border border-border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-orange/20 focus:border-orange" />
+                  </div>
+                </div>
+                <div>
+                  <label className="block text-xs font-semibold text-text-3 mb-1">Monthly Shipments</label>
+                  <select value={form.monthlyShipments} onChange={e => update("monthlyShipments", e.target.value)} className="w-full h-10 px-3 border border-border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-orange/20 focus:border-orange">
+                    <option value="1-9">1–9 shipments</option>
+                    <option value="10-49">10–49 shipments</option>
+                    <option value="50-199">50–199 shipments</option>
+                    <option value="200-499">200–499 shipments</option>
+                    <option value="500+">500+ shipments</option>
+                  </select>
+                </div>
+                <div>
+                  <label className="block text-xs font-semibold text-text-3 mb-1">Preferred Billing</label>
+                  <select value={form.billingType} onChange={e => update("billingType", e.target.value)} className="w-full h-10 px-3 border border-border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-orange/20 focus:border-orange">
+                    <option value="per_shipment">Pay Per Shipment</option>
+                    <option value="monthly_invoice">Monthly Invoice</option>
+                    <option value="prepaid_wallet">Prepaid Wallet</option>
+                  </select>
+                </div>
+                {error && <p className="text-xs text-red-500">{error}</p>}
+                <Button type="submit" disabled={submitting} className="w-full bg-orange hover:bg-orange-600 text-white font-bold h-10">
+                  {submitting ? <><Loader2 className="w-4 h-4 animate-spin mr-1" /> Creating Account...</> : "Create Business Account"}
+                </Button>
+                <p className="text-[10px] text-text-4 text-center">By creating an account, you agree to our <Link href="/express/terms" className="text-orange hover:underline">Terms of Service</Link>.</p>
+              </form>
+            </div>
+          </div>
+        </section>
+      )}
+
+      {submitted && (
+        <section className="py-16 bg-off-white">
+          <div className="max-w-lg mx-auto px-4">
+            <div className="bg-white rounded-2xl border border-border p-8 text-center">
+              <div className="w-16 h-16 rounded-full bg-success/10 flex items-center justify-center mx-auto mb-4">
+                <CheckCircle2 className="w-8 h-8 text-success" />
+              </div>
+              <h2 className="text-xl font-syne font-700 text-text-1 mb-2">Registration submitted!</h2>
+              <p className="text-sm text-text-3 mb-6">We will review your application and get back to you within 24 hours with your account details.</p>
               <Link href="/express/book">
-                <Button size="xl" className="bg-navy hover:bg-navy/90 text-white text-base px-10">
+                <Button className="bg-orange hover:bg-orange-600 text-white">Start Shipping</Button>
+              </Link>
+            </div>
+          </div>
+        </section>
+      )}
+
+      {/* CTA */}
+      {!showForm && !submitted && (
+        <section className="py-20 bg-white">
+          <div className="max-w-7xl mx-auto px-4">
+            <div className="bg-gradient-to-r from-orange to-orange-600 rounded-2xl p-8 lg:p-12 text-center">
+              <h2 className="text-2xl lg:text-3xl font-syne font-700 text-white mb-2">Ready to transform your shipping?</h2>
+              <p className="text-white/80 mb-6 max-w-lg mx-auto">Create a business account in minutes. No minimum volume required.</p>
+              <div className="flex flex-wrap gap-4 justify-center">
+                <Button onClick={() => setShowForm(true)} size="xl" className="bg-navy hover:bg-navy/90 text-white text-base px-10">
                   Create Business Account <ChevronRight className="w-4 h-4 ml-1" />
                 </Button>
-              </Link>
-              <Link href="/contact">
-                <Button variant="outline" size="xl" className="border-white/30 text-white hover:bg-white/10 text-base px-10">
-                  Request Demo
-                </Button>
-              </Link>
+                <Link href="/contact">
+                  <Button variant="outline" size="xl" className="border-white/30 text-white hover:bg-white/10 text-base px-10">
+                    Request Demo
+                  </Button>
+                </Link>
+              </div>
             </div>
           </div>
-        </div>
-      </section>
+        </section>
+      )}
     </div>
   );
 }

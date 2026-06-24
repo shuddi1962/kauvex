@@ -8,6 +8,7 @@ const socialLinks = [
   { label: "Instagram", url: "https://instagram.com/kauvex" },
   { label: "Twitter/X", url: "https://x.com/kauvex" },
   { label: "Facebook", url: "https://facebook.com/kauvex" },
+  { label: "WhatsApp", url: "https://wa.me/234700528839" },
   { label: "TikTok", url: "https://tiktok.com/@kauvex" },
   { label: "YouTube", url: "https://youtube.com/@kauvex" },
   { label: "LinkedIn", url: "https://linkedin.com/company/kauvex" },
@@ -27,7 +28,7 @@ const helpLinks = [
   { label: "FAQ", url: "/faq" },
   { label: "Track Order", url: "/track-order" },
   { label: "Returns & Refunds", url: "/returns" },
-  { label: "Shipping Info", url: "/help" },
+  { label: "Shipping Info", url: "/express" },
   { label: "Contact Us", url: "/contact" },
   { label: "Report a Problem", url: "/contact" },
 ];
@@ -186,18 +187,18 @@ export default function Footer() {
             </ul>
           </div>
 
-          {/* Explore */}
+          {/* Logistics & Express */}
           <div>
-            <h4 className="font-bold text-sm text-white mb-4">Explore</h4>
+            <h4 className="font-bold text-sm text-white mb-4">Logistics &amp; Express</h4>
             <ul className="space-y-2.5">
-              <li><Link href="/live" className="text-sm text-white/40 hover:text-white transition-colors">Kauvex Live</Link></li>
-              <li><Link href="/group-buy" className="text-sm text-white/40 hover:text-white transition-colors">Group Buy Deals</Link></li>
-              <li><Link href="/pod-marketplace" className="text-sm text-white/40 hover:text-white transition-colors">POD Marketplace</Link></li>
-              <li><Link href="/art-marketplace" className="text-sm text-white/40 hover:text-white transition-colors">Art Marketplace</Link></li>
-              <li><Link href="/concierge" className="text-sm text-white/40 hover:text-white transition-colors">Concierge AI</Link></li>
-              <li><Link href="/request-product" className="text-sm text-white/40 hover:text-white transition-colors">Request a Product</Link></li>
-              <li><Link href="/deals" className="text-sm text-white/40 hover:text-white transition-colors">Today&apos;s Deals</Link></li>
-              <li><Link href="/nft-marketplace" className="text-sm text-white/40 hover:text-white transition-colors">NFT Marketplace</Link></li>
+              <li><Link href="/express" className="text-sm text-white/40 hover:text-white transition-colors">Kauvex Express</Link></li>
+              <li><Link href="/logistics" className="text-sm text-white/40 hover:text-white transition-colors">Logistics Network</Link></li>
+              <li><Link href="/express/track" className="text-sm text-white/40 hover:text-white transition-colors">Track a Package</Link></li>
+              <li><Link href="/express/business" className="text-sm text-white/40 hover:text-white transition-colors">Express for Business</Link></li>
+              <li><Link href="/logistics/register" className="text-sm text-white/40 hover:text-white transition-colors">Become a Partner</Link></li>
+              <li><Link href="/express/faq" className="text-sm text-white/40 hover:text-white transition-colors">Express FAQ</Link></li>
+              <li><Link href="/express/coverage" className="text-sm text-white/40 hover:text-white transition-colors">Coverage Areas</Link></li>
+              <li><Link href="/vendor/fbk" className="text-sm text-white/40 hover:text-white transition-colors">FBK Fulfillment</Link></li>
             </ul>
           </div>
 

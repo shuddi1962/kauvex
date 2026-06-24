@@ -1,8 +1,8 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import AdminShell from "@/components/admin/admin-shell";
-import { Save, Clock, Globe, Zap, Percent } from "lucide-react";
+import { Save, Clock, Globe, Zap, Percent, Loader2 } from "lucide-react";
 
 interface DispatchConfig {
   tier1AcceptanceWindow: number;
@@ -15,19 +15,36 @@ interface DispatchConfig {
   partnerFallbackAttempts: number;
 }
 
+const defaultConfig: DispatchConfig = {
+  tier1AcceptanceWindow: 15,
+  tier1RadiusDefault: 60,
+  tier1RadiusPerCountry: { NG: 60, GH: 50, KE: 50, ZA: 80, US: 40, GB: 50 },
+  surgeEnabled: false,
+  surgeMultiplier: 1.5,
+  fallbackCarrierOrder: ["gig", "kwik", "dhl", "fedex"],
+  autoDispatchEnabled: true,
+  partnerFallbackAttempts: 3,
+};
+
 export default function AdminDispatchPage() {
-  const [config, setConfig] = useState<DispatchConfig>({
-    tier1AcceptanceWindow: 15,
-    tier1RadiusDefault: 60,
-    tier1RadiusPerCountry: { NG: 60, GH: 50, KE: 50, ZA: 80, US: 40, GB: 50 },
-    surgeEnabled: false,
-    surgeMultiplier: 1.5,
-    fallbackCarrierOrder: ["gig", "kwik", "dhl", "fedex"],
-    autoDispatchEnabled: true,
-    partnerFallbackAttempts: 3,
-  });
+  const [config, setConfig] = useState<DispatchConfig>(defaultConfig);
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchConfig = async () => {
+      try {
+        const res = await fetch("/api/v1/logistics/dispatch");
+        const json = await res.json();
+        if (json.success && json.data) {
+          setConfig({ ...defaultConfig, ...json.data });
+        }
+      } catch { /* use defaults */ }
+      finally { setLoading(false); }
+    };
+    fetchConfig();
+  }, []);
 
   const updateRadius = (country: string, value: number) => {
     setConfig(prev => ({ ...prev, tier1RadiusPerCountry: { ...prev.tier1RadiusPerCountry, [country]: value } }));
@@ -35,11 +52,25 @@ export default function AdminDispatchPage() {
 
   const handleSave = async () => {
     setSaving(true);
-    await new Promise(r => setTimeout(r, 500));
-    setSaving(false);
-    setSaved(true);
-    setTimeout(() => setSaved(false), 3000);
+    try {
+      const res = await fetch("/api/v1/logistics/dispatch", {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(config),
+      });
+      if (res.ok) {
+        setSaved(true);
+        setTimeout(() => setSaved(false), 3000);
+      }
+    } catch { /* fallback */ }
+    finally { setSaving(false); }
   };
+
+  if (loading) {
+    return <AdminShell title="Dispatch Settings" subtitle="Configure dispatch engine behavior and fallback rules">
+      <div className="flex items-center justify-center py-16"><Loader2 className="w-6 h-6 animate-spin text-orange" /></div>
+    </AdminShell>;
+  }
 
   return (
     <AdminShell title="Dispatch Settings" subtitle="Configure dispatch engine behavior and fallback rules">

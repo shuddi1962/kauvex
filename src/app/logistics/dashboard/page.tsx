@@ -47,9 +47,10 @@ import {
   Percent,
   HelpCircle,
   User,
+  UserPlus,
 } from "lucide-react";
 
-type TabId = "available" | "active" | "history" | "earnings" | "performance" | "settings";
+type TabId = "available" | "active" | "history" | "earnings" | "performance" | "fleet" | "settings";
 
 export default function LogisticsDashboard() {
   const [activeTab, setActiveTab] = useState<TabId>("available");
@@ -63,6 +64,7 @@ export default function LogisticsDashboard() {
     { id: "history" as TabId, label: "Job History" },
     { id: "earnings" as TabId, label: "Earnings" },
     { id: "performance" as TabId, label: "Performance" },
+    { id: "fleet" as TabId, label: "Fleet" },
     { id: "settings" as TabId, label: "Settings" },
   ];
 
@@ -105,6 +107,9 @@ export default function LogisticsDashboard() {
 
       {/* ============ PERFORMANCE TAB ============ */}
       {activeTab === "performance" && <PerformanceTab />}
+
+      {/* ============ FLEET TAB ============ */}
+      {activeTab === "fleet" && <FleetTab />}
 
       {/* ============ SETTINGS TAB ============ */}
       {activeTab === "settings" && <SettingsTab />}
@@ -726,6 +731,58 @@ function PerformanceTab() {
               ))}
             </tbody>
           </table>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+/* ==================== FLEET MANAGEMENT ==================== */
+function FleetTab() {
+  const [members, setMembers] = useState([
+    { id: "1", name: "Chioma Eze", phone: "08031234567", vehicle: "Motorcycle", status: "active", jobs: 145, rating: 4.6 },
+    { id: "2", name: "David Okafor", phone: "08079876543", vehicle: "Toyota Camry", status: "active", jobs: 89, rating: 4.3 },
+    { id: "3", name: "Funmi Adeyemi", phone: "08051223344", vehicle: "Ford Transit Van", status: "offline", jobs: 212, rating: 4.8 },
+  ]);
+
+  const toggleActive = (id: string) => setMembers(prev => prev.map(m => m.id === id ? { ...m, status: m.status === "active" ? "offline" : "active" } : m));
+
+  return (
+    <div className="bg-white rounded-xl border border-border p-6">
+      <div className="flex items-center justify-between mb-6">
+        <div>
+          <h3 className="font-bold text-lg text-text-1">Fleet Management</h3>
+          <p className="text-xs text-text-4 mt-1">Manage your riders, drivers, and vehicles under one account</p>
+        </div>
+        <button className="px-4 h-9 bg-orange text-white text-sm font-bold rounded-lg hover:bg-orange/90 transition-colors flex items-center gap-1.5">
+          <UserPlus className="w-4 h-4" /> Add Member
+        </button>
+      </div>
+      <div className="space-y-3">
+        {members.map(m => (
+          <div key={m.id} className="border border-border rounded-xl p-4 flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <div className={`w-10 h-10 rounded-full flex items-center justify-center text-white text-sm font-bold ${m.status === "active" ? "bg-green-600" : "bg-gray-400"}`}>{m.name.charAt(0)}</div>
+              <div>
+                <p className="font-semibold text-sm text-text-1">{m.name}</p>
+                <p className="text-xs text-text-4">{m.phone} &bull; {m.vehicle}</p>
+                <p className="text-[10px] text-text-4 mt-0.5">{m.jobs} jobs completed &bull; {m.rating} rating</p>
+              </div>
+            </div>
+            <div className="flex items-center gap-2">
+              <span className={`text-[10px] px-2 py-0.5 rounded-full font-semibold ${m.status === "active" ? "bg-green-50 text-green-700" : "bg-gray-100 text-gray-500"}`}>{m.status === "active" ? "Online" : "Offline"}</span>
+              <button onClick={() => toggleActive(m.id)} className={`relative w-9 h-5 rounded-full transition-colors ${m.status === "active" ? "bg-orange" : "bg-gray-300"}`}>
+                <div className={`absolute top-0.5 w-4 h-4 bg-white rounded-full shadow transition-transform ${m.status === "active" ? "translate-x-4" : "translate-x-0.5"}`} />
+              </button>
+            </div>
+          </div>
+        ))}
+      </div>
+      <div className="mt-6 p-4 bg-gray-50 rounded-xl">
+        <div className="grid grid-cols-3 gap-4 text-center text-sm">
+          <div><p className="text-xs text-text-4">Total Members</p><p className="font-bold text-text-1">{members.length}</p></div>
+          <div><p className="text-xs text-text-4">Active Now</p><p className="font-bold text-green-700">{members.filter(m => m.status === "active").length}</p></div>
+          <div><p className="text-xs text-text-4">Total Jobs</p><p className="font-bold text-text-1">{members.reduce((a, m) => a + m.jobs, 0)}</p></div>
         </div>
       </div>
     </div>

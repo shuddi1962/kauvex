@@ -7,6 +7,7 @@ import FeaturedProducts from "@/components/home/featured-products";
 import V3FeaturesSection from "@/components/home/v3-features";
 import SellBanner from "@/components/home/sell-banner";
 import HomepageSectionRenderer from "@/components/home/HomepageSectionRenderer";
+import ExpressBanner from "@/components/home/express-banner";
 
 const trustFeatures = [
   { icon: Truck, title: "Free Shipping", desc: "On orders over $50" },
@@ -51,6 +52,9 @@ export default function HomePage() {
 
       {/* V3 Feature Highlights */}
       <V3FeaturesSection />
+
+      {/* Kauvex Express Banner */}
+      <ExpressBanner />
 
       {/* Modular Homepage Sections (from DB or defaults) */}
       <HomepageSectionRenderer />

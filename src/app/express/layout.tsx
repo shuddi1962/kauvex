@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { Package, Truck, ChevronDown } from "lucide-react";
+import { Truck } from "lucide-react";
 
 export default function ExpressLayout({ children }: { children: React.ReactNode }) {
   return (
@@ -57,6 +57,9 @@ export default function ExpressLayout({ children }: { children: React.ReactNode 
                 <li><Link href="/express/track" className="text-sm text-white/60 hover:text-orange transition-colors">Track Shipment</Link></li>
                 <li><Link href="/express/business" className="text-sm text-white/60 hover:text-orange transition-colors">Express for Business</Link></li>
                 <li><Link href="/express" className="text-sm text-white/60 hover:text-orange transition-colors">Get a Quote</Link></li>
+                <li><Link href="/express/faq" className="text-sm text-white/60 hover:text-orange transition-colors">FAQ</Link></li>
+                <li><Link href="/express/coverage" className="text-sm text-white/60 hover:text-orange transition-colors">Coverage</Link></li>
+                <li><Link href="/express/terms" className="text-sm text-white/60 hover:text-orange transition-colors">Terms of Service</Link></li>
               </ul>
             </div>
             <div>
@@ -83,7 +86,7 @@ export default function ExpressLayout({ children }: { children: React.ReactNode 
             <p className="text-xs text-white/40">© 2026 Kauvex Express. All rights reserved. A division of Kauvex Commerce Cloud.</p>
             <div className="flex items-center gap-4">
               <Link href="/privacy" className="text-xs text-white/40 hover:text-white/60 transition-colors">Privacy Policy</Link>
-              <Link href="/terms" className="text-xs text-white/40 hover:text-white/60 transition-colors">Terms of Service</Link>
+              <Link href="/express/terms" className="text-xs text-white/40 hover:text-white/60 transition-colors">Terms of Service</Link>
             </div>
           </div>
         </div>

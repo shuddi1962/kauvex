@@ -92,6 +92,48 @@ const staticCategories = [
     ],
   },
   {
+    label: "Ship",
+    href: "/express",
+    is_mega: true,
+    children: [
+      {
+        label: "Kauvex Express",
+        href: "/express",
+        description: "Send packages anywhere, anytime. Instant quotes & booking",
+      },
+      {
+        label: "Track Shipment",
+        href: "/express/track",
+        description: "Real-time tracking by waybill number — no login required",
+      },
+      {
+        label: "Express for Business",
+        href: "/express/business",
+        description: "Volume discounts, API access, team accounts",
+      },
+      {
+        label: "Logistics Network",
+        href: "/logistics",
+        description: "Nigeria's largest independent delivery network",
+      },
+      {
+        label: "Become a Partner",
+        href: "/logistics/register",
+        description: "Register as a rider, driver, courier or freight company",
+      },
+      {
+        label: "FBK (Fulfillment)",
+        href: "/vendor/fbk",
+        description: "Store your inventory with Kauvex — we pick, pack & ship",
+      },
+      {
+        label: "Shipping Profiles",
+        href: "/vendor/shipping/profiles",
+        description: "Set your delivery rules, rates, and coverage zones",
+      },
+    ],
+  },
+  {
     label: "Explore",
     href: "#",
     is_mega: true,

@@ -13,11 +13,12 @@ export default function LogisticsLayout({ children }: { children: React.ReactNod
       {!isAuthPage && (
         <header className="bg-navy border-b border-white/10">
           <div className="max-w-7xl mx-auto px-4 py-3 flex items-center justify-between">
-            <div className="flex items-center gap-3">
+            <Link href="/logistics" className="flex items-center gap-3">
               <Truck className="w-6 h-6 text-orange" />
               <span className="text-white font-syne font-700 text-lg">Kauvex Logistics</span>
-            </div>
+            </Link>
             <nav className="flex items-center gap-6 text-sm">
+              <Link href="/logistics" className="text-white/70 hover:text-white transition-colors">Home</Link>
               <Link href="/logistics/dashboard" className="text-white/70 hover:text-white transition-colors">Dashboard</Link>
               <Link href="/logistics/register" className="text-white/70 hover:text-white transition-colors">Become a Partner</Link>
               <Link href="/logistics/login" className="px-4 py-2 bg-orange text-white font-semibold rounded-lg hover:bg-orange/90 transition-colors text-sm">Partner Login</Link>

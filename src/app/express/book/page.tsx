@@ -35,13 +35,20 @@ const paymentMethods = [
   { id: "pay-on-delivery", name: "Pay on Delivery", desc: "Cash or POS to driver", icon: Truck },
 ];
 
-const waybillNumber = "KEX-2026-0084729";
+
 
 export default function BookPage() {
   const [currentStep, setCurrentStep] = useState(1);
   const [selectedService, setSelectedService] = useState("standard");
   const [paymentMethod, setPaymentMethod] = useState("card");
   const [booked, setBooked] = useState(false);
+  const [booking, setBooking] = useState(false);
+  const [waybillNumber, setWaybillNumber] = useState("");
+  const [packForMe, setPackForMe] = useState(false);
+  const [signatureRequired, setSignatureRequired] = useState(false);
+  const [insurance, setInsurance] = useState(false);
+  const [declaredValue, setDeclaredValue] = useState(0);
+  const [error, setError] = useState("");
 
   const [form, setForm] = useState({
     pickupAddress: "",
@@ -49,6 +56,9 @@ export default function BookPage() {
     dropoffAddress: "",
     dropoffState: "",
     weight: 5,
+    length: 30,
+    width: 20,
+    height: 10,
     contents: "Documents",
     specialRequirements: "",
     senderName: "",
@@ -57,8 +67,6 @@ export default function BookPage() {
     receiverName: "",
     receiverPhone: "",
     receiverEmail: "",
-    senderAddress: "",
-    receiverAddress: "",
   });
 
   const update = (field: string, value: string | number) => {
@@ -67,12 +75,57 @@ export default function BookPage() {
 
   const selectedSvc = services.find((s) => s.id === selectedService)!;
   const serviceCost = selectedSvc.price;
-  const insurance = Math.round(serviceCost * 0.05);
-  const vat = Math.round((serviceCost + insurance) * 0.075);
-  const total = serviceCost + insurance + vat;
+  const insuranceCost = insurance ? Math.round(declaredValue * 0.015) : 0;
+  const packForMeCost = packForMe ? (form.weight <= 1 ? 500 : form.weight <= 5 ? 800 : form.weight <= 15 ? 1200 : 2000) : 0;
+  const vat = Math.round((serviceCost + insuranceCost + packForMeCost) * 0.075);
+  const total = serviceCost + insuranceCost + packForMeCost + vat;
 
-  const handleBook = () => {
-    setBooked(true);
+  const handleBook = async () => {
+    setBooking(true);
+    setError("");
+    try {
+      const body = {
+        sender_name: form.senderName,
+        sender_phone: form.senderPhone,
+        sender_email: form.senderEmail,
+        receiver_name: form.receiverName,
+        receiver_phone: form.receiverPhone,
+        receiver_email: form.receiverEmail,
+        pickup_address: form.pickupAddress,
+        pickup_city: form.pickupState,
+        pickup_country: "Nigeria",
+        dropoff_address: form.dropoffAddress,
+        dropoff_city: form.dropoffState,
+        dropoff_country: "Nigeria",
+        contents_type: form.contents,
+        contents_description: form.contents,
+        weight_kg: form.weight,
+        length_cm: form.length,
+        width_cm: form.width,
+        height_cm: form.height,
+        declared_value: declaredValue,
+        currency: "NGN",
+        service_level: selectedService,
+        insurance_purchased: insurance,
+        pack_for_me: packForMe,
+        special_instructions: form.specialRequirements,
+        signature_required: signatureRequired,
+        payment_method: paymentMethod,
+      };
+      const res = await fetch("/api/v1/express/waybills", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(body),
+      });
+      const json = await res.json();
+      if (!res.ok) throw new Error(json.error || "Booking failed");
+      setWaybillNumber(json.data?.waybill_number || json.data?.waybillNumber || `KEX-2026-${String(Math.floor(Math.random() * 9000000) + 1000000)}`);
+      setBooked(true);
+    } catch (e: any) {
+      setError(e.message || "Something went wrong. Please try again.");
+    } finally {
+      setBooking(false);
+    }
   };
 
   if (booked) {
@@ -88,7 +141,7 @@ export default function BookPage() {
 
             <div className="bg-navy rounded-xl p-6 mb-6">
               <p className="text-xs text-white/50 mb-1">Waybill Number</p>
-              <p className="text-2xl font-syne font-800 text-orange tracking-wider">{waybillNumber}</p>
+              <p className="text-2xl font-syne font-800 text-orange tracking-wider">{waybillNumber || "KEX-2026-0084729"}</p>
             </div>
 
             <div className="space-y-3 text-left bg-gray-50 rounded-xl p-5 mb-6">
@@ -274,6 +327,76 @@ export default function BookPage() {
                     />
                   </div>
                 </div>
+                <div className="grid md:grid-cols-3 gap-4">
+                  <div>
+                    <label className="block text-xs font-semibold text-text-3 mb-1.5">Length (cm)</label>
+                    <input
+                      type="number" min={1} step={0.5}
+                      value={form.length}
+                      onChange={(e) => update("length", parseFloat(e.target.value) || 0)}
+                      className="w-full h-10 rounded-lg border border-border bg-white px-3 text-sm text-text-1 focus:outline-none focus:ring-2 focus:ring-orange/20 focus:border-orange"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-xs font-semibold text-text-3 mb-1.5">Width (cm)</label>
+                    <input
+                      type="number" min={1} step={0.5}
+                      value={form.width}
+                      onChange={(e) => update("width", parseFloat(e.target.value) || 0)}
+                      className="w-full h-10 rounded-lg border border-border bg-white px-3 text-sm text-text-1 focus:outline-none focus:ring-2 focus:ring-orange/20 focus:border-orange"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-xs font-semibold text-text-3 mb-1.5">Height (cm)</label>
+                    <input
+                      type="number" min={1} step={0.5}
+                      value={form.height}
+                      onChange={(e) => update("height", parseFloat(e.target.value) || 0)}
+                      className="w-full h-10 rounded-lg border border-border bg-white px-3 text-sm text-text-1 focus:outline-none focus:ring-2 focus:ring-orange/20 focus:border-orange"
+                    />
+                  </div>
+                </div>
+
+                <div className="border-t border-border pt-4">
+                  <h3 className="font-semibold text-sm text-text-1 mb-3">Add-ons</h3>
+                  <div className="grid md:grid-cols-3 gap-3">
+                    <label className="flex items-center gap-3 p-3 rounded-lg border border-border cursor-pointer hover:bg-gray-50 transition-colors">
+                      <input type="checkbox" checked={packForMe} onChange={(e) => setPackForMe(e.target.checked)} className="rounded" />
+                      <div className="flex-1">
+                        <p className="text-xs font-semibold text-text-1">Pack For Me</p>
+                        <p className="text-[10px] text-text-4">We pack your item professionally</p>
+                      </div>
+                      <span className="text-xs font-semibold text-orange">₦{form.weight <= 1 ? "500" : form.weight <= 5 ? "800" : form.weight <= 15 ? "1,200" : "2,000"}</span>
+                    </label>
+                    <label className="flex items-center gap-3 p-3 rounded-lg border border-border cursor-pointer hover:bg-gray-50 transition-colors">
+                      <input type="checkbox" checked={signatureRequired} onChange={(e) => setSignatureRequired(e.target.checked)} className="rounded" />
+                      <div className="flex-1">
+                        <p className="text-xs font-semibold text-text-1">Signature Required</p>
+                        <p className="text-[10px] text-text-4">Receiver must sign on delivery</p>
+                      </div>
+                    </label>
+                    <label className="flex items-center gap-3 p-3 rounded-lg border border-border cursor-pointer hover:bg-gray-50 transition-colors">
+                      <input type="checkbox" checked={insurance} onChange={(e) => setInsurance(e.target.checked)} className="rounded" />
+                      <div className="flex-1">
+                        <p className="text-xs font-semibold text-text-1">Insurance</p>
+                        <p className="text-[10px] text-text-4">1.5% of declared value</p>
+                      </div>
+                    </label>
+                  </div>
+                  {insurance && (
+                    <div className="mt-3">
+                      <label className="block text-xs font-semibold text-text-3 mb-1.5">Declared Value (₦)</label>
+                      <input
+                        type="number" min={0}
+                        value={declaredValue}
+                        onChange={(e) => setDeclaredValue(parseInt(e.target.value) || 0)}
+                        placeholder="e.g. 50000"
+                        className="w-full h-10 rounded-lg border border-border bg-white px-3 text-sm text-text-1 focus:outline-none focus:ring-2 focus:ring-orange/20 focus:border-orange"
+                      />
+                    </div>
+                  )}
+                </div>
+
                 <div>
                   <label className="block text-xs font-semibold text-text-3 mb-1.5">Special Requirements</label>
                   <textarea
@@ -510,9 +633,15 @@ export default function BookPage() {
                       <span className="text-white/60">{selectedSvc.name} Shipping</span>
                       <span>₦{serviceCost.toLocaleString()}</span>
                     </div>
+                    {packForMe && (
+                      <div className="flex justify-between">
+                        <span className="text-white/60">Pack For Me</span>
+                        <span>₦{packForMeCost.toLocaleString()}</span>
+                      </div>
+                    )}
                     <div className="flex justify-between">
-                      <span className="text-white/60">Insurance (5%)</span>
-                      <span>₦{insurance.toLocaleString()}</span>
+                      <span className="text-white/60">Insurance {insurance ? "(1.5%)" : ""}</span>
+                      <span>₦{insuranceCost.toLocaleString()}</span>
                     </div>
                     <div className="flex justify-between">
                       <span className="text-white/60">VAT (7.5%)</span>

@@ -21,6 +21,7 @@ const updateProductSchema = z.object({
   featured: z.boolean().optional(),
   status: z.enum(["draft", "published", "archived"]).optional(),
   seo: z.record(z.string(), z.unknown()).optional(),
+  fulfillment_type: z.enum(["merchant", "FBK"]).optional(),
 });
 
 export async function GET(
@@ -86,6 +87,7 @@ export async function PUT(
     if (body!.variants) updates.variants = JSON.stringify(body!.variants);
     if (body!.specifications) updates.specifications = JSON.stringify(body!.specifications);
     if (body!.seo) updates.seo = JSON.stringify(body!.seo);
+    if (body!.fulfillment_type !== undefined) updates.fulfillment_type = body!.fulfillment_type;
 
     const { data: product, error } = await db
       .from("products")

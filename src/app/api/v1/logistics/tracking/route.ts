@@ -1,6 +1,26 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 
+const statusLabels: Record<string, string> = {
+  pending: "Order Placed",
+  picked_up: "Picked Up",
+  in_transit: "In Transit",
+  out_for_delivery: "Out for Delivery",
+  delivered: "Delivered",
+  failed: "Delivery Failed",
+  returned: "Returned to Sender",
+};
+
+function buildTimeline(express: any) {
+  const stages = [
+    { status: "Order Placed", completed: true, current: false },
+    { status: "In Transit", completed: express.status !== "pending", current: express.status === "picked_up" || express.status === "in_transit" },
+    { status: "Out for Delivery", completed: express.status === "out_for_delivery" || express.status === "delivered", current: express.status === "out_for_delivery" },
+    { status: "Delivered", completed: express.status === "delivered", current: express.status === "delivered" },
+  ];
+  return stages;
+}
+
 export async function GET(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url);
@@ -8,67 +28,10 @@ export async function GET(request: NextRequest) {
     const waybillNumber = searchParams.get("waybillNumber");
 
     if (!shipmentId && !waybillNumber) {
-      return NextResponse.json({ error: "shipmentId or waybillNumber required" }, { status: 400 });
+      return NextResponse.json({ success: false, error: "shipmentId or waybillNumber required" }, { status: 400 });
     }
 
     const supabase = createAdminClient();
-    const events: any[] = [];
-
-    if (shipmentId) {
-      const { data: job } = await supabase
-        .from("kv_logistics_jobs")
-        .select("*")
-        .eq("id", shipmentId)
-        .single();
-
-      if (job) {
-        if (job.picked_up_at) {
-          events.push({
-            id: "pickup",
-            status: "Package picked up",
-            location: job.pickup_location || "Pickup location",
-            timestamp: job.picked_up_at,
-            type: "pickup",
-            statusType: "completed",
-          });
-        }
-        if (job.delivered_at) {
-          events.push({
-            id: "delivery",
-            status: "Package delivered",
-            location: job.dropoff_location || "Delivery location",
-            timestamp: job.delivered_at,
-            type: "delivery",
-            statusType: "completed",
-          });
-        }
-        if (job.tracking_events) {
-          const parsed = typeof job.tracking_events === "string" ? JSON.parse(job.tracking_events) : job.tracking_events;
-          if (Array.isArray(parsed)) {
-            parsed.forEach((e: any, i: number) => {
-              events.push({
-                id: `event-${i}`,
-                status: e.description || e.status || "In transit",
-                location: e.location || "Unknown",
-                timestamp: e.date || e.timestamp || job.created_at,
-                type: e.type || "transit",
-                statusType: i === parsed.length - 1 ? "in_progress" : "completed",
-              });
-            });
-          }
-        }
-        if (events.length === 0) {
-          events.push({
-            id: "created",
-            status: "Shipment created",
-            location: job.pickup_location || "Origin",
-            timestamp: job.created_at,
-            type: "order",
-            statusType: "completed",
-          });
-        }
-      }
-    }
 
     if (waybillNumber) {
       const { data: express } = await supabase
@@ -78,43 +41,57 @@ export async function GET(request: NextRequest) {
         .single();
 
       if (express) {
-        events.push({
-          id: "booking",
-          status: "Express shipment booked",
-          location: express.pickup_city || express.pickup_address || "Origin",
-          timestamp: express.created_at,
-          type: "order",
-          statusType: "completed",
+        return NextResponse.json({
+          success: true,
+          data: {
+            waybill: express.waybill_number,
+            status: express.status,
+            service: express.service_level || "Standard",
+            estimatedDelivery: express.created_at,
+            pickupDate: express.created_at,
+            pickupAddress: express.pickup_address || express.pickup_city || "—",
+            dropoffAddress: express.dropoff_address || express.dropoff_city || "—",
+            weight: express.weight_kg ? `${express.weight_kg} kg` : "—",
+            contents: express.contents_type || "—",
+            timeline: buildTimeline(express),
+          },
         });
-        if (express.status === "picked_up" || express.status === "in_transit" || express.status === "out_for_delivery") {
-          events.push({
-            id: "transit",
-            status: express.status === "out_for_delivery" ? "Out for delivery" : "In transit",
-            location: express.dropoff_city || "Destination",
-            timestamp: express.created_at,
-            type: "transit",
-            statusType: "in_progress",
-          });
-        }
-        if (express.status === "delivered") {
-          events.push({
-            id: "delivered",
-            status: "Delivered successfully",
-            location: express.dropoff_city || express.dropoff_address || "Destination",
-            timestamp: express.created_at,
-            type: "delivery",
-            statusType: "completed",
-          });
-        }
       }
     }
 
-    return NextResponse.json({
-      events: events.sort((a, b) => new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime()),
-      total: events.length,
-    });
+    if (shipmentId) {
+      const { data: job } = await supabase
+        .from("kv_logistics_jobs")
+        .select("*")
+        .eq("id", shipmentId)
+        .single();
+
+      if (job) {
+        return NextResponse.json({
+          success: true,
+          data: {
+            waybill: job.job_number || shipmentId,
+            status: job.status,
+            service: "Standard",
+            estimatedDelivery: job.delivered_at || job.created_at,
+            pickupDate: job.picked_up_at || job.created_at,
+            pickupAddress: job.pickup_location || "—",
+            dropoffAddress: job.dropoff_location || "—",
+            weight: "—",
+            contents: "—",
+            timeline: [
+              { status: "Order Placed", completed: true, current: false },
+              { status: job.picked_up_at ? "Picked Up" : "In Transit", completed: !!job.picked_up_at, current: !!job.picked_up_at && !job.delivered_at },
+              { status: "Delivered", completed: !!job.delivered_at, current: !!job.delivered_at },
+            ],
+          },
+        });
+      }
+    }
+
+    return NextResponse.json({ success: false, error: "Shipment not found" }, { status: 404 });
   } catch (error) {
     console.error("[Tracking API]", error);
-    return NextResponse.json({ error: "Failed to fetch tracking events" }, { status: 500 });
+    return NextResponse.json({ success: false, error: "Failed to fetch tracking information" }, { status: 500 });
   }
 }

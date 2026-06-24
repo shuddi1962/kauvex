@@ -93,10 +93,10 @@ export default function VendorInventoryPage() {
   const fetchData = useCallback(async () => {
     setLoading(true);
     setError(null);
+    let seeded = false;
     try {
       const { data: { user } } = await insforge.auth.getCurrentUser();
       if (!user) { setLoading(false); return; }
-      setVendorId(user.id);
 
       // Look up the vendor record to get the actual vendor UUID
       const { data: vendorProfile } = await insforge.database
@@ -105,11 +105,17 @@ export default function VendorInventoryPage() {
         .eq("user_id", user.id)
         .maybeSingle();
 
-      const vendorUuid = vendorProfile?.id || user.id;
+      if (!vendorProfile) {
+        setLoading(false);
+        setError("Complete your vendor profile setup first");
+        return;
+      }
+
+      setVendorId(vendorProfile.id);
 
       const [prodRes, offerRes, invRes] = await Promise.all([
-        insforge.database.from("products").select("*").eq("vendor_id", vendorUuid).order("created_at", { ascending: false }),
-        insforge.database.from("vendor_offers").select("*, shared_catalog_products(*)").eq("vendor_id", vendorUuid).order("created_at", { ascending: false }),
+        insforge.database.from("products").select("*").eq("vendor_id", vendorProfile.id).order("created_at", { ascending: false }),
+        insforge.database.from("vendor_offers").select("*, shared_catalog_products(*)").eq("vendor_id", vendorProfile.id).order("created_at", { ascending: false }),
         insforge.database.from("product_inventory").select("*"),
       ]);
 
@@ -171,19 +177,40 @@ export default function VendorInventoryPage() {
         }
       }
 
-      // DEMO ONLY: seed demo products via API if inventory is empty
+      // DEMO: seed demo products directly if inventory is empty
       if (result.length === 0) {
-        try {
-          const tokRes = await fetch("/api/auth/session-token");
-          const { token } = await tokRes.json();
-          if (token) {
-            await fetch("/api/v1/vendors/seed-demo", {
-              method: "POST",
-              headers: { Authorization: `Bearer ${token}` },
+        seeded = true;
+        const slug = vendorProfile.id.slice(0, 6);
+        const demoProducts = [
+          { name: "Wireless Bluetooth Headphones", slug: `demo-headphones-${slug}`, sku: `DEMO-${slug}-001`, price: 45000 },
+          { name: "Premium Leather Wallet", slug: `demo-wallet-${slug}`, sku: `DEMO-${slug}-002`, price: 12500 },
+          { name: "Portable Power Bank 20000mAh", slug: `demo-powerbank-${slug}`, sku: `DEMO-${slug}-003`, price: 22000 },
+          { name: "Organic Green Tea Set", slug: `demo-tea-${slug}`, sku: `DEMO-${slug}-004`, price: 8500 },
+          { name: "Stainless Steel Water Bottle", slug: `demo-bottle-${slug}`, sku: `DEMO-${slug}-005`, price: 15000 },
+        ];
+
+        const { data: existing } = await insforge.database
+          .from("products")
+          .select("id")
+          .eq("vendor_id", vendorProfile.id)
+          .limit(1);
+
+        if (!existing || existing.length === 0) {
+          for (const dp of demoProducts) {
+            await insforge.database.from("products").insert({
+              vendor_id: vendorProfile.id,
+              name: dp.name,
+              slug: dp.slug,
+              sku: dp.sku,
+              regular_price: dp.price,
+              status: "published",
+              images: [],
+              type: "simple",
+              created_at: new Date().toISOString(),
+              updated_at: new Date().toISOString(),
             });
-            return fetchData();
           }
-        } catch { /* ignore */ }
+        }
       }
 
       setItems(result);
@@ -193,6 +220,10 @@ export default function VendorInventoryPage() {
       showToast("error", e.message || "Failed to load inventory");
     } finally {
       setLoading(false);
+      // Re-fetch once after seeding demo data
+      if (seeded) {
+        setTimeout(() => fetchData(), 500);
+      }
     }
   }, []);
 

@@ -37,11 +37,23 @@ export async function POST(request: NextRequest) {
     const adminDb = createAdminClient();
     const { data: existing } = await adminDb
       .from("fbk_enrollments")
-      .select("id, status")
+      .select("*")
       .eq("vendor_id", vendor!.id)
       .maybeSingle();
 
-    if (existing) return errorResponse("Vendor already has an enrollment", 409);
+    if (existing) {
+      // Auto-upgrade pending to active
+      if (existing.status === "pending") {
+        const { data: updated } = await adminDb
+          .from("fbk_enrollments")
+          .update({ status: "active", approved_at: new Date().toISOString() })
+          .eq("id", existing.id)
+          .select("*")
+          .single();
+        return successResponse(updated, 200);
+      }
+      return errorResponse("Vendor already has an enrollment", 409);
+    }
 
     const { data: enrollment, error } = await adminDb
       .from("fbk_enrollments")

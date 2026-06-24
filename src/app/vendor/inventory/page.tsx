@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import Link from "next/link";
 import {
   Search, Package, Image as ImageIcon, Edit, Trash2, Copy, Plus,
@@ -80,8 +80,9 @@ export default function VendorInventoryPage() {
   const [activeListingTool, setActiveListingTool] = useState("All Inventory");
   const [activeFulfillmentTool, setActiveFulfillmentTool] = useState<string | null>(null);
   const [colDefs, setColDefs] = useState(columns);
-  const [openDropdown, setOpenDropdown] = useState<string | null>(null);
+  const [openDropdown, setOpenDropdown] = useState<{ id: string; rect: DOMRect } | null>(null);
   const [selectedRows, setSelectedRows] = useState<string[]>([]);
+  const dropdownRef = useRef<HTMLDivElement>(null);
   const [toast, setToast] = useState<{ type: "success" | "error"; message: string } | null>(null);
   const [error, setError] = useState<string | null>(null);
 
@@ -669,12 +670,15 @@ export default function VendorInventoryPage() {
                         );
                       })}
                       <td className="p-3 relative">
-                        <button onClick={() => setOpenDropdown(openDropdown === p.id ? null : p.id)} className="p-1.5 hover:bg-gray-100 rounded-lg">
+                        <button onClick={(e) => {
+                          const rect = (e.currentTarget as HTMLElement).getBoundingClientRect();
+                          setOpenDropdown(openDropdown?.id === p.id ? null : { id: p.id, rect });
+                        }} className="p-1.5 hover:bg-gray-100 rounded-lg">
                           <MoreHorizontal size={14} className="text-text-4" />
                         </button>
-                        {openDropdown === p.id && (
-                          <div className="absolute right-0 top-full mt-1 z-20 w-56 bg-white border border-border rounded-xl shadow-xl py-1 max-h-80 overflow-y-auto" onMouseLeave={() => setOpenDropdown(null)}>
-                            <Link href={`/vendor/products/${p.id}/edit`}
+                        {openDropdown?.id === p.id && (
+                          <div ref={dropdownRef} className="fixed z-[9999] w-56 bg-white border border-border rounded-xl shadow-xl py-1 max-h-80 overflow-y-auto" style={{ left: Math.min(openDropdown.rect.right - 224, window.innerWidth - 240), top: openDropdown.rect.bottom + 4 }}>
+                            <Link href={`/vendor/products/${p.id}/edit`} onClick={() => setOpenDropdown(null)}
                               className="flex items-center gap-2.5 w-full px-4 py-2 text-xs text-text-2 hover:bg-gray-50 transition-colors">
                               <Edit size={13} className="text-text-4" /> Edit
                             </Link>
@@ -695,11 +699,11 @@ export default function VendorInventoryPage() {
                               className="flex items-center gap-2.5 w-full px-4 py-2 text-xs text-text-2 hover:bg-gray-50 transition-colors">
                               <Truck size={13} className="text-text-4" /> Change to Fulfilled by Merchant
                             </button>
-                            <Link href="/vendor/fbk/inbound"
+                            <Link href="/vendor/fbk/inbound" onClick={() => setOpenDropdown(null)}
                               className="flex items-center gap-2.5 w-full px-4 py-2 text-xs text-text-2 hover:bg-gray-50 transition-colors">
                               <Box size={13} className="text-text-4" /> Send/Replenish Inventory
                             </Link>
-                            <Link href="/vendor/inventory/replenishment-alerts"
+                            <Link href="/vendor/inventory/replenishment-alerts" onClick={() => setOpenDropdown(null)}
                               className="flex items-center gap-2.5 w-full px-4 py-2 text-xs text-text-2 hover:bg-gray-50 transition-colors">
                               <AlertTriangle size={13} className="text-text-4" /> Set Replenishment Alerts
                             </Link>
@@ -734,6 +738,9 @@ export default function VendorInventoryPage() {
                               <Megaphone size={13} className="text-text-4" /> Advertise Listing
                             </button>
                           </div>
+                        )}
+                        {openDropdown?.id === p.id && (
+                          <div className="fixed inset-0 z-[9998]" onClick={() => setOpenDropdown(null)} />
                         )}
                       </td>
                     </tr>

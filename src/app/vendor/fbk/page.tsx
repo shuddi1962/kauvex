@@ -124,8 +124,8 @@ export default function FbkPage() {
           }
         }
 
-        // Auto-create enrollment if missing
-        if (!enrollData && token) {
+        // Auto-create or upgrade enrollment if missing/pending
+        if (!enrollData || enrollData.status === "pending") {
           const postRes = await fetch("/api/v1/fbk/enroll", {
             method: "POST",
             headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
@@ -135,7 +135,7 @@ export default function FbkPage() {
             const json = await postRes.json();
             enrollData = json.data;
           } else if (postRes.status === 409) {
-            // Already enrolled - fetch again
+            // Already enrolled with active status - fetch again
             const retryRes = await fetch("/api/v1/fbk/enroll", {
               headers: { Authorization: `Bearer ${token}` },
             });

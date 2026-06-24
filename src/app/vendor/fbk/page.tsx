@@ -19,6 +19,8 @@ import {
   ExternalLink,
   Box,
   ShoppingCart,
+  Wallet,
+  CreditCard,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { insforge } from "@/lib/insforge";
@@ -71,6 +73,8 @@ export default function FbkPage() {
   const [enrollment, setEnrollment] = useState<FbkEnrollment | null>(null);
   const [inboundPlans, setInboundPlans] = useState<InboundPlan[]>([]);
   const [stats, setStats] = useState({ totalUnits: 0, activePlans: 0 });
+  const [walletBalance, setWalletBalance] = useState(0);
+  const [billingInfo, setBillingInfo] = useState<any>(null);
 
   useEffect(() => {
     loadData();
@@ -149,12 +153,13 @@ export default function FbkPage() {
         setEnrollment(enrollData || null);
       }
 
-      // Fetch inbound plans via API
+      // Fetch inbound plans + billing via API
       if (vendorProfile) {
         try {
           const tokRes = await fetch("/api/auth/session-token");
           const { token } = await tokRes.json();
           if (token) {
+            // Inbound plans
             const plansRes = await fetch("/api/v1/fbk/inbound?limit=10", {
               headers: { Authorization: `Bearer ${token}` },
             });
@@ -170,6 +175,16 @@ export default function FbkPage() {
                 ["pending", "processing", "in_transit"].includes(p.status)
               ).length;
               setStats({ totalUnits, activePlans });
+            }
+
+            // Billing info
+            const billRes = await fetch("/api/v1/fbk/billing", {
+              headers: { Authorization: `Bearer ${token}` },
+            });
+            if (billRes.ok) {
+              const billJson = await billRes.json();
+              setBillingInfo(billJson.data);
+              setWalletBalance(billJson.data?.walletBalance || 0);
             }
           }
         } catch { /* fallback to empty */ }
@@ -241,20 +256,21 @@ export default function FbkPage() {
   );
 
   const renderEnrolled = () => {
-    const monthlyFees = enrollment ? Number((enrollment as any).monthly_fee || 29.99) : 29.99;
-    const pickPackFee = enrollment ? Number((enrollment as any).pick_pack_fee || 2.50) : 2.50;
-    const storageFee = enrollment ? Number((enrollment as any).storage_fee || 0.75) : 0.75;
+    const monthlyFees = billingInfo?.fees?.monthlySubscription ?? Number((enrollment as any).monthly_fee || 29.99);
+    const pickPackFee = billingInfo?.fees?.pickPackFee ?? Number((enrollment as any).pick_pack_fee || 2.50);
+    const storageFee = billingInfo?.fees?.storageFee ?? Number((enrollment as any).storage_fee || 0.75);
     const storageLimit = enrollment ? Number((enrollment as any).storage_limit || 1000) : 1000;
+    const totalUnits = billingInfo?.usage?.totalUnits ?? stats.totalUnits;
 
     return (
       <div className="space-y-6">
         {/* Top stat cards */}
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
           {[
-            { label: "Total Units Stored", value: stats.totalUnits, icon: Box, color: "text-purple-600", change: "+12% this month" },
+            { label: "Total Units Stored", value: totalUnits, icon: Box, color: "text-purple-600", change: `${billingInfo?.usage?.totalUnits ?? totalUnits} in warehouses` },
             { label: "Active Inbound Plans", value: stats.activePlans, icon: ClipboardList, color: "text-blue-600", change: `${inboundPlans.length} total` },
-            { label: "Storage Used", value: `${Math.round((stats.totalUnits / storageLimit) * 100)}%`, icon: Warehouse, color: "text-green-600", change: `${stats.totalUnits} / ${storageLimit} units` },
-            { label: "Est. Monthly Fees", value: `$${monthlyFees.toFixed(2)}`, icon: DollarSign, color: "text-orange-600", change: `$${pickPackFee.toFixed(2)} / unit pick & pack` },
+            { label: "Wallet Balance", value: `$${walletBalance.toFixed(2)}`, icon: Wallet, color: "text-green-600", change: `Available for fees` },
+            { label: "Est. Monthly Fees", value: `$${(billingInfo?.estimatedTotal ?? monthlyFees).toFixed(2)}`, icon: DollarSign, color: "text-orange-600", change: `$${pickPackFee.toFixed(2)} / unit pick & pack` },
           ].map((stat) => {
             const Icon = stat.icon;
             return (
@@ -341,15 +357,37 @@ export default function FbkPage() {
                 { label: "Monthly Subscription", value: `$${monthlyFees.toFixed(2)}`, freq: "/month" },
                 { label: "Storage Fee", value: `$${storageFee.toFixed(2)}`, freq: "/unit/month" },
                 { label: "Pick & Pack Fee", value: `$${pickPackFee.toFixed(2)}`, freq: "/unit" },
-                { label: "Estimated Total", value: `$${(monthlyFees + stats.totalUnits * storageFee + stats.totalUnits * pickPackFee).toFixed(2)}`, freq: "this period", bold: true },
-              ].map((fee) => (
+                { label: "", value: "", freq: "", divider: true },
+                { label: "Units in Storage", value: `${totalUnits}`, freq: "units" },
+                { label: "Storage Cost", value: `$${(totalUnits * storageFee).toFixed(2)}`, freq: "" },
+                { label: "Pick & Pack Cost", value: `$${(totalUnits * pickPackFee).toFixed(2)}`, freq: "" },
+                { label: "", value: "", freq: "", divider: true },
+                { label: "Estimated Total", value: `$${(monthlyFees + totalUnits * storageFee + totalUnits * pickPackFee).toFixed(2)}`, freq: "this period", bold: true },
+              ].map((fee, i) => (
+                fee.divider ? <hr key={i} className="border-gray-100" /> :
                 <div key={fee.label} className="flex items-center justify-between">
                   <span className="text-xs text-gray-500">{fee.label}</span>
                   <span className={`text-xs ${fee.bold ? "font-bold text-gray-900" : "text-gray-700"}`}>
-                    {fee.value} <span className="text-[9px] text-gray-400">{fee.freq}</span>
+                    {fee.value} {fee.freq && <span className="text-[9px] text-gray-400">{fee.freq}</span>}
                   </span>
                 </div>
               ))}
+            </div>
+            {/* Wallet Balance & Top Up */}
+            <div className="mt-4 pt-3 border-t border-gray-100">
+              <div className="flex items-center justify-between mb-2">
+                <span className="text-xs text-gray-500 flex items-center gap-1">
+                  <Wallet size={12} /> Wallet Balance
+                </span>
+                <span className={`text-xs font-bold ${walletBalance >= (monthlyFees + totalUnits * storageFee + totalUnits * pickPackFee) ? "text-green-600" : "text-red-600"}`}>
+                  ${walletBalance.toFixed(2)}
+                </span>
+              </div>
+              <Link href="/vendor/wallet">
+                <Button size="sm" className="w-full bg-purple-600 hover:bg-purple-700 text-white mt-1">
+                  <CreditCard size={14} className="mr-1" /> Top Up Wallet
+                </Button>
+              </Link>
             </div>
           </div>
         </div>

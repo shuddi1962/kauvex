@@ -35,6 +35,7 @@ const topNav: { key: SectionKey; label: string; icon: React.ElementType; groups:
         { label: "Dashboard", href: "/vendor/dashboard" },
         { label: "Analytics", href: "/vendor/analytics" },
         { label: "Earnings", href: "/vendor/earnings" },
+        { label: "Wallet", href: "/vendor/wallet", badge: "New" },
       ]},
     ],
   },

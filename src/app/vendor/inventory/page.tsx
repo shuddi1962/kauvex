@@ -105,44 +105,24 @@ export default function VendorInventoryPage() {
         .eq("user_id", user.id)
         .maybeSingle();
 
-      // Auto-create vendor record if missing
+      // Auto-create vendor record if missing (via API — bypasses RLS)
       if (!vendorProfile) {
         try {
           const tokRes = await fetch("/api/auth/session-token");
           const { token } = await tokRes.json();
           if (token) {
-            const regRes = await fetch("/api/v1/vendors/register", {
+            const regRes = await fetch("/api/v1/vendors/auto-register", {
               method: "POST",
-              headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
-              body: JSON.stringify({ shop_name: (user.email || user.id).split("@")[0] + "'s Store" }),
+              headers: { Authorization: `Bearer ${token}` },
             });
             if (regRes.ok) {
               const regJson = await regRes.json();
-              vendorProfile = regJson.data || { id: regJson.vendor?.id };
+              vendorProfile = regJson.data;
             }
           }
         } catch { /* ignore */ }
 
-        // Fallback: direct DB insert
-        if (!vendorProfile?.id) {
-          try {
-            const slug = user.id.slice(0, 8);
-            const { data: newVendor } = await insforge.database
-              .from("vendors")
-              .insert({
-                user_id: user.id,
-                shop_name: (user.email || "vendor").split("@")[0] + "'s Store",
-                shop_slug: `shop-${slug}`,
-                status: "active",
-                created_at: new Date().toISOString(),
-              })
-              .select("id")
-              .maybeSingle();
-            if (newVendor) vendorProfile = newVendor;
-          } catch { /* ignore */ }
-        }
-
-        if (!vendorProfile?.id) {
+        if (!vendorProfile) {
           setLoading(false);
           setError("Could not create vendor profile. Please contact support.");
           return;

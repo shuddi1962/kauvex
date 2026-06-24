@@ -74,28 +74,49 @@ export default function FbkInboundPage() {
       // Auto-create vendor record if missing
       if (!vendorProfile) {
         try {
-          const slug = user.id.slice(0, 8);
-          const { data: newVendor } = await insforge.database
-            .from("vendors")
-            .insert({
-              user_id: user.id,
-              shop_name: (user.email || "vendor").split("@")[0] + "'s Store",
-              shop_slug: `shop-${slug}`,
-              status: "active",
-              created_at: new Date().toISOString(),
-            })
-            .select("id")
-            .maybeSingle();
-          if (newVendor) vendorProfile = newVendor;
+          const tokRes = await fetch("/api/auth/session-token");
+          const { token } = await tokRes.json();
+          if (token) {
+            const regRes = await fetch("/api/v1/vendors/auto-register", {
+              method: "POST",
+              headers: { Authorization: `Bearer ${token}` },
+            });
+            if (regRes.ok) {
+              const regJson = await regRes.json();
+              vendorProfile = regJson.data;
+            }
+          }
         } catch { /* ignore */ }
       }
 
       if (vendorProfile) {
-        const { data: productData } = await insforge.database
+        let { data: productData } = await insforge.database
           .from("products")
           .select("id, name, sku")
           .eq("vendor_id", vendorProfile.id)
           .order("name");
+
+        // Seed demo products if empty
+        if (!productData || productData.length === 0) {
+          try {
+            const tokRes = await fetch("/api/auth/session-token");
+            const { token } = await tokRes.json();
+            if (token) {
+              await fetch("/api/v1/vendors/seed-demo", {
+                method: "POST",
+                headers: { Authorization: `Bearer ${token}` },
+              });
+            }
+          } catch { /* ignore */ }
+
+          // Re-fetch
+          const { data: refetched } = await insforge.database
+            .from("products")
+            .select("id, name, sku")
+            .eq("vendor_id", vendorProfile.id)
+            .order("name");
+          productData = refetched;
+        }
 
         if (productData) setProducts(productData);
       }

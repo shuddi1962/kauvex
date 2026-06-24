@@ -108,51 +108,41 @@ export default function FbkPage() {
       }
 
       if (vendorProfile) {
-        let { data: enrollData } = await insforge.database
-          .from("fbk_enrollments")
-          .select("*")
-          .eq("vendor_id", vendorProfile.id)
-          .maybeSingle();
+        let enrollData: any = null;
 
-        // DEMO: auto-create enrollment if missing (via API to bypass RLS)
-        if (!enrollData) {
-          try {
-            const tokRes = await fetch("/api/auth/session-token");
-            const { token } = await tokRes.json();
-            if (token) {
-              const res = await fetch("/api/v1/fbk/enroll", {
-                method: "POST",
-                headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
-                body: JSON.stringify({}),
-              });
-              if (res.ok) {
-                const json = await res.json();
-                enrollData = json.data;
-              }
+        // Fetch enrollment via API (bypasses RLS)
+        const tokRes = await fetch("/api/auth/session-token");
+        const token = (await tokRes.json()).token;
+
+        if (token) {
+          const getRes = await fetch("/api/v1/fbk/enroll", {
+            headers: { Authorization: `Bearer ${token}` },
+          });
+          if (getRes.ok) {
+            const json = await getRes.json();
+            enrollData = json.data;
+          }
+        }
+
+        // Auto-create enrollment if missing
+        if (!enrollData && token) {
+          const postRes = await fetch("/api/v1/fbk/enroll", {
+            method: "POST",
+            headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+            body: JSON.stringify({}),
+          });
+          if (postRes.ok) {
+            const json = await postRes.json();
+            enrollData = json.data;
+          } else if (postRes.status === 409) {
+            // Already enrolled - fetch again
+            const retryRes = await fetch("/api/v1/fbk/enroll", {
+              headers: { Authorization: `Bearer ${token}` },
+            });
+            if (retryRes.ok) {
+              const json = await retryRes.json();
+              enrollData = json.data;
             }
-          } catch { /* fallback handled below */ }
-
-          // If API failed, try direct insert as second fallback
-          if (!enrollData) {
-            try {
-              const { data: newEnroll } = await insforge.database
-                .from("fbk_enrollments")
-                .insert({
-                  vendor_id: vendorProfile.id,
-                  status: "active",
-                  storage_limit: 1000,
-                  monthly_fee: 29.99,
-                  pick_pack_fee: 2.50,
-                  storage_fee: 0.75,
-                  returns_fee: 3.50,
-                  approved_at: new Date().toISOString(),
-                  created_at: new Date().toISOString(),
-                  updated_at: new Date().toISOString(),
-                })
-                .select("*")
-                .maybeSingle();
-              if (newEnroll) enrollData = newEnroll;
-            } catch { /* ignore */ }
           }
         }
 

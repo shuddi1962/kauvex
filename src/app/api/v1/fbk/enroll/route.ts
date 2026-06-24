@@ -3,6 +3,24 @@ import { successResponse, errorResponse, requireVendor, requireAdmin, validateBo
 import { createAdminClient } from "@/lib/supabase/admin";
 import { z } from "zod";
 
+export async function GET(request: NextRequest) {
+  const { vendor, error: authErr } = await requireVendor(request);
+  if (authErr) return authErr;
+
+  try {
+    const adminDb = createAdminClient();
+    const { data: enrollment } = await adminDb
+      .from("fbk_enrollments")
+      .select("*")
+      .eq("vendor_id", vendor!.id)
+      .maybeSingle();
+
+    return successResponse(enrollment || null);
+  } catch {
+    return errorResponse("Internal server error", 500);
+  }
+}
+
 const enrollSchema = z.object({
   vendor_store_id: z.string().uuid().optional(),
   storage_limit: z.number().positive().optional(),

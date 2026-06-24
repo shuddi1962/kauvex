@@ -24,21 +24,39 @@ export async function POST(request: NextRequest) {
     ];
 
     for (const dp of demoProducts) {
-      await adminDb.from("products").insert({
-        vendor_id: vendor!.id,
-        name: dp.name,
-        slug: dp.slug,
-        sku: dp.sku,
-        regular_price: dp.price,
-        status: "published",
-        images: [],
-        type: "simple",
-        created_at: new Date().toISOString(),
-        updated_at: new Date().toISOString(),
-      });
+      const { data: product } = await adminDb
+        .from("products")
+        .insert({
+          vendor_id: vendor!.id,
+          name: dp.name,
+          slug: dp.slug,
+          sku: dp.sku,
+          regular_price: dp.price,
+          sale_price: Math.round(dp.price * 0.9),
+          cost_price: Math.round(dp.price * 0.6),
+          status: "published",
+          images: [],
+          type: "simple",
+          short_description: `High-quality ${dp.name.toLowerCase()} — perfect for everyday use.`,
+          created_at: new Date().toISOString(),
+          updated_at: new Date().toISOString(),
+        })
+        .select("id")
+        .single();
+
+      // Sync to product_inventory
+      if (product) {
+        await adminDb.from("product_inventory").insert({
+          product_id: product.id,
+          location_name: "default",
+          quantity: Math.floor(Math.random() * 50) + 10,
+          low_stock_threshold: 5,
+          backorder_enabled: false,
+        });
+      }
     }
 
-    return successResponse({ message: "Demo products seeded", count: demoProducts.length });
+    return successResponse({ message: "Demo products seeded with inventory", count: demoProducts.length });
   } catch {
     return errorResponse("Failed to seed demo products", 500);
   }

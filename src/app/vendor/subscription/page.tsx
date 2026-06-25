@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import Link from "next/link";
-import { CreditCard, Check, X, ArrowUp, ArrowDown, AlertTriangle, Clock, Package, Users, Store, BarChart3, RefreshCw, Ban, Loader2, DollarSign, Wallet, AlertCircle } from "lucide-react";
+import { CreditCard, Check, X, ArrowUp, ArrowDown, AlertTriangle, Clock, Package, Users, Store, BarChart3, RefreshCw, Ban, Loader2, DollarSign, Wallet, AlertCircle, Layers } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import VendorShell from "@/components/vendor/vendor-shell";
 
@@ -15,6 +15,7 @@ export default function SubscriptionPage() {
   const [showCancelConfirm, setShowCancelConfirm] = useState(false);
   const [processing, setProcessing] = useState<string | null>(null);
   const [showUpgradeConfirm, setShowUpgradeConfirm] = useState<any>(null);
+  const [fbkBilling, setFbkBilling] = useState<any>(null);
 
   useEffect(() => { loadData(); }, []);
 
@@ -42,6 +43,13 @@ export default function SubscriptionPage() {
 
       if (subscription) {
         setCurrentPlan(subscription);
+
+        // Fetch FBK billing info
+        const fbkRes = await fetch("/api/v1/fbk/billing");
+        if (fbkRes.ok) {
+          const fbkData = await fbkRes.json();
+          setFbkBilling(fbkData.data || null);
+        }
 
         // Fetch wallet balance
         const walletRes = await fetch("/api/v1/wallet/my");
@@ -104,6 +112,13 @@ export default function SubscriptionPage() {
           });
         }
 
+        // Fetch FBK billing info
+        const fbkRes = await fetch("/api/v1/fbk/billing");
+        if (fbkRes.ok) {
+          const fbkData = await fbkRes.json();
+          setFbkBilling(fbkData.data || null);
+        }
+
         // Fetch wallet balance
         const walletRes = await fetch("/api/v1/wallet/my");
         if (walletRes.ok) {
@@ -143,7 +158,7 @@ export default function SubscriptionPage() {
 
     try {
       const payload = {
-        vendor_id: "current-vendor-id", // This should come from auth context
+        vendor_id: "current-vendor-id",
         plan_id: showUpgradeConfirm.plan.id,
         billing_cycle: "monthly",
       };
@@ -158,8 +173,6 @@ export default function SubscriptionPage() {
         const errorData = await response.json();
         throw new Error(errorData.error || "Failed to upgrade plan");
       }
-
-      const result = await response.json();
 
       await loadData();
 
@@ -273,7 +286,7 @@ export default function SubscriptionPage() {
                         </span>
                       )}
                       <div className="flex items-center gap-2 mb-3">
-                        <div className={`w-9 h-9 rounded-lg flex items-center justify-center ${plan.color === "purple" ? "bg-purple-100" : plan.color === "amber" ? "bg-amber-100" : "bg-gray-100"}`>
+                        <div className={`w-9 h-9 rounded-lg flex items-center justify-center ${plan.color === "purple" ? "bg-purple-100" : plan.color === "amber" ? "bg-amber-100" : "bg-gray-100"}`}>
                           <DollarSign size={16} className={plan.color === "purple" ? "text-purple-600" : plan.color === "amber" ? "text-amber-600" : "text-gray-500"} />
                         </div>
                         <div>
@@ -346,6 +359,68 @@ export default function SubscriptionPage() {
                 </Button>
               </div>
             </div>
+
+            {fbkBilling?.enrolled && (
+              <div className="bg-white rounded-xl border border-gray-200 p-5 mt-6">
+                <h3 className="font-semibold text-sm flex items-center gap-2 mb-3">
+                  <Layers size={16} className="text-purple-600" /> FBK Fee Summary
+                </h3>
+                <div className="space-y-2">
+                  <div className="flex items-center justify-between text-xs">
+                    <span className="text-gray-500">Monthly Subscription</span>
+                    <span className="font-semibold">${(fbkBilling.fees?.monthlySubscription || 0).toFixed(2)} /month</span>
+                  </div>
+                  <div className="flex items-center justify-between text-xs">
+                    <span className="text-gray-500">Storage Fee</span>
+                    <span className="font-semibold">${(fbkBilling.fees?.storageFee || 0).toFixed(2)} /unit/month</span>
+                  </div>
+                  <div className="flex items-center justify-between text-xs">
+                    <span className="text-gray-500">Pick and Pack Fee</span>
+                    <span className="font-semibold">${(fbkBilling.fees?.pickPackFee || 0).toFixed(2)} /unit</span>
+                  </div>
+                  <div className="border-t border-gray-100 pt-2 mt-2">
+                    <div className="flex items-center justify-between text-xs">
+                      <span className="text-gray-500">Units in Storage</span>
+                      <span className="font-semibold">{fbkBilling.usage?.totalUnits || 0} units</span>
+                    </div>
+                    <div className="flex items-center justify-between text-xs">
+                      <span className="text-gray-500">Storage Cost</span>
+                      <span className="font-semibold">${((fbkBilling.usage?.totalUnits || 0) * (fbkBilling.fees?.storageFee || 0)).toFixed(2)}</span>
+                    </div>
+                    <div className="flex items-center justify-between text-xs">
+                      <span className="text-gray-500">Pick and Pack Cost</span>
+                      <span className="font-semibold">${((fbkBilling.usage?.totalUnits || 0) * (fbkBilling.fees?.pickPackFee || 0)).toFixed(2)}</span>
+                    </div>
+                  </div>
+                  {(fbkBilling.outstandingDebt || 0) > 0 && (
+                    <div className="flex items-center gap-2 p-2 bg-red-50 border border-red-200 rounded-lg mt-2">
+                      <AlertTriangle size={12} className="text-red-600 shrink-0" />
+                      <div>
+                        <p className="text-[10px] font-semibold text-red-700">Outstanding Debt</p>
+                        <p className="text-[10px] text-red-600">${(fbkBilling.outstandingDebt || 0).toFixed(2)} — {fbkBilling.debtStatus}</p>
+                      </div>
+                    </div>
+                  )}
+                  <div className="border-t border-gray-200 pt-2 mt-2">
+                    <div className="flex items-center justify-between text-xs font-semibold">
+                      <span>Estimated Total</span>
+                      <span className="text-purple-600">${(fbkBilling.estimatedTotal || 0).toFixed(2)} this period</span>
+                    </div>
+                  </div>
+                  <div className="flex items-center justify-between text-xs pt-1">
+                    <span className="text-gray-400">Wallet Balance</span>
+                    <span className={`font-semibold ${walletBalance >= (fbkBilling.estimatedTotal || 0) ? "text-green-600" : "text-red-600"}`}>
+                      ${walletBalance.toFixed(2)}
+                    </span>
+                  </div>
+                </div>
+                <Link href="/vendor/fbk">
+                  <Button variant="outline" size="sm" className="w-full mt-3 text-xs">
+                    <Layers size={12} className="mr-1" /> Manage FBK
+                  </Button>
+                </Link>
+              </div>
+            )}
           </div>
         </div>
 

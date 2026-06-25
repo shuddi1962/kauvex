@@ -1,6 +1,7 @@
 import { NextRequest } from "next/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { successResponse, errorResponse, getAuthUser, validateBody } from "@/lib/api-helpers";
+import { creditOrderEarnings } from "@/lib/billing/billing-engine";
 import { z } from "zod";
 
 const VALID_TRANSITIONS: Record<string, string[]> = {
@@ -92,6 +93,12 @@ export async function PUT(
       .single();
 
     if (error) return errorResponse(error.message, 400);
+
+    if (body!.status === "completed") {
+      creditOrderEarnings(id).catch((err) =>
+        console.error(`Failed to credit earnings for order ${id}:`, err)
+      );
+    }
 
     return successResponse(updated);
   } catch {

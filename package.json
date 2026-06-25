@@ -10,7 +10,8 @@
     "postinstall": "prisma generate",
     "db:generate": "prisma generate",
     "db:push": "prisma db push",
-    "db:studio": "prisma studio"
+    "db:studio": "prisma studio",
+    "seed:partners": "npx tsx prisma/seeds/partners.ts"
   },
   "dependencies": {
     "@dnd-kit/core": "^6.3.1",

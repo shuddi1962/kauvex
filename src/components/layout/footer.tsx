@@ -49,8 +49,17 @@ const footerColumns = [
       { label: "Vendor Dashboard", url: "/vendor/dashboard" },
       { label: "Supplier Portal", url: "/supplier/register" },
       { label: "B2B/Wholesale", url: "/wholesale" },
-      { label: "Affiliate Program", url: "/affiliate" },
       { label: "Advertising", url: "/advertise" },
+    ],
+  },
+  {
+    title: "Partners",
+    links: [
+      { label: "Affiliate Program", url: "/partners" },
+      { label: "Become an Associate", url: "/partners/register/associate" },
+      { label: "Become an Influencer", url: "/partners/register/influencer" },
+      { label: "Partner Login", url: "/partners/login" },
+      { label: "Partner Dashboard", url: "/partners/dashboard" },
     ],
   },
   {
@@ -69,8 +78,7 @@ const footerColumns = [
     links: [
       { label: "About Us", url: "/about" },
       { label: "Blog", url: "/blog" },
-      { label: "Affiliate Program", url: "/affiliate" },
-      { label: "B2B/Wholesale", url: "/wholesale" },
+      { label: "Careers", url: "/about" },
       { label: "Vendor Marketplace", url: "/vendor/dashboard" },
       { label: "Store Locator", url: "/stores" },
     ],

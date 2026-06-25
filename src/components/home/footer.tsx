@@ -19,9 +19,15 @@ const sellLinks = [
   { label: "Vendor Dashboard", url: "/vendor/dashboard" },
   { label: "Supplier Portal", url: "/supplier/register" },
   { label: "B2B/Wholesale", url: "/wholesale" },
-  { label: "Affiliate Program", url: "/affiliate" },
   { label: "Advertising", url: "/advertise" },
   { label: "Seller Resources", url: "/help" },
+];
+
+const partnerLinks = [
+  { label: "Affiliate Program", url: "/partners" },
+  { label: "Become an Associate", url: "/partners/register/associate" },
+  { label: "Become an Influencer", url: "/partners/register/influencer" },
+  { label: "Partner Login", url: "/partners/login" },
 ];
 
 const helpLinks = [
@@ -142,6 +148,23 @@ export default function Footer() {
             <h4 className="font-bold text-sm text-white mb-4">Sell on KAUVEX</h4>
             <ul className="space-y-2.5">
               {sellLinks.map((link) => (
+                <li key={link.label}>
+                  <Link
+                    href={link.url}
+                    className="text-sm text-white/40 hover:text-white transition-colors"
+                  >
+                    {link.label}
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          </div>
+
+          {/* Partners */}
+          <div>
+            <h4 className="font-bold text-sm text-white mb-4">Partners</h4>
+            <ul className="space-y-2.5">
+              {partnerLinks.map((link) => (
                 <li key={link.label}>
                   <Link
                     href={link.url}

@@ -105,6 +105,47 @@ alwaysApply: true
 - /app/admin/catalog/approval-requests/ — Vendor approval queue
 - /app/admin/university/ — University lesson content management
 - /app/admin/brand-registry/ — Brand application review & approval
+- /components/ui/brand-tokens.ts — All brand color, font, shadow constants
+- /components/ui/Button.tsx — Branded button component all variants
+- /styles/globals.css — CSS custom properties for brand colors
+- /app/admin/brand/assets/ — Brand asset portal (admin)
+- /app/admin/brand/protection/ — Brand violation reporting
+- /app/partners/dashboard/brand-assets/ — Partner brand asset downloads
+- /lib/email/templates.ts — Email master + transactional templates
+- /lib/notifications/sms-templates.ts — SMS notification templates
+- /lib/notifications/push-templates.ts — Push notification templates
+- /lib/documents/templates.ts — Document templates (labels, waybills, invoices, packing lists, FBK statements)
+- /lib/brand/seo.ts — Brand SEO helpers
+- /lib/brand/compliance.ts — Brand compliance checker
+- /components/notifications/in-app-notification.tsx — In-app notification centre
+- /components/admin/brand-asset-portal.tsx — Admin brand asset management UI
+- /components/admin/brand-violation-report.tsx — Brand violation report form
+- /components/partners/brand-assets-page.tsx — Partner brand asset download page
+
+Brand Quick Reference:
+  Primary color: #0A1628 (navy) — kauvex-navy
+  Accent color: #FF6B00 (orange) — kauvex-orange
+  Font: Inter (400/500/600/700/800/900)
+  Mono font: JetBrains Mono (tracking numbers)
+  Primary CTA button: orange background, white text
+  Secondary button: navy background, white text
+  Card radius: 12px (rounded-xl)
+  Button radius: 8px (rounded-lg)
+  Dark mode: DISABLED (not supported at launch)
+
+Sub-Brand Colors:
+  Express: orange-forward (#FF6B00 primary)
+  Logistics: navy-forward (#0A1628 primary)
+  FBK: navy + green (#059669 accent)
+  Pay: navy + gold (#D97706 accent)
+  Live: orange + red (#DC2626 accent)
+  Partners: navy + purple (#7C3AED accent)
+  Originals: navy + gold (premium treatment)
+
+Voice Rules:
+  Always: direct, warm, active voice, short sentences
+  Never: all caps in body text, technical jargon
+    to customers, excessive apology, vague errors
 
 ## Default Storefronts
 1. kauvex.com — Global USD (DEFAULT)
@@ -122,6 +163,7 @@ alwaysApply: true
 - 00006_kcc_phase5_platform.sql — Platform features
 - 00007_kcc_phase5b.sql — Phase 5b additions
 - 00008_kcc_v4.sql — V4 migration
+- 00017_kcc_brand_system.sql — Phase 17 brand system tables (kv_brand_assets, kv_brand_asset_downloads, kv_brand_violations)
 - 00009_kcc_v2_enterprise.sql — V2 Enterprise+ (ERP, Procurement, Suppliers, RFQ, B2B, BNPL, Vendor Financing, Affiliates, Social Commerce, Live Shopping, Auctions, Subscriptions, Digital Products, Email Marketing, AI Assistant, Chat, Multi-Language, Franchise, Reputation, Authenticity, Tax, Accounting, Insurance, Credit, Forecasting, Fraud Detection) — ~60 tables, 60+ indexes
 
 Key V2 Enterprise+ tables: erp_accounts, journal_entries, cost_centers, budgets, procurement_suppliers, supplier_products, purchase_orders, po_items, rfqs, rfq_responses, b2b_companies, b2b_users, b2b_price_tiers, b2b_quotes, b2b_invoices, bnpl_plans, bnpl_credit_scores, bnpl_contracts, bnpl_payments, vendor_financing_applications, vendor_financing_repayments, affiliate_groups, affiliate_commissions, affiliate_payouts, social_creators, social_content, social_content_products, live_streams, live_stream_products, auctions, auction_bids, auction_watchlists, subscription_plans, customer_subscriptions, subscription_orders, digital_products, license_keys, email_templates, email_campaigns, email_campaign_logs, email_lists, email_subscribers, crm_tickets, crm_messages, crm_pipelines, crm_deals, crm_tasks, ai_conversations, demand_forecasts, fraud_checks, conversations, conversation_participants, messages, languages, translation_keys, translations, pos_terminals, pos_sessions, franchise_agents, franchise_mini_stores, product_geo_visibility, vendor_reputation_scores, product_authenticity_codes, accounting_invoices, accounting_invoice_items, general_ledger, insurance_policies, insurance_claims, credit_applications, credit_lines
@@ -166,6 +208,7 @@ Key V2 Enterprise+ tables: erp_accounts, journal_entries, cost_centers, budgets,
 - [x] Phase 14 (Complete Shipping & Logistics): Complete
 - [x] Phase 15 (Affiliate & Influencer Network): Complete
 - [x] Phase 16 (Packaging + Logistics Dashboards): Complete
+- [x] Phase 17 (Complete Brand System): Complete
 
 ## Recent Enhancements (August 2026)
 - **V3 Database**: 40+ new Prisma models (local suppliers, sourcing, POD, dropshipping, art/NFT, group buy, price alerts, live commerce, mentorship, carbon offsets, competition intel, Kauvex Originals, subscription boxes)

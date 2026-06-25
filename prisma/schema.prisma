@@ -4991,3 +4991,62 @@ model AffiliateNotifications {
   @@index([isRead], map: "idx_kv_aff_notifications_read")
   @@map("kv_aff_notifications")
 }
+
+// ═══════════════════════════════════════════════════════════════
+// BRAND SYSTEM (Phase 17)
+// ═══════════════════════════════════════════════════════════════
+
+model BrandAsset {
+  id                   String   @id @default(uuid()) @db.Uuid
+  assetType            String   @map("asset_type") @db.VarChar(50)
+  subBrand             String   @default("kauvex") @map("sub_brand") @db.VarChar(50)
+  name                 String   @db.VarChar(200)
+  description          String?  @db.Text
+  fileUrl              String   @map("file_url") @db.Text
+  fileFormat           String?  @map("file_format") @db.VarChar(20)
+  version              String   @default("1.0") @db.VarChar(20)
+  isPartnerAccessible  Boolean  @default(false) @map("is_partner_accessible")
+  isPublic             Boolean  @default(false) @map("is_public")
+  uploadedBy           String?  @map("uploaded_by") @db.Uuid
+  createdAt            DateTime @default(now()) @map("created_at")
+  updatedAt            DateTime @default(now()) @map("updated_at")
+
+  downloads BrandAssetDownload[]
+
+  @@index([assetType], map: "idx_kv_brand_assets_type")
+  @@index([subBrand], map: "idx_kv_brand_assets_sub_brand")
+  @@index([isPartnerAccessible], map: "idx_kv_brand_assets_partner")
+  @@map("kv_brand_assets")
+}
+
+model BrandAssetDownload {
+  id             String   @id @default(uuid()) @db.Uuid
+  assetId        String   @map("asset_id") @db.Uuid
+  downloadedBy   String?  @map("downloaded_by") @db.Uuid
+  downloaderType String   @map("downloader_type") @db.VarChar(20)
+  createdAt      DateTime @default(now()) @map("created_at")
+
+  asset BrandAsset @relation(fields: [assetId], references: [id], onDelete: Cascade)
+
+  @@index([assetId], map: "idx_kv_brand_asset_downloads_asset")
+  @@map("kv_brand_asset_downloads")
+}
+
+model BrandViolation {
+  id              String    @id @default(uuid()) @db.Uuid
+  reportedBy      String?   @map("reported_by") @db.Uuid
+  violationType   String    @map("violation_type") @db.VarChar(50)
+  description     String    @db.Text
+  evidenceUrls    String[]  @default([]) @map("evidence_urls")
+  offendingUrl    String?   @map("offending_url") @db.Text
+  entityType      String?   @map("entity_type") @db.VarChar(30)
+  entityId        String?   @map("entity_id") @db.Uuid
+  status          String    @default("open") @db.VarChar(20)
+  adminNotes      String?   @map("admin_notes") @db.Text
+  resolvedAt      DateTime? @map("resolved_at")
+  createdAt       DateTime  @default(now()) @map("created_at")
+
+  @@index([status], map: "idx_kv_brand_violations_status")
+  @@index([violationType], map: "idx_kv_brand_violations_type")
+  @@map("kv_brand_violations")
+}

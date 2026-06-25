@@ -1,25 +1,35 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { Wallet, ArrowUpRight, ArrowDownRight, Plus, CreditCard, Landmark, History, DollarSign, Check, Loader2, AlertTriangle } from "lucide-react";
+import { Wallet, ArrowUpRight, ArrowDownRight, Plus, CreditCard, History, Check, Loader2, AlertTriangle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import VendorShell from "@/components/vendor/vendor-shell";
 
 interface Transaction {
   id: string;
-  type: string;
+  transactionType: string;
   amount: number;
   balanceBefore: number;
   balanceAfter: number;
-  referenceType: string | null;
+  direction: string;
   description: string | null;
+  referenceType: string | null;
   status: string;
   createdAt: string;
 }
 
+interface WalletData {
+  id: string;
+  balance: number;
+  pendingBalance: number;
+  reservedBalance: number;
+  availableBalance: number;
+  status: string;
+}
+
 export default function VendorWalletPage() {
   const [loading, setLoading] = useState(true);
-  const [balance, setBalance] = useState(0);
+  const [wallet, setWallet] = useState<WalletData | null>(null);
   const [transactions, setTransactions] = useState<Transaction[]>([]);
   const [showDeposit, setShowDeposit] = useState(false);
   const [depositAmount, setDepositAmount] = useState("");
@@ -33,10 +43,10 @@ export default function VendorWalletPage() {
   const loadWallet = async () => {
     setLoading(true);
     try {
-      const res = await fetch("/api/v1/wallet/my");
+      const res = await fetch("/api/v1/pay/wallet");
       if (res.ok) {
         const json = await res.json();
-        setBalance(json.data?.balance || 0);
+        setWallet(json.data?.wallet);
         setTransactions(json.data?.transactions || []);
       }
     } catch { /* ignore */ }
@@ -49,10 +59,10 @@ export default function VendorWalletPage() {
     setDepositing(true);
     setError("");
     try {
-      const res = await fetch("/api/v1/wallet/my", {
+      const res = await fetch("/api/v1/pay/wallet/topup", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ amount, paymentMethod: depositMethod }),
+        body: JSON.stringify({ amount, method: depositMethod }),
       });
       if (res.ok) {
         setDepositSuccess(true);
@@ -75,31 +85,35 @@ export default function VendorWalletPage() {
     return (
       <VendorShell title="Wallet" subtitle="Manage your account balance">
         <div className="flex items-center justify-center py-20">
-          <Loader2 className="animate-spin text-purple-600" size={32} />
+          <Loader2 className="animate-spin text-kauvex-orange" size={32} />
         </div>
       </VendorShell>
     );
   }
 
   return (
-    <VendorShell title="Wallet" subtitle="Manage your account balance & transactions">
+    <VendorShell title="Kauvex Pay Wallet" subtitle="Manage your account balance & transactions">
       <div className="max-w-4xl mx-auto space-y-6">
         {/* Balance Card */}
-        <div className="bg-gradient-to-br from-purple-600 to-purple-900 rounded-xl p-6 text-white">
+        <div className="bg-gradient-to-br from-[#0A1628] to-blue-900 rounded-xl p-6 text-white">
           <div className="flex items-center justify-between mb-4">
             <div className="flex items-center gap-2">
               <Wallet size={20} />
-              <span className="text-sm font-semibold text-purple-200">Available Balance</span>
+              <span className="text-sm font-semibold text-white/70">Available Balance</span>
             </div>
             <span className="text-[10px] bg-white/10 px-2 py-0.5 rounded-full">Vendor Wallet</span>
           </div>
-          <p className="text-3xl font-bold mb-1">${balance.toFixed(2)}</p>
-          <p className="text-[11px] text-purple-200">USD</p>
+          <p className="text-3xl font-bold mb-1">₦{(wallet?.balance || 0).toLocaleString()}</p>
+          <div className="flex gap-4 mt-2 text-xs text-white/50">
+            <span>Pending: ₦{(wallet?.pendingBalance || 0).toLocaleString()}</span>
+            <span>Reserved: ₦{(wallet?.reservedBalance || 0).toLocaleString()}</span>
+          </div>
           <div className="flex gap-2 mt-6">
-            <Button size="sm" onClick={() => { setShowDeposit(!showDeposit); setDepositSuccess(false); setError(""); }} className="bg-white text-purple-700 hover:bg-purple-50">
+            <Button size="sm" onClick={() => { setShowDeposit(!showDeposit); setDepositSuccess(false); setError(""); }}
+              className="bg-white text-[#0A1628] hover:bg-white/90">
               <Plus size={14} className="mr-1" /> {showDeposit ? "Cancel" : "Top Up"}
             </Button>
-            <Button size="sm" variant="outline" className="border-purple-400 text-purple-200 hover:bg-purple-500">
+            <Button size="sm" variant="outline" className="border-white/30 text-white hover:bg-white/10">
               <ArrowUpRight size={14} className="mr-1" /> Withdraw
             </Button>
           </div>
@@ -109,7 +123,7 @@ export default function VendorWalletPage() {
         {showDeposit && (
           <div className="bg-white rounded-xl border border-gray-200 p-5 space-y-4">
             <h3 className="font-semibold text-sm flex items-center gap-2">
-              <CreditCard size={16} className="text-purple-600" /> Top Up Wallet
+              <CreditCard size={16} className="text-kauvex-orange" /> Top Up Wallet
             </h3>
             {depositSuccess ? (
               <div className="flex items-center gap-2 p-3 bg-green-50 border border-green-200 rounded-lg text-green-700 text-sm">
@@ -125,32 +139,31 @@ export default function VendorWalletPage() {
                 <div className="flex flex-wrap gap-2">
                   {presetAmounts.map(a => (
                     <button key={a} onClick={() => setDepositAmount(a.toString())}
-                      className={`px-4 py-2 rounded-lg border text-sm font-medium transition-colors ${depositAmount === a.toString() ? "bg-purple-600 text-white border-purple-600" : "bg-white text-gray-700 border-gray-200 hover:border-purple-300"}`}>
-                      ${a}
+                      className={`px-4 py-2 rounded-lg border text-sm font-medium transition-colors ${depositAmount === a.toString() ? "bg-[#0A1628] text-white border-[#0A1628]" : "bg-white text-gray-700 border-gray-200 hover:border-kauvex-orange"}`}>
+                      ₦{a}
                     </button>
                   ))}
                 </div>
                 <div>
                   <label className="text-xs font-medium text-gray-600 mb-1 block">Custom Amount</label>
                   <div className="relative w-48">
-                    <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm">$</span>
+                    <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm">₦</span>
                     <input type="number" value={depositAmount} onChange={e => setDepositAmount(e.target.value)}
-                      className="w-full pl-7 pr-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:border-purple-500" placeholder="0.00" min="1" />
+                      className="w-full pl-7 pr-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:border-kauvex-orange" placeholder="0.00" min="1" />
                   </div>
                 </div>
                 <div>
                   <label className="text-xs font-medium text-gray-600 mb-1 block">Payment Method</label>
                   <select value={depositMethod} onChange={e => setDepositMethod(e.target.value)}
-                    className="w-48 h-9 px-3 rounded-lg border border-gray-200 text-sm bg-white focus:outline-none focus:border-purple-500">
+                    className="w-48 h-9 px-3 rounded-lg border border-gray-200 text-sm bg-white focus:outline-none focus:border-kauvex-orange">
                     <option value="bank_transfer">Bank Transfer</option>
                     <option value="card">Credit/Debit Card</option>
-                    <option value="paystack">Paystack</option>
-                    <option value="flutterwave">Flutterwave</option>
+                    <option value="ussd">USSD</option>
                   </select>
                 </div>
                 <Button onClick={handleDeposit} disabled={depositing || !depositAmount || parseFloat(depositAmount) <= 0}
-                  className="bg-purple-600 hover:bg-purple-700 text-white">
-                  {depositing ? "Processing..." : `Deposit $${parseFloat(depositAmount || "0").toFixed(2)}`}
+                  className="bg-kauvex-orange hover:bg-orange-700 text-white">
+                  {depositing ? "Processing..." : `Deposit ₦${parseFloat(depositAmount || "0").toLocaleString()}`}
                 </Button>
               </>
             )}
@@ -161,7 +174,7 @@ export default function VendorWalletPage() {
         <div className="bg-white rounded-xl border border-gray-200 p-5">
           <div className="flex items-center justify-between mb-4">
             <h3 className="font-semibold text-sm flex items-center gap-2">
-              <History size={16} className="text-purple-600" /> Transaction History
+              <History size={16} className="text-kauvex-orange" /> Transaction History
             </h3>
           </div>
           {transactions.length === 0 ? (
@@ -173,7 +186,7 @@ export default function VendorWalletPage() {
           ) : (
             <div className="space-y-1">
               {transactions.map((txn) => {
-                const isCredit = txn.type === "credit" || txn.type === "deposit";
+                const isCredit = txn.direction === "credit";
                 return (
                   <div key={txn.id} className="flex items-center justify-between py-2.5 border-b border-gray-50 last:border-0">
                     <div className="flex items-center gap-3">
@@ -181,15 +194,15 @@ export default function VendorWalletPage() {
                         {isCredit ? <ArrowDownRight size={14} className="text-green-600" /> : <ArrowUpRight size={14} className="text-red-600" />}
                       </div>
                       <div>
-                        <p className="text-xs font-medium text-gray-800">{txn.description || txn.referenceType || txn.type}</p>
+                        <p className="text-xs font-medium text-gray-800">{txn.description || txn.transactionType}</p>
                         <p className="text-[10px] text-gray-400">{new Date(txn.createdAt).toLocaleDateString()} · {txn.status}</p>
                       </div>
                     </div>
                     <div className="text-right">
                       <p className={`text-xs font-bold ${isCredit ? "text-green-600" : "text-red-600"}`}>
-                        {isCredit ? "+" : "-"}${txn.amount.toFixed(2)}
+                        {isCredit ? "+" : "-"}₦{txn.amount.toLocaleString()}
                       </p>
-                      <p className="text-[9px] text-gray-400">${txn.balanceAfter.toFixed(2)}</p>
+                      <p className="text-[9px] text-gray-400">₦{txn.balanceAfter.toLocaleString()}</p>
                     </div>
                   </div>
                 );

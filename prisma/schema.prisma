@@ -5050,3 +5050,216 @@ model BrandViolation {
   @@index([violationType], map: "idx_kv_brand_violations_type")
   @@map("kv_brand_violations")
 }
+
+// ============================================================
+// SECTION 18: KAUVEX PAY — WALLET + BNPL (Phase 18)
+// ============================================================
+
+model PayWallet {
+  id                     String   @id @default(uuid()) @db.Uuid
+  ownerId                String   @unique @map("owner_id") @db.Uuid
+  ownerType              String   @map("owner_type") @db.VarChar(20) // customer | vendor | logistics_partner | affiliate
+  balance                Decimal  @default(0) @db.Decimal(14, 2)
+  pendingBalance         Decimal  @default(0) @map("pending_balance") @db.Decimal(14, 2)
+  reservedBalance        Decimal  @default(0) @map("reserved_balance") @db.Decimal(14, 2)
+  currency               String   @default("NGN") @db.VarChar(10)
+  status                 String   @default("active") @db.VarChar(20) // active | frozen | restricted | closed
+  dailySpendLimit        Decimal  @default(500000) @map("daily_spend_limit") @db.Decimal(14, 2)
+  dailyWithdrawalLimit   Decimal  @default(200000) @map("daily_withdrawal_limit") @db.Decimal(14, 2)
+  singleTransactionLimit Decimal  @default(200000) @map("single_transaction_limit") @db.Decimal(14, 2)
+  pinHash                String?  @map("pin_hash") @db.VarChar(200)
+  lastActivity           DateTime? @map("last_activity")
+  createdAt              DateTime @default(now()) @map("created_at")
+  updatedAt              DateTime @default(now()) @map("updated_at")
+
+  virtualAccounts PayVirtualAccount[]
+  transactions    PayTransaction[]
+  cashbackQueue   PayCashbackQueue[]
+
+  @@index([ownerId, ownerType], map: "idx_kv_pay_wallets_owner")
+  @@map("kv_pay_wallets")
+}
+
+model PayVirtualAccount {
+  id            String   @id @default(uuid()) @db.Uuid
+  walletId      String   @map("wallet_id") @db.Uuid
+  bankName      String   @map("bank_name") @db.VarChar(100)
+  accountNumber String   @map("account_number") @db.VarChar(20)
+  accountName   String   @map("account_name") @db.VarChar(200)
+  provider      String   @db.VarChar(30) // paystack | flutterwave
+  isActive      Boolean  @default(true) @map("is_active")
+  createdAt     DateTime @default(now()) @map("created_at")
+
+  wallet PayWallet @relation(fields: [walletId], references: [id], onDelete: Cascade)
+
+  @@index([walletId], map: "idx_kv_pay_virtual_accounts_wallet")
+  @@map("kv_pay_virtual_accounts")
+}
+
+model PayTransaction {
+  id                String   @id @default(uuid()) @db.Uuid
+  walletId          String   @map("wallet_id") @db.Uuid
+  transactionType   String   @map("transaction_type") @db.VarChar(30) // top_up | purchase | refund | cashback | withdrawal | transfer | bnpl_charge | fee_deduction | ad_spend | fbk_fee | loyalty_conversion | late_fee
+  amount            Decimal  @db.Decimal(14, 2)
+  direction         String   @db.VarChar(10) // credit | debit
+  balanceBefore     Decimal  @map("balance_before") @db.Decimal(14, 2)
+  balanceAfter      Decimal  @map("balance_after") @db.Decimal(14, 2)
+  referenceType     String?  @map("reference_type") @db.VarChar(30) // order | bnpl_payment | payout | manual
+  referenceId       String?  @map("reference_id") @db.Uuid
+  description       String?  @db.Text
+  gateway           String?  @db.VarChar(30) // paystack | flutterwave | internal
+  gatewayReference  String?  @map("gateway_reference") @db.VarChar(200)
+  status            String   @default("completed") @db.VarChar(20) // completed | pending | failed | reversed
+  flagged           Boolean  @default(false)
+  flagReason        String?  @map("flag_reason") @db.Text
+  ipAddress         String?  @map("ip_address") @db.VarChar(50)
+  deviceFingerprint String?  @map("device_fingerprint") @db.VarChar(200)
+  createdAt         DateTime @default(now()) @map("created_at")
+
+  wallet PayWallet @relation(fields: [walletId], references: [id], onDelete: Cascade)
+
+  @@index([walletId, createdAt], map: "idx_kv_pay_transactions_wallet_time")
+  @@index([transactionType], map: "idx_kv_pay_transactions_type")
+  @@index([referenceId], map: "idx_kv_pay_transactions_ref")
+  @@map("kv_pay_transactions")
+}
+
+model PayCashbackRule {
+  id               String   @id @default(uuid()) @db.Uuid
+  ruleName         String   @map("rule_name") @db.VarChar(200)
+  categoryId       String?  @map("category_id") @db.Uuid
+  storefrontId     String?  @map("storefront_id") @db.Uuid
+  cashbackPercent  Decimal  @map("cashback_percent") @db.Decimal(5, 2)
+  fundedBy         String   @default("kauvex") @map("funded_by") @db.VarChar(20) // kauvex | vendor
+  vendorId         String?  @map("vendor_id") @db.Uuid
+  minOrderValue    Decimal  @default(0) @map("min_order_value") @db.Decimal(10, 2)
+  startDate        DateTime? @map("start_date")
+  endDate          DateTime? @map("end_date")
+  isActive         Boolean  @default(true) @map("is_active")
+  createdAt        DateTime @default(now()) @map("created_at")
+
+  cashbackQueue PayCashbackQueue[]
+
+  @@map("kv_pay_cashback_rules")
+}
+
+model PayCashbackQueue {
+  id            String    @id @default(uuid()) @db.Uuid
+  walletId      String    @map("wallet_id") @db.Uuid
+  orderId       String    @map("order_id") @db.Uuid
+  amount        Decimal   @db.Decimal(10, 2)
+  ruleId        String?   @map("rule_id") @db.Uuid
+  status        String    @default("pending") @db.VarChar(20) // pending | confirmed | credited | cancelled
+  eligibleFrom  DateTime? @map("eligible_from")
+  creditedAt    DateTime? @map("credited_at")
+  createdAt     DateTime  @default(now()) @map("created_at")
+
+  wallet PayWallet?       @relation(fields: [walletId], references: [id], onDelete: Cascade)
+  rule   PayCashbackRule? @relation(fields: [ruleId], references: [id], onDelete: SetNull)
+
+  @@index([walletId, status], map: "idx_kv_pay_cashback_wallet_status")
+  @@index([orderId], map: "idx_kv_pay_cashback_order")
+  @@map("kv_pay_cashback_queue")
+}
+
+model PayBnplAgreement {
+  id                    String   @id @default(uuid()) @db.Uuid
+  customerId            String   @map("customer_id") @db.Uuid
+  orderId               String   @map("order_id") @db.Uuid
+  totalAmount           Decimal  @map("total_amount") @db.Decimal(14, 2)
+  currency              String   @default("NGN") @db.VarChar(10)
+  installmentCount      Int      @default(4) @map("installment_count")
+  installmentAmount     Decimal  @map("installment_amount") @db.Decimal(14, 2)
+  firstPaymentPercent   Decimal  @default(25) @map("first_payment_percent") @db.Decimal(5, 2)
+  firstPaymentAmount    Decimal  @map("first_payment_amount") @db.Decimal(14, 2)
+  interestRate          Decimal  @default(0) @map("interest_rate") @db.Decimal(5, 2)
+  flatFee               Decimal  @default(0) @map("flat_fee") @db.Decimal(10, 2)
+  promotionalPeriodEnd  DateTime? @map("promotional_period_end") @db.Date
+  paymentMethodType     String?  @map("payment_method_type") @db.VarChar(20) // card | wallet
+  paymentMethodId       String?  @map("payment_method_id") @db.Uuid
+  creditPartner         String?  @db.VarChar(50) // carbon | fairmoney | lenco | null (in-house)
+  creditPartnerReference String? @map("credit_partner_reference") @db.VarChar(200)
+  creditScore           Int?     @map("credit_score")
+  status                String   @default("active") @db.VarChar(20) // active | completed | overdue | defaulted | cancelled
+  totalPaid             Decimal  @default(0) @map("total_paid") @db.Decimal(14, 2)
+  totalOutstanding      Decimal  @map("total_outstanding") @db.Decimal(14, 2)
+  missedPaymentCount    Int      @default(0) @map("missed_payment_count")
+  lateFeesAccrued       Decimal  @default(0) @map("late_fees_accrued") @db.Decimal(10, 2)
+  createdAt             DateTime @default(now()) @map("created_at")
+  updatedAt             DateTime @default(now()) @map("updated_at")
+
+  payments PayBnplPayment[]
+
+  @@index([customerId], map: "idx_kv_pay_bnpl_agreements_customer")
+  @@index([orderId], map: "idx_kv_pay_bnpl_agreements_order")
+  @@index([status], map: "idx_kv_pay_bnpl_agreements_status")
+  @@map("kv_pay_bnpl_agreements")
+}
+
+model PayBnplPayment {
+  id                String           @id @default(uuid()) @db.Uuid
+  agreementId       String           @map("agreement_id") @db.Uuid
+  installmentNumber Int              @map("installment_number") // 1 = first (paid at checkout), 2,3,4 = auto-charged
+  amount            Decimal          @db.Decimal(14, 2)
+  lateFee           Decimal          @default(0) @db.Decimal(10, 2)
+  totalCharged      Decimal          @map("total_charged") @db.Decimal(14, 2)
+  dueDate           DateTime         @map("due_date") @db.Date
+  status            String           @default("pending") @db.VarChar(20) // pending | paid | overdue | failed | waived
+  paidAt            DateTime?        @map("paid_at")
+  paymentMethod     String?          @db.VarChar(20)
+  gatewayReference  String?          @map("gateway_reference") @db.VarChar(200)
+  retryCount        Int              @default(0) @map("retry_count")
+  lastRetryAt       DateTime?        @map("last_retry_at")
+  createdAt         DateTime         @default(now()) @map("created_at")
+
+  agreement PayBnplAgreement @relation(fields: [agreementId], references: [id], onDelete: Cascade)
+
+  @@index([agreementId], map: "idx_kv_pay_bnpl_payments_agreement")
+  @@index([dueDate, status], map: "idx_kv_pay_bnpl_payments_due_status")
+  @@map("kv_pay_bnpl_payments")
+}
+
+model PayBnplEligibility {
+  id                   String   @id @default(uuid()) @db.Uuid
+  customerId           String   @unique @map("customer_id") @db.Uuid
+  isEligible           Boolean  @default(false) @map("is_eligible")
+  currentLimit         Decimal  @default(0) @map("current_limit") @db.Decimal(14, 2)
+  usedLimit            Decimal  @default(0) @map("used_limit") @db.Decimal(14, 2)
+  availableLimit       Decimal  @default(0) @map("available_limit") @db.Decimal(14, 2)
+  eligibilityScore     Int      @default(0) @map("eligibility_score")
+  creditPartnerScore   Int?     @map("credit_partner_score")
+  successfulRepayments Int      @default(0) @map("successful_repayments")
+  missedPayments       Int      @default(0) @map("missed_payments")
+  status               String   @default("not_evaluated") @db.VarChar(20) // not_evaluated | eligible | suspended | banned
+  lastEvaluated        DateTime? @map("last_evaluated")
+  suspendedReason      String?  @map("suspended_reason") @db.Text
+  createdAt            DateTime @default(now()) @map("created_at")
+  updatedAt            DateTime @default(now()) @map("updated_at")
+
+  @@map("kv_pay_bnpl_eligibility")
+}
+
+model PayBnplConfig {
+  id          String   @id @default(uuid()) @db.Uuid
+  configKey   String   @unique @map("config_key") @db.VarChar(100)
+  configValue String   @map("config_value") @db.Text
+  description String?  @db.Text
+  updatedBy   String?  @map("updated_by") @db.Uuid
+  updatedAt   DateTime @default(now()) @map("updated_at")
+
+  @@map("kv_pay_bnpl_config")
+}
+
+model PayFloatTracking {
+  id                String   @id @default(uuid()) @db.Uuid
+  date              DateTime @db.Date
+  totalWalletBalance Decimal  @map("total_wallet_balance") @db.Decimal(16, 2)
+  customerBalance   Decimal  @default(0) @map("customer_balance") @db.Decimal(16, 2)
+  vendorBalance     Decimal  @default(0) @map("vendor_balance") @db.Decimal(16, 2)
+  partnerBalance    Decimal  @default(0) @map("partner_balance") @db.Decimal(16, 2)
+  estimatedInterest Decimal  @default(0) @map("estimated_interest") @db.Decimal(14, 2)
+  createdAt         DateTime @default(now()) @map("created_at")
+
+  @@unique([date])
+  @@map("kv_pay_float_tracking")
+}

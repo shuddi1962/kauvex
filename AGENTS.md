@@ -121,6 +121,21 @@ alwaysApply: true
 - /components/admin/brand-asset-portal.tsx — Admin brand asset management UI
 - /components/admin/brand-violation-report.tsx — Brand violation report form
 - /components/partners/brand-assets-page.tsx — Partner brand asset download page
+- /lib/pay/ — Kauvex Pay engine (wallet.ts, bnpl.ts, cashback.ts, credit-score.ts, float.ts)
+- /app/account/wallet/ — Customer wallet dashboard (top-up, withdraw, history, security)
+- /app/account/pay-later/ — BNPL agreements (active, completed, overdue)
+- /app/account/pay-later/[id]/ — BNPL agreement detail + payment schedule
+- /app/vendor/wallet/ — Vendor wallet (earnings, withdrawal, transactions)
+- /app/admin/pay-later/ — Admin BNPL dashboard (overview, agreements, config, risk)
+- /app/admin/wallets/ — Admin wallet oversight (all wallets, balances, freeze/unfreeze)
+- /app/api/v1/pay/wallet/ — Wallet API routes (topup, withdraw, virtual-account, pin)
+- /app/api/v1/pay/bnpl/ — BNPL API routes (eligibility, agreements, repay)
+- /app/api/v1/pay/cashback/ — Cashback API route
+- /app/api/v1/pay/float/ — Float income tracking API
+- /app/api/v1/cron/bnpl-charge/ — BNPL auto-charge cron job
+- /app/api/v1/cron/cashback-process/ — Cashback processing cron job
+- /app/api/v1/cron/float-track/ — Float tracking cron job
+- /supabase/migrations/00018_kcc_phase18_kauvex_pay.sql — KV Pay database migration
 
 Brand Quick Reference:
   Primary color: #0A1628 (navy) — kauvex-navy
@@ -209,6 +224,7 @@ Key V2 Enterprise+ tables: erp_accounts, journal_entries, cost_centers, budgets,
 - [x] Phase 15 (Affiliate & Influencer Network): Complete
 - [x] Phase 16 (Packaging + Logistics Dashboards): Complete
 - [x] Phase 17 (Complete Brand System): Complete
+- [x] Phase 18 (Kauvex Pay Wallet + BNPL): Complete
 
 ## Recent Enhancements (August 2026)
 - **V3 Database**: 40+ new Prisma models (local suppliers, sourcing, POD, dropshipping, art/NFT, group buy, price alerts, live commerce, mentorship, carbon offsets, competition intel, Kauvex Originals, subscription boxes)
@@ -364,3 +380,65 @@ Key V2 Enterprise+ tables: erp_accounts, journal_entries, cost_centers, budgets,
   3+ countries: lease airline cargo space
   Dominant Nigerian market: lease first cargo aircraft
   Pan-African: port terminal + vessel strategy
+
+## Phase 18 Kauvex Pay Knowledge Base
+
+**Key Directories:**
+  `/lib/pay/` — Core engine (wallet.ts, bnpl.ts, cashback.ts, credit-score.ts, float.ts)
+  `/app/account/wallet/` — Customer wallet dashboard
+  `/app/account/pay-later/` — BNPL agreements + detail pages
+  `/app/vendor/wallet/` — Vendor wallet (earnings, withdrawal, transactions)
+  `/app/admin/pay-later/` — Admin BNPL dashboard (overview, agreements, config, risk)
+  `/app/admin/wallets/` — Admin wallet oversight
+
+**Wallet System (KP1):**
+  Every account gets a wallet on registration (auto-created via DB trigger)
+  Top-up methods: Card (Paystack), Bank Transfer (virtual account), USSD
+  Spending: one-click checkout, split payment (wallet + card)
+  Withdrawal: below ₦50K instant, above ₦50K manual review (24h)
+  Security: 4-digit PIN, daily spend limits, fraud flagging
+  Cashback: configurable per category/storefront, 30-day pending period
+
+**BNPL System (KP2):**
+  Customer pays 25% upfront, receives item IMMEDIATELY
+  Remaining 75% in 3 installments over 9 weeks (21 days apart)
+  Vendor receives FULL earnings on Day 1 (Kauvex pays vendor)
+  Kauvex holds the credit risk
+  Auto-charge runs daily at 9AM via cron
+  Late fee: ₦500 after 7-day grace period
+  BNPL suspended: cannot START new BNPL, existing agreements remain active
+
+**BNPL Eligibility:**
+  Account age: 3+ months
+  Order history: 2+ completed orders
+  No outstanding Kauvex debt
+  External credit check (Carbon/FairMoney/Lenco) for orders ≥₦50,000
+  Limits: ₦20K new → ₦50K after 2 → ₦100K after 5 → ₦200K after 10
+
+**Float Income:**
+  All wallet balances earn bank interest (tracked daily)
+  Treasury reporting via admin dashboard
+
+**BNPL Critical Rules:**
+  Customer receives item IMMEDIATELY after 25% first payment
+  Vendor receives FULL earnings on Day 1
+  Kauvex holds the credit risk
+  Auto-charges run daily at 9AM via cron
+  Late fee: only after 7-day grace period
+  BNPL suspended: cannot START new BNPL, existing agreements remain active
+  Never cancel or reverse a shipped order due to missed BNPL payment
+
+**Key API Endpoints:**
+  GET/POST /api/v1/pay/wallet/topup — Wallet info + top-up
+  POST /api/v1/pay/wallet/withdraw — Withdraw to bank
+  GET /api/v1/pay/wallet/virtual-account — Get dedicated account
+  POST /api/v1/pay/wallet/pin — Set/verify PIN
+  GET/POST /api/v1/pay/bnpl/eligibility — Check eligibility
+  GET/POST /api/v1/pay/bnpl/agreements — List/create agreements
+  GET /api/v1/pay/bnpl/agreements/[id] — Agreement detail
+  POST /api/v1/pay/bnpl/agreements/[id]/repay — Early repayment
+  GET /api/v1/pay/cashback — Customer cashback history
+  GET /api/v1/pay/float — Admin float tracking
+  POST /api/v1/cron/bnpl-charge — Daily auto-charge cron
+  POST /api/v1/cron/cashback-process — Daily cashback processing
+  POST /api/v1/cron/float-track — Daily float tracking

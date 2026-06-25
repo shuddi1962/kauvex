@@ -26,7 +26,7 @@ export async function POST(request: NextRequest) {
       bankAccountCode: body!.bankAccountCode,
       description: body!.description,
     });
-    return successResponse(txn, 201);
+    return successResponse(txn as unknown as Record<string, unknown>, 201);
   } catch (err) {
     return errorResponse((err as Error).message, 400);
   }

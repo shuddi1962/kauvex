@@ -17,7 +17,7 @@ export async function GET(request: NextRequest) {
 
   try {
     const wallet = await getOrCreateWallet({ ownerId: user!.id, ownerType: "customer" });
-    return successResponse(wallet);
+    return successResponse(wallet as unknown as Record<string, unknown>);
   } catch (err) {
     return errorResponse((err as Error).message, 500);
   }

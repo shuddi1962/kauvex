@@ -51,7 +51,7 @@ export async function POST(request: NextRequest) {
       creditPartnerReference: body!.creditPartnerReference,
       creditScore: body!.creditScore,
     });
-    return successResponse(agreement, 201);
+    return successResponse(agreement as unknown as Record<string, unknown>, 201);
   } catch (err) {
     return errorResponse((err as Error).message, 400);
   }

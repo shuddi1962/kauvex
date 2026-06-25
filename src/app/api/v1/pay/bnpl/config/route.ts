@@ -13,7 +13,7 @@ const updateConfigSchema = z.object({
 export async function GET() {
   try {
     const config = await getBnplConfig();
-    return successResponse(config);
+    return successResponse(config as unknown as Record<string, unknown>);
   } catch (err) {
     return errorResponse((err as Error).message, 500);
   }

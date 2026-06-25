@@ -166,6 +166,18 @@ CREATE TABLE IF NOT EXISTS kv_lgx_pack_tasks (
 -- ============================================================
 -- INDEXES
 -- ============================================================
+
+-- Disable RLS on all Phase 16 tables (internal management tables)
+ALTER TABLE kv_pkg_materials DISABLE ROW LEVEL SECURITY;
+ALTER TABLE kv_pkg_warehouse_stock DISABLE ROW LEVEL SECURITY;
+ALTER TABLE kv_pkg_vendor_config DISABLE ROW LEVEL SECURITY;
+ALTER TABLE kv_pkg_order_records DISABLE ROW LEVEL SECURITY;
+ALTER TABLE kv_pkg_supplier_kits DISABLE ROW LEVEL SECURITY;
+ALTER TABLE kv_pkg_supplier_kit_requests DISABLE ROW LEVEL SECURITY;
+ALTER TABLE kv_pkg_compliance_logs DISABLE ROW LEVEL SECURITY;
+ALTER TABLE kv_lgx_warehouse_staff DISABLE ROW LEVEL SECURITY;
+ALTER TABLE kv_lgx_pick_tasks DISABLE ROW LEVEL SECURITY;
+ALTER TABLE kv_lgx_pack_tasks DISABLE ROW LEVEL SECURITY;
 CREATE INDEX IF NOT EXISTS idx_kv_lgx_warehouse_staff_user ON kv_lgx_warehouse_staff(user_id);
 CREATE INDEX IF NOT EXISTS idx_kv_lgx_warehouse_staff_warehouse ON kv_lgx_warehouse_staff(warehouse_id);
 CREATE INDEX IF NOT EXISTS idx_kv_lgx_warehouse_staff_status ON kv_lgx_warehouse_staff(status);

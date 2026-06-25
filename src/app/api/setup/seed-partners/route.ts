@@ -1,11 +1,16 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@supabase/supabase-js";
 
-const admin = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.SUPABASE_SERVICE_ROLE_KEY!,
-  { auth: { autoRefreshToken: false, persistSession: false } },
-);
+function getAdmin() {
+  const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
+  const key = process.env.SUPABASE_SERVICE_ROLE_KEY;
+  if (!url || !key) {
+    throw new Error(`Missing env: NEXT_PUBLIC_SUPABASE_URL=${!!url}, SUPABASE_SERVICE_ROLE_KEY=${!!key}`);
+  }
+  return createClient(url, key, {
+    auth: { autoRefreshToken: false, persistSession: false },
+  });
+}
 
 const DEMO_PARTNERS = [
   {
@@ -26,7 +31,7 @@ const DEMO_PARTNERS = [
     username: "demo_influencer",
     partnerType: "influencer" as const,
     influencerTier: "micro",
-    bio: "Tech and lifestyle content creator with a passion for discovering amazing products. Sharing honest reviews and deals with my audience across Africa and beyond.",
+    bio: "Tech and lifestyle content creator with a passion for discovering amazing products.",
     primaryPlatform: "Instagram",
     primaryAudienceCountry: "Nigeria",
     contentCategories: ["Electronics", "Fashion", "Beauty"],
@@ -65,12 +70,26 @@ const DEMO_PARTNERS = [
 ];
 
 export async function POST(request: NextRequest) {
+  const results: any[] = [];
+
   try {
-    const results = [];
+    const admin = getAdmin();
+
+    const { data: healthCheck, error: healthErr } = await admin.auth.admin.listUsers({ page: 1, perPage: 1 });
+    if (healthErr) {
+      return NextResponse.json({
+        success: false,
+        error: "Cannot connect to Supabase Auth",
+        details: healthErr.message,
+        hint: "Check that SUPABASE_SERVICE_ROLE_KEY is set correctly in Vercel environment variables.",
+      }, { status: 500 });
+    }
 
     for (const p of DEMO_PARTNERS) {
-      const { data: existing } = await admin.auth.admin.listUsers();
-      if (existing?.users?.some((u: any) => u.email === p.email)) {
+      const { data: existingUsers } = await admin.auth.admin.listUsers({ page: 1, perPage: 1000 });
+      const alreadyExists = existingUsers?.users?.some((u: any) => u.email === p.email);
+
+      if (alreadyExists) {
         results.push({ email: p.email, status: "already_exists" });
         continue;
       }
@@ -83,7 +102,7 @@ export async function POST(request: NextRequest) {
       });
 
       if (createErr || !authUser?.user) {
-        results.push({ email: p.email, status: "error", error: createErr?.message });
+        results.push({ email: p.email, status: "error", step: "createUser", error: createErr?.message });
         continue;
       }
 
@@ -118,7 +137,7 @@ export async function POST(request: NextRequest) {
 
       if (pErr) {
         await admin.auth.admin.deleteUser(userId);
-        results.push({ email: p.email, status: "error", error: pErr.message });
+        results.push({ email: p.email, status: "error", step: "insertPartner", error: pErr.message });
         continue;
       }
 
@@ -189,8 +208,32 @@ export async function POST(request: NextRequest) {
       })),
       details: results,
     });
-  } catch (err) {
+  } catch (err: any) {
     console.error("Seed error:", err);
-    return NextResponse.json({ error: "Internal server error" }, { status: 500 });
+    return NextResponse.json({
+      success: false,
+      error: err.message || "Internal server error",
+      details: results,
+    }, { status: 500 });
+  }
+}
+
+export async function GET() {
+  try {
+    const admin = getAdmin();
+    const { data, error } = await admin.auth.admin.listUsers({ page: 1, perPage: 1000 });
+    if (error) {
+      return NextResponse.json({ connected: false, error: error.message });
+    }
+    const demoEmails = DEMO_PARTNERS.map((p) => p.email);
+    const existing = data?.users?.filter((u: any) => demoEmails.includes(u.email)).map((u: any) => u.email) || [];
+    return NextResponse.json({
+      connected: true,
+      totalUsers: data?.users?.length || 0,
+      demoAccountsExisting: existing,
+      demoAccountsMissing: demoEmails.filter((e) => !existing.includes(e)),
+    });
+  } catch (err: any) {
+    return NextResponse.json({ connected: false, error: err.message });
   }
 }

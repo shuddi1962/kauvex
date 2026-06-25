@@ -19,7 +19,7 @@ export async function GET(request: NextRequest) {
     }
 
     const partnerIds = [...new Set((referrals || []).map((r: any) => r.partner_id).filter(Boolean))];
-    let partnerMap: Record<string, { display_name: string; email: string }> = {};
+    const partnerMap: Record<string, { display_name: string; email: string }> = {};
 
     if (partnerIds.length > 0) {
       const { data: partners } = await admin
@@ -28,7 +28,7 @@ export async function GET(request: NextRequest) {
         .in("id", partnerIds);
 
       const userIds = (partners || []).map((p: any) => p.user_id).filter(Boolean);
-      let userMap: Record<string, string> = {};
+      const userMap: Record<string, string> = {};
 
       if (userIds.length > 0) {
         const { data: profiles } = await admin

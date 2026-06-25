@@ -140,7 +140,6 @@ export default function SubscriptionPage() {
     const isUpgrade = targetPlan.monthly_price > currentPlan.price;
 
     if (price > 0) {
-      const walletBalance = parseFloat(walletBalance || "0");
       if (walletBalance < price) {
         setError(`Insufficient wallet balance. You need $${price}. Please deposit funds.`);
         return;

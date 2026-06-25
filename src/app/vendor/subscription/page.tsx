@@ -33,7 +33,7 @@ export default function SubscriptionPage() {
 
       // Fetch vendor plans from API
       const plansRes = await fetch("/api/vendor/plans");
-      let allPlans = [];
+      let allPlans: any[] = [];
       if (plansRes.ok) {
         const data = await plansRes.json();
         allPlans = data.plans || [];

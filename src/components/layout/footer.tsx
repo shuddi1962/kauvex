@@ -58,6 +58,7 @@ const footerColumns = [
       { label: "Affiliate Program", url: "/partners" },
       { label: "Become an Associate", url: "/partners/register/associate" },
       { label: "Become an Influencer", url: "/partners/register/influencer" },
+      { label: "B2B Referral Partner", url: "/partners/register/b2b" },
       { label: "Partner Login", url: "/partners/login" },
       { label: "Partner Dashboard", url: "/partners/dashboard" },
     ],

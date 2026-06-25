@@ -17,13 +17,14 @@ interface DemoPartner {
   password: string;
   displayName: string;
   username: string;
-  partnerType: "associate" | "influencer";
+  partnerType: "associate" | "influencer" | "b2b_referral";
   influencerTier?: string;
   bio?: string;
   primaryPlatform?: string;
   primaryAudienceCountry?: string;
   contentCategories?: string[];
   payoutMethod?: string;
+  b2bReferrals?: { company_name: string; contact_name: string; contact_email: string; industry: string; deal_size: string; pipeline_stage: string }[];
 }
 
 const demoPartners: DemoPartner[] = [
@@ -61,6 +62,25 @@ const demoPartners: DemoPartner[] = [
     primaryAudienceCountry: "United Kingdom",
     contentCategories: ["Home & Kitchen", "Sports"],
     payoutMethod: "bank_transfer",
+  },
+  {
+    email: "b2b.demo@kauvex.com",
+    password: "KauvexDemo2026!",
+    displayName: "Demo B2B Partner",
+    username: "demo_b2b",
+    partnerType: "b2b_referral",
+    primaryPlatform: "Direct Outreach",
+    primaryAudienceCountry: "Nigeria",
+    contentCategories: ["Technology", "Finance"],
+    payoutMethod: "bank_transfer",
+    bio: "B2B referral partner specializing in enterprise vendor onboarding. Strong network in Lagos tech ecosystem.",
+    b2bReferrals: [
+      { company_name: "TechCorp Nigeria Ltd", contact_name: "James Okafor", contact_email: "james@techcorp.ng", industry: "Technology", deal_size: "large", pipeline_stage: "closed" },
+      { company_name: "Marine Logistics Pro", contact_name: "Fatima Usman", contact_email: "fatima@marinelogistics.com", industry: "Logistics", deal_size: "medium", pipeline_stage: "closed" },
+      { company_name: "Greenfield Agro Ltd", contact_name: "Chidi Eze", contact_email: "chidi@greenfieldagro.com", industry: "Agriculture", deal_size: "medium", pipeline_stage: "meeting" },
+      { company_name: "Pinnacle Health Corp", contact_name: "Sarah Adeyemi", contact_email: "sarah@pinnaclehealth.com", industry: "Healthcare", deal_size: "small", pipeline_stage: "proposal" },
+      { company_name: "Bluewave Energy Plc", contact_name: "Michael Dakuku", contact_email: "michael@bluewaveenergy.com", industry: "Energy", deal_size: "enterprise", pipeline_stage: "lead" },
+    ],
   },
 ];
 
@@ -115,7 +135,7 @@ async function seed() {
         pending_balance: 0,
         confirmed_balance: 0,
         total_paid_out: 0,
-        cookie_window_days: 30,
+        cookie_window_days: p.partnerType === "b2b_referral" ? 90 : 30,
         commission_tier: "standard",
         tax_withholding_rate: 0,
       })
@@ -148,6 +168,29 @@ async function seed() {
       });
     }
 
+    if (p.partnerType === "b2b_referral" && p.b2bReferrals) {
+      for (const ref of p.b2bReferrals) {
+        await admin.from("kv_aff_b2b_clients").insert({
+          partner_id: partner.id,
+          client_type: "vendor",
+          company_name: ref.company_name,
+          contact_name: ref.contact_name,
+          contact_email: ref.contact_email,
+          industry: ref.industry,
+          deal_size: ref.deal_size,
+          pipeline_stage: ref.pipeline_stage,
+          referral_date: new Date(Date.now() - Math.random() * 90 * 24 * 60 * 60 * 1000).toISOString(),
+          first_payment_date: ref.pipeline_stage === "closed" ? new Date(Date.now() - Math.random() * 60 * 24 * 60 * 60 * 1000).toISOString() : null,
+          recurring_commission_rate: 5,
+          recurring_commission_months: 12,
+          recurring_paid_months: ref.pipeline_stage === "closed" ? Math.floor(Math.random() * 3) : 0,
+          total_earned: ref.pipeline_stage === "closed" ? Math.floor(Math.random() * 5000) + 500 : 0,
+          status: "active",
+        });
+      }
+      console.log(`  Created ${p.b2bReferrals.length} sample B2B referrals`);
+    }
+
     await admin.from("profiles").upsert(
       {
         id: userId,
@@ -161,16 +204,19 @@ async function seed() {
     console.log(`  Auth user:  ${userId}`);
     console.log(`  Partner ID: ${partner.id}`);
     console.log(`  Tracking:   ${trackingId}`);
+    console.log(`  Type:       ${p.partnerType}`);
     console.log(`  Status:     active`);
     console.log(`  Login:      ${p.email} / ${p.password}\n`);
   }
 
   console.log("[Seed] Done. Demo accounts created with status: active.");
   console.log("\n--- LOGIN CREDENTIALS ---\n");
-  for (const p of demoPartners) {
-    console.log(`  ${p.partnerType.toUpperCase().padEnd(12)} | ${p.email.padEnd(30)} | ${p.password}`);
-  }
-  console.log("");
+  console.log("  ASSOCIATE    | associate.demo@kauvex.com               | KauvexDemo2026!");
+  console.log("  INFLUENCER   | influencer.demo@kauvex.com              | KauvexDemo2026!");
+  console.log("  AGENCY       | agency.demo@kauvex.com                  | KauvexDemo2026!");
+  console.log("  B2B PARTNER  | b2b.demo@kauvex.com                    | KauvexDemo2026!");
+  console.log("\n  Login URL: /partners/login");
+  console.log("  Admin B2B: /admin/affiliates/b2b\n");
 }
 
 seed().catch((err) => {

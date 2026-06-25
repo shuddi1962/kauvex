@@ -43,6 +43,25 @@ const DEMO_PARTNERS = [
     contentCategories: ["Home & Kitchen", "Sports"],
     payoutMethod: "bank_transfer",
   },
+  {
+    email: "b2b.demo@kauvex.com",
+    password: "KauvexDemo2026!",
+    displayName: "Demo B2B Partner",
+    username: "demo_b2b",
+    partnerType: "b2b_referral" as const,
+    primaryPlatform: "Direct Outreach",
+    primaryAudienceCountry: "Nigeria",
+    contentCategories: ["Technology", "Finance"],
+    payoutMethod: "bank_transfer",
+    bio: "B2B referral partner specializing in enterprise vendor onboarding.",
+    b2bReferrals: [
+      { company_name: "TechCorp Nigeria Ltd", contact_name: "James Okafor", contact_email: "james@techcorp.ng", industry: "Technology", deal_size: "large", pipeline_stage: "closed" },
+      { company_name: "Marine Logistics Pro", contact_name: "Fatima Usman", contact_email: "fatima@marinelogistics.com", industry: "Logistics", deal_size: "medium", pipeline_stage: "closed" },
+      { company_name: "Greenfield Agro Ltd", contact_name: "Chidi Eze", contact_email: "chidi@greenfieldagro.com", industry: "Agriculture", deal_size: "medium", pipeline_stage: "meeting" },
+      { company_name: "Pinnacle Health Corp", contact_name: "Sarah Adeyemi", contact_email: "sarah@pinnaclehealth.com", industry: "Healthcare", deal_size: "small", pipeline_stage: "proposal" },
+      { company_name: "Bluewave Energy Plc", contact_name: "Michael Dakuku", contact_email: "michael@bluewaveenergy.com", industry: "Energy", deal_size: "enterprise", pipeline_stage: "lead" },
+    ],
+  },
 ];
 
 export async function POST(request: NextRequest) {
@@ -90,7 +109,7 @@ export async function POST(request: NextRequest) {
           pending_balance: 0,
           confirmed_balance: 0,
           total_paid_out: 0,
-          cookie_window_days: 30,
+          cookie_window_days: p.partnerType === "b2b_referral" ? 90 : 30,
           commission_tier: "standard",
           tax_withholding_rate: 0,
         })
@@ -123,6 +142,28 @@ export async function POST(request: NextRequest) {
         });
       }
 
+      if (p.partnerType === "b2b_referral" && "b2bReferrals" in p && p.b2bReferrals) {
+        for (const ref of p.b2bReferrals) {
+          await admin.from("kv_aff_b2b_clients").insert({
+            partner_id: partner.id,
+            client_type: "vendor",
+            company_name: ref.company_name,
+            contact_name: ref.contact_name,
+            contact_email: ref.contact_email,
+            industry: ref.industry,
+            deal_size: ref.deal_size,
+            pipeline_stage: ref.pipeline_stage,
+            referral_date: new Date(Date.now() - Math.random() * 90 * 24 * 60 * 60 * 1000).toISOString(),
+            first_payment_date: ref.pipeline_stage === "closed" ? new Date(Date.now() - Math.random() * 60 * 24 * 60 * 60 * 1000).toISOString() : null,
+            recurring_commission_rate: 5,
+            recurring_commission_months: 12,
+            recurring_paid_months: ref.pipeline_stage === "closed" ? Math.floor(Math.random() * 3) : 0,
+            total_earned: ref.pipeline_stage === "closed" ? Math.floor(Math.random() * 5000) + 500 : 0,
+            status: "active",
+          });
+        }
+      }
+
       await admin.from("profiles").upsert(
         { id: userId, email: p.email, full_name: p.displayName, role: "affiliate" },
         { onConflict: "id" },
@@ -134,6 +175,7 @@ export async function POST(request: NextRequest) {
         userId,
         partnerId: partner.id,
         trackingId,
+        partnerType: p.partnerType,
       });
     }
 

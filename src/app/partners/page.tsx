@@ -62,8 +62,8 @@ export default function PartnersLandingPage() {
         "White-label reporting",
         "Priority support",
       ],
-      cta: "Learn More",
-      href: "/partners/register/associate",
+      cta: "Join as B2B Partner",
+      href: "/partners/register/b2b",
       highlight: false,
     },
   ];

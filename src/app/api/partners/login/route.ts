@@ -157,14 +157,14 @@ async function seedDemoAccount(email: string): Promise<boolean> {
 }
 
 export async function POST(request: NextRequest) {
-  let response = NextResponse.next();
-
   try {
     const { email, password } = await request.json();
 
     if (!email || !password) {
       return NextResponse.json({ error: "Email and password are required" }, { status: 400 });
     }
+
+    let cookiesToSet: { name: string; value: string; options?: any }[] = [];
 
     const supabase = createServerClient(
       process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -174,14 +174,8 @@ export async function POST(request: NextRequest) {
           getAll() {
             return request.cookies.getAll();
           },
-          setAll(cookiesToSet) {
-            cookiesToSet.forEach(({ name, value, options }) => {
-              response.cookies.set(name, value, options);
-            });
-            response = NextResponse.next({ request });
-            cookiesToSet.forEach(({ name, value, options }) => {
-              response.cookies.set(name, value, options);
-            });
+          setAll(cookies) {
+            cookiesToSet = cookies;
           },
         },
       },
@@ -192,7 +186,6 @@ export async function POST(request: NextRequest) {
     if (error && DEMO_ACCOUNTS[email] && password === DEMO_ACCOUNTS[email].password) {
       const seeded = await seedDemoAccount(email);
       if (seeded) {
-        response = NextResponse.next({ request });
         const retrySupabase = createServerClient(
           process.env.NEXT_PUBLIC_SUPABASE_URL!,
           process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
@@ -201,10 +194,8 @@ export async function POST(request: NextRequest) {
               getAll() {
                 return request.cookies.getAll();
               },
-              setAll(cookiesToSet) {
-                cookiesToSet.forEach(({ name, value, options }) => {
-                  response.cookies.set(name, value, options);
-                });
+              setAll(cookies) {
+                cookiesToSet = cookies;
               },
             },
           },
@@ -220,7 +211,7 @@ export async function POST(request: NextRequest) {
 
     const { data: { user } } = await supabase.auth.getUser();
 
-    return NextResponse.json({
+    const body = {
       user: {
         id: user?.id,
         email: user?.email,
@@ -228,7 +219,15 @@ export async function POST(request: NextRequest) {
         role: user?.user_metadata?.role,
         partnerType: user?.user_metadata?.partner_type,
       },
-    }, { status: 200 });
+    };
+
+    const response = NextResponse.json(body, { status: 200 });
+
+    for (const cookie of cookiesToSet) {
+      response.cookies.set(cookie.name, cookie.value, cookie.options);
+    }
+
+    return response;
   } catch (err) {
     console.error("Partner login error:", err);
     return NextResponse.json({ error: "Internal server error" }, { status: 500 });

@@ -40,7 +40,7 @@ export const useAuthStore = create<AuthStore>((set) => ({
       if (data?.user) {
         const meta = data.user.user_metadata as Record<string, string> | undefined;
         let role = meta?.role || "customer";
-        let partnerType = meta?.partner_type;
+        let partnerType = meta?.partner_type || (typeof window !== "undefined" ? localStorage.getItem("partnerType") : null);
 
         try {
           const { data: profileRows } = await insforge.database
@@ -188,6 +188,11 @@ export const useAuthStore = create<AuthStore>((set) => ({
 
   signOut: async () => {
     await insforge.auth.signOut();
+    if (typeof window !== "undefined") {
+      localStorage.removeItem("partnerType");
+      localStorage.removeItem("partnerName");
+      localStorage.removeItem("partnerEmail");
+    }
     set({ user: null, error: null });
   },
 

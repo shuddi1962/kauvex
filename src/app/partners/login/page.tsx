@@ -47,6 +47,17 @@ function LoginForm() {
         throw new Error(data.error || "Invalid email or password. Please try again.");
       }
 
+      const data = await res.json();
+      if (data.user?.partnerType) {
+        localStorage.setItem("partnerType", data.user.partnerType);
+      }
+      if (data.user?.name) {
+        localStorage.setItem("partnerName", data.user.name);
+      }
+      if (data.user?.email) {
+        localStorage.setItem("partnerEmail", data.user.email);
+      }
+
       router.push("/partners/dashboard");
     } catch (err: unknown) {
       setError(err instanceof Error ? err.message : "Something went wrong");

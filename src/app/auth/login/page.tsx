@@ -15,6 +15,7 @@ import {
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useAuthStore } from "@/store/auth-store";
+import { insforge } from "@/lib/insforge";
 
 function LoginForm() {
   const router = useRouter();
@@ -36,13 +37,21 @@ function LoginForm() {
       const { user } = useAuthStore.getState();
       const redirect = searchParams.get("redirect") || "/account";
 
-      if (user?.role === "warehouse-staff") {
-        if (redirect.startsWith("/warehouse")) {
-          router.push(redirect);
-        } else {
-          router.push("/warehouse");
+      // Check if user is warehouse staff — if so, always go to warehouse
+      if (user) {
+        const { data: staff } = await insforge.database
+          .from("kv_lgx_warehouse_staff")
+          .select("id")
+          .eq("user_id", user.id)
+          .eq("status", "active")
+          .maybeSingle();
+        if (staff) {
+          router.push(redirect.startsWith("/warehouse") ? redirect : "/warehouse");
+          return;
         }
-      } else if (user?.role === "super-admin" || user?.role === "admin" || user?.role === "finance-admin" || user?.role === "support-admin") {
+      }
+
+      if (user?.role === "super-admin" || user?.role === "admin" || user?.role === "finance-admin" || user?.role === "support-admin") {
         if (redirect.startsWith("/admin")) {
           router.push(redirect);
         } else {

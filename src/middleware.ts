@@ -40,7 +40,15 @@ async function loadStorefronts(): Promise<StorefrontConfig[]> {
 }
 
 export async function middleware(request: NextRequest) {
-  const { pathname } = new URL(request.url);
+  const url = new URL(request.url);
+  const { pathname, host } = url;
+
+  // partners.kauvex.com subdomain routing
+  if (host.startsWith("partners.") || host.startsWith("partners-local.")) {
+    const newUrl = new URL(`/partners${pathname}`, request.url);
+    newUrl.host = url.host.replace(/^partners[-a-z]*\./, "");
+    return NextResponse.rewrite(newUrl);
+  }
 
   const storefronts = await loadStorefronts();
 
@@ -105,7 +113,11 @@ export async function middleware(request: NextRequest) {
   const isVendorRoute = pathname.startsWith("/vendor") && !isVendorAuthRoute;
   const isWarehouseRoute = pathname.startsWith("/warehouse");
 
-  if (isAdminRoute || isVendorRoute || isWarehouseRoute) {
+  // Partners subdomain routes
+  const isPartnerPublicRoute = pathname.startsWith("/partners/register") || pathname.startsWith("/partners/login") || pathname === "/partners";
+  const isPartnerRoute = pathname.startsWith("/partners") && !isPartnerPublicRoute;
+
+  if (isAdminRoute || isVendorRoute || isWarehouseRoute || isPartnerRoute) {
     let supabaseResponse2 = NextResponse.next({ request });
 
     const { createServerClient } = await import("@supabase/ssr");
@@ -183,6 +195,18 @@ export async function middleware(request: NextRequest) {
 
       if (!staff) {
         return NextResponse.redirect(new URL("/", request.url));
+      }
+    }
+
+    if (isPartnerRoute) {
+      const { data: partner } = await supabase
+        .from("kv_aff_partners")
+        .select("id, partner_type, status")
+        .eq("user_id", user.id)
+        .single();
+
+      if (!partner || partner.status !== "active") {
+        return NextResponse.redirect(new URL("/partners/login", request.url));
       }
     }
   }

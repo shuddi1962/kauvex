@@ -4583,3 +4583,411 @@ model KvLgxPackTask {
 
   @@map("kv_lgx_pack_tasks")
 }
+
+// ============================================================
+// PHASE 15: AFFILIATE & INFLUENCER NETWORK (kv_aff_*)
+// ============================================================
+
+model AffiliatePartners {
+  id                       String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  userId                   String?   @map("user_id") @db.Uuid
+  trackingId               String?   @unique @map("tracking_id") @db.VarChar(50)
+  partnerType              String    @default("associate") @map("partner_type") @db.VarChar(20)
+  influencerTier           String?   @map("influencer_tier") @db.VarChar(20)
+  displayName              String    @map("display_name") @db.VarChar(200)
+  username                 String    @unique @map("username") @db.VarChar(100)
+  bio                      String?   @db.Text
+  profilePhotoUrl          String?   @map("profile_photo_url")
+  bannerImageUrl           String?   @map("banner_image_url")
+  websiteUrl               String?   @map("website_url")
+  socialLinks              Json?     @map("social_links") @db.JsonB
+  followerCounts           Json?     @map("follower_counts") @db.JsonB
+  primaryPlatform          String?   @map("primary_platform") @db.VarChar(50)
+  primaryAudienceCountry   String?   @map("primary_audience_country") @db.VarChar(100)
+  contentCategories        String[]  @map("content_categories") @db.Text
+  cookieWindowDays         Int       @default(30) @map("cookie_window_days")
+  commissionTier           String    @default("standard") @map("commission_tier") @db.VarChar(20)
+  customCommissionOverride Json?     @map("custom_commission_override") @db.JsonB
+  payoutMethod             String?   @map("payout_method") @db.VarChar(20)
+  payoutDetails            Json?     @map("payout_details") @db.JsonB
+  payoutSchedule           String    @default("monthly") @map("payout_schedule") @db.VarChar(20)
+  minimumPayout            Decimal   @default(5000) @map("minimum_payout") @db.Decimal(10, 2)
+  pendingBalance           Decimal   @default(0) @map("pending_balance") @db.Decimal(10, 2)
+  confirmedBalance         Decimal   @default(0) @map("confirmed_balance") @db.Decimal(10, 2)
+  totalPaidOut             Decimal   @default(0) @map("total_paid_out") @db.Decimal(10, 2)
+  status                   String    @default("pending") @map("status") @db.VarChar(20)
+  suspensionReason         String?   @map("suspension_reason") @db.Text
+  taxWithholdingRate       Decimal   @default(0) @map("tax_withholding_rate") @db.Decimal(5, 2)
+  onelinkEnabled           Boolean   @default(false) @map("onelink_enabled")
+  apiAccessEnabled         Boolean   @default(false) @map("api_access_enabled")
+  approvedAt               DateTime? @map("approved_at")
+  createdAt                DateTime  @default(now()) @map("created_at")
+  updatedAt                DateTime  @updatedAt @map("updated_at")
+
+  trackingIds      AffiliateTrackingIds[]
+  clicks           AffiliateClicks[]
+  commissions      AffiliateCommissions[]
+  bountyClaims     AffiliateBountyClaims[]
+  payouts          AffiliatePayouts[]
+  storefronts      AffiliateStorefronts[]
+  influencerDeals  AffiliateInfluencerDeals[]
+  fraudLogs        AffiliateFraudLog[]
+  b2bClients       AffiliateB2bClients[]
+  notifications    AffiliateNotifications[]
+
+  @@index([userId], map: "idx_kv_aff_partners_user_id")
+  @@index([status], map: "idx_kv_aff_partners_status")
+  @@index([partnerType], map: "idx_kv_aff_partners_partner_type")
+  @@index([influencerTier], map: "idx_kv_aff_partners_influencer_tier")
+  @@map("kv_aff_partners")
+}
+
+model AffiliateTrackingIds {
+  id         String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  partnerId  String   @map("partner_id") @db.Uuid
+  trackingId String   @unique @map("tracking_id") @db.VarChar(50)
+  label      String?  @map("label") @db.VarChar(100)
+  platform   String?  @map("platform") @db.VarChar(50)
+  isPrimary  Boolean  @default(false) @map("is_primary")
+  isActive   Boolean  @default(true) @map("is_active")
+  createdAt  DateTime @default(now()) @map("created_at")
+  updatedAt  DateTime @updatedAt @map("updated_at")
+
+  partner AffiliatePartners @relation(fields: [partnerId], references: [id])
+
+  @@index([partnerId], map: "idx_kv_aff_tracking_ids_partner")
+  @@index([isPrimary], map: "idx_kv_aff_tracking_ids_is_primary")
+  @@index([isActive], map: "idx_kv_aff_tracking_ids_is_active")
+  @@map("kv_aff_tracking_ids")
+}
+
+model AffiliateClicks {
+  id                 String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  partnerId          String   @map("partner_id") @db.Uuid
+  trackingId         String?  @map("tracking_id") @db.VarChar(50)
+  productId          String?  @map("product_id") @db.Uuid
+  storefrontId       String?  @map("storefront_id") @db.Uuid
+  referrerUrl        String?  @map("referrer_url") @db.Text
+  landingUrl         String?  @map("landing_url") @db.Text
+  ipHash             String?  @map("ip_hash") @db.VarChar(100)
+  countryCode        String?  @map("country_code") @db.VarChar(10)
+  deviceType         String?  @map("device_type") @db.VarChar(20)
+  userAgentCategory  String?  @map("user_agent_category") @db.VarChar(50)
+  isSelfClick        Boolean  @default(false) @map("is_self_click")
+  isFraudulent       Boolean  @default(false) @map("is_fraudulent")
+  commissionEligible Boolean  @default(true) @map("commission_eligible")
+  sessionId          String?  @map("session_id") @db.VarChar(100)
+  createdAt          DateTime @default(now()) @map("created_at")
+
+  partner AffiliatePartners @relation(fields: [partnerId], references: [id])
+
+  @@index([partnerId], map: "idx_kv_aff_clicks_partner")
+  @@index([trackingId], map: "idx_kv_aff_clicks_tracking_id")
+  @@index([productId], map: "idx_kv_aff_clicks_product")
+  @@index([storefrontId], map: "idx_kv_aff_clicks_storefront")
+  @@index([createdAt], map: "idx_kv_aff_clicks_created")
+  @@index([commissionEligible], map: "idx_kv_aff_clicks_commission_eligible")
+  @@map("kv_aff_clicks")
+}
+
+model AffiliateCommissions {
+  id               String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  partnerId        String    @map("partner_id") @db.Uuid
+  trackingId       String?   @map("tracking_id") @db.VarChar(50)
+  orderId          String?   @map("order_id") @db.Uuid
+  orderItemId      String?   @map("order_item_id") @db.Uuid
+  productId        String?   @map("product_id") @db.Uuid
+  categoryId       String?   @map("category_id") @db.Uuid
+  storefrontId     String?   @map("storefront_id") @db.Uuid
+  saleAmount       Decimal?  @map("sale_amount") @db.Decimal(10, 2)
+  commissionRate   Decimal?  @map("commission_rate") @db.Decimal(5, 2)
+  commissionAmount Decimal?  @map("commission_amount") @db.Decimal(10, 2)
+  bonusRate        Decimal   @default(0) @map("bonus_rate") @db.Decimal(5, 2)
+  bonusAmount      Decimal   @default(0) @map("bonus_amount") @db.Decimal(10, 2)
+  totalCommission  Decimal?  @map("total_commission") @db.Decimal(10, 2)
+  commissionType   String    @default("product") @map("commission_type") @db.VarChar(20)
+  status           String    @default("pending") @map("status") @db.VarChar(20)
+  confirmedAt      DateTime? @map("confirmed_at")
+  reversedAt       DateTime? @map("reversed_at")
+  reversalReason   String?   @map("reversal_reason") @db.Text
+  payoutId         String?   @map("payout_id") @db.Uuid
+  isFraudulent     Boolean   @default(false) @map("is_fraudulent")
+  fraudFlagReason  String?   @map("fraud_flag_reason") @db.Text
+  createdAt        DateTime  @default(now()) @map("created_at")
+  updatedAt        DateTime  @updatedAt @map("updated_at")
+
+  partner AffiliatePartners @relation(fields: [partnerId], references: [id])
+
+  @@index([partnerId], map: "idx_kv_aff_commissions_partner")
+  @@index([orderId], map: "idx_kv_aff_commissions_order")
+  @@index([productId], map: "idx_kv_aff_commissions_product")
+  @@index([status], map: "idx_kv_aff_commissions_status")
+  @@index([payoutId], map: "idx_kv_aff_commissions_payout")
+  @@map("kv_aff_commissions")
+}
+
+model AffiliateBounties {
+  id                   String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  name                 String    @map("name") @db.VarChar(200)
+  description          String?   @db.Text
+  bountyType           String    @map("bounty_type") @db.VarChar(50)
+  amount               Decimal   @map("amount") @db.Decimal(10, 2)
+  currency             String    @default("NGN") @map("currency") @db.VarChar(10)
+  eligiblePartnerTypes String[]  @map("eligible_partner_types") @db.Text
+  maxPerPartner        Int?      @map("max_per_partner")
+  maxTotal             Int?      @map("max_total")
+  usedCount            Int       @default(0) @map("used_count")
+  startDate            DateTime? @map("start_date")
+  endDate              DateTime? @map("end_date")
+  isActive             Boolean   @default(true) @map("is_active")
+  createdAt            DateTime  @default(now()) @map("created_at")
+  updatedAt            DateTime  @updatedAt @map("updated_at")
+
+  bountyClaims AffiliateBountyClaims[]
+
+  @@index([bountyType], map: "idx_kv_aff_bounties_type")
+  @@index([isActive], map: "idx_kv_aff_bounties_active")
+  @@index([startDate, endDate], map: "idx_kv_aff_bounties_dates")
+  @@map("kv_aff_bounties")
+}
+
+model AffiliateBountyClaims {
+  id                 String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  partnerId          String    @map("partner_id") @db.Uuid
+  bountyId           String    @map("bounty_id") @db.Uuid
+  referredEntityId   String?   @map("referred_entity_id") @db.Uuid
+  referredEntityType String?   @map("referred_entity_type") @db.VarChar(30)
+  amount             Decimal?  @map("amount") @db.Decimal(10, 2)
+  status             String    @default("pending") @map("status") @db.VarChar(20)
+  confirmedAt        DateTime? @map("confirmed_at")
+  payoutId           String?   @map("payout_id") @db.Uuid
+  createdAt          DateTime  @default(now()) @map("created_at")
+  updatedAt          DateTime  @updatedAt @map("updated_at")
+
+  partner AffiliatePartners @relation(fields: [partnerId], references: [id])
+  bounty  AffiliateBounties @relation(fields: [bountyId], references: [id])
+
+  @@index([partnerId], map: "idx_kv_aff_bounty_claims_partner")
+  @@index([bountyId], map: "idx_kv_aff_bounty_claims_bounty")
+  @@index([status], map: "idx_kv_aff_bounty_claims_status")
+  @@map("kv_aff_bounty_claims")
+}
+
+model AffiliatePromotions {
+  id                   String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  name                 String    @map("name") @db.VarChar(200)
+  description          String?   @db.Text
+  promotionType        String    @map("promotion_type") @db.VarChar(30)
+  categoryIds          String[]  @map("category_ids") @db.Uuid
+  bonusRate            Decimal   @map("bonus_rate") @db.Decimal(5, 2)
+  eligiblePartnerTypes String[]  @map("eligible_partner_types") @db.Text
+  bannerImageUrl       String?   @map("banner_image_url")
+  startDate            DateTime? @map("start_date")
+  endDate              DateTime? @map("end_date")
+  isActive             Boolean   @default(true) @map("is_active")
+  createdAt            DateTime  @default(now()) @map("created_at")
+  updatedAt            DateTime  @updatedAt @map("updated_at")
+
+  @@index([promotionType], map: "idx_kv_aff_promotions_type")
+  @@index([isActive], map: "idx_kv_aff_promotions_active")
+  @@index([startDate, endDate], map: "idx_kv_aff_promotions_dates")
+  @@map("kv_aff_promotions")
+}
+
+model AffiliatePayouts {
+  id               String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  partnerId        String    @map("partner_id") @db.Uuid
+  periodStart      DateTime? @map("period_start") @db.Date
+  periodEnd        DateTime? @map("period_end") @db.Date
+  commissionAmount Decimal?  @map("commission_amount") @db.Decimal(10, 2)
+  bountyAmount     Decimal?  @map("bounty_amount") @db.Decimal(10, 2)
+  reversalAmount   Decimal?  @map("reversal_amount") @db.Decimal(10, 2)
+  taxWithheld      Decimal   @default(0) @map("tax_withheld") @db.Decimal(10, 2)
+  netAmount        Decimal?  @map("net_amount") @db.Decimal(10, 2)
+  payoutMethod     String?   @map("payout_method") @db.VarChar(20)
+  status           String    @default("pending") @map("status") @db.VarChar(20)
+  gatewayReference String?   @map("gateway_reference") @db.VarChar(200)
+  failureReason    String?   @map("failure_reason") @db.Text
+  initiatedAt      DateTime? @map("initiated_at")
+  paidAt           DateTime? @map("paid_at")
+  createdAt        DateTime  @default(now()) @map("created_at")
+  updatedAt        DateTime  @updatedAt @map("updated_at")
+
+  partner AffiliatePartners @relation(fields: [partnerId], references: [id])
+
+  @@index([partnerId], map: "idx_kv_aff_payouts_partner")
+  @@index([status], map: "idx_kv_aff_payouts_status")
+  @@index([periodStart, periodEnd], map: "idx_kv_aff_payouts_period")
+  @@map("kv_aff_payouts")
+}
+
+model AffiliateStorefronts {
+  id                     String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  partnerId              String   @map("partner_id") @db.Uuid
+  slug                   String   @unique @map("slug") @db.VarChar(100)
+  customSubdomain        String?  @map("custom_subdomain") @db.VarChar(100)
+  customDomain           String?  @map("custom_domain") @db.VarChar(200)
+  bannerImageUrl         String?  @map("banner_image_url")
+  accentColor            String?  @map("accent_color") @db.VarChar(10)
+  followerCount          Int      @default(0) @map("follower_count")
+  totalViews             BigInt   @default(0) @map("total_views")
+  totalClicks            BigInt   @default(0) @map("total_clicks")
+  autoRemoveOutOfStock   Boolean  @default(true) @map("auto_remove_out_of_stock")
+  notifyPriceDropPercent Int      @default(20) @map("notify_price_drop_percent")
+  notifyFlashSale        Boolean  @default(true) @map("notify_flash_sale")
+  isPublished            Boolean  @default(true) @map("is_published")
+  createdAt              DateTime @default(now()) @map("created_at")
+  updatedAt              DateTime @updatedAt @map("updated_at")
+
+  partner             AffiliatePartners              @relation(fields: [partnerId], references: [id])
+  collections         AffiliateCollections[]
+  storefrontProducts  AffiliateStorefrontProducts[]
+  followers           AffiliateStorefrontFollowers[]
+
+  @@index([partnerId], map: "idx_kv_aff_storefronts_partner")
+  @@index([isPublished], map: "idx_kv_aff_storefronts_published")
+  @@map("kv_aff_storefronts")
+}
+
+model AffiliateCollections {
+  id            String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  storefrontId  String   @map("storefront_id") @db.Uuid
+  name          String   @map("name") @db.VarChar(200)
+  description   String?  @db.Text
+  coverImageUrl String?  @map("cover_image_url")
+  sortOrder     Int      @default(0) @map("sort_order")
+  isPublished   Boolean  @default(true) @map("is_published")
+  createdAt     DateTime @default(now()) @map("created_at")
+  updatedAt     DateTime @updatedAt @map("updated_at")
+
+  storefront        AffiliateStorefronts         @relation(fields: [storefrontId], references: [id])
+  storefrontProducts AffiliateStorefrontProducts[]
+
+  @@index([storefrontId], map: "idx_kv_aff_collections_storefront")
+  @@index([isPublished], map: "idx_kv_aff_collections_published")
+  @@index([sortOrder], map: "idx_kv_aff_collections_sort")
+  @@map("kv_aff_collections")
+}
+
+model AffiliateStorefrontProducts {
+  id               String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  storefrontId     String   @map("storefront_id") @db.Uuid
+  collectionId     String?  @map("collection_id") @db.Uuid
+  productId        String   @map("product_id") @db.Uuid
+  personalNote     String?  @map("personal_note") @db.VarChar(140)
+  personalRating   Int?     @map("personal_rating")
+  isFeatured       Boolean  @default(false) @map("is_featured")
+  sortOrder        Int      @default(0) @map("sort_order")
+  clicks           Int      @default(0)
+  orders           Int      @default(0)
+  commissionEarned Decimal  @default(0) @map("commission_earned") @db.Decimal(10, 2)
+  createdAt        DateTime @default(now()) @map("created_at")
+  updatedAt        DateTime @updatedAt @map("updated_at")
+
+  storefront AffiliateStorefronts  @relation(fields: [storefrontId], references: [id])
+  collection AffiliateCollections? @relation(fields: [collectionId], references: [id])
+
+  @@index([storefrontId], map: "idx_kv_aff_sf_products_storefront")
+  @@index([collectionId], map: "idx_kv_aff_sf_products_collection")
+  @@index([productId], map: "idx_kv_aff_sf_products_product")
+  @@index([isFeatured], map: "idx_kv_aff_sf_products_featured")
+  @@map("kv_aff_storefront_products")
+}
+
+model AffiliateStorefrontFollowers {
+  id           String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  storefrontId String   @map("storefront_id") @db.Uuid
+  customerId   String   @map("customer_id") @db.Uuid
+  followedAt   DateTime? @map("followed_at")
+  createdAt    DateTime @default(now()) @map("created_at")
+
+  storefront AffiliateStorefronts @relation(fields: [storefrontId], references: [id])
+
+  @@index([storefrontId], map: "idx_kv_aff_sf_followers_storefront")
+  @@index([customerId], map: "idx_kv_aff_sf_followers_customer")
+  @@map("kv_aff_storefront_followers")
+}
+
+model AffiliateInfluencerDeals {
+  id                      String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  vendorId                String    @map("vendor_id") @db.Uuid
+  partnerId               String    @map("partner_id") @db.Uuid
+  productIds              String[]  @map("product_ids") @db.Uuid
+  discountCode            String    @unique @map("discount_code") @db.VarChar(50)
+  discountPercent         Decimal   @map("discount_percent") @db.Decimal(5, 2)
+  influencerCommissionRate Decimal? @map("influencer_commission_rate") @db.Decimal(5, 2)
+  maxUses                 Int?      @map("max_uses")
+  usesCount               Int       @default(0) @map("uses_count")
+  status                  String    @default("pending") @map("status") @db.VarChar(20)
+  startDate               DateTime? @map("start_date")
+  endDate                 DateTime? @map("end_date")
+  createdAt               DateTime  @default(now()) @map("created_at")
+  updatedAt               DateTime  @updatedAt @map("updated_at")
+
+  partner AffiliatePartners @relation(fields: [partnerId], references: [id])
+
+  @@index([vendorId], map: "idx_kv_aff_influencer_deals_vendor")
+  @@index([partnerId], map: "idx_kv_aff_influencer_deals_partner")
+  @@index([status], map: "idx_kv_aff_influencer_deals_status")
+  @@index([discountCode], map: "idx_kv_aff_influencer_deals_code")
+  @@map("kv_aff_influencer_deals")
+}
+
+model AffiliateFraudLog {
+  id          String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  partnerId   String?  @map("partner_id") @db.Uuid
+  fraudType   String   @map("fraud_type") @db.VarChar(50)
+  evidence    Json?    @map("evidence") @db.JsonB
+  actionTaken String   @map("action_taken") @db.VarChar(50)
+  reviewedBy  String?  @map("reviewed_by") @db.Uuid
+  createdAt   DateTime @default(now()) @map("created_at")
+
+  partner AffiliatePartners? @relation(fields: [partnerId], references: [id])
+
+  @@index([partnerId], map: "idx_kv_aff_fraud_log_partner")
+  @@index([fraudType], map: "idx_kv_aff_fraud_log_type")
+  @@index([actionTaken], map: "idx_kv_aff_fraud_log_action")
+  @@map("kv_aff_fraud_log")
+}
+
+model AffiliateB2bClients {
+  id                       String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  partnerId                String    @map("partner_id") @db.Uuid
+  clientType               String    @map("client_type") @db.VarChar(30)
+  clientEntityId           String?   @map("client_entity_id") @db.Uuid
+  referralDate             DateTime? @map("referral_date")
+  firstPaymentDate         DateTime? @map("first_payment_date")
+  recurringCommissionRate  Decimal?  @map("recurring_commission_rate") @db.Decimal(5, 2)
+  recurringCommissionMonths Int?     @map("recurring_commission_months")
+  recurringPaidMonths      Int       @default(0) @map("recurring_paid_months")
+  totalEarned              Decimal   @default(0) @map("total_earned") @db.Decimal(10, 2)
+  status                   String    @default("active") @map("status") @db.VarChar(20)
+  createdAt                DateTime  @default(now()) @map("created_at")
+  updatedAt                DateTime  @updatedAt @map("updated_at")
+
+  partner AffiliatePartners @relation(fields: [partnerId], references: [id])
+
+  @@index([partnerId], map: "idx_kv_aff_b2b_clients_partner")
+  @@index([clientType], map: "idx_kv_aff_b2b_clients_type")
+  @@index([status], map: "idx_kv_aff_b2b_clients_status")
+  @@map("kv_aff_b2b_clients")
+}
+
+model AffiliateNotifications {
+  id               String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  partnerId        String?  @map("partner_id") @db.Uuid
+  notificationType String   @map("notification_type") @db.VarChar(50)
+  title            String   @map("title") @db.VarChar(200)
+  message          String?  @db.Text
+  linkUrl          String?  @map("link_url")
+  isImportant      Boolean  @default(false) @map("is_important")
+  isRead           Boolean  @default(false) @map("is_read")
+  createdAt        DateTime @default(now()) @map("created_at")
+
+  partner AffiliatePartners? @relation(fields: [partnerId], references: [id])
+
+  @@index([partnerId], map: "idx_kv_aff_notifications_partner")
+  @@index([notificationType], map: "idx_kv_aff_notifications_type")
+  @@index([isRead], map: "idx_kv_aff_notifications_read")
+  @@map("kv_aff_notifications")
+}

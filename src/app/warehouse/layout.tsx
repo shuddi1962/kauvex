@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import {
@@ -8,6 +8,7 @@ import {
   Menu, X, Bell, LogOut, Warehouse,
 } from "lucide-react";
 import { useAuthStore } from "@/store/auth-store";
+import { supabase } from "@/lib/insforge";
 
 const navItems = [
   { label: "Today's Tasks", href: "/warehouse", icon: LayoutDashboard },
@@ -22,19 +23,32 @@ export default function WarehouseLayout({ children }: { children: React.ReactNod
   const pathname = usePathname();
   const router = useRouter();
   const [sidebarOpen, setSidebarOpen] = useState(false);
-  const { user, loading, initialize, signOut } = useAuthStore();
+  const [localUser, setLocalUser] = useState<{ id: string; email: string; name?: string; role: string } | null>(null);
+  const { user, loading, signOut } = useAuthStore();
+  const initRef = useRef(false);
 
   useEffect(() => {
-    initialize();
-  }, [initialize]);
+    if (initRef.current) return;
+    initRef.current = true;
+    const init = async () => {
+      const { data } = await supabase.auth.getSession();
+      if (data?.session?.user) {
+        const u = data.session.user;
+        const meta = u.user_metadata as Record<string, string> | undefined;
+        let role = meta?.role || "customer";
+        const { data: profileRows } = await supabase.from("profiles").select("role").eq("id", u.id).limit(1);
+        if (profileRows && profileRows.length > 0 && profileRows[0].role) {
+          role = profileRows[0].role;
+        }
+        setLocalUser({ id: u.id, email: u.email || "", name: meta?.name, role });
+      } else {
+        router.replace("/auth/login?redirect=/warehouse");
+      }
+    };
+    init();
+  }, [router]);
 
-  useEffect(() => {
-    if (!loading && !user) {
-      router.push("/auth/login?redirect=/warehouse");
-    }
-  }, [loading, user, router]);
-
-  if (loading) {
+  if (!localUser && loading) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <div className="animate-spin w-6 h-6 border-2 border-[#FF6B00] border-t-transparent rounded-full" />
@@ -42,15 +56,17 @@ export default function WarehouseLayout({ children }: { children: React.ReactNod
     );
   }
 
-  if (!user) return null;
+  if (!localUser && !loading && !user) return null;
 
-  const initials = user.name
-    ? user.name.split(" ").map((n) => n[0]).join("").toUpperCase().slice(0, 2)
-    : user.email.slice(0, 2).toUpperCase();
+  const u = localUser || user;
+  if (!u) return null;
+
+  const initials = u.name
+    ? u.name.split(" ").map((n) => n[0]).join("").toUpperCase().slice(0, 2)
+    : u.email.slice(0, 2).toUpperCase();
 
   return (
     <div className="min-h-screen bg-gray-50">
-      {/* Header */}
       <div className="bg-[#0A1628] text-white px-4 h-14 flex items-center justify-between sticky top-0 z-40">
         <div className="flex items-center gap-3">
           <button onClick={() => setSidebarOpen(!sidebarOpen)} className="lg:hidden p-1.5 hover:bg-white/10 rounded-lg">
@@ -63,8 +79,8 @@ export default function WarehouseLayout({ children }: { children: React.ReactNod
         </div>
         <div className="flex items-center gap-4">
           <div className="hidden sm:flex items-center gap-2 text-xs text-gray-400">
-            <span>{user.name || user.email}</span>
-            <span className="px-1.5 py-0.5 bg-white/10 rounded text-[10px] uppercase tracking-wider">{user.role.replace(/-/g, " ")}</span>
+            <span>{u.name || u.email}</span>
+            <span className="px-1.5 py-0.5 bg-white/10 rounded text-[10px] uppercase tracking-wider">{u.role.replace(/-/g, " ")}</span>
           </div>
           <Bell size={16} className="text-gray-400" />
           <div className="w-7 h-7 bg-[#FF6B00] rounded-full flex items-center justify-center text-xs font-bold">{initials}</div>
@@ -72,7 +88,6 @@ export default function WarehouseLayout({ children }: { children: React.ReactNod
       </div>
 
       <div className="flex">
-        {/* Sidebar */}
         {sidebarOpen && (
           <div className="fixed inset-0 bg-black/50 z-30 lg:hidden" onClick={() => setSidebarOpen(false)} />
         )}
@@ -106,7 +121,6 @@ export default function WarehouseLayout({ children }: { children: React.ReactNod
           </div>
         </aside>
 
-        {/* Main */}
         <main className="flex-1 p-6 overflow-y-auto">
           {children}
         </main>

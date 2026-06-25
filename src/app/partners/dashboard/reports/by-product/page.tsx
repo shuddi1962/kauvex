@@ -113,7 +113,7 @@ export default function PerformanceByProduct() {
 }
 
 function Th({
-  children, sortable, sortKey, current, dir, onClick, align,
+  children, sortable, sortKey, current, dir, onClick, icon, align,
 }: {
   children: React.ReactNode;
   sortable: boolean;

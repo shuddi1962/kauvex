@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { createServerClient } from "@supabase/ssr";
 import { createClient } from "@supabase/supabase-js";
 
 const DEMO_ACCOUNTS: Record<string, {
@@ -58,11 +59,22 @@ const DEMO_ACCOUNTS: Record<string, {
   },
 };
 
-async function seedDemoAccount(admin: any, email: string): Promise<boolean> {
+async function seedDemoAccount(email: string): Promise<boolean> {
   const demo = DEMO_ACCOUNTS[email];
   if (!demo) return false;
 
+  const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
+  const key = process.env.SUPABASE_SERVICE_ROLE_KEY;
+  if (!url || !key) {
+    console.error("[Partner Login] Missing SUPABASE_SERVICE_ROLE_KEY, cannot auto-seed");
+    return false;
+  }
+
   console.log(`[Partner Login] Auto-seeding demo account: ${email}`);
+
+  const admin = createClient(url, key, {
+    auth: { autoRefreshToken: false, persistSession: false },
+  });
 
   const { data: authUser, error: createErr } = await admin.auth.admin.createUser({
     email,
@@ -145,6 +157,8 @@ async function seedDemoAccount(admin: any, email: string): Promise<boolean> {
 }
 
 export async function POST(request: NextRequest) {
+  let response = NextResponse.next();
+
   try {
     const { email, password } = await request.json();
 
@@ -152,66 +166,69 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "Email and password are required" }, { status: 400 });
     }
 
-    const supabase = createClient(
+    const supabase = createServerClient(
       process.env.NEXT_PUBLIC_SUPABASE_URL!,
       process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+      {
+        cookies: {
+          getAll() {
+            return request.cookies.getAll();
+          },
+          setAll(cookiesToSet) {
+            cookiesToSet.forEach(({ name, value, options }) => {
+              response.cookies.set(name, value, options);
+            });
+            response = NextResponse.next({ request });
+            cookiesToSet.forEach(({ name, value, options }) => {
+              response.cookies.set(name, value, options);
+            });
+          },
+        },
+      },
     );
 
-    let { data, error } = await supabase.auth.signInWithPassword({ email, password });
+    let { error } = await supabase.auth.signInWithPassword({ email, password });
 
     if (error && DEMO_ACCOUNTS[email] && password === DEMO_ACCOUNTS[email].password) {
-      const admin = createClient(
-        process.env.NEXT_PUBLIC_SUPABASE_URL!,
-        process.env.SUPABASE_SERVICE_ROLE_KEY!,
-        { auth: { autoRefreshToken: false, persistSession: false } },
-      );
-
-      const seeded = await seedDemoAccount(admin, email);
+      const seeded = await seedDemoAccount(email);
       if (seeded) {
-        const retry = await supabase.auth.signInWithPassword({ email, password });
-        data = retry.data;
+        response = NextResponse.next({ request });
+        const retrySupabase = createServerClient(
+          process.env.NEXT_PUBLIC_SUPABASE_URL!,
+          process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+          {
+            cookies: {
+              getAll() {
+                return request.cookies.getAll();
+              },
+              setAll(cookiesToSet) {
+                cookiesToSet.forEach(({ name, value, options }) => {
+                  response.cookies.set(name, value, options);
+                });
+              },
+            },
+          },
+        );
+        const retry = await retrySupabase.auth.signInWithPassword({ email, password });
         error = retry.error;
       }
     }
 
-    if (error || !data?.session) {
-      return NextResponse.json(
-        { error: error?.message || "Invalid email or password" },
-        { status: 401 },
-      );
+    if (error) {
+      return NextResponse.json({ error: error.message }, { status: 401 });
     }
 
-    const session = data.session;
-    const projectRef = process.env.NEXT_PUBLIC_SUPABASE_URL!.match(/https:\/\/([^.]+)\./)?.[1] || "";
-    const cookieBase = `sb-${projectRef}`;
+    const { data: { user } } = await supabase.auth.getUser();
 
-    const response = NextResponse.json({
+    return NextResponse.json({
       user: {
-        id: data.user.id,
-        email: data.user.email,
-        name: data.user.user_metadata?.name,
-        role: data.user.user_metadata?.role,
-        partnerType: data.user.user_metadata?.partner_type,
+        id: user?.id,
+        email: user?.email,
+        name: user?.user_metadata?.name,
+        role: user?.user_metadata?.role,
+        partnerType: user?.user_metadata?.partner_type,
       },
-    });
-
-    response.cookies.set(`${cookieBase}-auth-token`, session.access_token, {
-      path: "/",
-      httpOnly: true,
-      secure: true,
-      sameSite: "lax",
-      maxAge: 60 * 60,
-    });
-
-    response.cookies.set(`${cookieBase}-refresh-token`, session.refresh_token, {
-      path: "/",
-      httpOnly: true,
-      secure: true,
-      sameSite: "lax",
-      maxAge: 60 * 60 * 24 * 7,
-    });
-
-    return response;
+    }, { status: 200 });
   } catch (err) {
     console.error("Partner login error:", err);
     return NextResponse.json({ error: "Internal server error" }, { status: 500 });

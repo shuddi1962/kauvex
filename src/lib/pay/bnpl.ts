@@ -464,7 +464,6 @@ export async function earlyRepayAgreement(
         totalPaid: { increment: amountToPay },
         totalOutstanding: { decrement: amountToPay },
         status: option === "full_balance" ? "completed" : "active",
-        completedAt: option === "full_balance" ? new Date() : null,
       },
     }),
   ]);
@@ -489,7 +488,7 @@ async function completeAgreements(): Promise<void> {
   for (const agreement of completedAgreements) {
     await prisma.payBnplAgreement.update({
       where: { id: agreement.id },
-      data: { status: "completed", completedAt: new Date() },
+      data: { status: "completed" },
     });
 
     // Update eligibility
@@ -603,7 +602,7 @@ export async function getBnplMetrics(): Promise<{
       select: { totalOutstanding: true },
     }),
     prisma.payBnplAgreement.count({
-      where: { status: "completed", completedAt: { gte: monthStart } },
+      where: { status: "completed", updatedAt: { gte: monthStart } },
     }),
     prisma.payBnplAgreement.aggregate({ _sum: { lateFeesAccrued: true } }),
     prisma.payBnplPayment.count({ where: { status: "paid", installmentNumber: { gt: 1 } } }),

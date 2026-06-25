@@ -1,13 +1,12 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 import Link from "next/link";
-import { usePathname, useRouter } from "next/navigation";
+import { usePathname } from "next/navigation";
 import {
   LayoutDashboard, Package, Truck, BarChart3, Box, FileText,
   Menu, X, Bell, LogOut, Warehouse,
 } from "lucide-react";
-import { useAuthStore } from "@/store/auth-store";
 import { supabase } from "@/lib/insforge";
 
 const navItems = [
@@ -21,49 +20,25 @@ const navItems = [
 
 export default function WarehouseLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
-  const router = useRouter();
   const [sidebarOpen, setSidebarOpen] = useState(false);
-  const [localUser, setLocalUser] = useState<{ id: string; email: string; name?: string; role: string } | null>(null);
-  const { user, loading, signOut } = useAuthStore();
-  const initRef = useRef(false);
+  const [displayUser, setDisplayUser] = useState<{ name: string; email: string; role: string; initials: string } | null>(null);
 
   useEffect(() => {
-    if (initRef.current) return;
-    initRef.current = true;
-    const init = async () => {
-      const { data } = await supabase.auth.getSession();
+    supabase.auth.getSession().then(({ data }) => {
       if (data?.session?.user) {
         const u = data.session.user;
         const meta = u.user_metadata as Record<string, string> | undefined;
-        let role = meta?.role || "customer";
-        const { data: profileRows } = await supabase.from("profiles").select("role").eq("id", u.id).limit(1);
-        if (profileRows && profileRows.length > 0 && profileRows[0].role) {
-          role = profileRows[0].role;
-        }
-        setLocalUser({ id: u.id, email: u.email || "", name: meta?.name, role });
-      } else {
-        router.replace("/auth/login?redirect=/warehouse");
+        const name = meta?.name || u.email || "";
+        const initials = name
+          .split(" ")
+          .map((n: string) => n[0])
+          .join("")
+          .toUpperCase()
+          .slice(0, 2);
+        setDisplayUser({ name, email: u.email || "", role: meta?.role || "staff", initials });
       }
-    };
-    init();
-  }, [router]);
-
-  if (!localUser && loading) {
-    return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <div className="animate-spin w-6 h-6 border-2 border-[#FF6B00] border-t-transparent rounded-full" />
-      </div>
-    );
-  }
-
-  if (!localUser && !loading && !user) return null;
-
-  const u = localUser || user;
-  if (!u) return null;
-
-  const initials = u.name
-    ? u.name.split(" ").map((n) => n[0]).join("").toUpperCase().slice(0, 2)
-    : u.email.slice(0, 2).toUpperCase();
+    });
+  }, []);
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -78,12 +53,18 @@ export default function WarehouseLayout({ children }: { children: React.ReactNod
           </Link>
         </div>
         <div className="flex items-center gap-4">
-          <div className="hidden sm:flex items-center gap-2 text-xs text-gray-400">
-            <span>{u.name || u.email}</span>
-            <span className="px-1.5 py-0.5 bg-white/10 rounded text-[10px] uppercase tracking-wider">{u.role.replace(/-/g, " ")}</span>
-          </div>
+          {displayUser && (
+            <div className="hidden sm:flex items-center gap-2 text-xs text-gray-400">
+              <span>{displayUser.name}</span>
+              <span className="px-1.5 py-0.5 bg-white/10 rounded text-[10px] uppercase tracking-wider">{displayUser.role}</span>
+            </div>
+          )}
           <Bell size={16} className="text-gray-400" />
-          <div className="w-7 h-7 bg-[#FF6B00] rounded-full flex items-center justify-center text-xs font-bold">{initials}</div>
+          {displayUser ? (
+            <div className="w-7 h-7 bg-[#FF6B00] rounded-full flex items-center justify-center text-xs font-bold">{displayUser.initials}</div>
+          ) : (
+            <div className="w-7 h-7 bg-gray-600 rounded-full flex items-center justify-center text-xs font-bold">?</div>
+          )}
         </div>
       </div>
 
@@ -113,7 +94,7 @@ export default function WarehouseLayout({ children }: { children: React.ReactNod
           </nav>
           <div className="absolute bottom-0 left-0 right-0 p-3 border-t border-gray-200">
             <button
-              onClick={signOut}
+              onClick={() => supabase.auth.signOut().then(() => { window.location.href = "/auth/login"; })}
               className="flex items-center gap-2 px-3 py-2 text-sm text-red-500 hover:bg-red-50 rounded-lg w-full"
             >
               <LogOut size={16} /> Sign Out

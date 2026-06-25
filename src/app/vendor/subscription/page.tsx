@@ -51,15 +51,40 @@ export default function SubscriptionPage() {
         }
       } else {
         // User has no subscription - show default plan
-        const freePlan = allPlans.find((p) => p.slug === "free") || null;
+        const freePlan = allPlans.find((p) => p.slug === "free");
         if (freePlan) {
+          const planFeatures = freePlan.features
+            ? typeof freePlan.features === "string"
+              ? JSON.parse(freePlan.features)
+              : freePlan.features
+            : [];
+
           const planWithFeatures = {
-            ...freePlan,
-            features: freePlan.features
-              ? typeof freePlan.features === "string"
-                ? JSON.parse(freePlan.features)
-                : freePlan.features,
+            id: freePlan.id,
+            slug: freePlan.slug,
+            name: freePlan.name,
+            description: freePlan.description,
+            monthly_price: freePlan.monthly_price,
+            annual_price: freePlan.annual_price,
+            currency: freePlan.currency,
+            commission_rate: freePlan.commission_rate,
+            max_products: freePlan.max_products,
+            max_storefronts: freePlan.max_storefronts,
+            max_staff: freePlan.max_staff,
+            allows_subdomain: freePlan.allows_subdomain,
+            allows_custom_domain: freePlan.allows_custom_domain,
+            allows_fbk: freePlan.allows_fbk,
+            allows_ads: freePlan.allows_ads,
+            allows_api: freePlan.allows_api,
+            allows_white_label: freePlan.allows_white_label,
+            allows_b2b: freePlan.allows_b2b,
+            analytics_level: freePlan.analytics_level,
+            support_level: freePlan.support_level,
+            features: planFeatures,
+            sort_order: freePlan.sort_order,
+            is_active: freePlan.is_active,
           };
+
           setCurrentPlan({
             id: freePlan.id,
             slug: freePlan.slug,
@@ -75,7 +100,7 @@ export default function SubscriptionPage() {
             monthlyPrice: Number(freePlan.monthly_price || 0),
             annualPrice: Number(freePlan.annual_price || 0),
             billingCycle: "monthly",
-            features: planWithFeatures.features || [],
+            features: planFeatures,
           });
         }
 

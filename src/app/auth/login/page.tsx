@@ -36,7 +36,13 @@ function LoginForm() {
       const { user } = useAuthStore.getState();
       const redirect = searchParams.get("redirect") || "/account";
 
-      if (user?.role === "super-admin" || user?.role === "admin" || user?.role === "finance-admin" || user?.role === "support-admin") {
+      if (user?.role === "warehouse-staff") {
+        if (redirect.startsWith("/warehouse")) {
+          router.push(redirect);
+        } else {
+          router.push("/warehouse");
+        }
+      } else if (user?.role === "super-admin" || user?.role === "admin" || user?.role === "finance-admin" || user?.role === "support-admin") {
         if (redirect.startsWith("/admin")) {
           router.push(redirect);
         } else {
@@ -49,7 +55,7 @@ function LoginForm() {
           router.push("/vendor/dashboard");
         }
       } else {
-        if (redirect.startsWith("/admin") || redirect.startsWith("/vendor")) {
+        if (redirect.startsWith("/admin") || redirect.startsWith("/vendor") || redirect.startsWith("/warehouse")) {
           router.push("/account");
         } else {
           router.push(redirect);

@@ -16,7 +16,7 @@ import CampaignPopup from "@/components/popups/campaign-popup";
 
 export default function ClientLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
-  const isDashboard = pathname.startsWith("/admin") || pathname.startsWith("/vendor") || pathname.startsWith("/account") || pathname.startsWith("/auth");
+  const isDashboard = pathname.startsWith("/admin") || pathname.startsWith("/vendor") || pathname.startsWith("/account") || pathname.startsWith("/auth") || pathname.startsWith("/warehouse");
   const [isSticky, setIsSticky] = useState(false);
   const [showScrollTop, setShowScrollTop] = useState(false);
 

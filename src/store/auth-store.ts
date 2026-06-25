@@ -40,7 +40,7 @@ export const useAuthStore = create<AuthStore>((set) => ({
       if (data?.user) {
         const meta = data.user.user_metadata as Record<string, string> | undefined;
         let role = meta?.role || "customer";
-        let partnerType = meta?.partner_type || (typeof window !== "undefined" ? localStorage.getItem("partnerType") : null);
+        let partnerType = meta?.partner_type || (typeof window !== "undefined" ? localStorage.getItem("partnerType") || undefined : undefined);
 
         try {
           const { data: profileRows } = await insforge.database

@@ -50,6 +50,7 @@ function LoginForm() {
       const data = await res.json();
       if (data.user?.partnerType) {
         localStorage.setItem("partnerType", data.user.partnerType);
+        document.cookie = `partnerType=${data.user.partnerType}; path=/; max-age=${60 * 60 * 24 * 7}`;
       }
       if (data.user?.name) {
         localStorage.setItem("partnerName", data.user.name);

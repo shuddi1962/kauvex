@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import {
@@ -10,6 +10,12 @@ import {
   ShoppingCart, LayoutDashboard, UserCheck, Building2,
 } from "lucide-react";
 import { useAuthStore } from "@/store/auth-store";
+
+function getCookie(name: string): string | null {
+  if (typeof document === "undefined") return null;
+  const match = document.cookie.match(new RegExp("(^| )" + name + "=([^;]+)"));
+  return match ? decodeURIComponent(match[2]) : null;
+}
 
 const navItems = [
   { label: "Dashboard", href: "/partners/dashboard", icon: LayoutDashboard },
@@ -38,7 +44,12 @@ export default function PartnersLayout({ children }: { children: React.ReactNode
   const [mobileNavOpen, setMobileNavOpen] = useState(false);
   const [expandedMenus, setExpandedMenus] = useState<string[]>(["Reports"]);
   const { user, signOut } = useAuthStore();
-  const partnerType = user?.partnerType || "associate";
+  const [partnerType, setPartnerType] = useState<string>("associate");
+
+  useEffect(() => {
+    const stored = localStorage.getItem("partnerType") || getCookie("partnerType");
+    if (stored) setPartnerType(stored);
+  }, [user?.partnerType]);
 
   const toggleMenu = (label: string) => {
     setExpandedMenus((prev) =>

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import Link from "next/link";
 import {
   LineChart, Line, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend,
@@ -11,6 +11,14 @@ import {
   Zap, Users, Eye, Building2, Briefcase, Target,
 } from "lucide-react";
 import { useAuthStore } from "@/store/auth-store";
+
+function getPartnerType(): string {
+  if (typeof window === "undefined") return "associate";
+  const ls = localStorage.getItem("partnerType");
+  if (ls) return ls;
+  const match = document.cookie.match(new RegExp("(^| )partnerType=([^;]+)"));
+  return match ? decodeURIComponent(match[2]) : "associate";
+}
 
 const dateRanges = ["7d", "30d", "90d", "Custom"] as const;
 
@@ -122,8 +130,12 @@ const b2bRecentReferrals = [
 
 export default function PartnersDashboard() {
   const [selectedRange, setSelectedRange] = useState<"7d" | "30d" | "90d" | "Custom">("30d");
+  const [partnerType, setPartnerType] = useState<string>("associate");
   const { user } = useAuthStore();
-  const partnerType = user?.partnerType || "associate";
+
+  useEffect(() => {
+    setPartnerType(getPartnerType());
+  }, [user?.partnerType]);
 
   const stats = partnerType === "influencer"
     ? influencerStats

@@ -36,6 +36,8 @@ alwaysApply: true
 - /lib/security.ts — Rate limiting, 2FA, audit logging, validation
 - /lib/ai/ — AI feature modules (descriptions, SEO, recommendations)
 - /lib/shipping/ — Carrier integrations (dhl, fedex, aramex, local, gig, kwik, dhl-express-international, fedex-international, aramex-international, freight-forwarder)
+- /lib/packaging-engine.ts — Packaging material selection, tier logic, compliance, order packaging records
+- /lib/logistics-warehouse.ts — Warehouse staff portal (pick tasks, pack tasks, inbound receiving, inventory)
 - /lib/logistics/ — Logistics engine (dispatch.ts, shipping-engine.ts, partner-tiers.ts, delivery-tiers.ts, fbk-debt.ts, terminology.ts)
 - /components/logistics/ShipmentTimeline.tsx — Unified cross-tier tracking display
 - /app/express/ — Kauvex Express public courier (landing, book, track, business)
@@ -44,6 +46,17 @@ alwaysApply: true
 - /app/admin/shipping/ — Admin shipping management (zones, surge-pricing, restrictions, hs-codes, business-accounts)
 - /app/vendor/shipping/profiles/ — Profile builder for vendor shipping rules
 - /app/vendor/shipping/dropoff/ — Drop-off manifest system
+- /app/admin/packaging/ — Packaging materials master registry
+- /app/admin/logistics/jobs/ — Admin logistics jobs management
+- /app/admin/logistics/warehouses/ — Admin warehouse locations
+- /app/admin/cj-dropshipping/packaging/ — CJ Dropshipping packaging config
+- /app/vendor/logistics/ — Vendor logistics section (shipments, pickups, manifests, performance, packaging guide)
+- /app/vendor/fbk/packaging/ — FBK packaging tier configuration
+- /app/supplier/logistics/ — Supplier packaging + delivery management
+- /app/logistics/fleet/ — Logistics partner fleet management
+- /app/warehouse/ — Warehouse staff portal (dashboard, inbound, outbound, inventory, packaging-stock, reports)
+- /app/orders/[id]/tracking/ — Customer order tracking with live GPS
+- /app/track/[trackingNumber]/ — Public Express tracking page
 - /app/api/v1/express/ — Express API routes (waybills, pricing, tracking)
 - /app/api/v1/logistics/ — Logistics API routes (tracking, partners, jobs, payouts)
 - /app/api/v1/shipping/insurance/ — Insurance reserve API
@@ -147,6 +160,7 @@ Key V2 Enterprise+ tables: erp_accounts, journal_entries, cost_centers, budgets,
 - [x] Admin pages for POD, Art Marketplace, Group Buy: Complete
 - [x] Phase 11 (Seller Central Full): Complete
 - [x] Phase 14 (Complete Shipping & Logistics): Complete
+- [x] Phase 16 (Packaging + Logistics Dashboards): Complete
 
 ## Recent Enhancements (August 2026)
 - **V3 Database**: 40+ new Prisma models (local suppliers, sourcing, POD, dropshipping, art/NFT, group buy, price alerts, live commerce, mentorship, carbon offsets, competition intel, Kauvex Originals, subscription boxes)

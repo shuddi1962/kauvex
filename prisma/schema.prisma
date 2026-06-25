@@ -4386,3 +4386,200 @@ model PartnerPayout {
 
   @@map("kv_ship_partner_payouts")
 }
+
+// ============================================================
+// PACKAGING SYSTEM (Phase 16)
+// ============================================================
+
+model KvPkgMaterial {
+  id               String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  sku              String   @unique @db.VarChar(50)
+  name             String   @db.VarChar(200)
+  category         String   @db.VarChar(50)
+  subcategory      String?  @db.VarChar(50)
+  lengthCm         Decimal? @map("length_cm") @db.Decimal(10, 2)
+  widthCm          Decimal? @map("width_cm") @db.Decimal(10, 2)
+  heightCm         Decimal? @map("height_cm") @db.Decimal(10, 2)
+  maxWeightKg      Decimal? @map("max_weight_kg") @db.Decimal(10, 3)
+  unitCost         Decimal? @map("unit_cost") @db.Decimal(10, 2)
+  isKauvexBranded  Boolean  @default(false) @map("is_kauvex_branded")
+  isUnbranded      Boolean  @default(true) @map("is_unbranded")
+  availableFor     String[] @map("available_for")
+  currentStock     Int      @default(0) @map("current_stock")
+  reorderThreshold Int      @default(100) @map("reorder_threshold")
+  isActive         Boolean  @default(true) @map("is_active")
+  imageUrl         String?  @map("image_url")
+  description      String?  @db.Text
+  createdAt        DateTime @default(now()) @map("created_at")
+  updatedAt        DateTime @updatedAt @map("updated_at")
+
+  warehouseStock  KvPkgWarehouseStock[]
+  orderRecords    KvPkgOrderRecord[]
+  supplierKits    KvPkgSupplierKit[]
+
+  @@map("kv_pkg_materials")
+}
+
+model KvPkgWarehouseStock {
+  id            String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  materialId    String   @map("material_id") @db.Uuid
+  warehouseId   String   @map("warehouse_id") @db.Uuid
+  quantity      Int      @default(0)
+  lastRestocked DateTime? @map("last_restocked")
+  lastCounted   DateTime? @map("last_counted")
+  updatedAt     DateTime @default(now()) @map("updated_at")
+
+  material KvPkgMaterial @relation(fields: [materialId], references: [id])
+
+  @@map("kv_pkg_warehouse_stock")
+}
+
+model KvPkgVendorConfig {
+  id                   String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  vendorId             String   @unique @map("vendor_id") @db.Uuid
+  packagingTier        String   @default("A") @map("packaging_tier")
+  customBoxSizes       String[] @map("custom_box_sizes")
+  customTape           Boolean  @default(false) @map("custom_tape")
+  customTissue         Boolean  @default(false) @map("custom_tissue")
+  customInserts        Json?    @map("custom_inserts") @db.JsonB
+  addOns               Json?    @map("add_ons") @db.JsonB
+  whiteLabel           Boolean  @default(false) @map("white_label")
+  giftPackagingEnabled Boolean  @default(true) @map("gift_packaging_enabled")
+  sampleProductId      String?  @map("sample_product_id") @db.Uuid
+  specialInstructions  String?  @map("special_instructions") @db.Text
+  createdAt            DateTime @default(now()) @map("created_at")
+  updatedAt            DateTime @updatedAt @map("updated_at")
+
+  @@map("kv_pkg_vendor_config")
+}
+
+model KvPkgOrderRecord {
+  id               String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  orderId          String   @map("order_id") @db.Uuid
+  fulfillmentType  String   @map("fulfillment_type") @db.VarChar(20)
+  packagingTier    String?  @map("packaging_tier") @db.VarChar(10)
+  outerMaterialId  String?  @map("outer_material_id") @db.Uuid
+  innerMaterials   Json?    @map("inner_materials") @db.JsonB
+  sealMaterialId   String?  @map("seal_material_id") @db.Uuid
+  labelsApplied    String[] @map("labels_applied")
+  insertsIncluded  String[] @map("inserts_included")
+  addOnsIncluded   String[] @map("add_ons_included")
+  giftMessage      String?  @map("gift_message") @db.Text
+  photoUrl         String?  @map("photo_url")
+  packedBy         String?  @map("packed_by") @db.Uuid
+  packagingCost    Decimal? @map("packaging_cost") @db.Decimal(10, 2)
+  kauvexBranded    Boolean  @default(true) @map("kauvex_branded")
+  vendorBranded    Boolean  @default(false) @map("vendor_branded")
+  whiteLabel       Boolean  @default(false) @map("white_label")
+  packedAt         DateTime @default(now()) @map("packed_at")
+  createdAt        DateTime @default(now()) @map("created_at")
+
+  outerMaterial KvPkgMaterial? @relation(fields: [outerMaterialId], references: [id])
+
+  @@map("kv_pkg_order_records")
+}
+
+model KvPkgSupplierKit {
+  id                String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  supplierId        String   @map("supplier_id") @db.Uuid
+  materialId        String   @map("material_id") @db.Uuid
+  quantitySent      Int      @map("quantity_sent")
+  quantityRemaining Int      @map("quantity_remaining")
+  lastRestocked     DateTime? @map("last_restocked")
+  createdAt         DateTime @default(now()) @map("created_at")
+
+  material KvPkgMaterial @relation(fields: [materialId], references: [id])
+
+  @@map("kv_pkg_supplier_kits")
+}
+
+model KvPkgSupplierKitRequest {
+  id                 String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  supplierId         String   @map("supplier_id") @db.Uuid
+  materialsRequested Json?    @map("materials_requested") @db.JsonB
+  deliveryAddress    String?  @map("delivery_address") @db.Text
+  status             String   @default("pending") @db.VarChar(20)
+  shippedAt          DateTime? @map("shipped_at")
+  receivedAt          DateTime? @map("received_at")
+  adminNotes         String?  @map("admin_notes") @db.Text
+  createdAt          DateTime @default(now()) @map("created_at")
+
+  @@map("kv_pkg_supplier_kit_requests")
+}
+
+model KvPkgComplianceLog {
+  id            String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  entityType    String    @map("entity_type") @db.VarChar(20)
+  entityId      String    @map("entity_id") @db.Uuid
+  orderId       String?   @map("order_id") @db.Uuid
+  violationType String    @map("violation_type") @db.VarChar(50)
+  evidenceUrl   String?   @map("evidence_url")
+  severity      String    @map("severity") @db.VarChar(20)
+  actionTaken   String?   @map("action_taken") @db.VarChar(50)
+  fineAmount    Decimal?  @map("fine_amount") @db.Decimal(10, 2)
+  resolved      Boolean   @default(false)
+  resolvedAt    DateTime? @map("resolved_at")
+  createdAt     DateTime  @default(now()) @map("created_at")
+
+  @@map("kv_pkg_compliance_logs")
+}
+
+// ============================================================
+// LOGISTICS NETWORK (Phase 16)
+// ============================================================
+
+model KvLgxWarehouseStaff {
+  id          String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  userId      String   @map("user_id") @db.Uuid
+  warehouseId String   @map("warehouse_id") @db.Uuid
+  role        String   @db.VarChar(30)
+  fullName    String   @db.VarChar(200)
+  phone       String?  @db.VarChar(30)
+  status      String   @default("active") @db.VarChar(20)
+  createdAt   DateTime @default(now()) @map("created_at")
+
+  pickTasks   KvLgxPickTask[]
+  packTasks   KvLgxPackTask[]
+
+  @@map("kv_lgx_warehouse_staff")
+}
+
+model KvLgxPickTask {
+  id          String              @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  orderId     String              @map("order_id") @db.Uuid
+  orderItemId String              @map("order_item_id") @db.Uuid
+  warehouseId String              @map("warehouse_id") @db.Uuid
+  productId   String              @map("product_id") @db.Uuid
+  sku         String?             @db.VarChar(100)
+  binLocation String?             @map("bin_location") @db.VarChar(50)
+  quantity    Int
+  assignedTo  String?             @map("assigned_to") @db.Uuid
+  status      String              @default("pending") @db.VarChar(20)
+  issueNote   String?             @map("issue_note") @db.Text
+  startedAt   DateTime?           @map("started_at")
+  completedAt DateTime?           @map("completed_at")
+  createdAt   DateTime            @default(now()) @map("created_at")
+
+  assignee KvLgxWarehouseStaff? @relation(fields: [assignedTo], references: [id])
+
+  @@map("kv_lgx_pick_tasks")
+}
+
+model KvLgxPackTask {
+  id                 String              @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  orderId            String              @map("order_id") @db.Uuid
+  warehouseId        String              @map("warehouse_id") @db.Uuid
+  packagingTier      String?             @map("packaging_tier") @db.VarChar(10)
+  assignedTo         String?             @map("assigned_to") @db.Uuid
+  checklistCompleted Json?               @map("checklist_completed") @db.JsonB
+  spotCheckPhotoUrl  String?             @map("spot_check_photo_url")
+  status             String              @default("pending") @db.VarChar(20)
+  startedAt          DateTime?           @map("started_at")
+  packedAt           DateTime?           @map("packed_at")
+  dispatchedAt       DateTime?           @map("dispatched_at")
+  createdAt          DateTime            @default(now()) @map("created_at")
+
+  assignee KvLgxWarehouseStaff? @relation(fields: [assignedTo], references: [id])
+
+  @@map("kv_lgx_pack_tasks")
+}

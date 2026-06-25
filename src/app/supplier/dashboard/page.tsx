@@ -37,6 +37,7 @@ export default function SupplierDashboardPage() {
             { label: "Dashboard", href: "/supplier/dashboard", active: true },
             { label: "Products", href: "/supplier/products" },
             { label: "Orders", href: "/supplier/orders" },
+            { label: "Logistics", href: "/supplier/logistics" },
             { label: "Coverage Areas", href: "/supplier/coverage" },
             { label: "Earnings", href: "/supplier/earnings" },
           ].map(item => (

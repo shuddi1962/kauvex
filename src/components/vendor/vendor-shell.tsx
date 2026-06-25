@@ -63,9 +63,17 @@ const topNav: { key: SectionKey; label: string; icon: React.ElementType; groups:
       ]},
       { title: "Fulfillment", items: [
         { label: "FBK", href: "/vendor/fbk" },
+        { label: "FBK Packaging Config", href: "/vendor/fbk/packaging", badge: "New" },
         { label: "Shipping", href: "/vendor/shipping" },
         { label: "Drop-off", href: "/vendor/shipping/dropoff" },
         { label: "Pickup", href: "/vendor/shipping/pickup" },
+      ]},
+      { title: "Logistics", items: [
+        { label: "Active Shipments", href: "/vendor/logistics/shipments", badge: "New" },
+        { label: "Pickup Requests", href: "/vendor/logistics/pickups", badge: "New" },
+        { label: "Drop-off Manifests", href: "/vendor/logistics/manifests", badge: "New" },
+        { label: "Delivery Performance", href: "/vendor/logistics/performance", badge: "New" },
+        { label: "Packaging Guide", href: "/vendor/logistics/packaging-guide", badge: "New" },
       ]},
     ],
   },
@@ -189,7 +197,7 @@ const topNav: { key: SectionKey; label: string; icon: React.ElementType; groups:
 
 function detectSection(pathname: string): SectionKey {
   if (pathname === "/vendor/dashboard" || pathname === "/vendor/analytics" || pathname === "/vendor/earnings") return "dashboard";
-  if (pathname.startsWith("/vendor/products") || pathname.startsWith("/vendor/catalog") || pathname.startsWith("/vendor/fbk") || pathname.startsWith("/vendor/shipping") || pathname.startsWith("/vendor/pod") || pathname.startsWith("/vendor/dropshipping") || pathname.startsWith("/pod-marketplace")) return "products";
+  if (pathname.startsWith("/vendor/products") || pathname.startsWith("/vendor/catalog") || pathname.startsWith("/vendor/fbk") || pathname.startsWith("/vendor/shipping") || pathname.startsWith("/vendor/logistics") || pathname.startsWith("/vendor/pod") || pathname.startsWith("/vendor/dropshipping") || pathname.startsWith("/pod-marketplace")) return "products";
   if (pathname.startsWith("/vendor/orders")) return "orders";
   if (pathname.startsWith("/vendor/inventory")) return "inventory";
   if (pathname.startsWith("/vendor/store-builder") || pathname.startsWith("/vendor/shop")) return "store";

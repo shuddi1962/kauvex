@@ -145,7 +145,12 @@ export async function middleware(request: NextRequest) {
     });
 
     if (!user) {
-      const loginUrl = new URL("/auth/login", request.url);
+      let loginPath = "/auth/login";
+      if (isAdminRoute) loginPath = "/admin/login";
+      else if (isVendorRoute) loginPath = "/vendor/login";
+      else if (isPartnerRoute) loginPath = "/partners/login";
+      else if (isWarehouseRoute) loginPath = "/admin/login";
+      const loginUrl = new URL(loginPath, request.url);
       loginUrl.searchParams.set("redirect", pathname);
       return NextResponse.redirect(loginUrl);
     }

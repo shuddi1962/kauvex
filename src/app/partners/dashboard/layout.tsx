@@ -38,6 +38,7 @@ export default function PartnersLayout({ children }: { children: React.ReactNode
   const [mobileNavOpen, setMobileNavOpen] = useState(false);
   const [expandedMenus, setExpandedMenus] = useState<string[]>(["Reports"]);
   const { user, signOut } = useAuthStore();
+  const partnerType = user?.partnerType || "associate";
 
   const toggleMenu = (label: string) => {
     setExpandedMenus((prev) =>
@@ -57,7 +58,11 @@ export default function PartnersLayout({ children }: { children: React.ReactNode
     ? `KAV-${user.name.replace(/\s+/g, "").toUpperCase().slice(0, 6)}-${user.id.slice(0, 4).toUpperCase()}`
     : "KAV-XXXX-XXXX";
 
-  const accountType = "Affiliate Partner";
+  const accountType = user?.partnerType === "influencer"
+    ? "Influencer Partner"
+    : user?.partnerType === "b2b_referral"
+    ? "B2B Referral Partner"
+    : "Associate Partner";
 
   return (
     <div className="flex h-screen bg-gray-50 overflow-hidden">
@@ -120,7 +125,13 @@ export default function PartnersLayout({ children }: { children: React.ReactNode
           </div>
 
           <nav className="py-3 px-2 space-y-1">
-            {navItems.map((item) => {
+            {navItems
+              .filter((item) => {
+                if (item.badge === "Influencers" && partnerType !== "influencer") return false;
+                if (item.badge === "B2B" && partnerType !== "b2b_referral") return false;
+                return true;
+              })
+              .map((item) => {
               const Icon = item.icon;
               if ("children" in item && item.children) {
                 const expanded = expandedMenus.includes(item.label);

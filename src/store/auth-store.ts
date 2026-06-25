@@ -8,6 +8,7 @@ interface AuthUser {
   phone?: string;
   avatar?: string;
   role: string;
+  partnerType?: string;
 }
 
 interface AuthStore {
@@ -39,6 +40,7 @@ export const useAuthStore = create<AuthStore>((set) => ({
       if (data?.user) {
         const meta = data.user.user_metadata as Record<string, string> | undefined;
         let role = meta?.role || "customer";
+        let partnerType = meta?.partner_type;
 
         try {
           const { data: profileRows } = await insforge.database
@@ -53,6 +55,21 @@ export const useAuthStore = create<AuthStore>((set) => ({
           // fallback to metadata role
         }
 
+        if (role === "affiliate" && !partnerType) {
+          try {
+            const { data: partnerRows } = await insforge.database
+              .from("kv_aff_partners")
+              .select("partner_type")
+              .eq("user_id", data.user.id)
+              .limit(1);
+            if (partnerRows && partnerRows.length > 0 && partnerRows[0].partner_type) {
+              partnerType = partnerRows[0].partner_type;
+            }
+          } catch {
+            // fallback to metadata
+          }
+        }
+
         set({
           user: {
             id: data.user.id,
@@ -61,6 +78,7 @@ export const useAuthStore = create<AuthStore>((set) => ({
             avatar: meta?.avatar_url,
             phone: meta?.phone,
             role,
+            partnerType,
           },
           loading: false,
         });

@@ -8,10 +8,38 @@ import {
 import {
   DollarSign, ShoppingCart, Package, MousePointerClick, TrendingUp, Clock,
   Store, Link2, Search, FileText, CreditCard, Calendar, ArrowUp, ArrowDown,
-  Zap, Users, Eye,
+  Zap, Users, Eye, Building2, Briefcase, Target,
 } from "lucide-react";
+import { useAuthStore } from "@/store/auth-store";
 
 const dateRanges = ["7d", "30d", "90d", "Custom"] as const;
+
+const associateStats = [
+  { label: "Today's Earnings", value: "$156.00", icon: DollarSign, color: "bg-emerald-100 text-emerald-700" },
+  { label: "This Week", value: "$982.40", icon: Calendar, color: "bg-blue-100 text-blue-700" },
+  { label: "This Month", value: "$4,215.80", icon: TrendingUp, color: "bg-purple-100 text-purple-700" },
+  { label: "All Time", value: "$18,420.00", icon: DollarSign, color: "bg-amber-100 text-amber-700" },
+  { label: "Pending Payout", value: "$4,220.00", icon: Clock, color: "bg-orange-100 text-orange-700" },
+  { label: "Clicks Today", value: "847", icon: MousePointerClick, color: "bg-cyan-100 text-cyan-700" },
+];
+
+const influencerStats = [
+  { label: "Today's Earnings", value: "$210.50", icon: DollarSign, color: "bg-emerald-100 text-emerald-700" },
+  { label: "Storefront Views", value: "1,240", icon: Eye, color: "bg-blue-100 text-blue-700" },
+  { label: "This Month", value: "$6,830.00", icon: TrendingUp, color: "bg-purple-100 text-purple-700" },
+  { label: "Product Picks", value: "24", icon: Package, color: "bg-amber-100 text-amber-700" },
+  { label: "Conversion Rate", value: "6.2%", icon: Target, color: "bg-orange-100 text-orange-700" },
+  { label: "Followers", value: "12.4K", icon: Users, color: "bg-cyan-100 text-cyan-700" },
+];
+
+const b2bStats = [
+  { label: "Active Referrals", value: "12", icon: Briefcase, color: "bg-blue-100 text-blue-700" },
+  { label: "Closed Deals", value: "5", icon: Target, color: "bg-emerald-100 text-emerald-700" },
+  { label: "This Month", value: "$3,450.00", icon: DollarSign, color: "bg-purple-100 text-purple-700" },
+  { label: "Pipeline Value", value: "$42,000", icon: TrendingUp, color: "bg-amber-100 text-amber-700" },
+  { label: "Conversion Rate", value: "29%", icon: MousePointerClick, color: "bg-orange-100 text-orange-700" },
+  { label: "Avg Deal Size", value: "$8,400", icon: DollarSign, color: "bg-cyan-100 text-cyan-700" },
+];
 
 const earningsChartData = [
   { date: "Jun 1", commissions: 320, bonuses: 80, pending: 150 },
@@ -49,22 +77,31 @@ const summaryCardsData = [
   { label: "Conversion Rate", value: "4.7%", icon: TrendingUp, change: "+0.8%", up: true },
 ];
 
-const quickLinks = [
+const associateQuickLinks = [
   { label: "Search Products", href: "/catalog", icon: Search },
   { label: "Browse Catalog", href: "/catalog", icon: Eye },
-  { label: "My Storefront", href: "/partners/dashboard/storefront", icon: Store },
   { label: "Create Link", href: "/partners/dashboard/quick-links", icon: Link2 },
   { label: "Reports", href: "/partners/dashboard/reports/summary", icon: FileText },
   { label: "Payment Info", href: "/partners/dashboard/settings", icon: CreditCard },
+  { label: "Promotions", href: "/partners/dashboard/promotions", icon: Zap },
 ];
 
-const quickStats = [
-  { label: "Today's Earnings", value: "$156.00", icon: DollarSign, color: "bg-emerald-100 text-emerald-700" },
-  { label: "This Week", value: "$982.40", icon: Calendar, color: "bg-blue-100 text-blue" },
-  { label: "This Month", value: "$4,215.80", icon: TrendingUp, color: "bg-purple-100 text-purple-700" },
-  { label: "All Time", value: "$18,420.00", icon: DollarSign, color: "bg-amber-100 text-amber-700" },
-  { label: "Pending Payout", value: "$4,220.00", icon: Clock, color: "bg-orange-100 text-orange" },
-  { label: "Clicks Today", value: "847", icon: MousePointerClick, color: "bg-cyan-100 text-cyan-700" },
+const influencerQuickLinks = [
+  { label: "My Storefront", href: "/partners/dashboard/storefront", icon: Store },
+  { label: "Product Picks", href: "/partners/dashboard/storefront", icon: Package },
+  { label: "Content Insights", href: "/partners/dashboard/content-insights", icon: TrendingUp },
+  { label: "Banner Widgets", href: "/partners/dashboard/banner-widgets", icon: Eye },
+  { label: "Reports", href: "/partners/dashboard/reports/summary", icon: FileText },
+  { label: "Compliance", href: "/partners/dashboard/compliance", icon: FileText },
+];
+
+const b2bQuickLinks = [
+  { label: "B2B Dashboard", href: "/partners/dashboard/b2b", icon: Building2 },
+  { label: "Add Referral", href: "/partners/dashboard/b2b", icon: Briefcase },
+  { label: "Reports", href: "/partners/dashboard/reports/summary", icon: FileText },
+  { label: "Payment Info", href: "/partners/dashboard/settings", icon: CreditCard },
+  { label: "Quick Links", href: "/partners/dashboard/quick-links", icon: Link2 },
+  { label: "Help", href: "/partners/dashboard/help", icon: Users },
 ];
 
 const recentReferrals = [
@@ -75,8 +112,32 @@ const recentReferrals = [
   { id: 5, name: "David L.", orders: 7, earnings: "$210.80", date: "2d ago" },
 ];
 
+const b2bRecentReferrals = [
+  { id: 1, company: "TechCorp Nigeria", stage: "Closed", value: "$12,000", date: "2d ago" },
+  { id: 2, company: "Marine Logistics Pro", stage: "Closed", value: "$8,500", date: "5d ago" },
+  { id: 3, company: "Greenfield Agro Ltd", stage: "Meeting", value: "$6,000", date: "1w ago" },
+  { id: 4, company: "Pinnacle Health Corp", stage: "Proposal", value: "$4,200", date: "1w ago" },
+  { id: 5, company: "Bluewave Energy Plc", stage: "Lead", value: "$15,000", date: "2w ago" },
+];
+
 export default function PartnersDashboard() {
   const [selectedRange, setSelectedRange] = useState<"7d" | "30d" | "90d" | "Custom">("30d");
+  const { user } = useAuthStore();
+  const partnerType = user?.partnerType || "associate";
+
+  const stats = partnerType === "influencer"
+    ? influencerStats
+    : partnerType === "b2b_referral"
+    ? b2bStats
+    : associateStats;
+
+  const quickLinks = partnerType === "influencer"
+    ? influencerQuickLinks
+    : partnerType === "b2b_referral"
+    ? b2bQuickLinks
+    : associateQuickLinks;
+
+  const recent = partnerType === "b2b_referral" ? b2bRecentReferrals : recentReferrals;
 
   const chartSeries = [
     { dataKey: "commissions", name: "Commissions", color: "#22c55e" },
@@ -90,17 +151,27 @@ export default function PartnersDashboard() {
     return earningsChartData;
   }, [selectedRange]);
 
+  const greeting = partnerType === "influencer"
+    ? "Influencer Dashboard"
+    : partnerType === "b2b_referral"
+    ? "B2B Referral Dashboard"
+    : "Associate Dashboard";
+
   return (
     <div className="space-y-5">
-      {/* Page Header */}
       <div>
-        <h1 className="text-lg font-bold text-[#0A1628]">Partner Dashboard</h1>
-        <p className="text-xs text-gray-500">Track your affiliate performance, earnings, and referrals</p>
+        <h1 className="text-lg font-bold text-[#0A1628]">{greeting}</h1>
+        <p className="text-xs text-gray-500">
+          {partnerType === "influencer"
+            ? "Manage your storefront, product picks, and content performance"
+            : partnerType === "b2b_referral"
+            ? "Track your business referrals, pipeline, and commission earnings"
+            : "Track your affiliate performance, earnings, and referrals"}
+        </p>
       </div>
 
-      {/* Quick Stats */}
       <div className="grid grid-cols-2 lg:grid-cols-6 gap-3">
-        {quickStats.map((stat) => {
+        {stats.map((stat) => {
           const Icon = stat.icon;
           return (
             <div key={stat.label} className="bg-white rounded-xl border border-gray-200 p-3 hover:shadow-sm transition-shadow">
@@ -115,7 +186,6 @@ export default function PartnersDashboard() {
       </div>
 
       <div className="grid lg:grid-cols-3 gap-5">
-        {/* Earnings Chart */}
         <div className="lg:col-span-2 bg-white rounded-xl border border-gray-200 p-5">
           <div className="flex items-center justify-between mb-4">
             <h3 className="font-bold text-sm text-[#0A1628] flex items-center gap-2">
@@ -165,7 +235,6 @@ export default function PartnersDashboard() {
           </div>
         </div>
 
-        {/* Summary Cards */}
         <div className="space-y-3">
           {summaryCardsData.map((card) => {
             const Icon = card.icon;
@@ -191,9 +260,7 @@ export default function PartnersDashboard() {
         </div>
       </div>
 
-      {/* Quick Links + Recent Referrals */}
       <div className="grid lg:grid-cols-2 gap-5">
-        {/* Quick Links */}
         <div className="bg-white rounded-xl border border-gray-200 p-5">
           <h3 className="font-bold text-sm text-[#0A1628] mb-3 flex items-center gap-2">
             <Zap size={14} className="text-[#FF6B00]" /> Quick Links
@@ -215,29 +282,44 @@ export default function PartnersDashboard() {
           </div>
         </div>
 
-        {/* Recent Referrals */}
         <div className="bg-white rounded-xl border border-gray-200 p-5">
           <div className="flex items-center justify-between mb-3">
             <h3 className="font-bold text-sm text-[#0A1628] flex items-center gap-2">
-              <Users size={14} className="text-[#FF6B00]" /> Recent Referrals
+              <Users size={14} className="text-[#FF6B00]" />{" "}
+              {partnerType === "b2b_referral" ? "Recent Referrals" : "Recent Referrals"}
             </h3>
             <Link href="/partners/dashboard/reports/summary" className="text-[10px] text-[#FF6B00] font-semibold hover:underline">View All</Link>
           </div>
           <div className="space-y-2">
-            {recentReferrals.map((r) => (
-              <div key={r.id} className="flex items-center justify-between p-2.5 bg-gray-50 rounded-lg">
-                <div className="flex items-center gap-2.5">
-                  <div className="w-6 h-6 rounded-full bg-[#FF6B00]/10 text-[#FF6B00] flex items-center justify-center text-[9px] font-bold">
-                    {r.name.split(" ").map((n) => n[0]).join("")}
+            {partnerType === "b2b_referral"
+              ? b2bRecentReferrals.map((r) => (
+                  <div key={r.id} className="flex items-center justify-between p-2.5 bg-gray-50 rounded-lg">
+                    <div className="flex items-center gap-2.5">
+                      <div className="w-6 h-6 rounded-full bg-[#FF6B00]/10 text-[#FF6B00] flex items-center justify-center text-[9px] font-bold">
+                        {r.company.split(" ").map((n) => n[0]).join("").slice(0, 2)}
+                      </div>
+                      <div>
+                        <p className="text-xs font-semibold text-gray-800">{r.company}</p>
+                        <p className="text-[9px] text-gray-400">{r.stage} · {r.date}</p>
+                      </div>
+                    </div>
+                    <span className="text-xs font-bold text-green-700">{r.value}</span>
                   </div>
-                  <div>
-                    <p className="text-xs font-semibold text-gray-800">{r.name}</p>
-                    <p className="text-[9px] text-gray-400">{r.orders} orders · {r.date}</p>
+                ))
+              : recentReferrals.map((r) => (
+                  <div key={r.id} className="flex items-center justify-between p-2.5 bg-gray-50 rounded-lg">
+                    <div className="flex items-center gap-2.5">
+                      <div className="w-6 h-6 rounded-full bg-[#FF6B00]/10 text-[#FF6B00] flex items-center justify-center text-[9px] font-bold">
+                        {r.name.split(" ").map((n) => n[0]).join("")}
+                      </div>
+                      <div>
+                        <p className="text-xs font-semibold text-gray-800">{r.name}</p>
+                        <p className="text-[9px] text-gray-400">{r.orders} orders · {r.date}</p>
+                      </div>
+                    </div>
+                    <span className="text-xs font-bold text-green-700">{r.earnings}</span>
                   </div>
-                </div>
-                <span className="text-xs font-bold text-green-700">{r.earnings}</span>
-              </div>
-            ))}
+                ))}
           </div>
         </div>
       </div>

@@ -5,7 +5,7 @@ import {
   Package, Ruler, Shield, Printer, Tag, Globe,
   Download, ChevronDown, ChevronUp, CheckCircle2,
   Box, AlertTriangle, Maximize, Minimize,
-  Droplets, Thermometer, Zap,
+  Droplets, Thermometer, Zap, Sparkles,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import VendorShell from "@/components/vendor/vendor-shell";
@@ -212,7 +212,7 @@ export default function VendorPackagingGuidePage() {
                   {/* Tips */}
                   <div className="bg-white border border-dashed border-gray-200 rounded-lg p-3">
                     <div className="flex items-center gap-1.5 mb-2">
-                      <Lightbulb size={12} className="text-amber-500" />
+                      <Sparkles size={12} className="text-amber-500" />
                       <span className="text-[10px] font-semibold text-gray-400 uppercase tracking-wider">Pro Tips</span>
                     </div>
                     <ul className="space-y-1">

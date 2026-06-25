@@ -201,6 +201,7 @@ const topNavSections: { key: SectionKey; label: string; icon: React.ElementType;
       { title: "Warehouse", items: [
         { label: "Locations", href: "/admin/locations" },
         { label: "All Warehouses", href: "/admin/logistics/warehouses" },
+        { label: "Staff", href: "/admin/logistics/warehouse-staff", badge: "New" },
         { label: "Inventory", href: "/admin/inventory" },
         { label: "Pickup Points", href: "/admin/pickup-points" },
         { label: "Drop-off Zones", href: "/admin/dropoff-zones" },

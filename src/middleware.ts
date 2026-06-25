@@ -103,8 +103,9 @@ export async function middleware(request: NextRequest) {
   const isAdminRoute = pathname.startsWith("/admin") && !isAdminLoginRoute;
   const isVendorAuthRoute = pathname.startsWith("/vendor/login") || pathname.startsWith("/vendor/register");
   const isVendorRoute = pathname.startsWith("/vendor") && !isVendorAuthRoute;
+  const isWarehouseRoute = pathname.startsWith("/warehouse");
 
-  if (isAdminRoute || isVendorRoute) {
+  if (isAdminRoute || isVendorRoute || isWarehouseRoute) {
     let supabaseResponse2 = NextResponse.next({ request });
 
     const { createServerClient } = await import("@supabase/ssr");
@@ -169,6 +170,19 @@ export async function middleware(request: NextRequest) {
         if (!profile || (profile.role !== "vendor" && profile.role !== "admin")) {
           return NextResponse.redirect(new URL("/account", request.url));
         }
+      }
+    }
+
+    if (isWarehouseRoute) {
+      const { data: staff } = await supabase
+        .from("kv_lgx_warehouse_staff")
+        .select("role, warehouse_id, full_name")
+        .eq("user_id", user.id)
+        .eq("status", "active")
+        .single();
+
+      if (!staff) {
+        return NextResponse.redirect(new URL("/", request.url));
       }
     }
   }

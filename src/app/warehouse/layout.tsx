@@ -1,12 +1,13 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import {
   LayoutDashboard, Package, Truck, BarChart3, Box, FileText,
-  Menu, X, Bell, ChevronDown, LogOut, Warehouse,
+  Menu, X, Bell, LogOut, Warehouse,
 } from "lucide-react";
+import { useAuthStore } from "@/store/auth-store";
 
 const navItems = [
   { label: "Today's Tasks", href: "/warehouse", icon: LayoutDashboard },
@@ -17,19 +18,35 @@ const navItems = [
   { label: "Reports", href: "/warehouse/reports", icon: FileText },
 ];
 
-const roleOptions = ["warehouse_manager", "picker", "packer", "receiver"];
-
 export default function WarehouseLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
+  const router = useRouter();
   const [sidebarOpen, setSidebarOpen] = useState(false);
-  const [role, setRole] = useState("warehouse_manager");
+  const { user, loading, initialize, signOut } = useAuthStore();
 
-  const roleLabels: Record<string, string> = {
-    warehouse_manager: "Warehouse Manager",
-    picker: "Picker",
-    packer: "Packer",
-    receiver: "Receiver",
-  };
+  useEffect(() => {
+    initialize();
+  }, [initialize]);
+
+  useEffect(() => {
+    if (!loading && !user) {
+      router.push("/auth/login?redirect=/warehouse");
+    }
+  }, [loading, user, router]);
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="animate-spin w-6 h-6 border-2 border-[#FF6B00] border-t-transparent rounded-full" />
+      </div>
+    );
+  }
+
+  if (!user) return null;
+
+  const initials = user.name
+    ? user.name.split(" ").map((n) => n[0]).join("").toUpperCase().slice(0, 2)
+    : user.email.slice(0, 2).toUpperCase();
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -45,19 +62,12 @@ export default function WarehouseLayout({ children }: { children: React.ReactNod
           </Link>
         </div>
         <div className="flex items-center gap-4">
-          <div className="flex items-center gap-2 text-xs">
-            <select
-              value={role}
-              onChange={(e) => setRole(e.target.value)}
-              className="bg-white/10 border border-white/20 rounded-lg px-2 py-1 text-white text-[10px]"
-            >
-              {roleOptions.map((r) => (
-                <option key={r} value={r} className="text-black">{roleLabels[r]}</option>
-              ))}
-            </select>
+          <div className="hidden sm:flex items-center gap-2 text-xs text-gray-400">
+            <span>{user.name || user.email}</span>
+            <span className="px-1.5 py-0.5 bg-white/10 rounded text-[10px] uppercase tracking-wider">{user.role.replace(/-/g, " ")}</span>
           </div>
           <Bell size={16} className="text-gray-400" />
-          <div className="w-7 h-7 bg-[#FF6B00] rounded-full flex items-center justify-center text-xs font-bold">WM</div>
+          <div className="w-7 h-7 bg-[#FF6B00] rounded-full flex items-center justify-center text-xs font-bold">{initials}</div>
         </div>
       </div>
 
@@ -87,7 +97,10 @@ export default function WarehouseLayout({ children }: { children: React.ReactNod
             })}
           </nav>
           <div className="absolute bottom-0 left-0 right-0 p-3 border-t border-gray-200">
-            <button className="flex items-center gap-2 px-3 py-2 text-sm text-red-500 hover:bg-red-50 rounded-lg w-full">
+            <button
+              onClick={signOut}
+              className="flex items-center gap-2 px-3 py-2 text-sm text-red-500 hover:bg-red-50 rounded-lg w-full"
+            >
               <LogOut size={16} /> Sign Out
             </button>
           </div>

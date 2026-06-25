@@ -1,11 +1,11 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { insforge } from "@/lib/insforge";
+import crypto from "crypto";
 
 const COOKIE_MAX_AGE = 30 * 24 * 60 * 60;
 
 function hashIp(ip: string): string {
-  const crypto = require("crypto");
   return crypto.createHash("sha256").update(ip).digest("hex").slice(0, 32);
 }
 

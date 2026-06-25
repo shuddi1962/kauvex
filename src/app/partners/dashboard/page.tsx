@@ -145,7 +145,7 @@ export default function PartnersDashboard() {
                 <YAxis tick={{ fontSize: 10 }} tickLine={false} axisLine={false} tickFormatter={(v) => `$${v}`} />
                 <Tooltip
                   contentStyle={{ borderRadius: 8, border: "1px solid #e5e7eb", fontSize: 11 }}
-                  formatter={(value: number) => [`$${value}`, undefined]}
+                  formatter={(value: any) => [`$${value}`, undefined]}
                 />
                 <Legend wrapperStyle={{ fontSize: 10 }} />
                 {chartSeries.map((s) => (

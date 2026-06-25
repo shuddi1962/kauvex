@@ -26,7 +26,11 @@ alwaysApply: true
 - Centralized: one DB, one admin, one vendor login
 
 ## Key Directories
-- /prisma/schema.prisma — Full database schema (3030 lines, 110+ models)
+- /prisma/schema.prisma — Full database schema (~375 models)
+- /lib/affiliates/ — Affiliate & Influencer Network (tracking, commission, payouts, fraud, onelink, promotions, b2b)
+- /app/partners/ — Partner portal (associate/influencer registration, dashboard, links, tools, analytics)
+- /app/influencer/ — Influencer storefront builder, product picker, promo manager
+- /app/admin/affiliates/ — Admin full control panel (partners, commissions, payouts, fraud, promotions, b2b)
 - /prisma/seeds/roles.ts — RBAC seed script
 - /lib/permissions.ts — RBAC permission system
 - /lib/storefront-context.tsx — Storefront context provider
@@ -160,6 +164,7 @@ Key V2 Enterprise+ tables: erp_accounts, journal_entries, cost_centers, budgets,
 - [x] Admin pages for POD, Art Marketplace, Group Buy: Complete
 - [x] Phase 11 (Seller Central Full): Complete
 - [x] Phase 14 (Complete Shipping & Logistics): Complete
+- [x] Phase 15 (Affiliate & Influencer Network): Complete
 - [x] Phase 16 (Packaging + Logistics Dashboards): Complete
 
 ## Recent Enhancements (August 2026)
@@ -191,6 +196,70 @@ Key V2 Enterprise+ tables: erp_accounts, journal_entries, cost_centers, budgets,
 - **Admin Sidebar**: POD, Art Marketplace, Group Buy, Sourcing under "Sourcing & Products" in Marketplace section
 - **Vendor Sidebar**: POD section (Dashboard, Design Studio, Products, Orders, Design Marketplace) and Dropshipping section under Products
 - **Admin Pages**: `/admin/pod`, `/admin/art-marketplace`, `/admin/group-buy` created with management tables
+
+## Phase 15 Affiliate & Influencer Network Knowledge Base
+
+**Key Directories:**
+  `/lib/affiliates/` — Core engine (commission.ts, payouts.ts, fraud.ts, onelink.ts, tracking.ts, promotions.ts, b2b.ts, storefront.ts)
+  `/app/partners/` — Partner portal (register, login, dashboard, tools, analytics, settings)
+  `/app/influencer/` — Influencer storefront builder & product picker
+  `/app/admin/affiliates/` — Admin panel (partners, commissions, payouts, fraud, promotions, b2b, settings)
+  `/components/partners/` — Shared UI (PartnerLayout, StorefrontPage, ProductCard, StatCard, ToolCard, PromoCard, empty-state, loading-skeleton, payout-chart)
+
+**Commission Models:**
+  Percentage: fixed % of sale amount
+  Flat Fee: fixed $ per conversion
+  Tiered: rate increases with volume (e.g., 5% base → 8% at 50 sales/mo)
+  Performance: rate varies by conversion rate bands
+  Bounty: one-time fixed reward per action (signup, sale, etc.)
+
+**Partner Types:**
+  Associate: link-based promotion, commission on sales
+  Influencer: personal storefront + product picks + promotions
+  B2B Referral: commission on business account signups + purchases
+
+**Fraud Detection Triggers:**
+  Rapid clicks (>50/min), same IP multiple clicks, VPN/proxy detection, cookie stuffing, bot user-agent patterns, conversion rate outliers (>50%), self-referral (same IP as purchaser), multiple accounts same device
+
+**Storefront Builder Modes:**
+  Quick: auto-generate from product picks, social links, bio
+  Custom: drag-and-drop sections with full control
+
+**OneLink Routing:**
+  Detects visitor country via IP → redirects to best regional storefront
+  Fallback: default global storefront
+
+**Key API Routes:**
+  POST /api/v1/affiliates/clicks — Record affiliate click
+  POST /api/v1/affiliates/convert — Record conversion (order completion)
+  GET /api/v1/affiliates/commissions — List partner commissions
+  POST /api/v1/affiliates/payouts/request — Request payout
+  GET /api/v1/affiliates/payouts — List payouts
+  POST /api/v1/affiliates/onelink/resolve — Resolve OneLink redirect
+  GET /api/v1/affiliates/links — Get partner's tracking links
+  POST /api/v1/affiliates/links — Create tracking link
+  GET /api/v1/affiliates/banners — Available banners
+  GET /api/v1/affiliates/analytics — Partner analytics data
+  POST /api/v1/affiliates/promotions — Create promotion/bounty
+  GET /api/v1/affiliates/storefront — Get influencer storefront
+  GET api/v1/affiliates/products — Trackable products catalog
+
+  POST /api/v1/admin/affiliates/partners — Admin: create/update partners
+  POST /api/v1/admin/affiliates/commissions/approve — Admin: approve commission
+  POST /api/v1/admin/affiliates/payouts/process — Admin: process payout batch
+  GET /api/v1/admin/affiliates/promotions — Admin: list all promotions
+  GET /api/v1/admin/affiliates/b2b — Admin: B2B partner management
+  GET /api/v1/admin/affiliates/fraud/flags — Admin: fraud flag queue
+  POST /api/v1/admin/affiliates/fraud/resolve — Admin: resolve fraud flag
+  GET /api/v1/admin/affiliates/analytics — Admin: system-wide analytics
+
+**Cron Jobs (Phase 15):**
+  `kv_aff_calculate_commissions()` — Daily batch commission calculation
+  `kv_aff_process_payouts()` — Weekly payout processing
+  `kv_aff_expire_promotions()` — End date cleanup
+  `kv_aff_fraud_scan()` — Daily fraud pattern scan
+  `kv_aff_cleanup_stale_clicks()` — Remove clicks older than 90 days
+  `kv_aff_calculate_tiered_rates()` — Monthly tier rate recalculation
 
 ## Database Migration Instructions
 1. Apply SQL migration: `cd supabase && supabase migration up`

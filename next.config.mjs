@@ -23,6 +23,22 @@ const nextConfig = {
     NEXT_PUBLIC_SITE_NAME: process.env.NEXT_PUBLIC_SITE_NAME || "KAUVEX",
   },
 
+  // Redirects
+  async redirects() {
+    return [
+      {
+        source: "/affiliate",
+        destination: "/partners",
+        permanent: false,
+      },
+      {
+        source: "/influencer",
+        destination: "/partners/register/influencer",
+        permanent: false,
+      },
+    ];
+  },
+
   // Security headers for all routes
   async headers() {
     return [

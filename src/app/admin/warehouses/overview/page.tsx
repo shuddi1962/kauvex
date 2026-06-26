@@ -10,6 +10,7 @@ import {
   Clock,
   Users,
   DollarSign,
+  XCircle,
   BarChart3,
   Truck,
   CheckCircle2,

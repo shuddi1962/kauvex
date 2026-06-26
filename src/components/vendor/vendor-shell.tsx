@@ -74,6 +74,7 @@ const topNav: { key: SectionKey; label: string; icon: React.ElementType; groups:
         { label: "Drop-off Manifests", href: "/vendor/logistics/manifests", badge: "New" },
         { label: "Delivery Performance", href: "/vendor/logistics/performance", badge: "New" },
         { label: "Packaging Guide", href: "/vendor/logistics/packaging-guide", badge: "New" },
+        { label: "Packaging Selector", href: "/vendor/logistics/packaging/selector", badge: "New" },
       ]},
     ],
   },

@@ -4,6 +4,17 @@ export interface CreateAccountInput {
   userId?: string;
   accountType?: string;
   businessName?: string;
+  companyName?: string;
+  companyEmail?: string;
+  companyPhone?: string;
+  businessType?: string;
+  taxId?: string;
+  address?: string;
+  city?: string;
+  state?: string;
+  country?: string;
+  postalCode?: string;
+  plan?: string;
 }
 
 export interface UpdateAccountInput {
@@ -33,7 +44,18 @@ export async function createExpressAccount(input: CreateAccountInput) {
     data: {
       userId: input.userId,
       accountType: input.accountType || "personal",
-      businessName: input.businessName,
+      businessName: input.businessName || input.companyName,
+      companyName: input.companyName,
+      companyEmail: input.companyEmail,
+      companyPhone: input.companyPhone,
+      businessType: input.businessType,
+      taxId: input.taxId,
+      address: input.address,
+      city: input.city,
+      state: input.state,
+      country: input.country,
+      postalCode: input.postalCode,
+      plan: input.plan || "pay_per_use",
       tier: "bronze",
       monthlyVolume: 0,
       monthlySpend: 0,

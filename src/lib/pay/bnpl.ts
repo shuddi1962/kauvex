@@ -529,7 +529,6 @@ export async function sendBnplReminders(): Promise<number> {
       status: "pending",
       installmentNumber: { gt: 1 },
       dueDate: { lte: threeDaysFromNow, gte: now },
-      reminderSent: false,
     },
     include: { agreement: true },
   });
@@ -537,10 +536,6 @@ export async function sendBnplReminders(): Promise<number> {
   let sent = 0;
   for (const payment of upcomingPayments) {
     // In production, this sends SMS + email notification
-    await prisma.payBnplPayment.update({
-      where: { id: payment.id },
-      data: { reminderSent: true, reminderSentAt: now },
-    });
     sent++;
   }
 

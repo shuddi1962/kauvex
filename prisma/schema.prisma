@@ -4327,6 +4327,19 @@ model ExpressShipment {
   status              String    @default("pending") @map("status")
   // pending | picked_up | in_transit | out_for_delivery | delivered | failed | returned
   waybillUrl          String?   @map("waybill_url") @db.Text
+  isGuest             Boolean   @default(true) @map("is_guest")
+  accountId           String?   @map("account_id") @db.Uuid
+  deliveryConfidenceScore Int?  @map("delivery_confidence_score")
+  cargoPhotos         Json?     @map("cargo_photos")
+  packagingType       String?   @map("packaging_type")
+  packagingSize       String?   @map("packaging_size")
+  packagingFee        Decimal?  @map("packaging_fee") @db.Decimal(10, 2)
+  lockerId            String?   @map("locker_id") @db.Uuid
+  lockerCompartmentId String?   @map("locker_compartment_id") @db.Uuid
+  collectionPin       String?   @map("collection_pin") @db.VarChar(10)
+  collectionQrUrl     String?   @map("collection_qr_url") @db.Text
+  collectedAt         DateTime? @map("collected_at")
+  geofenceAlerts      Json?     @map("geofence_alerts")
   createdAt           DateTime  @default(now()) @map("created_at")
 
   @@map("kv_ship_express_shipments")
@@ -5442,4 +5455,327 @@ model GlxComplianceLog {
 
   @@index([countryCode], map: "idx_kv_glx_compliance_country")
   @@map("kv_glx_compliance_log")
+}
+
+// ═══════════════════════════════════════════════════════════════════
+// PHASE 20 — Kauvex Shipping Platform (kv_ksp_ prefix)
+// ═══════════════════════════════════════════════════════════════════
+
+model KspExpressAccount {
+  id                     String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  userId                 String?  @map("user_id") @db.Uuid
+  accountType            String   @default("personal") @map("account_type")
+  // personal | business | enterprise
+  businessName           String?  @map("business_name") @db.VarChar(200)
+  tier                   String   @default("bronze") @map("tier")
+  // bronze | silver | gold | platinum | enterprise
+  monthlyVolume          Int      @default(0) @map("monthly_volume")
+  monthlySpend           Decimal  @default(0) @map("monthly_spend") @db.Decimal(14, 2)
+  volumeDiscountPercent  Decimal  @default(0) @map("volume_discount_percent") @db.Decimal(5, 2)
+  billingType            String   @default("per_shipment") @map("billing_type")
+  // per_shipment | monthly_invoice | prepaid
+  walletBalance          Decimal  @default(0) @map("wallet_balance") @db.Decimal(14, 2)
+  customWaybillBranding  Boolean  @default(false) @map("custom_waybill_branding")
+  apiAccess              Boolean  @default(false) @map("api_access")
+  teamApprovalThreshold  Decimal? @map("team_approval_threshold") @db.Decimal(14, 2)
+  carbonOffsetEnabled    Boolean  @default(false) @map("carbon_offset_enabled")
+  status                 String   @default("active") @map("status")
+  createdAt              DateTime @default(now()) @map("created_at")
+  updatedAt              DateTime @updatedAt @map("updated_at")
+
+  @@index([userId], map: "idx_ksp_account_user")
+  @@map("kv_ksp_express_accounts")
+}
+
+model KspTeamMember {
+  id            String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  accountId     String   @map("account_id") @db.Uuid
+  userId        String?  @map("user_id") @db.Uuid
+  role          String   @map("role")
+  // owner | shipper | viewer | finance
+  spendingLimit Decimal? @map("spending_limit") @db.Decimal(14, 2)
+  department    String?  @map("department") @db.VarChar(100)
+  isActive      Boolean  @default(true) @map("is_active")
+  createdAt     DateTime @default(now()) @map("created_at")
+
+  @@index([accountId], map: "idx_ksp_team_account")
+  @@map("kv_ksp_team_members")
+}
+
+model KspLocker {
+  id                       String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  name                     String   @map("name") @db.VarChar(200)
+  locationName             String?  @map("location_name") @db.VarChar(200)
+  address                  String?  @map("address") @db.Text
+  city                     String?  @map("city") @db.VarChar(100)
+  countryCode              String?  @map("country_code") @db.VarChar(10)
+  latitude                 Decimal? @map("latitude") @db.Decimal(10, 6)
+  longitude                Decimal? @map("longitude") @db.Decimal(10, 6)
+  lockerType               String   @default("standard") @map("locker_type")
+  // standard | drive_through | refrigerated | smart_wall
+  totalCompartments        Int      @default(0) @map("total_compartments")
+  availableCompartments    Int      @default(0) @map("available_compartments")
+  openingHours             Json?    @map("opening_hours")
+  is24Hours                Boolean  @default(false) @map("is_24_hours")
+  hasRefrigerated          Boolean  @default(false) @map("has_refrigerated")
+  hasCamera                Boolean  @default(true) @map("has_camera")
+  hostName                 String?  @map("host_name") @db.VarChar(200)
+  hostRevenueShare         Decimal? @map("host_revenue_share") @db.Decimal(5, 2)
+  status                   String   @default("active") @map("status")
+  lastServiceCheck         DateTime? @map("last_service_check")
+  createdAt                DateTime @default(now()) @map("created_at")
+
+  @@index([countryCode], map: "idx_ksp_locker_country")
+  @@index([city], map: "idx_ksp_locker_city")
+  @@map("kv_ksp_lockers")
+}
+
+model KspLockerCompartment {
+  id                String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  lockerId          String   @map("locker_id") @db.Uuid
+  compartmentNumber String   @map("compartment_number") @db.VarChar(20)
+  size              String   @map("size")
+  // xs | s | m | l | xl | refrigerated
+  maxWeightKg       Decimal? @map("max_weight_kg") @db.Decimal(10, 3)
+  lengthCm          Decimal? @map("length_cm") @db.Decimal(10, 2)
+  widthCm           Decimal? @map("width_cm") @db.Decimal(10, 2)
+  heightCm          Decimal? @map("height_cm") @db.Decimal(10, 2)
+  isRefrigerated    Boolean  @default(false) @map("is_refrigerated")
+  status            String   @default("available") @map("status")
+  // available | occupied | reserved | maintenance | offline
+  currentShipmentId String?  @map("current_shipment_id") @db.Uuid
+  occupiedSince     DateTime? @map("occupied_since")
+  createdAt         DateTime @default(now()) @map("created_at")
+
+  @@index([lockerId], map: "idx_ksp_compartment_locker")
+  @@index([status], map: "idx_ksp_compartment_status")
+  @@map("kv_ksp_locker_compartments")
+}
+
+model KspLockerBooking {
+  id             String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  compartmentId  String    @map("compartment_id") @db.Uuid
+  lockerId       String    @map("locker_id") @db.Uuid
+  shipmentId     String?   @map("shipment_id") @db.Uuid
+  shipmentType   String?   @map("shipment_type")
+  // marketplace | express
+  collectionPin  String?   @map("collection_pin") @db.VarChar(10)
+  collectionQrUrl String?  @map("collection_qr_url") @db.Text
+  status         String    @default("awaiting_delivery") @map("status")
+  // awaiting_delivery | delivered_to_locker | collected | expired | returned
+  deliveredAt    DateTime? @map("delivered_at")
+  collectedAt    DateTime? @map("collected_at")
+  expiresAt      DateTime? @map("expires_at")
+  reminder1Sent  Boolean   @default(false) @map("reminder_1_sent")
+  reminder2Sent  Boolean   @default(false) @map("reminder_2_sent")
+  finalNoticeSent Boolean  @default(false) @map("final_notice_sent")
+  createdAt      DateTime  @default(now()) @map("created_at")
+
+  @@index([lockerId], map: "idx_ksp_booking_locker")
+  @@index([status], map: "idx_ksp_booking_status")
+  @@map("kv_ksp_locker_bookings")
+}
+
+model KspWmsIntegration {
+  id               String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  warehouseId      String?  @map("warehouse_id") @db.Uuid
+  wmsType          String   @default("manual") @map("wms_type")
+  // manual | autostore | geekplus | dematic | locus | custom
+  wmsName          String?  @map("wms_name") @db.VarChar(100)
+  apiEndpoint      String?  @map("api_endpoint") @db.Text
+  apiKey           String?  @map("api_key") @db.Text
+  apiSecret        String?  @map("api_secret") @db.Text
+  webhookUrl       String?  @map("webhook_url") @db.Text
+  statusCodeMapping Json?   @map("status_code_mapping")
+  isActive         Boolean  @default(true) @map("is_active")
+  lastSync         DateTime? @map("last_sync")
+  syncErrors       Int      @default(0) @map("sync_errors")
+  createdAt        DateTime @default(now()) @map("created_at")
+
+  @@index([warehouseId], map: "idx_ksp_wms_warehouse")
+  @@map("kv_ksp_wms_integrations")
+}
+
+model KspCargoPhoto {
+  id              String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  shipmentId      String   @map("shipment_id") @db.Uuid
+  shipmentType    String?  @map("shipment_type")
+  checkpointType  String   @map("checkpoint_type")
+  // pickup | hub_arrival | in_transit | out_for_delivery | delivered | locker_placed | locker_collected
+  photoUrl        String?  @map("photo_url") @db.Text
+  takenByType     String?  @map("taken_by_type")
+  // partner | hub_staff | warehouse_staff | locker_camera
+  takenById       String?  @map("taken_by_id") @db.Uuid
+  latitude        Decimal? @map("latitude") @db.Decimal(10, 6)
+  longitude       Decimal? @map("longitude") @db.Decimal(10, 6)
+  notes           String?  @map("notes") @db.Text
+  createdAt       DateTime @default(now()) @map("created_at")
+
+  @@index([shipmentId], map: "idx_ksp_cargo_shipment")
+  @@map("kv_ksp_cargo_photos")
+}
+
+model KspDeliveryConfidence {
+  id             String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  shipmentId     String   @map("shipment_id") @db.Uuid
+  score          Int      @map("score")
+  // 0-100
+  factors        Json?    @map("factors")
+  // {weather, carrier_perf, route_congestion, customs}
+  recommendation String?  @map("recommendation") @db.Text
+  calculatedAt   DateTime @default(now()) @map("calculated_at")
+
+  @@index([shipmentId], map: "idx_ksp_confidence_shipment")
+  @@map("kv_ksp_delivery_confidence")
+}
+
+model KspGeofenceAlert {
+  id               String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  shipmentId       String?   @map("shipment_id") @db.Uuid
+  accountId        String?   @map("account_id") @db.Uuid
+  alertName        String?   @map("alert_name") @db.VarChar(100)
+  triggerType      String    @map("trigger_type")
+  // city_entry | distance | border_cross
+  city             String?   @map("city") @db.VarChar(100)
+  countryCode      String?   @map("country_code") @db.VarChar(10)
+  radiusKm         Decimal?  @map("radius_km") @db.Decimal(10, 2)
+  latitude         Decimal?  @map("latitude") @db.Decimal(10, 6)
+  longitude        Decimal?  @map("longitude") @db.Decimal(10, 6)
+  triggered        Boolean   @default(false) @map("triggered")
+  triggeredAt      DateTime? @map("triggered_at")
+  notificationSent Boolean   @default(false) @map("notification_sent")
+  createdAt        DateTime  @default(now()) @map("created_at")
+
+  @@index([shipmentId], map: "idx_ksp_geofence_shipment")
+  @@map("kv_ksp_geofence_alerts")
+}
+
+model KspPlatformEvent {
+  id          String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  eventType   String   @map("event_type")
+  // order_placed | delivery_completed | warehouse_pick | express_booking | locker_collection | partner_online | dispute_raised | payment_received
+  eventData   Json?    @map("event_data")
+  countryCode String?  @map("country_code") @db.VarChar(10)
+  city        String?  @map("city") @db.VarChar(100)
+  latitude    Decimal? @map("latitude") @db.Decimal(10, 6)
+  longitude   Decimal? @map("longitude") @db.Decimal(10, 6)
+  value       Decimal? @map("value") @db.Decimal(14, 2)
+  storefrontId String? @map("storefront_id") @db.Uuid
+  createdAt   DateTime @default(now()) @map("created_at")
+
+  @@index([createdAt], map: "idx_ksp_event_created")
+  @@index([eventType], map: "idx_ksp_event_type")
+  @@index([countryCode], map: "idx_ksp_event_country")
+  @@map("kv_ksp_platform_events")
+}
+
+model KspSmartRateCalendar {
+  id                  String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  originCountry       String?  @map("origin_country") @db.VarChar(10)
+  destinationCountry  String?  @map("destination_country") @db.VarChar(10)
+  originCity          String?  @map("origin_city") @db.VarChar(100)
+  destinationCity     String?  @map("destination_city") @db.VarChar(100)
+  date                DateTime @map("date") @db.Date
+  serviceLevel        String?  @map("service_level") @db.VarChar(20)
+  predictedRate       Decimal? @map("predicted_rate") @db.Decimal(14, 2)
+  currencyCode        String?  @map("currency_code") @db.VarChar(10)
+  rateFactors         Json?    @map("rate_factors")
+  // {fuel_surcharge, peak_season, carrier_capacity, demand_index}
+  cheapestDayOfWeek   Int?     @map("cheapest_day_of_week")
+  // 0=Sun to 6=Sat
+  calculatedAt        DateTime @default(now()) @map("calculated_at")
+
+  @@index([originCountry, destinationCountry], map: "idx_ksp_rate_cal_route")
+  @@index([date], map: "idx_ksp_rate_cal_date")
+  @@map("kv_ksp_smart_rate_calendar")
+}
+
+model KspVendorFbkRoi {
+  id            String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  vendorId      String   @map("vendor_id") @db.Uuid
+  productId     String?  @map("product_id") @db.Uuid
+  periodStart   DateTime @map("period_start") @db.Date
+  periodEnd     DateTime @map("period_end") @db.Date
+  unitsSold     Int      @default(0) @map("units_sold")
+  revenue       Decimal  @default(0) @map("revenue") @db.Decimal(14, 2)
+  storageFees   Decimal  @default(0) @map("storage_fees") @db.Decimal(14, 2)
+  pickPackFees  Decimal  @default(0) @map("pick_pack_fees") @db.Decimal(14, 2)
+  inboundFees   Decimal  @default(0) @map("inbound_fees") @db.Decimal(14, 2)
+  totalFbkCost  Decimal  @default(0) @map("total_fbk_cost") @db.Decimal(14, 2)
+  netFbkProfit  Decimal  @default(0) @map("net_fbk_profit") @db.Decimal(14, 2)
+  fbkRoiPercent Decimal? @map("fbk_roi_percent") @db.Decimal(10, 2)
+  createdAt     DateTime @default(now()) @map("created_at")
+
+  @@index([vendorId], map: "idx_ksp_roi_vendor")
+  @@map("kv_ksp_vendor_fbk_roi")
+}
+
+model KspBundleSuggestion {
+  id                     String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  vendorId               String   @map("vendor_id") @db.Uuid
+  productAId             String?  @map("product_a_id") @db.Uuid
+  productBId             String?  @map("product_b_id") @db.Uuid
+  coPurchaseRate         Decimal? @map("co_purchase_rate") @db.Decimal(5, 2)
+  potentialSavingPerOrder Decimal? @map("potential_saving_per_order") @db.Decimal(10, 2)
+  status                 String   @default("pending") @map("status")
+  // pending | accepted | dismissed
+  createdAt              DateTime @default(now()) @map("created_at")
+
+  @@index([vendorId], map: "idx_ksp_bundle_vendor")
+  @@map("kv_ksp_bundle_suggestions")
+}
+
+model KspFuelPrice {
+  id          String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  countryCode String   @map("country_code") @db.VarChar(10)
+  city        String   @map("city") @db.VarChar(100)
+  fuelType    String   @default("petrol") @map("fuel_type")
+  // petrol | diesel
+  pricePerLitre Decimal @map("price_per_litre") @db.Decimal(10, 2)
+  currencyCode  String  @map("currency_code") @db.VarChar(10)
+  source        String? @map("source") @db.VarChar(100)
+  recordedAt    DateTime @default(now()) @map("recorded_at")
+
+  @@index([countryCode, city], map: "idx_ksp_fuel_location")
+  @@index([recordedAt], map: "idx_ksp_fuel_date")
+  @@map("kv_ksp_fuel_prices")
+}
+
+model KspShipmentReturn {
+  id              String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  originalWaybill String    @map("original_waybill") @db.VarChar(20)
+  originalShipmentId String @map("original_shipment_id") @db.Uuid
+  reason          String?   @map("reason") @db.Text
+  returnWaybill   String?   @map("return_waybill") @db.VarChar(20)
+  returnAddress   String?   @map("return_address") @db.Text
+  returnCity      String?   @map("return_city") @db.VarChar(100)
+  returnCountry   String?   @map("return_country") @db.VarChar(10)
+  status          String    @default("pending") @map("status")
+  // pending | label_created | picked_up | in_transit | delivered_back | completed
+  returnFee       Decimal?  @map("return_fee") @db.Decimal(12, 2)
+  coveredByOriginal Boolean @default(false) @map("covered_by_original")
+  createdAt       DateTime  @default(now()) @map("created_at")
+  updatedAt       DateTime  @updatedAt @map("updated_at")
+
+  @@index([originalWaybill], map: "idx_ksp_return_original")
+  @@map("kv_ksp_shipment_returns")
+}
+
+model KspCarbonFootprint {
+  id            String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  shipmentId    String?  @map("shipment_id") @db.Uuid
+  accountId     String?  @map("account_id") @db.Uuid
+  countryCode   String?  @map("country_code") @db.VarChar(10)
+  distanceKm    Decimal? @map("distance_km") @db.Decimal(10, 2)
+  weightKg      Decimal? @map("weight_kg") @db.Decimal(10, 3)
+  co2Grams      Decimal? @map("co2_grams") @db.Decimal(12, 2)
+  carrierUsed   String?  @map("carrier_used") @db.VarChar(50)
+  serviceLevel  String?  @map("service_level") @db.VarChar(20)
+  offsetPurchased Boolean @default(false) @map("offset_purchased")
+  treesPlanted  Int      @default(0) @map("trees_planted")
+  calculatedAt  DateTime @default(now()) @map("calculated_at")
+
+  @@index([accountId], map: "idx_ksp_carbon_account")
+  @@index([calculatedAt], map: "idx_ksp_carbon_date")
+  @@map("kv_ksp_carbon_footprints")
 }

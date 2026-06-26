@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { ArrowLeft, Globe, FileText, Calculator, CheckCircle, AlertTriangle, Info, Download } from "lucide-react";
+import { ArrowLeft, Globe, FileText, Calculator, CheckCircle, XCircle, AlertTriangle, Info, Download } from "lucide-react";
 
 const EU_COUNTRIES = [
   { code: "AT", name: "Austria" }, { code: "BE", name: "Belgium" }, { code: "BG", name: "Bulgaria" },

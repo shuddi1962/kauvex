@@ -259,7 +259,7 @@ export default function MultiCarrierPage() {
             <div className="bg-white rounded-xl border border-gray-200 p-4">
               <div className="flex items-center gap-2 mb-2">
                 <div className="w-8 h-8 bg-purple-50 rounded-lg flex items-center justify-center">
-                  <Route className="w-4 h-4 text-purple-600" />
+                  <MapPin className="w-4 h-4 text-purple-600" />
                 </div>
               </div>
               <p className="text-2xl font-bold text-purple-600">{results.distanceKm.toLocaleString()} km</p>

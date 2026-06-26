@@ -84,7 +84,7 @@ export async function POST(request: NextRequest) {
 
     const shipmentIds = (shipments || []).map((s: any) => s.id);
 
-    let cargoPhotosMap: Record<string, any[]> = {};
+    const cargoPhotosMap: Record<string, any[]> = {};
     if (shipmentIds.length > 0) {
       const { data: photos } = await supabase
         .from("kv_ksp_cargo_photos")

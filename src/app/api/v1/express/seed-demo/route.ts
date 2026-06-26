@@ -232,7 +232,6 @@ export async function POST(request: NextRequest) {
     // Create or get Supabase Auth user
     let authUserId: string | null = null;
     let authUserCreated = false;
-    let authPassword = DEMO_PASSWORD;
 
     try {
       const admin = createAdminClient();

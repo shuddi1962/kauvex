@@ -1,13 +1,14 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Link from "next/link";
 import {
   Package, MapPin, User, CreditCard, Check, ArrowLeft, ArrowRight,
   Truck, Clock, Wallet, Zap, Building2, Phone, Mail, FileText,
-  Shield, ChevronRight, Download, CheckCircle2, Copy,
+  Shield, ChevronRight, Download, CheckCircle2, Copy, LogIn, UserCheck,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { createClient } from "@/lib/supabase/client";
 
 const steps = [
   { id: 1, label: "Shipment Details", icon: Package },
@@ -155,6 +156,36 @@ export default function BookPage() {
   const [declaredValue, setDeclaredValue] = useState(0);
   const [error, setError] = useState("");
 
+  const [accountUser, setAccountUser] = useState<{ id: string; email: string; name: string; accountId: string | null } | null>(null);
+
+  useEffect(() => {
+    const supabase = createClient();
+    supabase.auth.getSession().then(async ({ data: { session } }) => {
+      if (!session?.user) return;
+      const user = session.user;
+      const name = user.user_metadata?.full_name || user.email?.split("@")[0] || "Customer";
+
+      try {
+        const res = await fetch(`/api/v1/express/accounts?userId=${user.id}`);
+        const json = await res.json();
+        const acct = json?.accounts?.[0] || null;
+        const accountId = acct?.id || null;
+        setAccountUser({ id: user.id, email: user.email || "", name, accountId });
+
+        if (accountId && acct) {
+          setForm((prev) => ({
+            ...prev,
+            senderName: acct.business_name || acct.businessName || name,
+            senderEmail: user.email || "",
+            senderPhone: prev.senderPhone || "",
+          }));
+        }
+      } catch {
+        setAccountUser({ id: user.id, email: user.email || "", name, accountId: null });
+      }
+    });
+  }, []);
+
   const [form, setForm] = useState({
     pickupAddress: "",
     pickupState: "",
@@ -220,6 +251,8 @@ export default function BookPage() {
         special_instructions: form.specialRequirements,
         signature_required: signatureRequired,
         payment_method: paymentMethod,
+        business_account_id: accountUser?.accountId || null,
+        price_paid: total,
       };
       const res = await fetch("/api/v1/express/waybills", {
         method: "POST",
@@ -308,6 +341,28 @@ export default function BookPage() {
       </div>
 
       <div className="max-w-4xl mx-auto px-4 py-8">
+        {accountUser ? (
+          <div className="bg-success/5 border border-success/20 rounded-xl px-4 py-3 mb-6 flex items-center gap-3">
+            <UserCheck className="w-5 h-5 text-success flex-shrink-0" />
+            <div className="flex-1 min-w-0">
+              <p className="text-sm font-medium text-text-1 truncate">
+                Logged in as {accountUser.name}
+              </p>
+              <p className="text-xs text-text-3 truncate">{accountUser.email} · Shipment linked to your account</p>
+            </div>
+          </div>
+        ) : (
+          <div className="bg-gray-50 border border-border rounded-xl px-4 py-3 mb-6 flex items-center gap-3">
+            <LogIn className="w-5 h-5 text-text-4 flex-shrink-0" />
+            <div className="flex-1">
+              <p className="text-sm text-text-3">
+                <Link href="/auth/login" className="font-medium text-blue hover:underline">Log in</Link>
+                {" "}to link this shipment to your Express account, or continue as guest.
+              </p>
+            </div>
+          </div>
+        )}
+
         <div className="flex items-center justify-center mb-8">
           {steps.map((s, i) => {
             const Icon = s.icon;

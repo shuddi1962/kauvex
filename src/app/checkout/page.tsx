@@ -137,7 +137,7 @@ export default function CheckoutPage() {
         items: items.map((item) => ({
           product_id: item.product.id,
           quantity: item.quantity,
-          variant_info: item.selectedVariant || undefined,
+          variant_info: item.variant ? JSON.stringify(item.variant) : undefined,
         })),
         shipping_address: {
           full_name: delivery.fullName,

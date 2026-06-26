@@ -1,8 +1,9 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import Link from "next/link";
 import {
-  CreditCard, ChevronRight, Loader2,
+  CreditCard, ChevronRight, Loader2, CheckCircle2, XCircle, Clock, ShoppingBag, ArrowRight, Shield,
 } from "lucide-react";
 
 interface BnplAgreement {
@@ -34,6 +35,7 @@ export default function PayLaterPage() {
   const [eligibility, setEligibility] = useState<Eligibility | null>(null);
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState<"active" | "completed" | "overdue">("active");
+  const [evaluating, setEvaluating] = useState(false);
 
   useEffect(() => { loadData(); }, []);
 
@@ -54,6 +56,18 @@ export default function PayLaterPage() {
       }
     } catch { /* ignore */ }
     setLoading(false);
+  };
+
+  const requestEvaluation = async () => {
+    setEvaluating(true);
+    try {
+      const res = await fetch("/api/v1/pay/bnpl/eligibility", { method: "POST" });
+      if (res.ok) {
+        const json = await res.json();
+        setEligibility(json.data);
+      }
+    } catch { /* ignore */ }
+    setEvaluating(false);
   };
 
   const filtered = agreements.filter((a) => {
@@ -110,6 +124,23 @@ export default function PayLaterPage() {
               <p className="text-xl font-bold">₦{eligibility.currentLimit.toLocaleString()}</p>
             </div>
           </div>
+          {!eligibility.isEligible && (
+            <button
+              onClick={requestEvaluation}
+              disabled={evaluating}
+              className="mt-4 w-full h-9 bg-kauvex-orange hover:bg-kauvex-orange/90 text-white text-xs font-bold rounded-lg transition-colors disabled:opacity-50"
+            >
+              {evaluating ? "Evaluating..." : "Request Re-Evaluation"}
+            </button>
+          )}
+          {eligibility.isEligible && (
+            <Link
+              href="/shop"
+              className="mt-4 flex items-center justify-center gap-1 w-full h-9 bg-white/10 hover:bg-white/20 text-xs font-semibold rounded-lg transition-colors"
+            >
+              <ShoppingBag size={14} /> Start Shopping with Pay Later
+            </Link>
+          )}
         </div>
       )}
 
@@ -204,6 +235,47 @@ export default function PayLaterPage() {
           ))
         )}
       </div>
+
+      {/* How It Works */}
+      {(!eligibility || agreements.length === 0) && (
+        <div className="mt-8 bg-white rounded-2xl border border-border p-6">
+          <h3 className="font-syne font-bold text-sm mb-4">How Pay Later Works</h3>
+          <div className="grid grid-cols-4 gap-4">
+            <div className="text-center">
+              <div className="w-10 h-10 mx-auto bg-blue-50 rounded-full flex items-center justify-center mb-2">
+                <CheckCircle2 size={18} className="text-blue" />
+              </div>
+              <p className="text-[11px] font-semibold text-text-1 mb-1">1. Check Eligibility</p>
+              <p className="text-[10px] text-text-4">Based on your account history and age</p>
+            </div>
+            <div className="text-center">
+              <div className="w-10 h-10 mx-auto bg-blue-50 rounded-full flex items-center justify-center mb-2">
+                <ShoppingBag size={18} className="text-blue" />
+              </div>
+              <p className="text-[11px] font-semibold text-text-1 mb-1">2. Shop</p>
+              <p className="text-[10px] text-text-4">Select Pay Later at checkout</p>
+            </div>
+            <div className="text-center">
+              <div className="w-10 h-10 mx-auto bg-blue-50 rounded-full flex items-center justify-center mb-2">
+                <CreditCard size={18} className="text-blue" />
+              </div>
+              <p className="text-[11px] font-semibold text-text-1 mb-1">3. Pay 25% Today</p>
+              <p className="text-[10px] text-text-4">Get your items immediately</p>
+            </div>
+            <div className="text-center">
+              <div className="w-10 h-10 mx-auto bg-blue-50 rounded-full flex items-center justify-center mb-2">
+                <Clock size={18} className="text-blue" />
+              </div>
+              <p className="text-[11px] font-semibold text-text-1 mb-1">4. 3 Weekly Payments</p>
+              <p className="text-[10px] text-text-4">Auto-charged over 9 weeks</p>
+            </div>
+          </div>
+          <div className="flex items-center justify-center gap-1.5 mt-4">
+            <Shield size={12} className="text-text-4" />
+            <span className="text-[10px] text-text-4">0% interest during promotional period · No hidden fees</span>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

@@ -40,6 +40,7 @@ import { useCurrencyStore } from "@/store/currency-store";
 import { products } from "@/lib/demo-data";
 import { isSponsoredProduct } from "@/lib/sponsored-products";
 import ProductCard from "@/components/product/product-card";
+import InstallmentBadge from "@/components/bnpl/InstallmentBadge";
 
 // Demo reviews
 const demoReviews = [
@@ -250,6 +251,9 @@ export default function ProductDetailPage({ params }: { params: { slug: string }
                   Wholesale: {formatPrice(product.wholesalePrice)} (min. 10 units)
                 </p>
               )}
+              <div className="mt-2">
+                <InstallmentBadge price={displayPrice} />
+              </div>
             </div>
 
             {/* Multi-location Stock */}

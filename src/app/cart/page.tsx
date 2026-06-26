@@ -26,6 +26,7 @@ import { useCartStore } from "@/store/cart-store";
 import { useCurrencyStore } from "@/store/currency-store";
 import { products } from "@/lib/demo-data";
 import ProductCard from "@/components/product/product-card";
+import InstallmentBadge from "@/components/bnpl/InstallmentBadge";
 
 const branches = [
   { id: "lagos", name: "Lagos" },
@@ -311,6 +312,11 @@ export default function CartPage() {
                   {currency !== "NGN" && (
                     <p className="text-[10px] text-text-4 text-right mt-0.5">≈ ₦{total.toLocaleString()}</p>
                   )}
+                </div>
+
+                {/* BNPL Installment Option */}
+                <div className="mt-3">
+                  <InstallmentBadge price={total} />
                 </div>
               </div>
 

@@ -25,6 +25,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { useCartStore } from "@/store/cart-store";
 import { useCurrencyStore } from "@/store/currency-store";
+import BnplQualification from "@/components/bnpl/BnplQualification";
 
 const steps = [
   { id: 1, label: "Delivery", icon: User },
@@ -58,6 +59,7 @@ const paymentMethods = [
   { id: "wallet", name: "KAUVEX Wallet", description: "Pay from your wallet balance", icon: Smartphone },
   { id: "paystack", name: "Paystack", description: "Multiple payment options", icon: Shield },
   { id: "pay-on-delivery", name: "Pay on Delivery", description: "Cash or POS on delivery", icon: Banknote },
+  { id: "bnpl", name: "Pay Later (BNPL)", description: "Split into 4 installments over 9 weeks", icon: CreditCard },
 ];
 
 const warehouses = [
@@ -82,6 +84,8 @@ export default function CheckoutPage() {
   const [giftLoading, setGiftLoading] = useState(false);
   const [giftApplied, setGiftApplied] = useState(false);
   const [giftError, setGiftError] = useState("");
+  const [orderLoading, setOrderLoading] = useState(false);
+  const [orderError, setOrderError] = useState("");
 
   const [delivery, setDelivery] = useState({
     fullName: "", email: "", phone: "", address: "", city: "", state: "Rivers", lga: "", country: "Nigeria", postalCode: "",
@@ -123,6 +127,68 @@ export default function CheckoutPage() {
     setGiftData(null);
     setGiftApplied(false);
     setGiftError("");
+  };
+
+  const placeOrder = async () => {
+    setOrderLoading(true);
+    setOrderError("");
+    try {
+      const orderPayload: Record<string, unknown> = {
+        items: items.map((item) => ({
+          product_id: item.product.id,
+          quantity: item.quantity,
+          variant_info: item.selectedVariant || undefined,
+        })),
+        shipping_address: {
+          full_name: delivery.fullName,
+          email: delivery.email,
+          phone: delivery.phone,
+          address_line1: delivery.address,
+          city: delivery.city,
+          state: delivery.state,
+          country: delivery.country,
+          postal_code: delivery.postalCode,
+        },
+        notes: giftCode.trim() || undefined,
+      };
+
+      const res = await fetch("/api/v1/orders", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(orderPayload),
+      });
+
+      const json = await res.json();
+      if (!res.ok) {
+        setOrderError(json.error || "Failed to create order. Please try again.");
+        return;
+      }
+
+      const orderId = json.data?.order?.id;
+
+      // If BNPL selected, create agreement
+      if (selectedPayment === "bnpl" && orderId) {
+        const bnplRes = await fetch("/api/v1/pay/bnpl/agreements", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ orderId, totalAmount: total }),
+        });
+        const bnplJson = await bnplRes.json();
+        if (!bnplRes.ok) {
+          setOrderError(bnplJson.error || "Order created but BNPL agreement failed. You can pay via other methods.");
+          clearCart();
+          goNext();
+          return;
+        }
+      }
+
+      clearCart();
+      goNext();
+    } catch {
+      setOrderError("Network error. Please try again.");
+    } finally {
+      setOrderLoading(false);
+    }
   };
 
   if (!mounted) {
@@ -455,6 +521,12 @@ export default function CheckoutPage() {
                     </div>
                   </div>
                 )}
+
+                {selectedPayment === "bnpl" && (
+                  <div className="mt-5">
+                    <BnplQualification orderTotal={total} />
+                  </div>
+                )}
               </div>
             )}
 
@@ -492,6 +564,12 @@ export default function CheckoutPage() {
                     <button onClick={() => setCurrentStep(5)} className="text-[10px] text-blue hover:underline">Edit</button>
                   </div>
                   <p className="text-sm text-text-2">{paymentMethods.find((m) => m.id === selectedPayment)?.name}</p>
+                  {selectedPayment === "bnpl" && (
+                    <div className="mt-2 p-2 bg-blue-50 rounded-lg border border-blue-100 text-[11px]">
+                      <p className="text-blue font-semibold">4 installments over 9 weeks</p>
+                      <p className="text-text-3">Pay today: {formatPrice(Math.round(total * 0.25))} · Then 3x {formatPrice(Math.round((total * 0.75) / 3))}/wk</p>
+                    </div>
+                  )}
                 </div>
 
                 {/* Items */}
@@ -543,12 +621,15 @@ export default function CheckoutPage() {
             {/* Navigation */}
             {currentStep < 7 && (
               <div className="flex items-center justify-between mt-6">
-                <Button variant="outline" onClick={goBack} disabled={currentStep === 1}>
+                <Button variant="outline" onClick={goBack} disabled={currentStep === 1 || orderLoading}>
                   <ArrowLeft size={16} className="mr-1" /> Back
                 </Button>
-                <Button onClick={currentStep === 6 ? () => { clearCart(); goNext(); } : goNext}>
-                  {currentStep === 6 ? "Place Order" : "Continue"} <ArrowRight size={16} className="ml-1" />
-                </Button>
+                <div className="flex flex-col items-end gap-1">
+                  {orderError && <p className="text-[10px] text-red text-right max-w-[200px]">{orderError}</p>}
+                  <Button onClick={currentStep === 6 ? placeOrder : goNext} disabled={orderLoading}>
+                    {orderLoading ? "Placing Order..." : currentStep === 6 ? "Place Order" : "Continue"} <ArrowRight size={16} className="ml-1" />
+                  </Button>
+                </div>
               </div>
             )}
           </div>
@@ -593,6 +674,24 @@ export default function CheckoutPage() {
                       <span className="font-syne font-bold text-lg">{formatPrice(total)}</span>
                     </div>
                   </div>
+
+                  {/* BNPL Installment Breakdown */}
+                  {selectedPayment === "bnpl" && (
+                    <div className="mt-3 p-3 bg-blue-50 rounded-lg border border-blue-100">
+                      <p className="text-[10px] font-bold text-blue mb-2">Pay Later Breakdown</p>
+                      <div className="space-y-1.5 text-[11px]">
+                        <div className="flex justify-between">
+                          <span className="text-text-3">Pay today (25%)</span>
+                          <span className="font-semibold">{formatPrice(Math.round(total * 0.25))}</span>
+                        </div>
+                        <div className="flex justify-between">
+                          <span className="text-text-3">Then 3x weekly</span>
+                          <span className="font-semibold">{formatPrice(Math.round((total * 0.75) / 3))}</span>
+                        </div>
+                      </div>
+                      <p className="text-[9px] text-text-4 mt-2">0% interest · 9 weeks total</p>
+                    </div>
+                  )}
                 </div>
 
                 <div className="flex items-center gap-2 mt-4 text-[10px] text-text-4">

@@ -35,6 +35,110 @@ const paymentMethods = [
   { id: "pay-on-delivery", name: "Pay on Delivery", desc: "Cash or POS to driver", icon: Truck },
 ];
 
+const packagingOptions = [
+  {
+    id: "letter",
+    name: "Letter / Document",
+    size: "XS",
+    dimensions: "35 × 25 × 2 cm",
+    maxWeight: "0.5 kg",
+    price: 300,
+    icon: "📄",
+    color: "bg-blue-50 border-blue-200",
+    selectedColor: "border-blue-600 bg-blue-50",
+    bestFor: ["Documents", "Contracts", "Photos", "Certificates"],
+    includes: ["Document envelope", "Waterproof sleeve"],
+    description: "Flat envelope for documents and paper items",
+  },
+  {
+    id: "small",
+    name: "Small Parcel",
+    size: "S",
+    dimensions: "30 × 20 × 15 cm",
+    maxWeight: "2 kg",
+    price: 500,
+    icon: "📦",
+    color: "bg-emerald-50 border-emerald-200",
+    selectedColor: "border-emerald-600 bg-emerald-50",
+    bestFor: ["Phone accessories", "Jewelry", "Small electronics", "Cosmetics"],
+    includes: ["Small corrugated box", "Bubble wrap lining", "Sealing tape"],
+    description: "Compact box for small fragile or valuable items",
+  },
+  {
+    id: "medium",
+    name: "Medium Parcel",
+    size: "M",
+    dimensions: "45 × 35 × 25 cm",
+    maxWeight: "10 kg",
+    price: 800,
+    icon: "📫",
+    color: "bg-orange-50 border-orange-200",
+    selectedColor: "border-orange-600 bg-orange-50",
+    bestFor: ["Clothing", "Shoes", "Books", "Electronics", "Gifts"],
+    includes: ["Medium corrugated box", "Bubble wrap", "Foam corners", "Fragile stickers"],
+    description: "Most popular — fits most everyday items",
+    badge: "Most Popular",
+  },
+  {
+    id: "large",
+    name: "Large Parcel",
+    size: "L",
+    dimensions: "60 × 50 × 40 cm",
+    maxWeight: "25 kg",
+    price: 1200,
+    icon: "📬",
+    color: "bg-purple-50 border-purple-200",
+    selectedColor: "border-purple-600 bg-purple-50",
+    bestFor: ["Kitchen appliances", "Multiple items", "Bulk clothing", "Toys"],
+    includes: ["Large corrugated box", "Double bubble wrap", "Corner protectors", "Void fill"],
+    description: "Spacious box for larger or multiple items",
+  },
+  {
+    id: "xlarge",
+    name: "Extra Large",
+    size: "XL",
+    dimensions: "80 × 60 × 50 cm",
+    maxWeight: "30 kg",
+    price: 2000,
+    icon: "🚚",
+    color: "bg-amber-50 border-amber-200",
+    selectedColor: "border-amber-600 bg-amber-50",
+    bestFor: ["Furniture parts", "Art frames", "Sports equipment", "Bulk orders"],
+    includes: ["Extra-large box", "Heavy-duty wrap", "Wooden frame support", "Corner guards"],
+    description: "Maximum size for oversized items",
+  },
+  {
+    id: "fragile",
+    name: "Fragile Pack",
+    size: "M+",
+    dimensions: "45 × 35 × 25 cm",
+    maxWeight: "10 kg",
+    price: 1500,
+    icon: "🛡️",
+    color: "bg-red-50 border-red-200",
+    selectedColor: "border-red-600 bg-red-50",
+    bestFor: ["Glassware", "Ceramics", "Electronics", "Artwork", "Mirrors"],
+    includes: ["Double-wall box", "Foam inserts", "Bubble wrap (2 layers)", "Fragile tape", "Impact stickers"],
+    description: "Maximum protection for breakable items",
+    badge: "Maximum Protection",
+  },
+  {
+    id: "cold",
+    name: "Cold Chain",
+    size: "M",
+    dimensions: "45 × 35 × 25 cm",
+    maxWeight: "8 kg",
+    price: 2500,
+    icon: "❄️",
+    color: "bg-cyan-50 border-cyan-200",
+    selectedColor: "border-cyan-600 bg-cyan-50",
+    bestFor: ["Food", "Pharmaceuticals", "Flowers", "Perishables"],
+    includes: ["Insulated box", "Gel packs", "Temperature seal", "Cold chain label"],
+    description: "Temperature-controlled for perishable goods",
+    badge: "Temperature Controlled",
+  },
+];
+
 
 
 export default function BookPage() {
@@ -45,6 +149,7 @@ export default function BookPage() {
   const [booking, setBooking] = useState(false);
   const [waybillNumber, setWaybillNumber] = useState("");
   const [packForMe, setPackForMe] = useState(false);
+  const [selectedPackaging, setSelectedPackaging] = useState("medium");
   const [signatureRequired, setSignatureRequired] = useState(false);
   const [insurance, setInsurance] = useState(false);
   const [declaredValue, setDeclaredValue] = useState(0);
@@ -76,7 +181,8 @@ export default function BookPage() {
   const selectedSvc = services.find((s) => s.id === selectedService)!;
   const serviceCost = selectedSvc.price;
   const insuranceCost = insurance ? Math.round(declaredValue * 0.015) : 0;
-  const packForMeCost = packForMe ? (form.weight <= 1 ? 500 : form.weight <= 5 ? 800 : form.weight <= 15 ? 1200 : 2000) : 0;
+  const selectedPkg = packagingOptions.find((p) => p.id === selectedPackaging);
+  const packForMeCost = packForMe && selectedPkg ? selectedPkg.price : 0;
   const vat = Math.round((serviceCost + insuranceCost + packForMeCost) * 0.075);
   const total = serviceCost + insuranceCost + packForMeCost + vat;
 
@@ -108,6 +214,9 @@ export default function BookPage() {
         service_level: selectedService,
         insurance_purchased: insurance,
         pack_for_me: packForMe,
+        pack_for_me_fee: packForMeCost,
+        packaging_type: packForMe ? selectedPkg?.id : "custom",
+        packaging_size: packForMe ? selectedPkg?.size : null,
         special_instructions: form.specialRequirements,
         signature_required: signatureRequired,
         payment_method: paymentMethod,
@@ -358,16 +467,131 @@ export default function BookPage() {
                 </div>
 
                 <div className="border-t border-border pt-4">
-                  <h3 className="font-semibold text-sm text-text-1 mb-3">Add-ons</h3>
-                  <div className="grid md:grid-cols-3 gap-3">
-                    <label className="flex items-center gap-3 p-3 rounded-lg border border-border cursor-pointer hover:bg-gray-50 transition-colors">
-                      <input type="checkbox" checked={packForMe} onChange={(e) => setPackForMe(e.target.checked)} className="rounded" />
-                      <div className="flex-1">
-                        <p className="text-xs font-semibold text-text-1">Pack For Me</p>
-                        <p className="text-[10px] text-text-4">We pack your item professionally</p>
+                  <h3 className="font-semibold text-sm text-text-1 mb-3">Packaging</h3>
+
+                  {/* Pack For Me Toggle */}
+                  <div className="flex gap-3 mb-4">
+                    <button
+                      onClick={() => setPackForMe(false)}
+                      className={`flex-1 p-4 rounded-xl border-2 text-left transition-all ${
+                        !packForMe
+                          ? "border-orange bg-orange/5 shadow-sm"
+                          : "border-border hover:border-gray-300"
+                      }`}
+                    >
+                      <div className="flex items-center gap-3">
+                        <span className="text-2xl">📦</span>
+                        <div>
+                          <p className="font-semibold text-sm text-text-1">I&apos;ll Pack Myself</p>
+                          <p className="text-[10px] text-text-4 mt-0.5">Use your own packaging materials</p>
+                        </div>
                       </div>
-                      <span className="text-xs font-semibold text-orange">₦{form.weight <= 1 ? "500" : form.weight <= 5 ? "800" : form.weight <= 15 ? "1,200" : "2,000"}</span>
-                    </label>
+                      {!packForMe && (
+                        <div className="mt-2 flex items-center gap-1.5 text-[10px] text-orange font-medium">
+                          <Check className="w-3 h-3" /> Selected
+                        </div>
+                      )}
+                    </button>
+                    <button
+                      onClick={() => setPackForMe(true)}
+                      className={`flex-1 p-4 rounded-xl border-2 text-left transition-all ${
+                        packForMe
+                          ? "border-orange bg-orange/5 shadow-sm"
+                          : "border-border hover:border-gray-300"
+                      }`}
+                    >
+                      <div className="flex items-center gap-3">
+                        <span className="text-2xl">🏷️</span>
+                        <div>
+                          <p className="font-semibold text-sm text-text-1">Pack For Me</p>
+                          <p className="text-[10px] text-text-4 mt-0.5">Kauvex packs your item professionally</p>
+                        </div>
+                      </div>
+                      {packForMe && (
+                        <div className="mt-2 flex items-center gap-1.5 text-[10px] text-orange font-medium">
+                          <Check className="w-3 h-3" /> Selected
+                        </div>
+                      )}
+                    </button>
+                  </div>
+
+                  {/* Visual Packaging Selector — shows when Pack For Me is ON */}
+                  {packForMe && (
+                    <div className="space-y-3">
+                      <p className="text-xs font-semibold text-text-3">Choose packaging type:</p>
+                      <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+                        {packagingOptions.map((pkg) => (
+                          <button
+                            key={pkg.id}
+                            onClick={() => setSelectedPackaging(pkg.id)}
+                            className={`relative p-4 rounded-xl border-2 text-left transition-all ${
+                              selectedPackaging === pkg.id
+                                ? pkg.selectedColor + " shadow-md"
+                                : pkg.color + " hover:shadow-sm"
+                            }`}
+                          >
+                            {pkg.badge && (
+                              <span className={`absolute top-2 right-2 px-1.5 py-0.5 rounded-full text-[8px] font-bold ${
+                                pkg.badge === "Most Popular" ? "bg-orange text-white" :
+                                pkg.badge === "Maximum Protection" ? "bg-red-500 text-white" :
+                                "bg-cyan-500 text-white"
+                              }`}>
+                                {pkg.badge}
+                              </span>
+                            )}
+                            {selectedPackaging === pkg.id && (
+                              <div className="absolute top-2 left-2 w-5 h-5 bg-orange text-white rounded-full flex items-center justify-center">
+                                <Check className="w-3 h-3" />
+                              </div>
+                            )}
+                            <span className="text-3xl block mb-2">{pkg.icon}</span>
+                            <p className="font-bold text-sm text-text-1">{pkg.name}</p>
+                            <p className="text-[10px] text-text-4 mt-0.5">{pkg.dimensions}</p>
+                            <p className="text-[10px] text-text-4">Max {pkg.maxWeight}</p>
+                            <div className="mt-2 pt-2 border-t border-black/5">
+                              <p className="font-bold text-orange text-sm">₦{pkg.price.toLocaleString()}</p>
+                            </div>
+                          </button>
+                        ))}
+                      </div>
+
+                      {/* Selected packaging details */}
+                      {selectedPkg && (
+                        <div className="bg-gray-50 rounded-xl p-4 mt-3">
+                          <div className="flex items-start gap-3">
+                            <span className="text-3xl">{selectedPkg.icon}</span>
+                            <div className="flex-1">
+                              <h4 className="font-bold text-sm text-text-1">{selectedPkg.name} — {selectedPkg.size}</h4>
+                              <p className="text-xs text-text-4 mt-0.5">{selectedPkg.description}</p>
+                              <div className="mt-2">
+                                <p className="text-[10px] font-semibold text-text-3 mb-1">What&apos;s included:</p>
+                                <div className="flex flex-wrap gap-1">
+                                  {selectedPkg.includes.map((item) => (
+                                    <span key={item} className="px-2 py-0.5 bg-white rounded-full text-[10px] text-text-3 border border-border">{item}</span>
+                                  ))}
+                                </div>
+                              </div>
+                              <div className="mt-2">
+                                <p className="text-[10px] font-semibold text-text-3 mb-1">Best for:</p>
+                                <div className="flex flex-wrap gap-1">
+                                  {selectedPkg.bestFor.map((item) => (
+                                    <span key={item} className="px-2 py-0.5 bg-orange/10 rounded-full text-[10px] text-orange">{item}</span>
+                                  ))}
+                                </div>
+                              </div>
+                            </div>
+                            <div className="text-right">
+                              <p className="text-lg font-bold text-orange">₦{selectedPkg.price.toLocaleString()}</p>
+                              <p className="text-[10px] text-text-4">packaging fee</p>
+                            </div>
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  )}
+
+                  {/* Other Add-ons */}
+                  <div className="grid md:grid-cols-2 gap-3 mt-4">
                     <label className="flex items-center gap-3 p-3 rounded-lg border border-border cursor-pointer hover:bg-gray-50 transition-colors">
                       <input type="checkbox" checked={signatureRequired} onChange={(e) => setSignatureRequired(e.target.checked)} className="rounded" />
                       <div className="flex-1">
@@ -633,9 +857,9 @@ export default function BookPage() {
                       <span className="text-white/60">{selectedSvc.name} Shipping</span>
                       <span>₦{serviceCost.toLocaleString()}</span>
                     </div>
-                    {packForMe && (
+                    {packForMe && selectedPkg && (
                       <div className="flex justify-between">
-                        <span className="text-white/60">Pack For Me</span>
+                        <span className="text-white/60">{selectedPkg.name} Packaging</span>
                         <span>₦{packForMeCost.toLocaleString()}</span>
                       </div>
                     )}

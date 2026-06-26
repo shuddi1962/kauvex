@@ -10,7 +10,7 @@ export async function GET(request: NextRequest) {
     const city = searchParams.get("city");
     const status = searchParams.get("status") || "active";
 
-    let where: any = { status };
+    const where: any = { status };
 
     if (city) {
       where.city = { contains: city, mode: "insensitive" };

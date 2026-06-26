@@ -4,8 +4,8 @@ import { useState } from "react";
 import Link from "next/link";
 import {
   Truck, Package, ClipboardList, BarChart3, ArrowRight,
-  Clock, CheckCircle2, AlertTriangle, MapPin, ChevronRight,
-  RefreshCw, XCircle, User, TrendingUp, DollarSign, Eye,
+  CheckCircle2, MapPin, ChevronRight,
+  RefreshCw, XCircle, TrendingUp, DollarSign, Eye, Box,
 } from "lucide-react";
 import VendorShell from "@/components/vendor/vendor-shell";
 
@@ -94,10 +94,115 @@ const manifestStatusStyles: Record<string, string> = {
   received: "bg-green-100 text-green-700",
 };
 
+const PACKAGING_TYPES = [
+  {
+    id: "own",
+    name: "Own Packaging",
+    size: "Custom",
+    dimensions: "Your own box/envelope",
+    maxWeight: "Any",
+    price: 0,
+    icon: "📦",
+    color: "bg-gray-50 border-gray-200",
+    selectedColor: "border-gray-600 bg-gray-100",
+    bestFor: ["Items already packed", "Irregular shapes"],
+    includes: ["Use your own materials"],
+    description: "Bring your item pre-packed in your own packaging",
+  },
+  {
+    id: "letter",
+    name: "Letter / Document",
+    size: "XS",
+    dimensions: "35 × 25 × 2 cm",
+    maxWeight: "0.5 kg",
+    price: 0.50,
+    icon: "📄",
+    color: "bg-blue-50 border-blue-200",
+    selectedColor: "border-blue-600 bg-blue-50",
+    bestFor: ["Documents", "Contracts", "Photos", "Certificates"],
+    includes: ["Document envelope", "Waterproof sleeve"],
+    description: "Flat envelope for documents and paper items",
+  },
+  {
+    id: "small",
+    name: "Small Parcel",
+    size: "S",
+    dimensions: "30 × 20 × 15 cm",
+    maxWeight: "2 kg",
+    price: 1.20,
+    icon: "📦",
+    color: "bg-emerald-50 border-emerald-200",
+    selectedColor: "border-emerald-600 bg-emerald-50",
+    bestFor: ["Phone accessories", "Jewelry", "Small electronics"],
+    includes: ["Small box", "Bubble wrap lining", "Sealing tape"],
+    description: "Compact box for small fragile or valuable items",
+  },
+  {
+    id: "medium",
+    name: "Medium Parcel",
+    size: "M",
+    dimensions: "45 × 35 × 25 cm",
+    maxWeight: "10 kg",
+    price: 2.00,
+    icon: "📫",
+    color: "bg-orange-50 border-orange-200",
+    selectedColor: "border-orange-600 bg-orange-50",
+    bestFor: ["Clothing", "Shoes", "Books", "Electronics"],
+    includes: ["Medium box", "Bubble wrap", "Foam corners", "Fragile stickers"],
+    description: "Most popular — fits most everyday items",
+    badge: "Most Popular",
+  },
+  {
+    id: "large",
+    name: "Large Parcel",
+    size: "L",
+    dimensions: "60 × 50 × 40 cm",
+    maxWeight: "25 kg",
+    price: 3.50,
+    icon: "📬",
+    color: "bg-purple-50 border-purple-200",
+    selectedColor: "border-purple-600 bg-purple-50",
+    bestFor: ["Kitchen appliances", "Multiple items", "Bulk clothing"],
+    includes: ["Large box", "Double bubble wrap", "Corner protectors", "Void fill"],
+    description: "Spacious box for larger or multiple items",
+  },
+  {
+    id: "fragile",
+    name: "Fragile Pack",
+    size: "M+",
+    dimensions: "45 × 35 × 25 cm",
+    maxWeight: "10 kg",
+    price: 4.50,
+    icon: "🛡️",
+    color: "bg-red-50 border-red-200",
+    selectedColor: "border-red-600 bg-red-50",
+    bestFor: ["Glassware", "Ceramics", "Electronics", "Artwork"],
+    includes: ["Double-wall box", "Foam inserts", "Bubble wrap (2 layers)", "Fragile tape"],
+    description: "Maximum protection for breakable items",
+    badge: "Max Protection",
+  },
+  {
+    id: "cold",
+    name: "Cold Chain",
+    size: "M",
+    dimensions: "45 × 35 × 25 cm",
+    maxWeight: "8 kg",
+    price: 6.00,
+    icon: "❄️",
+    color: "bg-cyan-50 border-cyan-200",
+    selectedColor: "border-cyan-600 bg-cyan-50",
+    bestFor: ["Food", "Pharmaceuticals", "Flowers", "Perishables"],
+    includes: ["Insulated box", "Gel packs", "Temperature seal", "Cold chain label"],
+    description: "Temperature-controlled for perishable goods",
+    badge: "Temperature",
+  },
+];
+
 const tabs = [
   { key: "shipments", label: "Active Shipments", icon: Truck },
   { key: "pickups", label: "Pickup Requests", icon: Package },
   { key: "manifests", label: "Manifests", icon: ClipboardList },
+  { key: "packaging", label: "Packaging Fees", icon: Box },
   { key: "performance", label: "Performance", icon: BarChart3 },
 ];
 
@@ -309,6 +414,65 @@ export default function VendorLogisticsPage() {
                 ))}
               </tbody>
             </table>
+          </div>
+        </div>
+      )}
+
+      {/* Tab: Packaging Fees */}
+      {activeTab === "packaging" && (
+        <div className="space-y-4">
+          <div className="bg-gradient-to-br from-orange-50 to-amber-50 rounded-xl border border-orange-100 p-5">
+            <div className="flex items-start gap-3">
+              <div className="w-10 h-10 bg-[#FF6B00] rounded-lg flex items-center justify-center"><Box size={18} className="text-white" /></div>
+              <div>
+                <h3 className="text-sm font-bold text-[#0A1628]">Express Packaging Fees</h3>
+                <p className="text-xs text-gray-500 mt-1 max-w-xl">Fees apply per package when using Kauvex Express packing service. Choose &quot;I&apos;ll Pack Myself&quot; to avoid packaging fees. All fees reflected at checkout.</p>
+              </div>
+            </div>
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
+            {PACKAGING_TYPES.map((p) => (
+              <div key={p.id} className={`relative rounded-xl border-2 p-5 transition-all hover:shadow-md ${p.color}`}>
+                {p.badge && <span className="absolute top-3 right-3 text-[9px] font-bold bg-[#FF6B00] text-white px-2 py-0.5 rounded-full">{p.badge}</span>}
+                <div className="flex items-start gap-3 mb-3">
+                  <span className="text-2xl">{p.icon}</span>
+                  <div>
+                    <div className="flex items-center gap-2">
+                      <h4 className="text-sm font-bold text-[#0A1628]">{p.name}</h4>
+                      <span className="text-[10px] font-mono bg-white/80 text-gray-500 px-1.5 py-0.5 rounded border border-gray-200">{p.size}</span>
+                    </div>
+                    <p className="text-[11px] text-gray-500 mt-0.5">{p.dimensions} · Max {p.maxWeight}</p>
+                  </div>
+                </div>
+                <p className="text-xs text-gray-600 mb-3">{p.description}</p>
+                <div className="flex flex-wrap gap-1 mb-3">
+                  {p.bestFor.map((b, i) => <span key={i} className="text-[9px] bg-white/70 text-gray-600 px-1.5 py-0.5 rounded-full border border-gray-200">{b}</span>)}
+                </div>
+                <div className="border-t border-gray-200/60 pt-3 flex items-center justify-between">
+                  <div className="flex flex-wrap gap-1">
+                    {p.includes.map((inc, i) => <span key={i} className="text-[9px] bg-gray-100 text-gray-500 px-1.5 py-0.5 rounded-full">{inc}</span>)}
+                  </div>
+                  <span className="text-base font-bold text-[#FF6B00]">{p.price > 0 ? `+$${p.price.toFixed(2)}` : "Free"}</span>
+                </div>
+              </div>
+            ))}
+          </div>
+          <div className="bg-white rounded-xl border border-gray-200 p-4">
+            <h4 className="text-xs font-bold text-[#0A1628] mb-2">Packaging Fee Summary</h4>
+            <div className="grid grid-cols-3 gap-4 text-center">
+              <div className="bg-gray-50 rounded-lg p-3">
+                <p className="text-lg font-bold text-[#0A1628]">$0.50 – $6.00</p>
+                <p className="text-[10px] text-gray-400">Fee range per package</p>
+              </div>
+              <div className="bg-gray-50 rounded-lg p-3">
+                <p className="text-lg font-bold text-[#0A1628]">7 options</p>
+                <p className="text-[10px] text-gray-400">Including own packaging</p>
+              </div>
+              <div className="bg-gray-50 rounded-lg p-3">
+                <p className="text-lg font-bold text-green-600">$0.00</p>
+                <p className="text-[10px] text-gray-400">Own packaging = free</p>
+              </div>
+            </div>
           </div>
         </div>
       )}

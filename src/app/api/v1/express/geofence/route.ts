@@ -49,7 +49,7 @@ export async function GET(request: NextRequest) {
     const type = searchParams.get("type");
     const status = searchParams.get("status") || "active";
 
-    let where: any = { status };
+    const where: any = { status };
     if (type) where.type = type;
 
     if (lat !== 0 && lng !== 0) {

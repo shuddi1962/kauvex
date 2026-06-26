@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { MapPin, Package, ArrowRight, Truck, Clock, Shield, ChevronDown, ChevronUp, Zap, Plus, Weight, Ruler } from "lucide-react";
+import { MapPin, Package, ArrowRight, Truck, Clock, Shield, ChevronDown, ChevronUp, Zap, Plus, Weight, Ruler, Box } from "lucide-react";
 
 const SERVICES = [
   { id: "express", label: "Express", desc: "1-2 business days", price: 12.99, popular: true },
@@ -9,12 +9,108 @@ const SERVICES = [
   { id: "economy", label: "Economy", desc: "5-8 business days", price: 4.99, popular: false },
 ];
 
-const PACKAGING = [
-  { id: "own", label: "Own Packaging", price: 0 },
-  { id: "envelope", label: "Express Envelope", price: 0.5 },
-  { id: "box-s", label: "Small Box (30x20x15cm)", price: 1.2 },
-  { id: "box-m", label: "Medium Box (40x30x20cm)", price: 2.0 },
-  { id: "box-l", label: "Large Box (60x40x30cm)", price: 3.5 },
+const PACKAGING_OPTIONS = [
+  {
+    id: "own",
+    name: "Own Packaging",
+    size: "Custom",
+    dimensions: "Your own box/envelope",
+    maxWeight: "Any",
+    price: 0,
+    icon: "📦",
+    color: "bg-gray-50 border-gray-200",
+    selectedColor: "border-gray-600 bg-gray-100",
+    bestFor: ["Items already packed", "Irregular shapes"],
+    includes: ["Use your own materials"],
+    description: "Bring your item pre-packed in your own packaging",
+  },
+  {
+    id: "letter",
+    name: "Letter / Document",
+    size: "XS",
+    dimensions: "35 × 25 × 2 cm",
+    maxWeight: "0.5 kg",
+    price: 0.50,
+    icon: "📄",
+    color: "bg-blue-50 border-blue-200",
+    selectedColor: "border-blue-600 bg-blue-50",
+    bestFor: ["Documents", "Contracts", "Photos", "Certificates"],
+    includes: ["Document envelope", "Waterproof sleeve"],
+    description: "Flat envelope for documents and paper items",
+  },
+  {
+    id: "small",
+    name: "Small Parcel",
+    size: "S",
+    dimensions: "30 × 20 × 15 cm",
+    maxWeight: "2 kg",
+    price: 1.20,
+    icon: "📦",
+    color: "bg-emerald-50 border-emerald-200",
+    selectedColor: "border-emerald-600 bg-emerald-50",
+    bestFor: ["Phone accessories", "Jewelry", "Small electronics"],
+    includes: ["Small box", "Bubble wrap lining", "Sealing tape"],
+    description: "Compact box for small fragile or valuable items",
+  },
+  {
+    id: "medium",
+    name: "Medium Parcel",
+    size: "M",
+    dimensions: "45 × 35 × 25 cm",
+    maxWeight: "10 kg",
+    price: 2.00,
+    icon: "📫",
+    color: "bg-orange-50 border-orange-200",
+    selectedColor: "border-orange-600 bg-orange-50",
+    bestFor: ["Clothing", "Shoes", "Books", "Electronics"],
+    includes: ["Medium box", "Bubble wrap", "Foam corners", "Fragile stickers"],
+    description: "Most popular — fits most everyday items",
+    badge: "Most Popular",
+  },
+  {
+    id: "large",
+    name: "Large Parcel",
+    size: "L",
+    dimensions: "60 × 50 × 40 cm",
+    maxWeight: "25 kg",
+    price: 3.50,
+    icon: "📬",
+    color: "bg-purple-50 border-purple-200",
+    selectedColor: "border-purple-600 bg-purple-50",
+    bestFor: ["Kitchen appliances", "Multiple items", "Bulk clothing"],
+    includes: ["Large box", "Double bubble wrap", "Corner protectors", "Void fill"],
+    description: "Spacious box for larger or multiple items",
+  },
+  {
+    id: "fragile",
+    name: "Fragile Pack",
+    size: "M+",
+    dimensions: "45 × 35 × 25 cm",
+    maxWeight: "10 kg",
+    price: 4.50,
+    icon: "🛡️",
+    color: "bg-red-50 border-red-200",
+    selectedColor: "border-red-600 bg-red-50",
+    bestFor: ["Glassware", "Ceramics", "Electronics", "Artwork"],
+    includes: ["Double-wall box", "Foam inserts", "Bubble wrap (2 layers)", "Fragile tape"],
+    description: "Maximum protection for breakable items",
+    badge: "Max Protection",
+  },
+  {
+    id: "cold",
+    name: "Cold Chain",
+    size: "M",
+    dimensions: "45 × 35 × 25 cm",
+    maxWeight: "8 kg",
+    price: 6.00,
+    icon: "❄️",
+    color: "bg-cyan-50 border-cyan-200",
+    selectedColor: "border-cyan-600 bg-cyan-50",
+    bestFor: ["Food", "Pharmaceuticals", "Flowers", "Perishables"],
+    includes: ["Insulated box", "Gel packs", "Temperature seal", "Cold chain label"],
+    description: "Temperature-controlled for perishable goods",
+    badge: "Temperature",
+  },
 ];
 
 const INSURANCE = [
@@ -33,6 +129,7 @@ const SAVED = [
 export default function QuickShipPage() {
   const [service, setService] = useState("express");
   const [packaging, setPackaging] = useState("own");
+  const [selectedPkg, setSelectedPkg] = useState("medium");
   const [insurance, setInsurance] = useState("none");
   const [senderExpanded, setSenderExpanded] = useState(true);
   const [recipientExpanded, setRecipientExpanded] = useState(true);
@@ -47,9 +144,9 @@ export default function QuickShipPage() {
 
   const set = (k: string, v: string) => setForm((p) => ({ ...p, [k]: v }));
   const svc = SERVICES.find((s) => s.id === service)!;
-  const pkg = PACKAGING.find((p) => p.id === packaging)!;
+  const activePkg = PACKAGING_OPTIONS.find((p) => p.id === (packaging === "own" ? "own" : selectedPkg))!;
   const ins = INSURANCE.find((i) => i.id === insurance)!;
-  const total = svc.price + pkg.price + ins.price;
+  const total = svc.price + activePkg.price + ins.price;
 
   return (
     <div className="max-w-5xl mx-auto space-y-6">
@@ -165,10 +262,44 @@ export default function QuickShipPage() {
           </div>
 
           <div className="bg-white rounded-xl border border-gray-200 p-5 space-y-3">
-            <h3 className="text-sm font-semibold text-[#0A1628]">Packaging</h3>
-            <select value={packaging} onChange={(e) => setPackaging(e.target.value)} className="w-full border border-gray-200 rounded-lg px-3.5 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#FF6B00]/30">
-              {PACKAGING.map((p) => <option key={p.id} value={p.id}>{p.label} {p.price > 0 ? `(+${p.price.toFixed(2)})` : "(Free)"}</option>)}
-            </select>
+            <div className="flex items-center gap-2"><h3 className="text-sm font-semibold text-[#0A1628]">Packaging</h3><Box className="w-4 h-4 text-gray-400" /></div>
+            <div className="grid grid-cols-2 gap-2">
+              {(["own", "pack-for-me"] as const).map((opt) => (
+                <button key={opt} onClick={() => { setPackaging(opt); if (opt === "pack-for-me" && selectedPkg === "own") setSelectedPkg("medium"); }} className={`p-3 rounded-lg border-2 transition-all text-left ${packaging === opt ? "border-[#FF6B00] bg-orange-50" : "border-gray-200 hover:border-gray-300"}`}>
+                  <span className="text-sm font-medium text-[#0A1628]">{opt === "own" ? "I'll Pack Myself" : "Pack For Me"}</span>
+                  <p className="text-[11px] text-gray-500 mt-0.5">{opt === "own" ? "Use your own box/envelope" : "Professional packing service"}</p>
+                </button>
+              ))}
+            </div>
+            {packaging === "pack-for-me" && (
+              <div className="space-y-3">
+                <p className="text-xs text-gray-500 font-medium">Choose your size:</p>
+                <div className="grid grid-cols-1 gap-2.5">
+                  {PACKAGING_OPTIONS.filter((p) => p.id !== "own").map((p) => (
+                    <button key={p.id} onClick={() => setSelectedPkg(p.id)} className={`relative p-3 rounded-xl border-2 transition-all text-left ${selectedPkg === p.id ? p.selectedColor + " border-current shadow-sm" : "border-gray-200 hover:border-gray-300"}`}>
+                      {p.badge && <span className="absolute top-2 right-2 text-[9px] font-bold bg-[#FF6B00] text-white px-1.5 py-0.5 rounded-full">{p.badge}</span>}
+                      <div className="flex items-start gap-3">
+                        <span className="text-xl mt-0.5">{p.icon}</span>
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-center gap-2">
+                            <span className="text-sm font-semibold text-[#0A1628]">{p.name}</span>
+                            <span className="text-[10px] font-mono bg-gray-100 text-gray-500 px-1.5 py-0.5 rounded">{p.size}</span>
+                          </div>
+                          <p className="text-[11px] text-gray-500 mt-0.5">{p.dimensions} · Max {p.maxWeight}</p>
+                          <p className="text-[11px] text-gray-400 mt-1 line-clamp-1">{p.description}</p>
+                          <div className="flex flex-wrap gap-1 mt-1.5">
+                            {p.includes.slice(0, 3).map((inc, i) => <span key={i} className="text-[9px] bg-gray-100 text-gray-500 px-1.5 py-0.5 rounded-full">{inc}</span>)}
+                          </div>
+                        </div>
+                        <div className="text-right shrink-0">
+                          <span className="text-sm font-bold text-[#FF6B00]">{p.price > 0 ? `+$${p.price.toFixed(2)}` : "Free"}</span>
+                        </div>
+                      </div>
+                    </button>
+                  ))}
+                </div>
+              </div>
+            )}
           </div>
 
           <div className="bg-white rounded-xl border border-gray-200 p-5 space-y-3">
@@ -187,7 +318,7 @@ export default function QuickShipPage() {
             <h3 className="text-sm font-semibold">Quote Summary</h3>
             <div className="space-y-2 text-sm">
               <div className="flex justify-between"><span className="text-white/70">{svc.label} shipping</span><span>${svc.price.toFixed(2)}</span></div>
-              <div className="flex justify-between"><span className="text-white/70">{pkg.label}</span><span>{pkg.price > 0 ? `$${pkg.price.toFixed(2)}` : "Free"}</span></div>
+              <div className="flex justify-between"><span className="text-white/70">{activePkg.name}</span><span>{activePkg.price > 0 ? `$${activePkg.price.toFixed(2)}` : "Free"}</span></div>
               {ins.price > 0 && <div className="flex justify-between"><span className="text-white/70">{ins.label}</span><span>${ins.price.toFixed(2)}</span></div>}
               <div className="border-t border-white/20 pt-2 flex justify-between text-base font-bold">
                 <span>Estimated Total</span><span className="text-[#FF6B00]">${total.toFixed(2)}</span>

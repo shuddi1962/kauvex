@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import AdminShell from "@/components/admin/admin-shell";
-import { Package, Plus, Save, Edit2, Trash2, Search, DollarSign, Globe, Check } from "lucide-react";
+import { Package, Plus, Edit2, Trash2, Search, DollarSign, Globe, Check } from "lucide-react";
 
 interface PackagingFee {
   id: string;
@@ -86,7 +86,6 @@ export default function PackagingFeesPage() {
   };
 
   const handleAdd = () => {
-    const pkg = PACKAGING_TYPES.find((p) => p.id === newFee.packagingType);
     const country = COUNTRIES.find((c) => c.code === newFee.countryCode);
     setFees([...fees, {
       id: `f${Date.now()}`,
@@ -111,7 +110,7 @@ export default function PackagingFeesPage() {
   const getCountryName = (code: string) => COUNTRIES.find((c) => c.code === code)?.name || code;
 
   return (
-    <AdminShell>
+    <AdminShell title="Packaging Fees" subtitle="Manage Express packaging options and pricing">
       <div className="p-6 max-w-7xl mx-auto">
         <div className="flex items-center justify-between mb-6">
           <div className="flex items-center gap-3">

@@ -107,10 +107,9 @@ export async function GET(request: NextRequest) {
         _count: { id: true },
       }),
       (prisma as any).ksp_carbon_tracking.aggregate({
-        where,
+        where: { ...where, offsetStatus: "completed" },
         _sum: { treeOffsetCost: true },
         _count: { id: true },
-        where: { ...where, offsetStatus: "completed" },
       }),
     ]);
 

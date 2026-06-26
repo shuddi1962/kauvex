@@ -16,7 +16,7 @@ export async function POST(request: NextRequest) {
   if (!body) return errorResponse("Invalid request body", 400);
 
   const parsed = requestSchema.safeParse(body);
-  if (!parsed.success) return errorResponse(parsed.error.flatten().fieldErrors, 400);
+  if (!parsed.success) return errorResponse(JSON.stringify(parsed.error.flatten().fieldErrors), 400);
 
   const { vendor_id, tab } = parsed.data;
 

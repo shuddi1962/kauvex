@@ -77,7 +77,7 @@ export async function calculateCashback(input: CalculateCashbackInput): Promise<
     const amount = Math.round(input.orderTotal * (Number(rule.cashbackPercent) / 100) * 100) / 100;
     if (amount > bestAmount) {
       bestAmount = amount;
-      bestRule = rule as CashbackRule;
+      bestRule = rule as unknown as CashbackRule;
     }
   }
 

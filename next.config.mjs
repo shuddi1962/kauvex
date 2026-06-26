@@ -1,5 +1,10 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
+  // Skip ESLint during build to reduce memory usage on Vercel's 2-core/8GB machine
+  eslint: {
+    ignoreDuringBuilds: true,
+  },
+
   // Image optimization — allow external image sources
   images: {
     remotePatterns: [

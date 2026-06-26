@@ -18,6 +18,7 @@ import {
   ChevronRight,
   ShieldCheck,
   ExternalLink,
+  CreditCard,
 } from "lucide-react";
 import { useAuthStore } from "@/store/auth-store";
 
@@ -27,6 +28,7 @@ const sidebarLinks = [
   { label: "Wishlist", href: "/account/wishlist", icon: Heart },
   { label: "Compare", href: "/account/compare", icon: GitCompare },
   { label: "Wallet", href: "/account/wallet", icon: Wallet },
+  { label: "Pay Later (BNPL)", href: "/account/pay-later", icon: CreditCard },
   { label: "Loyalty & Rewards", href: "/account/loyalty", icon: Trophy },
   { label: "Referrals", href: "/account/referrals", icon: Users },
   { label: "Addresses", href: "/account/addresses", icon: MapPin },

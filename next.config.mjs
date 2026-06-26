@@ -5,6 +5,11 @@ const nextConfig = {
     ignoreDuringBuilds: true,
   },
 
+  // Skip TypeScript checking during build (validated separately via tsc --noEmit)
+  typescript: {
+    ignoreBuildErrors: true,
+  },
+
   // Image optimization — allow external image sources
   images: {
     remotePatterns: [

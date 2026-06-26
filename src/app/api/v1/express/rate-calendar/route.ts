@@ -33,7 +33,7 @@ export async function GET(request: NextRequest) {
 
     const now = new Date();
     const forecastDays = 30;
-    const forecast = [];
+    const forecast: { date: string; dayOfWeek: string; predictedRate: number; confidence: number; isWeekend: boolean; recommendation: string }[] = [];
 
     for (let i = 0; i < forecastDays; i++) {
       const date = new Date(now.getTime() + i * 24 * 60 * 60 * 1000);
@@ -58,12 +58,12 @@ export async function GET(request: NextRequest) {
       });
     }
 
-    const cheapestDay = forecast.reduce((min, day) =>
+    const cheapestDay = forecast.reduce((min: (typeof forecast)[number], day: (typeof forecast)[number]) =>
       day.predictedRate < min.predictedRate ? day : min
     , forecast[0]);
 
     const cheapestHistorical = historicalRates.length > 0
-      ? historicalRates.reduce((min, r) => r.baseRate < min.baseRate ? r : min, historicalRates[0])
+      ? historicalRates.reduce((min: any, r: any) => r.baseRate < min.baseRate ? r : min, historicalRates[0])
       : null;
 
     return NextResponse.json({

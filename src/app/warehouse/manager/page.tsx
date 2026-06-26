@@ -352,7 +352,7 @@ export default function WarehouseManagerPage() {
             <h3 className="text-sm font-semibold text-[#0A1628] mb-4">Staff Performance Leaderboard</h3>
             <div className="space-y-3">
               {staffPerformance
-                .sort((a, b) => b.ordersPicked - a.ordersPicked)
+                .sort((a, b) => (b.ordersPicked ?? 0) - (a.ordersPicked ?? 0))
                 .map((s, idx) => (
                 <div key={s.id} className={`flex items-center gap-4 p-3 rounded-lg ${
                   idx === 0 ? "bg-amber-50 border border-amber-200" : idx === 1 ? "bg-gray-50 border border-gray-200" : idx === 2 ? "bg-orange-50 border border-orange-200" : "bg-white border border-gray-100"

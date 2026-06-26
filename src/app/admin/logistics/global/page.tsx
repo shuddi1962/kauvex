@@ -1,126 +1,416 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import Link from "next/link";
-import { Globe, Plus, Settings, Truck, MapPin, RefreshCw, ChevronRight, Package, CreditCard, CheckCircle, AlertTriangle } from "lucide-react";
+import AdminShell from "@/components/admin/admin-shell";
+import {
+  Globe, Truck, Users, DollarSign, AlertTriangle, RefreshCw,
+  ChevronDown, MapPin, TrendingUp, Activity, XCircle, Radio,
+  Eye, Search, BarChart3, Package, Clock,
+} from "lucide-react";
 
-interface Country {
-  countryCode: string;
-  countryName: string;
-  currencyCode: string;
-  vatRate: number;
-  importDutyGeneral: number;
-  deMinimisValue: number;
-  postalCodeFormat: string | null;
-  phoneCode: string;
-  defaultLanguage: string;
-  w3wEnabled: boolean;
-  codEnabled: boolean;
-  ddpRequired: boolean;
-  _count: { carriers: number; rateCards: number; packagingFees: number };
+interface CountryData {
+  code: string;
+  name: string;
+  flag: string;
+  partners: number;
+  activeDeliveries: number;
+  revenueToday: number;
+  failedToday: number;
+  coverageLevel: "good" | "thin" | "none";
+  lat: number;
+  lng: number;
 }
 
-const FLAG_MAP: Record<string, string> = {
-  NG: "\u{1F1F3}\u{1F1EC}", GB: "\u{1F1EC}\u{1F1E7}", US: "\u{1F1FA}\u{1F1F8}", AE: "\u{1F1E6}\u{1F1EA}",
-  IN: "\u{1F1EE}\u{1F1F3}", AU: "\u{1F1E6}\u{1F1FA}", DE: "\u{1F1E9}\u{1F1EA}", CA: "\u{1F1E8}\u{1F1E6}",
-  GH: "\u{1F1EC}\u{1F1ED}", KE: "\u{1F1F0}\u{1F1EA}", ZA: "\u{1F1FF}\u{1F1E6}", SA: "\u{1F1F8}\u{1F1E6}",
-  BR: "\u{1F1E7}\u{1F1F7}", JP: "\u{1F1EF}\u{1F1F5}", FR: "\u{1F1EB}\u{1F1F7}",
+interface GlobalMetrics {
+  totalActiveDeliveries: number;
+  partnersOnline: number;
+  revenueToday: number;
+  failedDeliveries: number;
+  countriesActive: number;
+  countriesTotal: number;
+}
+
+interface ActiveJob {
+  id: string;
+  countryCode: string;
+  lat: number;
+  lng: number;
+  status: string;
+}
+
+const COUNTRIES: CountryData[] = [
+  { code: "NG", name: "Nigeria", flag: "\u{1F1F3}\u{1F1EC}", partners: 1240, activeDeliveries: 342, revenueToday: 48500, failedToday: 8, coverageLevel: "good", lat: 9.08, lng: 7.49 },
+  { code: "GB", name: "United Kingdom", flag: "\u{1F1EC}\u{1F1E7}", partners: 380, activeDeliveries: 89, revenueToday: 12200, failedToday: 2, coverageLevel: "good", lat: 55.38, lng: -3.44 },
+  { code: "US", name: "United States", flag: "\u{1F1FA}\u{1F1F8}", partners: 520, activeDeliveries: 156, revenueToday: 22100, failedToday: 5, coverageLevel: "good", lat: 37.09, lng: -95.71 },
+  { code: "AE", name: "UAE", flag: "\u{1F1E6}\u{1F1EA}", partners: 180, activeDeliveries: 45, revenueToday: 8900, failedToday: 1, coverageLevel: "good", lat: 23.42, lng: 53.85 },
+  { code: "IN", name: "India", flag: "\u{1F1EE}\u{1F1F3}", partners: 680, activeDeliveries: 210, revenueToday: 15600, failedToday: 12, coverageLevel: "good", lat: 20.59, lng: 78.96 },
+  { code: "AU", name: "Australia", flag: "\u{1F1E6}\u{1F1FA}", partners: 95, activeDeliveries: 22, revenueToday: 5400, failedToday: 1, coverageLevel: "thin", lat: -25.27, lng: 133.78 },
+  { code: "DE", name: "Germany", flag: "\u{1F1E9}\u{1F1EA}", partners: 210, activeDeliveries: 67, revenueToday: 9800, failedToday: 0, coverageLevel: "good", lat: 51.17, lng: 10.45 },
+  { code: "CA", name: "Canada", flag: "\u{1F1E8}\u{1F1E6}", partners: 140, activeDeliveries: 35, revenueToday: 6700, failedToday: 2, coverageLevel: "thin", lat: 56.13, lng: -106.35 },
+  { code: "GH", name: "Ghana", flag: "\u{1F1EC}\u{1F1ED}", partners: 220, activeDeliveries: 58, revenueToday: 4200, failedToday: 3, coverageLevel: "good", lat: 7.95, lng: -1.02 },
+  { code: "KE", name: "Kenya", flag: "\u{1F1F0}\u{1F1EA}", partners: 175, activeDeliveries: 42, revenueToday: 3800, failedToday: 2, coverageLevel: "good", lat: -0.02, lng: 37.91 },
+  { code: "ZA", name: "South Africa", flag: "\u{1F1FF}\u{1F1E6}", partners: 190, activeDeliveries: 51, revenueToday: 7100, failedToday: 1, coverageLevel: "good", lat: -30.56, lng: 22.94 },
+  { code: "SA", name: "Saudi Arabia", flag: "\u{1F1F8}\u{1F1E6}", partners: 110, activeDeliveries: 28, revenueToday: 6200, failedToday: 0, coverageLevel: "thin", lat: 23.89, lng: 45.08 },
+  { code: "BR", name: "Brazil", flag: "\u{1F1E7}\u{1F1F7}", partners: 85, activeDeliveries: 18, revenueToday: 3100, failedToday: 4, coverageLevel: "thin", lat: -14.24, lng: -51.93 },
+  { code: "JP", name: "Japan", flag: "\u{1F1EF}\u{1F1F5}", partners: 45, activeDeliveries: 0, revenueToday: 0, failedToday: 0, coverageLevel: "none", lat: 36.2, lng: 138.25 },
+  { code: "FR", name: "France", flag: "\u{1F1EB}\u{1F1F7}", partners: 60, activeDeliveries: 12, revenueToday: 2400, failedToday: 1, coverageLevel: "thin", lat: 46.23, lng: 2.21 },
+];
+
+const MOCK_JOBS: ActiveJob[] = [
+  { id: "J1", countryCode: "NG", lat: 6.52, lng: 3.38, status: "in_transit" },
+  { id: "J2", countryCode: "NG", lat: 9.06, lng: 7.49, status: "picked_up" },
+  { id: "J3", countryCode: "GB", lat: 51.51, lng: -0.13, status: "out_for_delivery" },
+  { id: "J4", countryCode: "US", lat: 40.71, lng: -74.01, status: "in_transit" },
+  { id: "J5", countryCode: "AE", lat: 25.2, lng: 55.27, status: "delivered" },
+  { id: "J6", countryCode: "IN", lat: 28.61, lng: 77.21, status: "picked_up" },
+  { id: "J7", countryCode: "DE", lat: 52.52, lng: 13.41, status: "in_transit" },
+  { id: "J8", countryCode: "NG", lat: 4.81, lng: 7.01, status: "heading_to_pickup" },
+  { id: "J9", countryCode: "GH", lat: 5.6, lng: -0.19, status: "in_transit" },
+  { id: "J10", countryCode: "KE", lat: -1.29, lng: 36.82, status: "picked_up" },
+];
+
+const COVERAGE_COLORS: Record<string, string> = {
+  good: "#22c55e",
+  thin: "#eab308",
+  none: "#ef4444",
 };
 
-const CURRENCY_SYMBOLS: Record<string, string> = {
-  NGN: "\u20A6", USD: "$", GBP: "\u00A3", EUR: "\u20AC", AED: "AED", INR: "\u20B9",
-  AUD: "A$", CAD: "C$", GHS: "GH\u20B5", KES: "KSh", ZAR: "R", SAR: "SAR", BRL: "R$", JPY: "\u00A5",
-};
-
-export default function GlobalLogisticsPage() {
-  const [countries, setCountries] = useState<Country[]>([]);
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    fetch("/api/v1/logistics/countries")
-      .then((r) => r.json())
-      .then((d) => { setCountries(d.data || []); setLoading(false); })
-      .catch(() => setLoading(false));
-  }, []);
-
-  const totalCarriers = countries.reduce((s, c) => s + c._count.carriers, 0);
-  const totalRateCards = countries.reduce((s, c) => s + c._count.rateCards, 0);
-  const totalPackaging = countries.reduce((s, c) => s + c._count.packagingFees, 0);
-  const codCountries = countries.filter((c) => c.codEnabled).length;
-  const w3wCountries = countries.filter((c) => c.w3wEnabled).length;
+function WorldMapSvg({
+  countries,
+  jobs,
+  hoveredCountry,
+  onHover,
+  onClick,
+}: {
+  countries: CountryData[];
+  jobs: ActiveJob[];
+  hoveredCountry: string | null;
+  onHover: (code: string | null) => void;
+  onClick: (code: string) => void;
+}) {
+  const latLngToXY = (lat: number, lng: number) => {
+    const x = ((lng + 180) / 360) * 800;
+    const y = ((90 - lat) / 180) * 400;
+    return { x, y };
+  };
 
   return (
-    <div className="p-6 max-w-7xl mx-auto">
-      <div className="mb-8">
-        <h1 className="text-2xl font-bold flex items-center gap-3">
-          <Globe className="w-7 h-7 text-blue-600" /> Global Logistics Network
-        </h1>
-        <p className="text-gray-500 mt-1">Manage countries, carriers, rate cards, packaging fees, and COD settings worldwide.</p>
-      </div>
+    <svg viewBox="0 0 800 400" className="w-full h-full" style={{ background: "#0d1b2a" }}>
+      <defs>
+        <radialGradient id="glow-green" cx="50%" cy="50%" r="50%">
+          <stop offset="0%" stopColor="#22c55e" stopOpacity="0.6" />
+          <stop offset="100%" stopColor="#22c55e" stopOpacity="0" />
+        </radialGradient>
+        <radialGradient id="glow-yellow" cx="50%" cy="50%" r="50%">
+          <stop offset="0%" stopColor="#eab308" stopOpacity="0.6" />
+          <stop offset="100%" stopColor="#eab308" stopOpacity="0" />
+        </radialGradient>
+        <radialGradient id="glow-red" cx="50%" cy="50%" r="50%">
+          <stop offset="0%" stopColor="#ef4444" stopOpacity="0.6" />
+          <stop offset="100%" stopColor="#ef4444" stopOpacity="0" />
+        </radialGradient>
+        <filter id="blur-sm">
+          <feGaussianBlur stdDeviation="2" />
+        </filter>
+      </defs>
 
-      <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-4 mb-8">
-        {[
-          { label: "Countries", value: countries.length, icon: Globe, color: "text-blue-600 bg-blue-50" },
-          { label: "Carriers", value: totalCarriers, icon: Truck, color: "text-green-600 bg-green-50" },
-          { label: "Rate Cards", value: totalRateCards, icon: CreditCard, color: "text-purple-600 bg-purple-50" },
-          { label: "Packaging Fees", value: totalPackaging, icon: Package, color: "text-orange-600 bg-orange-50" },
-          { label: "COD Enabled", value: codCountries, icon: CheckCircle, color: "text-emerald-600 bg-emerald-50" },
-        ].map((stat) => (
-          <div key={stat.label} className="bg-white rounded-xl border border-gray-200 p-4">
-            <div className={`w-10 h-10 rounded-lg flex items-center justify-center mb-3 ${stat.color}`}>
-              <stat.icon className="w-5 h-5" />
+      {/* Grid lines */}
+      {Array.from({ length: 7 }, (_, i) => (
+        <line key={`h${i}`} x1="0" y1={i * 66.67} x2="800" y2={i * 66.67} stroke="#1b2838" strokeWidth="0.5" />
+      ))}
+      {Array.from({ length: 13 }, (_, i) => (
+        <line key={`v${i}`} x1={i * 66.67} y1="0" x2={i * 66.67} y2="400" stroke="#1b2838" strokeWidth="0.5" />
+      ))}
+
+      {/* Equator */}
+      <line x1="0" y1="200" x2="800" y2="200" stroke="#1e3a5f" strokeWidth="1" strokeDasharray="4 4" />
+
+      {/* Country markers */}
+      {countries.map((c) => {
+        const { x, y } = latLngToXY(c.lat, c.lng);
+        const isHovered = hoveredCountry === c.code;
+        const color = COVERAGE_COLORS[c.coverageLevel];
+        const radius = Math.max(6, Math.min(18, c.partners / 80));
+
+        return (
+          <g
+            key={c.code}
+            onMouseEnter={() => onHover(c.code)}
+            onMouseLeave={() => onHover(null)}
+            onClick={() => onClick(c.code)}
+            className="cursor-pointer"
+          >
+            <circle cx={x} cy={y} r={radius + 12} fill={`url(#glow-${c.coverageLevel === "good" ? "green" : c.coverageLevel === "thin" ? "yellow" : "red"})`} />
+            <circle
+              cx={x}
+              cy={y}
+              r={radius}
+              fill={color}
+              fillOpacity={isHovered ? 0.9 : 0.6}
+              stroke={isHovered ? "#ffffff" : color}
+              strokeWidth={isHovered ? 2 : 1}
+            />
+            {isHovered && (
+              <g>
+                <rect x={x - 60} y={y - 68} width="120" height="52" rx="6" fill="#1b2838" stroke="#334155" strokeWidth="1" />
+                <text x={x} y={y - 52} textAnchor="middle" fill="#ffffff" fontSize="10" fontWeight="bold">
+                  {c.flag} {c.name}
+                </text>
+                <text x={x} y={y - 40} textAnchor="middle" fill="#94a3b8" fontSize="8">
+                  {c.partners} partners · {c.activeDeliveries} active
+                </text>
+              </g>
+            )}
+          </g>
+        );
+      })}
+
+      {/* Active job dots */}
+      {jobs.map((job) => {
+        const { x, y } = latLngToXY(job.lat, job.lng);
+        return (
+          <g key={job.id}>
+            <circle cx={x} cy={y} r="3" fill="#FF6B00">
+              <animate attributeName="r" values="2;5;2" dur="2s" repeatCount="indefinite" />
+              <animate attributeName="opacity" values="1;0.4;1" dur="2s" repeatCount="indefinite" />
+            </circle>
+            <circle cx={x} cy={y} r="2" fill="#FF6B00" />
+          </g>
+        );
+      })}
+    </svg>
+  );
+}
+
+export default function GlobalLogisticsPage() {
+  const [hoveredCountry, setHoveredCountry] = useState<string | null>(null);
+  const [selectedCountry, setSelectedCountry] = useState<string>("");
+  const [searchQuery, setSearchQuery] = useState("");
+  const [showDropdown, setShowDropdown] = useState(false);
+  const [liveTime, setLiveTime] = useState(new Date());
+
+  const metrics: GlobalMetrics = {
+    totalActiveDeliveries: COUNTRIES.reduce((s, c) => s + c.activeDeliveries, 0),
+    partnersOnline: COUNTRIES.reduce((s, c) => s + c.partners, 0),
+    revenueToday: COUNTRIES.reduce((s, c) => s + c.revenueToday, 0),
+    failedDeliveries: COUNTRIES.reduce((s, c) => s + c.failedToday, 0),
+    countriesActive: COUNTRIES.filter((c) => c.coverageLevel !== "none").length,
+    countriesTotal: COUNTRIES.length,
+  };
+
+  useEffect(() => {
+    const interval = setInterval(() => setLiveTime(new Date()), 1000);
+    return () => clearInterval(interval);
+  }, []);
+
+  const filteredCountries = COUNTRIES.filter(
+    (c) =>
+      c.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      c.code.toLowerCase().includes(searchQuery.toLowerCase())
+  );
+
+  const handleCountryClick = useCallback((code: string) => {
+    setSelectedCountry(code);
+    window.location.href = `/admin/logistics/countries/${code}`;
+  }, []);
+
+  const hovered = hoveredCountry ? COUNTRIES.find((c) => c.code === hoveredCountry) : null;
+
+  return (
+    <AdminShell title="Global Logistics Network" subtitle="Real-time worldwide delivery operations overview">
+      <div className="space-y-6">
+        {/* Global Metrics Bar */}
+        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3">
+          {[
+            { label: "Active Deliveries", value: metrics.totalActiveDeliveries.toLocaleString(), icon: Truck, color: "text-[#FF6B00] bg-orange-50", pulse: true },
+            { label: "Partners Online", value: metrics.partnersOnline.toLocaleString(), icon: Users, color: "text-green-600 bg-green-50", pulse: false },
+            { label: "Revenue Today", value: `$${metrics.revenueToday.toLocaleString()}`, icon: DollarSign, color: "text-blue-600 bg-blue-50", pulse: false },
+            { label: "Failed Today", value: metrics.failedDeliveries.toString(), icon: XCircle, color: metrics.failedDeliveries > 10 ? "text-red-600 bg-red-50" : "text-gray-600 bg-gray-50", pulse: metrics.failedDeliveries > 10 },
+            { label: "Countries Active", value: `${metrics.countriesActive}/${metrics.countriesTotal}`, icon: Globe, color: "text-purple-600 bg-purple-50", pulse: false },
+            { label: "Last Updated", value: liveTime.toLocaleTimeString(), icon: Clock, color: "text-[#0A1628] bg-gray-100", pulse: false },
+          ].map((stat) => (
+            <div key={stat.label} className="bg-white rounded-xl border border-gray-200 p-3">
+              <div className="flex items-center gap-2 mb-1">
+                <div className={`w-7 h-7 rounded-lg flex items-center justify-center ${stat.color}`}>
+                  <stat.icon className="w-3.5 h-3.5" />
+                </div>
+                {stat.pulse && <span className="w-2 h-2 bg-red-500 rounded-full animate-pulse" />}
+              </div>
+              <p className="text-lg font-bold text-[#0A1628]">{stat.value}</p>
+              <p className="text-[10px] text-gray-500">{stat.label}</p>
             </div>
-            <p className="text-2xl font-bold text-gray-900">{stat.value}</p>
-            <p className="text-sm text-gray-500">{stat.label}</p>
-          </div>
-        ))}
-      </div>
+          ))}
+        </div>
 
-      <div className="bg-white rounded-xl border border-gray-200 mb-6">
-        <div className="p-4 border-b border-gray-100 flex items-center justify-between">
-          <h2 className="font-semibold text-gray-900">Country Configurations</h2>
-          <div className="flex gap-2">
-            <Link href="/admin/logistics/countries" className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg text-sm hover:bg-blue-700">
-              <Settings className="w-4 h-4" /> Manage Countries
-            </Link>
-            <button className="flex items-center gap-2 px-4 py-2 border border-gray-300 rounded-lg text-sm hover:bg-gray-50">
-              <RefreshCw className="w-4 h-4" /> Refresh Rates
-            </button>
+        {/* Country Switcher & Search */}
+        <div className="flex items-center gap-3">
+          <div className="relative flex-1 max-w-xs">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+            <input
+              type="text"
+              value={searchQuery}
+              onChange={(e) => { setSearchQuery(e.target.value); setShowDropdown(true); }}
+              onFocus={() => setShowDropdown(true)}
+              onBlur={() => setTimeout(() => setShowDropdown(false), 200)}
+              placeholder="Search countries..."
+              className="w-full h-10 pl-9 pr-4 border border-gray-300 rounded-lg text-sm"
+            />
+            {showDropdown && filteredCountries.length > 0 && (
+              <div className="absolute top-11 left-0 right-0 bg-white border border-gray-200 rounded-lg shadow-lg z-20 max-h-60 overflow-y-auto">
+                {filteredCountries.map((c) => (
+                  <button
+                    key={c.code}
+                    onClick={() => { handleCountryClick(c.code); setShowDropdown(false); }}
+                    className="w-full flex items-center gap-3 px-4 py-2.5 hover:bg-gray-50 text-left text-sm"
+                  >
+                    <span className="text-lg">{c.flag}</span>
+                    <span className="font-medium text-[#0A1628]">{c.name}</span>
+                    <span className="text-gray-400 text-xs ml-auto">{c.code}</span>
+                    <span
+                      className="w-2 h-2 rounded-full"
+                      style={{ backgroundColor: COVERAGE_COLORS[c.coverageLevel] }}
+                    />
+                  </button>
+                ))}
+              </div>
+            )}
+          </div>
+          <button className="h-10 px-4 bg-white border border-gray-300 rounded-lg text-sm flex items-center gap-2 hover:bg-gray-50">
+            <RefreshCw className="w-4 h-4" /> Refresh
+          </button>
+          <Link href="/admin/logistics/countries" className="h-10 px-4 bg-[#FF6B00] text-white rounded-lg text-sm font-medium hover:bg-orange-600 flex items-center gap-2">
+            <Globe className="w-4 h-4" /> All Countries
+          </Link>
+        </div>
+
+        {/* World Map */}
+        <div className="bg-white rounded-xl border border-gray-200 overflow-hidden">
+          <div className="p-4 border-b border-gray-100 flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <h2 className="font-semibold text-[#0A1628] text-sm">Live Operations Map</h2>
+              <div className="flex items-center gap-1.5">
+                <span className="w-2 h-2 bg-green-500 rounded-full animate-pulse" />
+                <span className="text-[10px] text-gray-500">Live</span>
+              </div>
+            </div>
+            <div className="flex items-center gap-4 text-[10px] text-gray-500">
+              <span className="flex items-center gap-1"><span className="w-2.5 h-2.5 rounded-full bg-green-500" /> Good coverage</span>
+              <span className="flex items-center gap-1"><span className="w-2.5 h-2.5 rounded-full bg-yellow-500" /> Thin coverage</span>
+              <span className="flex items-center gap-1"><span className="w-2.5 h-2.5 rounded-full bg-red-500" /> No coverage</span>
+              <span className="flex items-center gap-1"><span className="w-2.5 h-2.5 rounded-full bg-[#FF6B00] animate-pulse" /> Active job</span>
+            </div>
+          </div>
+          <div className="relative" style={{ height: "420px" }}>
+            <WorldMapSvg
+              countries={COUNTRIES}
+              jobs={MOCK_JOBS}
+              hoveredCountry={hoveredCountry}
+              onHover={setHoveredCountry}
+              onClick={handleCountryClick}
+            />
           </div>
         </div>
-        {loading ? (
-          <div className="p-12 text-center text-gray-400">Loading...</div>
-        ) : (
-          <div className="divide-y divide-gray-100">
-            {countries.map((country) => (
+
+        {/* Coverage Gaps */}
+        <div className="bg-white rounded-xl border border-gray-200 p-4">
+          <div className="flex items-center gap-2 mb-3">
+            <AlertTriangle className="w-4 h-4 text-yellow-500" />
+            <h3 className="font-semibold text-[#0A1628] text-sm">Coverage Gaps</h3>
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+            {COUNTRIES.filter((c) => c.coverageLevel !== "good").map((c) => (
               <Link
-                key={country.countryCode}
-                href={`/admin/logistics/countries/${country.countryCode}`}
-                className="flex items-center justify-between p-4 hover:bg-gray-50 transition-colors"
+                key={c.code}
+                href={`/admin/logistics/countries/${c.code}`}
+                className="flex items-center gap-3 p-3 rounded-lg border border-gray-100 hover:bg-gray-50 transition-colors"
               >
-                <div className="flex items-center gap-4">
-                  <span className="text-2xl">{FLAG_MAP[country.countryCode] || "\u{1F30D}"}</span>
-                  <div>
-                    <p className="font-medium text-gray-900">{country.countryName}</p>
-                    <p className="text-sm text-gray-500">
-                      {country.countryCode} &middot; {country.currencyCode} ({CURRENCY_SYMBOLS[country.currencyCode] || country.currencyCode}) &middot; {country.phoneCode}
-                    </p>
-                  </div>
+                <span className="text-xl">{c.flag}</span>
+                <div className="flex-1">
+                  <p className="text-sm font-medium text-[#0A1628]">{c.name}</p>
+                  <p className="text-xs text-gray-500">{c.partners} partners · {c.activeDeliveries} active</p>
                 </div>
-                <div className="flex items-center gap-6 text-sm text-gray-500">
-                  <span className="flex items-center gap-1"><Truck className="w-3.5 h-3.5" /> {country._count.carriers}</span>
-                  <span className="flex items-center gap-1"><CreditCard className="w-3.5 h-3.5" /> {country._count.rateCards}</span>
-                  <span className="flex items-center gap-1"><Package className="w-3.5 h-3.5" /> {country._count.packagingFees}</span>
-                  {country.codEnabled && <span className="px-2 py-0.5 bg-emerald-50 text-emerald-700 rounded-full text-xs font-medium">COD</span>}
-                  {country.ddpRequired && <span className="px-2 py-0.5 bg-amber-50 text-amber-700 rounded-full text-xs font-medium">DDP</span>}
-                  {country.w3wEnabled && <MapPin className="w-4 h-4 text-blue-400" />}
-                  <ChevronRight className="w-4 h-4 text-gray-300" />
-                </div>
+                <span
+                  className={`px-2 py-0.5 rounded-full text-[10px] font-medium ${
+                    c.coverageLevel === "thin"
+                      ? "bg-yellow-50 text-yellow-700"
+                      : "bg-red-50 text-red-700"
+                  }`}
+                >
+                  {c.coverageLevel === "thin" ? "Thin" : "None"}
+                </span>
               </Link>
             ))}
           </div>
-        )}
+        </div>
+
+        {/* Country Performance Table */}
+        <div className="bg-white rounded-xl border border-gray-200 overflow-hidden">
+          <div className="p-4 border-b border-gray-100">
+            <h3 className="font-semibold text-[#0A1628] text-sm">Country Performance Today</h3>
+          </div>
+          <div className="overflow-x-auto">
+            <table className="w-full text-sm">
+              <thead className="bg-gray-50 text-[10px] text-gray-500 uppercase">
+                <tr>
+                  {["Country", "Partners", "Active", "Revenue", "Failed", "Coverage", "Actions"].map((h) => (
+                    <th key={h} className="text-left px-4 py-2 font-medium">{h}</th>
+                  ))}
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-gray-100">
+                {COUNTRIES.sort((a, b) => b.activeDeliveries - a.activeDeliveries).map((c) => (
+                  <tr key={c.code} className="hover:bg-gray-50">
+                    <td className="px-4 py-3">
+                      <div className="flex items-center gap-2">
+                        <span className="text-lg">{c.flag}</span>
+                        <div>
+                          <p className="font-medium text-[#0A1628]">{c.name}</p>
+                          <p className="text-[10px] text-gray-400">{c.code}</p>
+                        </div>
+                      </div>
+                    </td>
+                    <td className="px-4 py-3 text-[#0A1628]">{c.partners.toLocaleString()}</td>
+                    <td className="px-4 py-3">
+                      <span className="font-medium text-[#0A1628]">{c.activeDeliveries}</span>
+                      {c.activeDeliveries > 0 && <Activity className="w-3 h-3 text-[#FF6B00] inline ml-1 animate-pulse" />}
+                    </td>
+                    <td className="px-4 py-3 font-medium text-[#0A1628]">${c.revenueToday.toLocaleString()}</td>
+                    <td className="px-4 py-3">
+                      {c.failedToday > 0 ? (
+                        <span className="text-red-600 font-medium">{c.failedToday}</span>
+                      ) : (
+                        <span className="text-green-600">0</span>
+                      )}
+                    </td>
+                    <td className="px-4 py-3">
+                      <span
+                        className={`px-2 py-0.5 rounded-full text-[10px] font-medium ${
+                          c.coverageLevel === "good"
+                            ? "bg-green-50 text-green-700"
+                            : c.coverageLevel === "thin"
+                            ? "bg-yellow-50 text-yellow-700"
+                            : "bg-red-50 text-red-700"
+                        }`}
+                      >
+                        {c.coverageLevel === "good" ? "Good" : c.coverageLevel === "thin" ? "Thin" : "None"}
+                      </span>
+                    </td>
+                    <td className="px-4 py-3">
+                      <Link
+                        href={`/admin/logistics/countries/${c.code}`}
+                        className="text-[#FF6B00] text-xs font-medium hover:underline flex items-center gap-1"
+                      >
+                        <Eye className="w-3 h-3" /> View
+                      </Link>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </div>
       </div>
-    </div>
+    </AdminShell>
   );
 }

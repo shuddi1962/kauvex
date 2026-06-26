@@ -1,302 +1,289 @@
--- ═══════════════════════════════════════════════════════════════════
--- PHASE 20 — Kauvex Shipping Platform (kv_ksp_ prefix)
--- Steps 352-394 | Build Steps 352-394
--- ═══════════════════════════════════════════════════════════════════
+-- ============================================================
+-- PHASE 20: Kauvex Shipping Platform (KSP) — Additional Tables
+-- ============================================================
+-- Existing tables (already in schema):
+--   kv_ksp_express_accounts, kv_ksp_team_members, kv_ksp_lockers,
+--   kv_ksp_locker_compartments, kv_ksp_locker_bookings,
+--   kv_ksp_wms_integrations, kv_ksp_cargo_photos,
+--   kv_ksp_delivery_confidence, kv_ksp_geofence_alerts,
+--   kv_ksp_platform_events, kv_ksp_smart_rate_calendar,
+--   kv_ksp_vendor_fbk_roi, kv_ksp_bundle_suggestions,
+--   kv_ksp_fuel_prices, kv_ksp_shipment_returns,
+--   kv_ksp_carbon_footprints, kv_glx_countries, kv_glx_country_carriers,
+--   kv_glx_rate_cards, kv_glx_packaging_fees, kv_glx_partner_countries,
+--   kv_glx_jobs_extended, kv_glx_cod_collections,
+--   kv_glx_what3words_locations, kv_glx_compliance_log
+-- ============================================================
 
--- 1. Extend existing express shipments table
-ALTER TABLE kv_ship_express_shipments
-ADD COLUMN IF NOT EXISTS is_guest BOOLEAN DEFAULT true,
-ADD COLUMN IF NOT EXISTS account_id UUID,
-ADD COLUMN IF NOT EXISTS delivery_confidence_score INT,
-ADD COLUMN IF NOT EXISTS cargo_photos JSONB,
-ADD COLUMN IF NOT EXISTS packaging_type VARCHAR(50),
-ADD COLUMN IF NOT EXISTS packaging_size VARCHAR(20),
-ADD COLUMN IF NOT EXISTS packaging_fee DECIMAL(10,2),
-ADD COLUMN IF NOT EXISTS locker_id UUID,
-ADD COLUMN IF NOT EXISTS locker_compartment_id UUID,
-ADD COLUMN IF NOT EXISTS collection_pin VARCHAR(10),
-ADD COLUMN IF NOT EXISTS collection_qr_url TEXT,
-ADD COLUMN IF NOT EXISTS collected_at TIMESTAMP,
-ADD COLUMN IF NOT EXISTS geofence_alerts JSONB;
-
--- 2. Express Accounts
-CREATE TABLE IF NOT EXISTS kv_ksp_express_accounts (
-  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  user_id UUID,
-  account_type VARCHAR(20) DEFAULT 'personal',
-  business_name VARCHAR(200),
-  tier VARCHAR(20) DEFAULT 'bronze',
-  monthly_volume INT DEFAULT 0,
-  monthly_spend DECIMAL(14,2) DEFAULT 0,
-  volume_discount_percent DECIMAL(5,2) DEFAULT 0,
-  billing_type VARCHAR(20) DEFAULT 'per_shipment',
-  wallet_balance DECIMAL(14,2) DEFAULT 0,
-  custom_waybill_branding BOOLEAN DEFAULT false,
-  api_access BOOLEAN DEFAULT false,
-  team_approval_threshold DECIMAL(14,2),
-  carbon_offset_enabled BOOLEAN DEFAULT false,
-  status VARCHAR(20) DEFAULT 'active',
-  created_at TIMESTAMP DEFAULT NOW(),
-  updated_at TIMESTAMP DEFAULT NOW()
+-- 1. Saved Addresses
+CREATE TABLE IF NOT EXISTS kv_ksp_saved_addresses (
+  id            UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  user_id       UUID NOT NULL,
+  label         TEXT NOT NULL,
+  address_line_1 TEXT NOT NULL,
+  address_line_2 TEXT,
+  city          TEXT NOT NULL,
+  state         TEXT,
+  postcode      TEXT,
+  country_code  TEXT NOT NULL,
+  is_default    BOOLEAN NOT NULL DEFAULT false,
+  latitude      DECIMAL(10, 7),
+  longitude     DECIMAL(10, 7),
+  created_at    TIMESTAMPTZ NOT NULL DEFAULT now(),
+  updated_at    TIMESTAMPTZ NOT NULL DEFAULT now()
 );
-CREATE INDEX IF NOT EXISTS idx_ksp_account_user ON kv_ksp_express_accounts(user_id);
 
--- 3. Team Members
-CREATE TABLE IF NOT EXISTS kv_ksp_team_members (
-  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  account_id UUID REFERENCES kv_ksp_express_accounts(id),
-  user_id UUID,
-  role VARCHAR(20),
-  spending_limit DECIMAL(14,2),
-  department VARCHAR(100),
-  is_active BOOLEAN DEFAULT true,
-  created_at TIMESTAMP DEFAULT NOW()
-);
-CREATE INDEX IF NOT EXISTS idx_ksp_team_account ON kv_ksp_team_members(account_id);
+CREATE INDEX idx_kv_ksp_saved_addr_user ON kv_ksp_saved_addresses(user_id);
+CREATE INDEX idx_kv_ksp_saved_addr_country ON kv_ksp_saved_addresses(country_code);
+CREATE INDEX idx_kv_ksp_saved_addr_default ON kv_ksp_saved_addresses(user_id, is_default) WHERE is_default = true;
 
--- 4. Lockers
-CREATE TABLE IF NOT EXISTS kv_ksp_lockers (
-  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  name VARCHAR(200),
-  location_name VARCHAR(200),
-  address TEXT,
-  city VARCHAR(100),
-  country_code VARCHAR(10),
-  latitude DECIMAL(10,6),
-  longitude DECIMAL(10,6),
-  locker_type VARCHAR(20) DEFAULT 'standard',
-  total_compartments INT DEFAULT 0,
-  available_compartments INT DEFAULT 0,
-  opening_hours JSONB,
-  is_24_hours BOOLEAN DEFAULT false,
-  has_refrigerated BOOLEAN DEFAULT false,
-  has_camera BOOLEAN DEFAULT true,
-  host_name VARCHAR(200),
-  host_revenue_share DECIMAL(5,2),
-  status VARCHAR(20) DEFAULT 'active',
-  last_service_check TIMESTAMP,
-  created_at TIMESTAMP DEFAULT NOW()
+-- 2. Shipment Templates
+CREATE TABLE IF NOT EXISTS kv_ksp_shipment_templates (
+  id              UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  user_id         UUID NOT NULL,
+  name            TEXT NOT NULL,
+  pickup_address  JSONB NOT NULL DEFAULT '{}',
+  dropoff_address JSONB NOT NULL DEFAULT '{}',
+  package_weight  DECIMAL(8, 2),
+  package_length  DECIMAL(8, 2),
+  package_width   DECIMAL(8, 2),
+  package_height  DECIMAL(8, 2),
+  package_type    TEXT DEFAULT 'parcel',
+  service_tier    TEXT DEFAULT 'standard',
+  instructions    TEXT,
+  created_at      TIMESTAMPTZ NOT NULL DEFAULT now(),
+  updated_at      TIMESTAMPTZ NOT NULL DEFAULT now()
 );
-CREATE INDEX IF NOT EXISTS idx_ksp_locker_country ON kv_ksp_lockers(country_code);
-CREATE INDEX IF NOT EXISTS idx_ksp_locker_city ON kv_ksp_lockers(city);
 
--- 5. Locker Compartments
-CREATE TABLE IF NOT EXISTS kv_ksp_locker_compartments (
-  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  locker_id UUID REFERENCES kv_ksp_lockers(id),
-  compartment_number VARCHAR(20),
-  size VARCHAR(20),
-  max_weight_kg DECIMAL(10,3),
-  length_cm DECIMAL(10,2),
-  width_cm DECIMAL(10,2),
-  height_cm DECIMAL(10,2),
-  is_refrigerated BOOLEAN DEFAULT false,
-  status VARCHAR(20) DEFAULT 'available',
-  current_shipment_id UUID,
-  occupied_since TIMESTAMP,
-  created_at TIMESTAMP DEFAULT NOW()
-);
-CREATE INDEX IF NOT EXISTS idx_ksp_compartment_locker ON kv_ksp_locker_compartments(locker_id);
-CREATE INDEX IF NOT EXISTS idx_ksp_compartment_status ON kv_ksp_locker_compartments(status);
+CREATE INDEX idx_kv_ksp_template_user ON kv_ksp_shipment_templates(user_id);
 
--- 6. Locker Bookings
-CREATE TABLE IF NOT EXISTS kv_ksp_locker_bookings (
-  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  compartment_id UUID REFERENCES kv_ksp_locker_compartments(id),
-  locker_id UUID,
-  shipment_id UUID,
-  shipment_type VARCHAR(20),
-  collection_pin VARCHAR(10),
-  collection_qr_url TEXT,
-  status VARCHAR(20) DEFAULT 'awaiting_delivery',
-  delivered_at TIMESTAMP,
-  collected_at TIMESTAMP,
-  expires_at TIMESTAMP,
-  reminder_1_sent BOOLEAN DEFAULT false,
-  reminder_2_sent BOOLEAN DEFAULT false,
-  final_notice_sent BOOLEAN DEFAULT false,
-  created_at TIMESTAMP DEFAULT NOW()
+-- 3. Recurring Shipments
+CREATE TABLE IF NOT EXISTS kv_ksp_recurring_shipments (
+  id          UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  user_id     UUID NOT NULL,
+  template_id UUID NOT NULL REFERENCES kv_ksp_shipment_templates(id) ON DELETE CASCADE,
+  frequency   TEXT NOT NULL DEFAULT 'weekly',
+  next_date   DATE NOT NULL,
+  is_active   BOOLEAN NOT NULL DEFAULT true,
+  last_run_at TIMESTAMPTZ,
+  created_at  TIMESTAMPTZ NOT NULL DEFAULT now(),
+  updated_at  TIMESTAMPTZ NOT NULL DEFAULT now()
 );
-CREATE INDEX IF NOT EXISTS idx_ksp_booking_locker ON kv_ksp_locker_bookings(locker_id);
-CREATE INDEX IF NOT EXISTS idx_ksp_booking_status ON kv_ksp_locker_bookings(status);
 
--- 7. WMS Integrations
-CREATE TABLE IF NOT EXISTS kv_ksp_wms_integrations (
-  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  warehouse_id UUID,
-  wms_type VARCHAR(50) DEFAULT 'manual',
-  wms_name VARCHAR(100),
-  api_endpoint TEXT,
-  api_key TEXT,
-  api_secret TEXT,
-  webhook_url TEXT,
-  status_code_mapping JSONB,
-  is_active BOOLEAN DEFAULT true,
-  last_sync TIMESTAMP,
-  sync_errors INT DEFAULT 0,
-  created_at TIMESTAMP DEFAULT NOW()
-);
-CREATE INDEX IF NOT EXISTS idx_ksp_wms_warehouse ON kv_ksp_wms_integrations(warehouse_id);
+CREATE INDEX idx_kv_ksp_recurring_user ON kv_ksp_recurring_shipments(user_id);
+CREATE INDEX idx_kv_ksp_recurring_next ON kv_ksp_recurring_shipments(next_date) WHERE is_active = true;
+CREATE INDEX idx_kv_ksp_recurring_template ON kv_ksp_recurring_shipments(template_id);
 
--- 8. Cargo Photos
-CREATE TABLE IF NOT EXISTS kv_ksp_cargo_photos (
-  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  shipment_id UUID,
-  shipment_type VARCHAR(20),
-  checkpoint_type VARCHAR(30),
-  photo_url TEXT,
-  taken_by_type VARCHAR(20),
-  taken_by_id UUID,
-  latitude DECIMAL(10,6),
-  longitude DECIMAL(10,6),
-  notes TEXT,
-  created_at TIMESTAMP DEFAULT NOW()
+-- 4. Bulk Uploads
+CREATE TABLE IF NOT EXISTS kv_ksp_bulk_uploads (
+  id              UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  user_id         UUID NOT NULL,
+  file_url        TEXT NOT NULL,
+  status          TEXT NOT NULL DEFAULT 'pending',
+  total_rows      INT NOT NULL DEFAULT 0,
+  processed_rows  INT NOT NULL DEFAULT 0,
+  error_rows      INT NOT NULL DEFAULT 0,
+  error_log       JSONB,
+  upload_type     TEXT DEFAULT 'shipments',
+  created_at      TIMESTAMPTZ NOT NULL DEFAULT now(),
+  completed_at    TIMESTAMPTZ
 );
-CREATE INDEX IF NOT EXISTS idx_ksp_cargo_shipment ON kv_ksp_cargo_photos(shipment_id);
 
--- 9. Delivery Confidence
-CREATE TABLE IF NOT EXISTS kv_ksp_delivery_confidence (
-  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  shipment_id UUID,
-  score INT,
-  factors JSONB,
-  recommendation TEXT,
-  calculated_at TIMESTAMP DEFAULT NOW()
-);
-CREATE INDEX IF NOT EXISTS idx_ksp_confidence_shipment ON kv_ksp_delivery_confidence(shipment_id);
+CREATE INDEX idx_kv_ksp_bulk_user ON kv_ksp_bulk_uploads(user_id);
+CREATE INDEX idx_kv_ksp_bulk_status ON kv_ksp_bulk_uploads(status);
 
--- 10. Geofence Alerts
-CREATE TABLE IF NOT EXISTS kv_ksp_geofence_alerts (
-  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  shipment_id UUID,
-  account_id UUID,
-  alert_name VARCHAR(100),
-  trigger_type VARCHAR(30),
-  city VARCHAR(100),
-  country_code VARCHAR(10),
-  radius_km DECIMAL(10,2),
-  latitude DECIMAL(10,6),
-  longitude DECIMAL(10,6),
-  triggered BOOLEAN DEFAULT false,
-  triggered_at TIMESTAMP,
-  notification_sent BOOLEAN DEFAULT false,
-  created_at TIMESTAMP DEFAULT NOW()
+-- 5. API Keys (KSP-specific)
+CREATE TABLE IF NOT EXISTS kv_ksp_api_keys (
+  id          UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  user_id     UUID NOT NULL,
+  key_hash    TEXT NOT NULL UNIQUE,
+  key_prefix  TEXT NOT NULL,
+  name        TEXT NOT NULL,
+  permissions JSONB NOT NULL DEFAULT '[]',
+  rate_limit  INT NOT NULL DEFAULT 100,
+  last_used_at TIMESTAMPTZ,
+  is_active   BOOLEAN NOT NULL DEFAULT true,
+  expires_at  TIMESTAMPTZ,
+  created_at  TIMESTAMPTZ NOT NULL DEFAULT now()
 );
-CREATE INDEX IF NOT EXISTS idx_ksp_geofence_shipment ON kv_ksp_geofence_alerts(shipment_id);
 
--- 11. Platform Events (Command Center)
-CREATE TABLE IF NOT EXISTS kv_ksp_platform_events (
-  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  event_type VARCHAR(50),
-  event_data JSONB,
-  country_code VARCHAR(10),
-  city VARCHAR(100),
-  latitude DECIMAL(10,6),
-  longitude DECIMAL(10,6),
-  value DECIMAL(14,2),
-  storefront_id UUID,
-  created_at TIMESTAMP DEFAULT NOW()
-);
-CREATE INDEX IF NOT EXISTS idx_ksp_event_created ON kv_ksp_platform_events(created_at);
-CREATE INDEX IF NOT EXISTS idx_ksp_event_type ON kv_ksp_platform_events(event_type);
-CREATE INDEX IF NOT EXISTS idx_ksp_event_country ON kv_ksp_platform_events(country_code);
+CREATE INDEX idx_kv_ksp_apikeys_user ON kv_ksp_api_keys(user_id);
+CREATE INDEX idx_kv_ksp_apikeys_prefix ON kv_ksp_api_keys(key_prefix);
+CREATE INDEX idx_kv_ksp_apikeys_active ON kv_ksp_api_keys(is_active) WHERE is_active = true;
 
--- 12. Smart Rate Calendar
-CREATE TABLE IF NOT EXISTS kv_ksp_smart_rate_calendar (
-  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  origin_country VARCHAR(10),
-  destination_country VARCHAR(10),
-  origin_city VARCHAR(100),
-  destination_city VARCHAR(100),
-  date DATE,
-  service_level VARCHAR(20),
-  predicted_rate DECIMAL(14,2),
-  currency_code VARCHAR(10),
-  rate_factors JSONB,
-  cheapest_day_of_week INT,
-  calculated_at TIMESTAMP DEFAULT NOW()
+-- 6. Notifications
+CREATE TABLE IF NOT EXISTS kv_ksp_notifications (
+  id          UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  user_id     UUID NOT NULL,
+  type        TEXT NOT NULL DEFAULT 'info',
+  title       TEXT NOT NULL,
+  body        TEXT NOT NULL,
+  read        BOOLEAN NOT NULL DEFAULT false,
+  data        JSONB NOT NULL DEFAULT '{}',
+  channel     TEXT DEFAULT 'in_app',
+  created_at  TIMESTAMPTZ NOT NULL DEFAULT now()
 );
-CREATE INDEX IF NOT EXISTS idx_ksp_rate_cal_route ON kv_ksp_smart_rate_calendar(origin_country, destination_country);
-CREATE INDEX IF NOT EXISTS idx_ksp_rate_cal_date ON kv_ksp_smart_rate_calendar(date);
 
--- 13. Vendor FBK ROI
-CREATE TABLE IF NOT EXISTS kv_ksp_vendor_fbk_roi (
-  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  vendor_id UUID,
-  product_id UUID,
-  period_start DATE,
-  period_end DATE,
-  units_sold INT DEFAULT 0,
-  revenue DECIMAL(14,2) DEFAULT 0,
-  storage_fees DECIMAL(14,2) DEFAULT 0,
-  pick_pack_fees DECIMAL(14,2) DEFAULT 0,
-  inbound_fees DECIMAL(14,2) DEFAULT 0,
-  total_fbk_cost DECIMAL(14,2) DEFAULT 0,
-  net_fbk_profit DECIMAL(14,2) DEFAULT 0,
-  fbk_roi_percent DECIMAL(10,2),
-  created_at TIMESTAMP DEFAULT NOW()
-);
-CREATE INDEX IF NOT EXISTS idx_ksp_roi_vendor ON kv_ksp_vendor_fbk_roi(vendor_id);
+CREATE INDEX idx_kv_ksp_notif_user ON kv_ksp_notifications(user_id);
+CREATE INDEX idx_kv_ksp_notif_unread ON kv_ksp_notifications(user_id, read) WHERE read = false;
+CREATE INDEX idx_kv_ksp_notif_created ON kv_ksp_notifications(created_at DESC);
 
--- 14. Bundle Suggestions
-CREATE TABLE IF NOT EXISTS kv_ksp_bundle_suggestions (
-  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  vendor_id UUID,
-  product_a_id UUID,
-  product_b_id UUID,
-  co_purchase_rate DECIMAL(5,2),
-  potential_saving_per_order DECIMAL(10,2),
-  status VARCHAR(20) DEFAULT 'pending',
-  created_at TIMESTAMP DEFAULT NOW()
+-- 7. Payment Methods
+CREATE TABLE IF NOT EXISTS kv_ksp_payment_methods (
+  id          UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  user_id     UUID NOT NULL,
+  type        TEXT NOT NULL,
+  provider    TEXT NOT NULL,
+  last_four   TEXT NOT NULL,
+  token       TEXT,
+  is_default  BOOLEAN NOT NULL DEFAULT false,
+  metadata    JSONB NOT NULL DEFAULT '{}',
+  created_at  TIMESTAMPTZ NOT NULL DEFAULT now(),
+  updated_at  TIMESTAMPTZ NOT NULL DEFAULT now()
 );
-CREATE INDEX IF NOT EXISTS idx_ksp_bundle_vendor ON kv_ksp_bundle_suggestions(vendor_id);
 
--- 15. Fuel Prices
-CREATE TABLE IF NOT EXISTS kv_ksp_fuel_prices (
-  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  country_code VARCHAR(10),
-  city VARCHAR(100),
-  fuel_type VARCHAR(20) DEFAULT 'petrol',
-  price_per_litre DECIMAL(10,2),
-  currency_code VARCHAR(10),
-  source VARCHAR(100),
-  recorded_at TIMESTAMP DEFAULT NOW()
-);
-CREATE INDEX IF NOT EXISTS idx_ksp_fuel_location ON kv_ksp_fuel_prices(country_code, city);
-CREATE INDEX IF NOT EXISTS idx_ksp_fuel_date ON kv_ksp_fuel_prices(recorded_at);
+CREATE INDEX idx_kv_ksp_paymethod_user ON kv_ksp_payment_methods(user_id);
+CREATE INDEX idx_kv_ksp_paymethod_default ON kv_ksp_payment_methods(user_id, is_default) WHERE is_default = true;
 
--- 16. Shipment Returns
-CREATE TABLE IF NOT EXISTS kv_ksp_shipment_returns (
-  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  original_waybill VARCHAR(20),
-  original_shipment_id UUID,
-  reason TEXT,
-  return_waybill VARCHAR(20),
-  return_address TEXT,
-  return_city VARCHAR(100),
-  return_country VARCHAR(10),
-  status VARCHAR(20) DEFAULT 'pending',
-  return_fee DECIMAL(12,2),
-  covered_by_original BOOLEAN DEFAULT false,
-  created_at TIMESTAMP DEFAULT NOW(),
-  updated_at TIMESTAMP DEFAULT NOW()
+-- 8. Fuel Stations
+CREATE TABLE IF NOT EXISTS kv_ksp_fuel_stations (
+  id            UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  name          TEXT NOT NULL,
+  city          TEXT NOT NULL,
+  country_code  TEXT NOT NULL,
+  latitude      DECIMAL(10, 7) NOT NULL,
+  longitude     DECIMAL(10, 7) NOT NULL,
+  fuel_type     TEXT NOT NULL DEFAULT 'petrol',
+  price         DECIMAL(10, 2) NOT NULL,
+  currency_code TEXT NOT NULL DEFAULT 'NGN',
+  last_updated  TIMESTAMPTZ NOT NULL DEFAULT now(),
+  created_at    TIMESTAMPTZ NOT NULL DEFAULT now()
 );
-CREATE INDEX IF NOT EXISTS idx_ksp_return_original ON kv_ksp_shipment_returns(original_waybill);
 
--- 17. Carbon Footprint
-CREATE TABLE IF NOT EXISTS kv_ksp_carbon_footprints (
-  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  shipment_id UUID,
-  account_id UUID,
-  country_code VARCHAR(10),
-  distance_km DECIMAL(10,2),
-  weight_kg DECIMAL(10,3),
-  co2_grams DECIMAL(12,2),
-  carrier_used VARCHAR(50),
-  service_level VARCHAR(20),
-  offset_purchased BOOLEAN DEFAULT false,
-  trees_planted INT DEFAULT 0,
-  calculated_at TIMESTAMP DEFAULT NOW()
+CREATE INDEX idx_kv_ksp_fuel_country ON kv_ksp_fuel_stations(country_code);
+CREATE INDEX idx_kv_ksp_fuel_city ON kv_ksp_fuel_stations(city);
+CREATE INDEX idx_kv_ksp_fuel_coords ON kv_ksp_fuel_stations(latitude, longitude);
+CREATE INDEX idx_kv_ksp_fuel_type ON kv_ksp_fuel_stations(fuel_type);
+
+-- 9. Delivery Alerts
+CREATE TABLE IF NOT EXISTS kv_ksp_delivery_alerts (
+  id           UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  user_id      UUID NOT NULL,
+  shipment_id  UUID,
+  alert_type   TEXT NOT NULL,
+  message      TEXT NOT NULL,
+  read         BOOLEAN NOT NULL DEFAULT false,
+  severity     TEXT DEFAULT 'info',
+  action_url   TEXT,
+  data         JSONB NOT NULL DEFAULT '{}',
+  created_at   TIMESTAMPTZ NOT NULL DEFAULT now()
 );
-CREATE INDEX IF NOT EXISTS idx_ksp_carbon_account ON kv_ksp_carbon_footprints(account_id);
-CREATE INDEX IF NOT EXISTS idx_ksp_carbon_date ON kv_ksp_carbon_footprints(calculated_at);
+
+CREATE INDEX idx_kv_ksp_alert_user ON kv_ksp_delivery_alerts(user_id);
+CREATE INDEX idx_kv_ksp_alert_unread ON kv_ksp_delivery_alerts(user_id, read) WHERE read = false;
+CREATE INDEX idx_kv_ksp_alert_shipment ON kv_ksp_delivery_alerts(shipment_id);
+CREATE INDEX idx_kv_ksp_alert_type ON kv_ksp_delivery_alerts(alert_type);
+
+-- ============================================================
+-- RLS Policies (Row Level Security)
+-- ============================================================
+
+ALTER TABLE kv_ksp_saved_addresses ENABLE ROW LEVEL SECURITY;
+ALTER TABLE kv_ksp_shipment_templates ENABLE ROW LEVEL SECURITY;
+ALTER TABLE kv_ksp_recurring_shipments ENABLE ROW LEVEL SECURITY;
+ALTER TABLE kv_ksp_bulk_uploads ENABLE ROW LEVEL SECURITY;
+ALTER TABLE kv_ksp_api_keys ENABLE ROW LEVEL SECURITY;
+ALTER TABLE kv_ksp_notifications ENABLE ROW LEVEL SECURITY;
+ALTER TABLE kv_ksp_payment_methods ENABLE ROW LEVEL SECURITY;
+ALTER TABLE kv_ksp_fuel_stations ENABLE ROW LEVEL SECURITY;
+ALTER TABLE kv_ksp_delivery_alerts ENABLE ROW LEVEL SECURITY;
+
+-- Users can manage their own saved addresses
+CREATE POLICY "Users manage own saved addresses" ON kv_ksp_saved_addresses
+  FOR ALL USING (auth.uid() = user_id);
+
+-- Users can manage their own shipment templates
+CREATE POLICY "Users manage own templates" ON kv_ksp_shipment_templates
+  FOR ALL USING (auth.uid() = user_id);
+
+-- Users can manage their own recurring shipments
+CREATE POLICY "Users manage own recurring" ON kv_ksp_recurring_shipments
+  FOR ALL USING (auth.uid() = user_id);
+
+-- Users can manage their own bulk uploads
+CREATE POLICY "Users manage own bulk uploads" ON kv_ksp_bulk_uploads
+  FOR ALL USING (auth.uid() = user_id);
+
+-- Users can manage their own API keys
+CREATE POLICY "Users manage own api keys" ON kv_ksp_api_keys
+  FOR ALL USING (auth.uid() = user_id);
+
+-- Users can read their own notifications
+CREATE POLICY "Users read own notifications" ON kv_ksp_notifications
+  FOR SELECT USING (auth.uid() = user_id);
+
+CREATE POLICY "Users update own notifications" ON kv_ksp_notifications
+  FOR UPDATE USING (auth.uid() = user_id);
+
+-- Users can manage their own payment methods
+CREATE POLICY "Users manage own payment methods" ON kv_ksp_payment_methods
+  FOR ALL USING (auth.uid() = user_id);
+
+-- Fuel stations are public read
+CREATE POLICY "Public read fuel stations" ON kv_ksp_fuel_stations
+  FOR SELECT USING (true);
+
+CREATE POLICY "Admin manage fuel stations" ON kv_ksp_fuel_stations
+  FOR ALL USING (
+    EXISTS (SELECT 1 FROM profiles WHERE id = auth.uid() AND role = 'admin')
+  );
+
+-- Users can read their own delivery alerts
+CREATE POLICY "Users read own delivery alerts" ON kv_ksp_delivery_alerts
+  FOR SELECT USING (auth.uid() = user_id);
+
+CREATE POLICY "Users update own delivery alerts" ON kv_ksp_delivery_alerts
+  FOR UPDATE USING (auth.uid() = user_id);
+
+-- ============================================================
+-- Triggers for updated_at
+-- ============================================================
+
+CREATE OR REPLACE FUNCTION kv_ksp_update_timestamp()
+RETURNS TRIGGER AS $$
+BEGIN
+  NEW.updated_at = now();
+  RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+CREATE TRIGGER trg_kv_ksp_saved_addresses_updated
+  BEFORE UPDATE ON kv_ksp_saved_addresses
+  FOR EACH ROW EXECUTE FUNCTION kv_ksp_update_timestamp();
+
+CREATE TRIGGER trg_kv_ksp_shipment_templates_updated
+  BEFORE UPDATE ON kv_ksp_shipment_templates
+  FOR EACH ROW EXECUTE FUNCTION kv_ksp_update_timestamp();
+
+CREATE TRIGGER trg_kv_ksp_recurring_shipments_updated
+  BEFORE UPDATE ON kv_ksp_recurring_shipments
+  FOR EACH ROW EXECUTE FUNCTION kv_ksp_update_timestamp();
+
+CREATE TRIGGER trg_kv_ksp_payment_methods_updated
+  BEFORE UPDATE ON kv_ksp_payment_methods
+  FOR EACH ROW EXECUTE FUNCTION kv_ksp_update_timestamp();
+
+-- ============================================================
+-- Seed: Sample fuel stations (Lagos, Abuja, PH)
+-- ============================================================
+
+INSERT INTO kv_ksp_fuel_stations (name, city, country_code, latitude, longitude, fuel_type, price, currency_code)
+VALUES
+  ('NNPC Mega Station Victoria Island', 'Lagos', 'NG', 6.4281, 3.4219, 'petrol', 617.00, 'NGN'),
+  ('TotalEnergies Lekki Phase 1', 'Lagos', 'NG', 6.4474, 3.4639, 'petrol', 620.00, 'NGN'),
+  ('Mobil Marina Lagos', 'Lagos', 'NG', 6.4541, 3.3947, 'diesel', 750.00, 'NGN'),
+  ('Oando Wuse Zone 5', 'Abuja', 'NG', 9.0579, 7.4951, 'petrol', 617.00, 'NGN'),
+  ('TotalEnergies Maitama', 'Abuja', 'NG', 9.0765, 7.4924, 'petrol', 622.00, 'NGN'),
+  ('NNPC Trans-Amadi Road', 'Port Harcourt', 'NG', 4.7846, 7.0235, 'petrol', 617.00, 'NGN'),
+  ('Fortis Oil GRA Phase 3', 'Port Harcourt', 'NG', 4.7970, 7.0063, 'diesel', 745.00, 'NGN')
+ON CONFLICT DO NOTHING;

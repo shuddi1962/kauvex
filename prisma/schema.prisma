@@ -5263,3 +5263,183 @@ model PayFloatTracking {
   @@unique([date])
   @@map("kv_pay_float_tracking")
 }
+
+// ============================================================
+// PHASE 19: GLOBAL LOGISTICS NETWORK (GLX)
+// ============================================================
+
+model GlxCountry {
+  id                       String   @id @default(uuid()) @db.Uuid
+  countryCode              String   @unique @map("country_code") @db.VarChar(10)
+  countryName              String   @map("country_name") @db.VarChar(100)
+  continent                String?  @db.VarChar(30)
+  currencyCode             String   @map("currency_code") @db.VarChar(10)
+  currencySymbol           String?  @map("currency_symbol") @db.VarChar(10)
+  languageCode             String   @default("en") @map("language_code") @db.VarChar(10)
+  isRtl                    Boolean  @default(false) @map("is_rtl")
+  tier1RadiusKm            Int      @default(60) @map("tier1_radius_km")
+  timezone                 String?  @db.VarChar(50)
+  vatRate                  Decimal  @default(0) @map("vat_rate") @db.Decimal(5, 2)
+  importDutyGeneral        Decimal  @default(0) @map("import_duty_general") @db.Decimal(5, 2)
+  deMinimisValue           Decimal  @default(0) @map("de_minimis_value") @db.Decimal(10, 2)
+  deMinimisCurrency        String?  @map("de_minimis_currency") @db.VarChar(10)
+  codAvailable             Boolean  @default(false) @map("cod_available")
+  codLimit                 Decimal? @map("cod_limit") @db.Decimal(10, 2)
+  sundayDelivery           Boolean  @default(true) @map("sunday_delivery")
+  fridayDelivery           Boolean  @default(true) @map("friday_delivery")
+  gigWorkerClassification  String   @default("contractor") @map("gig_worker_classification") @db.VarChar(20)
+  legalReviewStatus        String   @default("pending") @map("legal_review_status") @db.VarChar(20)
+  isLive                   Boolean  @default(false) @map("is_live")
+  notes                    String?  @db.Text
+  createdAt                DateTime @default(now()) @map("created_at")
+  updatedAt                DateTime @updatedAt @map("updated_at")
+
+  carriers                 GlxCountryCarrier[]
+  rateCards                GlxRateCard[]
+  packagingFees            GlxPackagingFee[]
+
+  @@index([continent], map: "idx_kv_glx_countries_continent")
+  @@map("kv_glx_countries")
+}
+
+model GlxCountryCarrier {
+  id                String   @id @default(uuid()) @db.Uuid
+  countryCode       String   @map("country_code") @db.VarChar(10)
+  carrierCode       String   @map("carrier_code") @db.VarChar(50)
+  carrierName       String   @map("carrier_name") @db.VarChar(100)
+  tier              String   @db.VarChar(20)
+  apiEndpoint       String?  @map("api_endpoint") @db.VarChar(500)
+  apiKeyEncrypted   String?  @map("api_key_encrypted") @db.Text
+  apiSecretEncrypted String? @map("api_secret_encrypted") @db.Text
+  accountNumber     String?  @map("account_number") @db.VarChar(100)
+  isPrimary         Boolean  @default(false) @map("is_primary")
+  isActive          Boolean  @default(true) @map("is_active")
+  testMode          Boolean  @default(true) @map("test_mode")
+  lastTested        DateTime? @map("last_tested")
+  createdAt         DateTime @default(now()) @map("created_at")
+
+  country GlxCountry @relation(fields: [countryCode], references: [countryCode])
+
+  @@index([countryCode, tier], map: "idx_kv_glx_carriers_country_tier")
+  @@map("kv_glx_country_carriers")
+}
+
+model GlxRateCard {
+  id                String   @id @default(uuid()) @db.Uuid
+  countryCode       String   @map("country_code") @db.VarChar(10)
+  tier              String   @db.VarChar(20)
+  originZone        String?  @map("origin_zone") @db.VarChar(100)
+  destinationZone   String?  @map("destination_zone") @db.VarChar(100)
+  weightMinKg       Decimal  @default(0) @map("weight_min_kg") @db.Decimal(10, 3)
+  weightMaxKg       Decimal  @default(999) @map("weight_max_kg") @db.Decimal(10, 3)
+  baseRate          Decimal  @map("base_rate") @db.Decimal(14, 2)
+  perKgRate         Decimal  @default(0) @map("per_kg_rate") @db.Decimal(14, 2)
+  currencyCode      String   @map("currency_code") @db.VarChar(10)
+  partnerPayoutPercent Decimal @default(70) @map("partner_payout_percent") @db.Decimal(5, 2)
+  kauvexFeePercent  Decimal  @default(30) @map("kauvex_fee_percent") @db.Decimal(5, 2)
+  serviceLevel      String   @default("standard") @map("service_level") @db.VarChar(20)
+  isActive          Boolean  @default(true) @map("is_active")
+  createdAt         DateTime @default(now()) @map("created_at")
+
+  country GlxCountry @relation(fields: [countryCode], references: [countryCode])
+
+  @@index([countryCode, tier, serviceLevel], map: "idx_kv_glx_rate_cards_lookup")
+  @@map("kv_glx_rate_cards")
+}
+
+model GlxPackagingFee {
+  id              String   @id @default(uuid()) @db.Uuid
+  countryCode     String   @map("country_code") @db.VarChar(10)
+  packagingType   String   @map("packaging_type") @db.VarChar(50)
+  sizeCode        String   @map("size_code") @db.VarChar(20)
+  fee             Decimal  @db.Decimal(14, 2)
+  currencyCode    String   @map("currency_code") @db.VarChar(10)
+  isActive        Boolean  @default(true) @map("is_active")
+  createdAt       DateTime @default(now()) @map("created_at")
+
+  country GlxCountry @relation(fields: [countryCode], references: [countryCode])
+
+  @@index([countryCode, packagingType], map: "idx_kv_glx_packaging_lookup")
+  @@map("kv_glx_packaging_fees")
+}
+
+model GlxPartnerCountry {
+  id                  String    @id @default(uuid()) @db.Uuid
+  partnerId           String    @map("partner_id") @db.Uuid
+  countryCode         String    @map("country_code") @db.VarChar(10)
+  verificationStatus  String    @default("pending") @map("verification_status") @db.VarChar(20)
+  documentsSubmitted  Json?     @map("documents_submitted")
+  documentsVerified   Json?     @map("documents_verified")
+  approvedAt          DateTime? @map("approved_at")
+  createdAt           DateTime  @default(now()) @map("created_at")
+
+  @@index([partnerId], map: "idx_kv_glx_partner_countries_partner")
+  @@index([countryCode], map: "idx_kv_glx_partner_countries_country")
+  @@map("kv_glx_partner_countries")
+}
+
+model GlxJobExtended {
+  id                    String   @id @default(uuid()) @db.Uuid
+  jobId                 String   @map("job_id") @db.Uuid
+  countryCode           String?  @map("country_code") @db.VarChar(10)
+  languageCode          String?  @map("language_code") @db.VarChar(10)
+  currencyCode          String?  @map("currency_code") @db.VarChar(10)
+  payoutAmountLocal     Decimal? @map("payout_amount_local") @db.Decimal(14, 2)
+  kauvexFeeLocal        Decimal? @map("kauvex_fee_local") @db.Decimal(14, 2)
+  codAmount             Decimal  @default(0) @map("cod_amount") @db.Decimal(14, 2)
+  codCollected          Boolean  @default(false) @map("cod_collected")
+  codCollectedAt        DateTime? @map("cod_collected_at")
+  what3wordsPickup      String?  @map("what3words_pickup") @db.VarChar(100)
+  what3wordsDropoff     String?  @map("what3words_dropoff") @db.VarChar(100)
+  landmarkInstructions  String?  @map("landmark_instructions") @db.Text
+  createdAt             DateTime @default(now()) @map("created_at")
+
+  @@index([jobId], map: "idx_kv_glx_jobs_ext_job")
+  @@map("kv_glx_jobs_extended")
+}
+
+model GlxCodCollection {
+  id                     String    @id @default(uuid()) @db.Uuid
+  jobId                  String    @map("job_id") @db.Uuid
+  partnerId              String?   @map("partner_id") @db.Uuid
+  orderId                String?   @map("order_id") @db.Uuid
+  amount                 Decimal   @db.Decimal(14, 2)
+  currencyCode           String    @map("currency_code") @db.VarChar(10)
+  collectedAt            DateTime? @map("collected_at")
+  remittedAt             DateTime? @map("remitted_at")
+  remittanceReference    String?   @map("remittance_reference") @db.VarChar(200)
+  status                 String    @default("pending") @db.VarChar(20)
+  createdAt              DateTime  @default(now()) @map("created_at")
+
+  @@index([jobId], map: "idx_kv_glx_cod_job")
+  @@index([status], map: "idx_kv_glx_cod_status")
+  @@map("kv_glx_cod_collections")
+}
+
+model GlxWhat3WordsLocation {
+  id                String   @id @default(uuid()) @db.Uuid
+  entityType        String   @map("entity_type") @db.VarChar(20)
+  entityId          String   @map("entity_id") @db.Uuid
+  what3wordsAddress String?  @map("what3words_address") @db.VarChar(100)
+  latitude          Decimal? @db.Decimal(10, 6)
+  longitude         Decimal? @db.Decimal(10, 6)
+  countryCode       String?  @map("country_code") @db.VarChar(10)
+  createdAt         DateTime @default(now()) @map("created_at")
+
+  @@index([entityType, entityId], map: "idx_kv_glx_w3w_entity")
+  @@map("kv_glx_what3words_locations")
+}
+
+model GlxComplianceLog {
+  id               String   @id @default(uuid()) @db.Uuid
+  countryCode      String   @map("country_code") @db.VarChar(10)
+  complianceType   String   @map("compliance_type") @db.VarChar(50)
+  status           String   @default("pending") @db.VarChar(20)
+  notes            String?  @db.Text
+  reviewedBy       String?  @map("reviewed_by") @db.Uuid
+  nextReviewDate   DateTime? @map("next_review_date") @db.Date
+  createdAt        DateTime @default(now()) @map("created_at")
+
+  @@index([countryCode], map: "idx_kv_glx_compliance_country")
+  @@map("kv_glx_compliance_log")
+}

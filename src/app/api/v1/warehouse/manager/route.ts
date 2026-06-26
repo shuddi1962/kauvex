@@ -134,7 +134,7 @@ export async function POST(request: NextRequest) {
         accuracy: 97 + Math.random() * 3,
         avgTime: 4 + Math.random() * 5,
       };
-    }).sort((a: Record<string, number>, b: Record<string, number>) => b.tasksToday - a.tasksToday);
+    }).sort((a, b) => b.tasksToday - a.tasksToday);
 
     const openExceptions = exceptions.filter((e: Record<string, string>) => e.status === "open").length;
 

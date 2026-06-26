@@ -225,6 +225,7 @@ Key V2 Enterprise+ tables: erp_accounts, journal_entries, cost_centers, budgets,
 - [x] Phase 16 (Packaging + Logistics Dashboards): Complete
 - [x] Phase 17 (Complete Brand System): Complete
 - [x] Phase 18 (Kauvex Pay Wallet + BNPL): Complete
+- [x] Phase 19 (Global Logistics Network GL1-GL15): Complete
 
 ## Recent Enhancements (August 2026)
 - **V3 Database**: 40+ new Prisma models (local suppliers, sourcing, POD, dropshipping, art/NFT, group buy, price alerts, live commerce, mentorship, carbon offsets, competition intel, Kauvex Originals, subscription boxes)
@@ -253,8 +254,10 @@ Key V2 Enterprise+ tables: erp_accounts, journal_entries, cost_centers, budgets,
 - **Mega Menu**: "Explore" category added with links to Live, Group Buy, POD, Art, Concierge, Request Product
 - **Homepage**: "Explore Kauvex" feature card section showing all V3 features
 - **Admin Sidebar**: POD, Art Marketplace, Group Buy, Sourcing under "Sourcing & Products" in Marketplace section
+- **Admin Sidebar**: Logistics section: Global Overview, Countries, Carriers, IOSS, DDP, Compliance
 - **Vendor Sidebar**: POD section (Dashboard, Design Studio, Products, Orders, Design Marketplace) and Dropshipping section under Products
 - **Admin Pages**: `/admin/pod`, `/admin/art-marketplace`, `/admin/group-buy` created with management tables
+- **Admin Pages**: `/admin/logistics/global`, `/admin/logistics/countries`, `/admin/logistics/countries/[code]`, `/admin/logistics/carriers`, `/admin/logistics/ioss`, `/admin/logistics/ddp`, `/admin/logistics/compliance`
 
 ## Phase 15 Affiliate & Influencer Network Knowledge Base
 
@@ -442,3 +445,63 @@ Key V2 Enterprise+ tables: erp_accounts, journal_entries, cost_centers, budgets,
   POST /api/v1/cron/bnpl-charge — Daily auto-charge cron
   POST /api/v1/cron/cashback-process — Daily cashback processing
   POST /api/v1/cron/float-track — Daily float tracking
+
+## Phase 19 Global Logistics Network Knowledge Base
+
+**Key Directories:**
+  `/lib/logistics/global-config.ts` — Country config CRUD, rate cards, shipping fee calc
+  `/lib/logistics/carrier-selector.ts` — Carrier selection by country/tier/weight/budget
+  `/lib/logistics/carrier-integrations.ts` — Static registry of 35 carriers across 15 countries
+  `/lib/logistics/what3words.ts` — What3Words integration
+  `/lib/logistics/cod.ts` — COD collection/remittance management
+  `/lib/logistics/customs.ts` — Duties estimation, commercial invoice, CN22/CN23, packing list
+  `/lib/logistics/packaging-options.ts` — 8 packaging types with smart suggestion engine
+  `/app/admin/logistics/global/page.tsx` — Admin world map overview
+  `/app/admin/logistics/countries/page.tsx` — Country list with search
+  `/app/admin/logistics/countries/[code]/page.tsx` — Per-country panel (4 tabs)
+  `/app/admin/logistics/carriers/page.tsx` — Carrier API integrations list
+  `/app/admin/logistics/ioss/page.tsx` — IOSS EU VAT calculator
+  `/app/admin/logistics/ddp/page.tsx` — DDP compliance per country
+  `/app/admin/logistics/compliance/page.tsx` — Compliance dashboard
+  `/app/express/book/packaging/page.tsx` — Express packaging visual selector
+  `/app/logistics/register/country/page.tsx` — Country-specific partner registration
+
+**Launch Countries (15):** NG, GB, US, AE, IN, AU, DE, CA, GH, KE, ZA, SA, BR, JP, FR
+
+**Carrier Integrations (35):**
+  DHL: dhl, dhl-international, dhl-express-international
+  FedEx: fedex, fedex-international
+  Aramex: aramex, aramex-international
+  GIG: gig-logistics (Nigeria)
+  Kwik: kwik-delivery (Nigeria)
+  And 26 more across 15 countries
+
+**Packaging Types:** express-poly, express-box-s/m/l, express-fragile, express-cold, express-crate
+
+**API Endpoints:**
+  GET /api/v1/logistics/countries — List all countries with configs
+  GET /api/v1/logistics/rate-cards?country=XX — Get rate cards for country
+  GET /api/v1/logistics/packaging?country=XX — Get packaging fees
+  POST /api/v1/logistics/cod — Manage COD collections
+  POST /api/v1/logistics/w3w — Resolve What3Words
+  POST /api/v1/logistics/customs — Estimate duties/CN22/CN23
+  GET /api/v1/logistics/exchange-rate?from=XX&to=YY — Get exchange rate
+
+**Database Tables (kv_glx_ prefix):**
+  kv_glx_countries — Country configs (15 seeded)
+  kv_glx_carriers — Carrier definitions (23 seeded)
+  kv_glx_carrier_integrations — Live API integration status
+  kv_glx_rate_cards — Rate cards (8 seeded)
+  kv_glx_packaging_options — Packaging fee schedule (21 seeded)
+  kv_glx_duty_estimates — Customs duty estimates
+  kv_glx_cod_collections — COD tracking
+  kv_glx_exchange_rates — Currency conversion
+  kv_glx_customs_documents — CN22/CN23/commercial invoices
+
+**Key Rules:**
+  Logistics = direct point to point (NO intermediate warehouse unless FBK, Tier 2 hub, or Tier 3 customs)
+  Packaging = EXPRESS senders ONLY — marketplace customers NEVER choose packaging
+  Tier 3 international = carrier APIs NEVER independent partners
+  Every country has own carriers, rates, partners, currency, tax, customs
+  IOSS = EU €150 threshold for VAT collection at checkout
+  DDP = required for DE, FR, SA, IN

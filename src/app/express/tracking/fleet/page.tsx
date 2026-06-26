@@ -470,6 +470,19 @@ export default function FleetTrackingPage() {
                             </g>
                           );
                         })}
+                        {/* Fuel station markers */}
+                        {[
+                          { x: 180, y: 260, name: "NNPC VI", price: "₦617", type: "petrol" },
+                          { x: 220, y: 240, name: "Total Lekki", price: "₦620", type: "petrol" },
+                          { x: 350, y: 180, name: "Oando Wuse", price: "₦617", type: "petrol" },
+                          { x: 500, y: 140, name: "NNPC PH", price: "₦617", type: "petrol" },
+                        ].map((fs, i) => (
+                          <g key={`fuel-${i}`} className="cursor-pointer" opacity="0.7">
+                            <rect x={fs.x - 8} y={fs.y - 8} width="16" height="16" rx="3" fill="#FF6B00" stroke="white" strokeWidth="1.5" />
+                            <text x={fs.x} y={fs.y + 3} textAnchor="middle" fill="white" fontSize="8" fontWeight="bold" fontFamily="monospace">⛽</text>
+                            <text x={fs.x} y={fs.y - 12} textAnchor="middle" fill="#FF6B00" fontSize="7" fontFamily="monospace" fontWeight="bold">{fs.price}/L</text>
+                          </g>
+                        ))}
                       </svg>
                     </div>
                     <div className="absolute bottom-4 left-4 bg-[#0A1628]/80 backdrop-blur rounded-lg p-3 flex items-center gap-4 text-white text-xs">
@@ -477,6 +490,7 @@ export default function FleetTrackingPage() {
                       <div className="flex items-center gap-1.5"><span className="w-2.5 h-2.5 rounded-full bg-emerald-500" /> Delivered</div>
                       <div className="flex items-center gap-1.5"><span className="w-2.5 h-2.5 rounded-full bg-amber-500" /> Waiting</div>
                       <div className="flex items-center gap-1.5"><span className="w-2.5 h-2.5 rounded-full bg-red-500" /> Exception</div>
+                      <div className="flex items-center gap-1.5"><span className="w-2.5 h-2.5 rounded bg-[#FF6B00]" /> Fuel Station</div>
                     </div>
                   </div>
                 )}

@@ -47,6 +47,7 @@ import {
   Globe,
   MapPinned,
   History,
+  Fuel,
 } from "lucide-react";
 
 const TIER_BADGES: Record<string, { label: string; color: string }> = {
@@ -80,6 +81,12 @@ const NAV_SECTIONS = [
       { icon: PackageCheck, label: "Active Shipments", href: "/express/track" },
       { icon: Map, label: "Shipment Map (live)", href: "/express/track/map" },
       { icon: Bell, label: "Delivery Alerts", href: "/express/track/alerts" },
+    ],
+  },
+  {
+    label: "Operations",
+    items: [
+      { icon: Fuel, label: "Fuel Stations", href: "/express/fuel-stations" },
     ],
   },
   {

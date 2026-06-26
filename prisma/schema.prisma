@@ -5741,6 +5741,26 @@ model KspFuelPrice {
   @@map("kv_ksp_fuel_prices")
 }
 
+model KspFuelStation {
+  id          String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  name        String   @map("name") @db.VarChar(200)
+  city        String   @map("city") @db.VarChar(100)
+  countryCode String   @map("country_code") @db.VarChar(10)
+  latitude    Decimal  @db.Decimal(10, 7)
+  longitude   Decimal  @db.Decimal(10, 7)
+  fuelType    String   @default("petrol") @map("fuel_type")
+  price       Decimal  @db.Decimal(10, 2)
+  currencyCode String @default("NGN") @map("currency_code") @db.VarChar(10)
+  lastUpdated DateTime @default(now()) @map("last_updated")
+  createdAt   DateTime @default(now()) @map("created_at")
+
+  @@index([countryCode], map: "idx_kv_ksp_fuel_country")
+  @@index([city], map: "idx_kv_ksp_fuel_city")
+  @@index([latitude, longitude], map: "idx_kv_ksp_fuel_coords")
+  @@index([fuelType], map: "idx_kv_ksp_fuel_type")
+  @@map("kv_ksp_fuel_stations")
+}
+
 model KspShipmentReturn {
   id              String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
   originalWaybill String    @map("original_waybill") @db.VarChar(20)

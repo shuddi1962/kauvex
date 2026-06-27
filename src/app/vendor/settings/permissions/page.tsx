@@ -1,12 +1,12 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Link from "next/link";
 import {
   Shield, UserPlus, Save, X, Search, Users, Globe,
   CheckCircle2, AlertCircle, Mail, Eye, EyeOff, Edit3,
   Lock, ChevronRight, ExternalLink, ChevronDown, ChevronUp,
-  Settings2, History,
+  Settings2, History, Loader2,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import VendorShell from "@/components/vendor/vendor-shell";
@@ -67,7 +67,8 @@ const MOCK_USERS: User[] = [
 ];
 
 export default function VendorPermissionsPage() {
-  const [users, setUsers] = useState<User[]>(MOCK_USERS);
+  const [users, setUsers] = useState<User[]>([]);
+  const [loading, setLoading] = useState(true);
   const [editingUser, setEditingUser] = useState<string | null>(null);
   const [showAddForm, setShowAddForm] = useState(false);
   const [toast, setToast] = useState<{ type: "success" | "error"; message: string } | null>(null);
@@ -78,6 +79,21 @@ export default function VendorPermissionsPage() {
   const [newLang, setNewLang] = useState(true);
 
   const [searchQuery, setSearchQuery] = useState("");
+
+  useEffect(() => {
+    fetch("/api/v1/vendor/staff")
+      .then((r) => r.json())
+      .then((data) => {
+        const list = Array.isArray(data) ? data : data?.users ?? [];
+        if (list.length > 0) {
+          setUsers(list);
+        } else {
+          setUsers(MOCK_USERS);
+        }
+      })
+      .catch(() => setUsers(MOCK_USERS))
+      .finally(() => setLoading(false));
+  }, []);
 
   const showToast = (type: "success" | "error", message: string) => {
     setToast({ type, message });
@@ -296,7 +312,14 @@ export default function VendorPermissionsPage() {
                   </tr>
                 </thead>
                 <tbody>
-                  {filteredUsers.length === 0 ? (
+                  {loading ? (
+                    <tr>
+                      <td colSpan={4} className="text-center py-12">
+                        <Loader2 size={24} className="mx-auto text-gray-400 animate-spin mb-2" />
+                        <p className="text-sm text-gray-400">Loading staff...</p>
+                      </td>
+                    </tr>
+                  ) : filteredUsers.length === 0 ? (
                     <tr>
                       <td colSpan={4} className="text-center py-12">
                         <Users size={32} className="mx-auto text-gray-200 mb-2" />

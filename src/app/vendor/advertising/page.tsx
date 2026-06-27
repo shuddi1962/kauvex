@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useState, useEffect, useMemo } from "react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import {
@@ -10,9 +10,6 @@ import {
   Play, Pause, Trash2, Loader2, AlertCircle, ArrowUpDown,
   Filter,
 } from "lucide-react";
-import {
-  LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend,
-} from "recharts";
 import VendorShell from "@/components/vendor/vendor-shell";
 
 const formatNaira = (n: number) => {
@@ -31,24 +28,24 @@ const statusColors: Record<string, string> = {
   pending_review: "bg-yellow-50 text-yellow-700",
 };
 
-const demoCampaigns = [
-  { id: "CAMP-001", name: "Yamaha Engine Spring Sale", status: "active", startDate: "2026-03-01", endDate: "2026-03-31", budget: 200000, spend: 143200, sales: 458240, acos: 31.25, orders: 120 },
-  { id: "CAMP-002", name: "Commercial Kitchen Expo", status: "active", startDate: "2026-02-15", endDate: "2026-04-15", budget: 300000, spend: 210800, sales: 864280, acos: 24.39, orders: 180 },
-  { id: "CAMP-003", name: "Marine Electronics", status: "paused", startDate: "2026-01-01", endDate: "2026-03-01", budget: 180000, spend: 98000, sales: 274400, acos: 35.71, orders: 65 },
-  { id: "CAMP-004", name: "Marine Accessories Pack", status: "draft", startDate: "", endDate: null, budget: 100000, spend: 0, sales: 0, acos: 0, orders: 0 },
-  { id: "CAMP-005", name: "End of Season Sale", status: "pending_review", startDate: "2026-04-01", endDate: "2026-04-30", budget: 250000, spend: 0, sales: 0, acos: 0, orders: 0 },
-  { id: "CAMP-006", name: "Security Camera Bundle", status: "active", startDate: "2026-02-01", endDate: "2026-06-30", budget: 150000, spend: 87500, sales: 312000, acos: 28.04, orders: 78 },
-  { id: "CAMP-007", name: "Fire Alarm Promotion", status: "paused", startDate: "2026-01-15", endDate: "2026-03-15", budget: 120000, spend: 65400, sales: 189600, acos: 34.49, orders: 42 },
-  { id: "CAMP-008", name: "Summer Sale 2026", status: "active", startDate: "2026-04-01", endDate: "2026-04-30", budget: 350000, spend: 0, sales: 0, acos: 0, orders: 0 },
-];
+interface Campaign {
+  id: string;
+  name: string;
+  status: string;
+  startDate: string;
+  endDate: string | null;
+  budget: number;
+  spend: number;
+  sales: number;
+  acos: number;
+  orders: number;
+}
 
-const generateChartData = (days: number) =>
-  Array.from({ length: days }, (_, i) => {
-    const d = new Date(); d.setDate(d.getDate() - (days - 1 - i));
-    const spend = Math.floor(Math.random() * 12000) + 2000;
-    const sales = Math.floor(spend * (2 + Math.random() * 3));
-    return { date: d.toLocaleDateString("en-US", { month: "short", day: "numeric" }), spend, sales };
-  });
+interface ChartPoint {
+  date: string;
+  spend: number;
+  sales: number;
+}
 
 const datePresets = [
   { value: "7", label: "Last 7 days" },
@@ -58,7 +55,9 @@ const datePresets = [
 ];
 
 export default function VendorAdvertisingPage() {
-  const [campaigns] = useState(demoCampaigns);
+  const [campaigns, setCampaigns] = useState<Campaign[]>([]);
+  const [chartData, setChartData] = useState<ChartPoint[]>([]);
+  const [loading, setLoading] = useState(true);
   const [datePreset, setDatePreset] = useState("30");
   const [customStart, setCustomStart] = useState("");
   const [customEnd, setCustomEnd] = useState("");
@@ -69,7 +68,18 @@ export default function VendorAdvertisingPage() {
   const [menuOpen, setMenuOpen] = useState<string | null>(null);
   const [actionLoading, setActionLoading] = useState<string | null>(null);
 
-  const chartData = useMemo(() => generateChartData(Number(datePreset) || 30), [datePreset]);
+  useEffect(() => {
+    Promise.all([
+      fetch("/api/v1/vendor/ads/campaigns").then((r) => r.json()),
+      fetch(`/api/v1/vendor/ads/campaigns/chart?period=${datePreset}`).then((r) => r.json()),
+    ]).then(([campaignsRes, chartRes]) => {
+      setCampaigns(Array.isArray(campaignsRes) ? campaignsRes : campaignsRes?.campaigns ?? []);
+      setChartData(Array.isArray(chartRes) ? chartRes : chartRes?.data ?? []);
+    }).catch(() => {
+      setCampaigns([]);
+      setChartData([]);
+    }).finally(() => setLoading(false));
+  }, [datePreset]);
 
   const totalSpend = campaigns.reduce((s, c) => s + c.spend, 0);
   const totalSales = campaigns.reduce((s, c) => s + c.sales, 0);
@@ -197,24 +207,42 @@ export default function VendorAdvertisingPage() {
               <BarChart3 size={15} className="text-text-4" /> Spend vs Sales
             </h3>
           </div>
-          <div className="h-72">
-            <ResponsiveContainer width="100%" height="100%">
-              <LineChart data={chartData}>
-                <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
-                <XAxis dataKey="date" tick={{ fontSize: 10 }} stroke="#999" />
-                <YAxis tick={{ fontSize: 10 }} stroke="#999" tickFormatter={(v: any) => `\u20A6${(Number(v) / 1e3).toFixed(0)}K`} />
-                <Tooltip
-                  formatter={(value: any, name: any) => [
-                    formatNaira(Number(value)),
-                    name === "spend" ? "Spend" : "Sales",
-                  ]}
-                />
-                <Legend wrapperStyle={{ fontSize: 11, paddingTop: 8 }} />
-                <Line type="monotone" dataKey="spend" stroke="#EF4444" strokeWidth={2} dot={false} name="Spend" />
-                <Line type="monotone" dataKey="sales" stroke="#10B981" strokeWidth={2} dot={false} name="Sales" />
-              </LineChart>
-            </ResponsiveContainer>
-          </div>
+          {loading ? (
+            <div className="h-72 flex items-center justify-center">
+              <Loader2 size={24} className="animate-spin text-text-4" />
+            </div>
+          ) : (
+            <div className="h-72 flex items-end gap-px overflow-x-auto">
+              {chartData.map((point, i) => {
+                const maxVal = Math.max(...chartData.map((d) => Math.max(d.spend, d.sales)), 1);
+                return (
+                  <div key={i} className="flex-1 min-w-[8px] flex flex-col items-center gap-px">
+                    <div className="w-full flex items-end gap-px" style={{ height: "240px" }}>
+                      <div
+                        className="flex-1 bg-red rounded-t-sm transition-all"
+                        style={{ height: `${(point.spend / maxVal) * 100}%` }}
+                        title={`Spend: ${formatNaira(point.spend)}`}
+                      />
+                      <div
+                        className="flex-1 bg-green-500 rounded-t-sm transition-all"
+                        style={{ height: `${(point.sales / maxVal) * 100}%` }}
+                        title={`Sales: ${formatNaira(point.sales)}`}
+                      />
+                    </div>
+                    {i % Math.ceil(chartData.length / 7) === 0 && (
+                      <span className="text-[8px] text-text-4 mt-1 whitespace-nowrap">{point.date}</span>
+                    )}
+                  </div>
+                );
+              })}
+            </div>
+          )}
+          {!loading && chartData.length > 0 && (
+            <div className="flex items-center justify-center gap-4 mt-2 text-[10px] text-text-4">
+              <span className="flex items-center gap-1"><span className="w-2 h-2 bg-red rounded-sm" /> Spend</span>
+              <span className="flex items-center gap-1"><span className="w-2 h-2 bg-green-500 rounded-sm" /> Sales</span>
+            </div>
+          )}
         </div>
 
         {/* Campaign Table */}
@@ -236,7 +264,14 @@ export default function VendorAdvertisingPage() {
                 </tr>
               </thead>
               <tbody className="divide-y divide-border/40">
-                {paginated.map((campaign) => (
+                {loading ? (
+                  <tr>
+                    <td colSpan={10} className="px-4 py-12 text-center">
+                      <Loader2 size={24} className="animate-spin text-text-4 mx-auto" />
+                      <p className="text-xs text-text-4 mt-2">Loading campaigns...</p>
+                    </td>
+                  </tr>
+                ) : paginated.map((campaign) => (
                   <tr key={campaign.id} className="hover:bg-gray-50/40 transition-colors">
                     <td className="px-4 py-3">
                       <Link href={`/vendor/advertising/campaigns/${campaign.id}`} className="text-sm font-medium text-text-1 hover:text-blue transition-colors">
@@ -302,7 +337,7 @@ export default function VendorAdvertisingPage() {
                     </td>
                   </tr>
                 ))}
-                {paginated.length === 0 && (
+                {paginated.length === 0 && !loading && (
                   <tr>
                     <td colSpan={10} className="px-4 py-12 text-center">
                       <Megaphone size={32} className="text-text-4/30 mx-auto mb-2" />

@@ -1,7 +1,7 @@
 "use client";
 
-import { useState } from "react";
-import { BarChart3, FileText, Download, Trash2, Plus, X, Calendar, Save, Clock, RefreshCw, TrendingUp, DollarSign, Package, CheckCircle, AlertCircle } from "lucide-react";
+import { useState, useEffect } from "react";
+import { BarChart3, FileText, Download, Trash2, Plus, X, Calendar, Save, Clock, RefreshCw, TrendingUp, DollarSign, Package, CheckCircle, AlertCircle, Loader2 } from "lucide-react";
 import VendorShell from "@/components/vendor/vendor-shell";
 
 const reportCategories = [
@@ -13,14 +13,15 @@ const reportCategories = [
   { id: "tax", label: "Tax Document Library", icon: DollarSign },
 ];
 
-const demoReports = [
-  { id: "RPT-001", name: "Monthly Sales Summary", type: "Business", dateRange: "May 1 - May 31, 2026", generated: "2026-06-01", format: "PDF", size: "2.4 MB" },
-  { id: "RPT-002", name: "Advertising Performance Q2", type: "Advertising", dateRange: "Apr 1 - Jun 20, 2026", generated: "2026-06-20", format: "CSV", size: "1.1 MB" },
-  { id: "RPT-003", name: "Return Rate Analysis", type: "Returns", dateRange: "Jan 1 - Jun 20, 2026", generated: "2026-06-19", format: "Excel", size: "856 KB" },
-  { id: "RPT-004", name: "Inventory Snapshot", type: "Inventory", dateRange: "As of Jun 20, 2026", generated: "2026-06-20", format: "PDF", size: "3.2 MB" },
-  { id: "RPT-005", name: "Tax Summary 2026 Q1", type: "Tax", dateRange: "Jan 1 - Mar 31, 2026", generated: "2026-04-15", format: "PDF", size: "1.8 MB" },
-  { id: "RPT-006", name: "Top Sellers Report", type: "Custom", dateRange: "May 1 - May 31, 2026", generated: "2026-06-05", format: "Excel", size: "1.5 MB" },
-];
+interface Report {
+  id: string;
+  name: string;
+  type: string;
+  dateRange: string;
+  generated: string;
+  format: string;
+  size: string;
+}
 
 const formatOptions = ["CSV", "PDF", "Excel"];
 
@@ -36,13 +37,23 @@ export default function ReportsPage() {
   const [sidebar, setSidebar] = useState("business");
   const [showModal, setShowModal] = useState(false);
   const [toast, setToast] = useState<{ message: string; type: "success" | "error" } | null>(null);
+  const [reports, setReports] = useState<Report[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    fetch("/api/v1/vendor/reports")
+      .then((r) => r.json())
+      .then((data) => setReports(Array.isArray(data) ? data : data?.reports ?? []))
+      .catch(() => setReports([]))
+      .finally(() => setLoading(false));
+  }, []);
 
   const showToast = (message: string, type: "success" | "error") => {
     setToast({ message, type });
     setTimeout(() => setToast(null), 3000);
   };
 
-  const filteredReports = demoReports.filter(
+  const filteredReports = reports.filter(
     (r) =>
       (sidebar === "business" && r.type === "Business") ||
       (sidebar === "advertising" && r.type === "Advertising") ||
@@ -182,7 +193,7 @@ export default function ReportsPage() {
         {/* Main Content */}
         <div className="flex-1 space-y-4">
           <div className="flex items-center justify-between">
-            <p className="text-sm text-text-4">{filteredReports.length} reports</p>
+            <p className="text-sm text-text-4">{loading ? <Loader2 size={14} className="animate-spin inline" /> : `${filteredReports.length} reports`}</p>
             <button onClick={() => setShowModal(true)} className="px-4 py-2 bg-orange text-white text-sm font-bold rounded-xl hover:bg-orange/90 flex items-center gap-1.5">
               <Plus size={14} /> Generate New Report
             </button>
@@ -202,7 +213,14 @@ export default function ReportsPage() {
                 </tr>
               </thead>
               <tbody>
-                {filteredReports.map((r) => (
+                {loading ? (
+                  <tr>
+                    <td colSpan={7} className="px-4 py-12 text-center">
+                      <Loader2 size={24} className="animate-spin text-gray-400 mx-auto" />
+                      <p className="text-sm text-text-4 mt-2">Loading reports...</p>
+                    </td>
+                  </tr>
+                ) : filteredReports.map((r) => (
                   <tr key={r.id} className="border-b border-border hover:bg-gray-50">
                     <td className="px-4 py-3">
                       <p className="text-xs font-semibold text-text-1">{r.name}</p>
@@ -227,7 +245,7 @@ export default function ReportsPage() {
                     </td>
                   </tr>
                 ))}
-                {filteredReports.length === 0 && (
+                {filteredReports.length === 0 && !loading && (
                   <tr>
                     <td colSpan={7} className="px-4 py-12 text-center text-sm text-text-4">
                       <FileText size={36} className="mx-auto text-gray-200 mb-2" />

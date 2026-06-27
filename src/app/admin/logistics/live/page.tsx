@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import {
   MapPin, Users, Truck, Package, Warehouse, Lock,
   Eye, EyeOff, Clock, Play, Pause, FastForward,
@@ -8,6 +8,7 @@ import {
   Radio, TrendingUp, AlertTriangle, Navigation, Search,
   Building, Construction, BarChart3, Thermometer,
 } from "lucide-react";
+import { createClient } from "@/lib/supabase/client";
 
 const partnerDots: Array<{ id: number; name: string; x: number; y: number; tier: string; status: string; orders: number }> = [];
 const activeJobs: Array<{ id: number; x: number; y: number; targetX: number; targetY: number; status: string; orderId: string; partner: string }> = [];
@@ -125,6 +126,78 @@ export default function LiveLogisticsPage() {
       }
     };
     fetchData();
+  }, []);
+
+  useEffect(() => {
+    const supabase = createClient();
+    let channel: ReturnType<typeof supabase.channel> | null = null;
+
+    try {
+      channel = supabase
+        .channel("live-logistics")
+        .on("postgres_changes", { event: "*", schema: "public", table: "kv_logistics_partners" }, (payload) => {
+          if (payload.eventType === "INSERT") {
+            const p = payload.new as Record<string, unknown>;
+            setPartners((prev) => [...prev, {
+              id: prev.length,
+              name: String(p.name || p.company_name || `Partner-${prev.length + 1}`),
+              x: 12 + (Number(p.longitude) || Math.random() * 76),
+              y: 8 + (Number(p.latitude) || Math.random() * 84),
+              tier: String(p.tier || "new"),
+              status: String(p.status || "active"),
+              orders: Number(p.total_deliveries || 0),
+            }]);
+          } else if (payload.eventType === "UPDATE") {
+            const updated = payload.new as Record<string, unknown>;
+            setPartners((prev) => prev.map((p) => {
+              const matchIdx = Number(updated.id) === p.id;
+              return matchIdx ? {
+                ...p,
+                name: String(updated.name || updated.company_name || p.name),
+                tier: String(updated.tier || p.tier),
+                status: String(updated.status || p.status),
+                orders: Number(updated.total_deliveries || p.orders),
+              } : p;
+            }));
+          } else if (payload.eventType === "DELETE") {
+            setPartners((prev) => prev.filter((p) => p.id !== Number((payload.old as Record<string, unknown>).id)));
+          }
+        })
+        .on("postgres_changes", { event: "*", schema: "public", table: "kv_logistics_jobs" }, (payload) => {
+          if (payload.eventType === "INSERT") {
+            const j = payload.new as Record<string, unknown>;
+            setJobs((prev) => [...prev, {
+              id: prev.length,
+              x: 15 + Math.random() * 70,
+              y: 12 + Math.random() * 76,
+              targetX: 20 + Math.random() * 60,
+              targetY: 15 + Math.random() * 70,
+              status: String(j.status || "pickup"),
+              orderId: String(j.id || `ORD-${80000 + prev.length}`),
+              partner: String(j.partner_name || j.assigned_partner || "Unassigned"),
+            }]);
+          } else if (payload.eventType === "UPDATE") {
+            const updated = payload.new as Record<string, unknown>;
+            setJobs((prev) => prev.map((j) => {
+              const matchIdx = Number(updated.id) === j.id;
+              return matchIdx ? {
+                ...j,
+                status: String(updated.status || j.status),
+                partner: String(updated.partner_name || updated.assigned_partner || j.partner),
+              } : j;
+            }));
+          }
+        })
+        .subscribe();
+    } catch {
+      // Realtime not available — continue with polling
+    }
+
+    return () => {
+      if (channel) {
+        supabase.removeChannel(channel);
+      }
+    };
   }, []);
 
   const toggleLayer = (id: string) => setActiveLayers((p) => ({ ...p, [id]: !p[id] }));

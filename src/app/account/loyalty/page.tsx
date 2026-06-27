@@ -1,5 +1,6 @@
 "use client";
 
+import { useState, useEffect } from "react";
 import {
   Trophy,
   Star,
@@ -9,52 +10,97 @@ import {
   Medal,
   Award,
   Zap,
+  Loader2,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
-const tiers = [
-  { name: "Bronze", icon: Medal, minPoints: 0, color: "from-amber-600 to-amber-800", benefits: ["1x points on purchases", "Birthday discount 5%", "Free shipping over ₦100k"] },
-  { name: "Silver", icon: Award, minPoints: 1000, color: "from-gray-400 to-gray-600", benefits: ["1.5x points on purchases", "Birthday discount 10%", "Free shipping over ₦50k", "Early access to sales"] },
-  { name: "Gold", icon: Crown, minPoints: 5000, color: "from-yellow-500 to-yellow-700", benefits: ["2x points on purchases", "Birthday discount 15%", "Free shipping on all orders", "Priority support", "Exclusive offers"] },
-  { name: "Platinum", icon: Gem, minPoints: 15000, color: "from-purple-400 to-purple-700", benefits: ["3x points on purchases", "Birthday discount 25%", "Free express shipping", "VIP support line", "Exclusive products", "Personal shopper"] },
-];
+interface Tier {
+  name: string;
+  minPoints: number;
+  color: string;
+  benefits: string[];
+}
 
-const currentPoints = 2450;
-const currentTier = "Gold";
-const nextTier = tiers.find((t) => t.minPoints > currentPoints) || tiers[tiers.length - 1];
-const currentTierData = tiers.find((t) => t.name === currentTier)!;
-const progress = nextTier.minPoints > 0 ? Math.min((currentPoints / nextTier.minPoints) * 100, 100) : 100;
+interface HistoryEntry {
+  id: string;
+  action: string;
+  points: number;
+  type: "earned" | "redeemed";
+  date: string;
+}
 
-const history = [
-  { id: "1", action: "Order #ORD-8842", points: 350, type: "earned" as const, date: "2026-04-03" },
-  { id: "2", action: "Redeemed ₦2,000 discount", points: -200, type: "redeemed" as const, date: "2026-04-01" },
-  { id: "3", action: "Order #ORD-8790", points: 850, type: "earned" as const, date: "2026-03-25" },
-  { id: "4", action: "Referral bonus", points: 500, type: "earned" as const, date: "2026-03-20" },
-  { id: "5", action: "Review bonus", points: 50, type: "earned" as const, date: "2026-03-18" },
-  { id: "6", action: "Redeemed ₦5,000 discount", points: -500, type: "redeemed" as const, date: "2026-03-15" },
-];
+interface RedeemOption {
+  points: number;
+  value: string;
+}
 
-const redeemOptions = [
-  { points: 100, value: "₦1,000 Store Credit", icon: Gift },
-  { points: 250, value: "₦3,000 Store Credit", icon: Gift },
-  { points: 500, value: "₦7,000 Store Credit", icon: Gift },
-  { points: 1000, value: "₦15,000 Store Credit", icon: Gift },
-];
+const tierIcons: Record<string, typeof Medal> = {
+  Bronze: Medal, Silver: Award, Gold: Crown, Platinum: Gem,
+};
 
 export default function LoyaltyPage() {
+  const [loading, setLoading] = useState(true);
+  const [tiers, setTiers] = useState<Tier[]>([]);
+  const [currentPoints, setCurrentPoints] = useState(0);
+  const [currentTier, setCurrentTier] = useState("");
+  const [history, setHistory] = useState<HistoryEntry[]>([]);
+  const [redeemOptions, setRedeemOptions] = useState<RedeemOption[]>([]);
+
+  useEffect(() => {
+    async function load() {
+      try {
+        const res = await fetch("/api/v1/account/loyalty");
+        if (res.ok) {
+          const d = await res.json();
+          if (Array.isArray(d.tiers)) setTiers(d.tiers);
+          if (d.points !== undefined) setCurrentPoints(d.points);
+          if (d.tier) setCurrentTier(d.tier);
+          if (Array.isArray(d.history)) setHistory(d.history);
+          if (Array.isArray(d.redeemOptions)) setRedeemOptions(d.redeemOptions);
+        }
+      } catch {
+        // keep defaults
+      } finally {
+        setLoading(false);
+      }
+    }
+    load();
+  }, []);
+
+  const nextTier = tiers.find((t) => t.minPoints > currentPoints) || tiers[tiers.length - 1];
+  const currentTierData = tiers.find((t) => t.name === currentTier);
+  const progress = nextTier ? (nextTier.minPoints > 0 ? Math.min((currentPoints / nextTier.minPoints) * 100, 100) : 100) : 0;
+
+  const redeem = async (points: number) => {
+    try {
+      await fetch("/api/v1/account/loyalty/redeem", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ points }) });
+      setCurrentPoints((p) => p - points);
+    } catch {
+      // silently fail
+    }
+  };
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center py-20">
+        <Loader2 size={24} className="animate-spin text-blue" />
+      </div>
+    );
+  }
+
   return (
     <div>
       <h1 className="font-bold text-2xl text-text-1 mb-6">Loyalty & Rewards</h1>
 
       {/* Current Tier Card */}
-      <div className={`bg-gradient-to-br ${currentTierData.color} rounded-2xl p-6 md:p-8 text-white mb-6`}>
+      <div className={`bg-gradient-to-br ${currentTierData?.color || "from-gray-400 to-gray-600"} rounded-2xl p-6 md:p-8 text-white mb-6`}>
         <div className="flex items-center justify-between mb-4">
           <div className="flex items-center gap-3">
             <div className="w-14 h-14 rounded-2xl bg-white/10 flex items-center justify-center">
               <Crown size={28} />
             </div>
             <div>
-              <p className="text-white/60 text-sm">{currentTier} Member</p>
+              <p className="text-white/60 text-sm">{currentTier || "Member"} Member</p>
               <h2 className="font-bold text-3xl">{currentPoints.toLocaleString()}</h2>
               <p className="text-white/60 text-xs">loyalty points</p>
             </div>
@@ -65,7 +111,7 @@ export default function LoyaltyPage() {
         <div className="mt-4">
           <div className="flex items-center justify-between text-sm mb-2">
             <span className="text-white/60">{currentTier}</span>
-            <span className="text-white/80">{nextTier.name} — {nextTier.minPoints.toLocaleString()} pts</span>
+            <span className="text-white/80">{nextTier?.name} — {nextTier?.minPoints.toLocaleString()} pts</span>
           </div>
           <div className="h-2.5 bg-white/20 rounded-full overflow-hidden">
             <div
@@ -74,7 +120,7 @@ export default function LoyaltyPage() {
             />
           </div>
           <p className="text-xs text-white/50 mt-2">
-            {(nextTier.minPoints - currentPoints).toLocaleString()} more points to reach {nextTier.name}
+            {nextTier ? `${(nextTier.minPoints - currentPoints).toLocaleString()} more points to reach ${nextTier.name}` : "Maximum tier reached!"}
           </p>
         </div>
       </div>
@@ -82,7 +128,7 @@ export default function LoyaltyPage() {
       {/* Tier Comparison */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 mb-6">
         {tiers.map((tier) => {
-          const Icon = tier.icon;
+          const Icon = tierIcons[tier.name] || Star;
           const isCurrent = tier.name === currentTier;
           return (
             <div
@@ -140,6 +186,7 @@ export default function LoyaltyPage() {
                   size="sm"
                   variant={currentPoints >= opt.points ? "default" : "outline"}
                   disabled={currentPoints < opt.points}
+                  onClick={() => redeem(opt.points)}
                 >
                   Redeem
                 </Button>

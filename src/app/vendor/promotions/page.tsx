@@ -1,34 +1,70 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Link from "next/link";
-import { Plus, Trash2, ToggleLeft, ToggleRight, Tag } from "lucide-react";
+import { Plus, Trash2, ToggleLeft, ToggleRight, Tag, Loader2 } from "lucide-react";
 import VendorShell from "@/components/vendor/vendor-shell";
 
-const demoCoupons = [
-  { id: 1, code: "VENDOR10", type: "percentage", value: 10, minOrder: 20000, usageLimit: 100, used: 34, active: true, expires: "2024-06-30" },
-  { id: 2, code: "SAVE5K", type: "fixed", value: 5000, minOrder: 50000, usageLimit: 50, used: 12, active: true, expires: "2024-12-31" },
-  { id: 3, code: "FREESHIP", type: "free_shipping", value: 0, minOrder: 30000, usageLimit: 200, used: 89, active: false, expires: "2024-03-31" },
-];
+interface Coupon {
+  id: number;
+  code: string;
+  type: string;
+  value: number;
+  minOrder: number;
+  usageLimit: number;
+  used: number;
+  active: boolean;
+  expires: string;
+}
 
 export default function VendorPromotionsPage() {
-  const [coupons, setCoupons] = useState(demoCoupons);
+  const [coupons, setCoupons] = useState<Coupon[]>([]);
+  const [loading, setLoading] = useState(true);
   const [showAdd, setShowAdd] = useState(false);
   const [form, setForm] = useState({ code: "", type: "percentage", value: "", minOrder: "", usageLimit: "", expires: "" });
 
-  const toggle = (id: number) => setCoupons((prev) => prev.map((c) => c.id === id ? { ...c, active: !c.active } : c));
-  const remove = (id: number) => { if (confirm("Delete coupon?")) setCoupons((prev) => prev.filter((c) => c.id !== id)); };
+  useEffect(() => {
+    fetch("/api/v1/vendor/promotions")
+      .then((r) => r.json())
+      .then((data) => setCoupons(Array.isArray(data) ? data : data?.coupons ?? []))
+      .catch(() => setCoupons([]))
+      .finally(() => setLoading(false));
+  }, []);
+
+  const toggle = (id: number) => {
+    const coupon = coupons.find((c) => c.id === id);
+    if (!coupon) return;
+    fetch(`/api/v1/vendor/promotions/${id}`, {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ active: !coupon.active }),
+    }).then(() => setCoupons((prev) => prev.map((c) => c.id === id ? { ...c, active: !c.active } : c)));
+  };
+
+  const remove = (id: number) => {
+    if (!confirm("Delete coupon?")) return;
+    fetch(`/api/v1/vendor/promotions/${id}`, { method: "DELETE" })
+      .then(() => setCoupons((prev) => prev.filter((c) => c.id !== id)));
+  };
+
   const addCoupon = () => {
     if (!form.code) { alert("Coupon code required."); return; }
-    setCoupons((prev) => [...prev, { id: Date.now(), code: form.code.toUpperCase(), type: form.type, value: Number(form.value) || 0, minOrder: Number(form.minOrder) || 0, usageLimit: Number(form.usageLimit) || 100, used: 0, active: true, expires: form.expires || "2025-12-31" }]);
-    setForm({ code: "", type: "percentage", value: "", minOrder: "", usageLimit: "", expires: "" }); setShowAdd(false);
-    alert("Coupon created!");
+    fetch("/api/v1/vendor/promotions", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ code: form.code.toUpperCase(), type: form.type, value: Number(form.value) || 0, minOrder: Number(form.minOrder) || 0, usageLimit: Number(form.usageLimit) || 100, expires: form.expires || "2025-12-31" }),
+    }).then((r) => r.json()).then((newCoupon) => {
+      setCoupons((prev) => [...prev, { ...newCoupon, id: newCoupon.id ?? Date.now(), used: newCoupon.used ?? 0, active: true }]);
+      setForm({ code: "", type: "percentage", value: "", minOrder: "", usageLimit: "", expires: "" });
+      setShowAdd(false);
+      alert("Coupon created!");
+    });
   };
 
   return (
     <VendorShell title="Promotions" subtitle="Create and manage coupons and deals">
       <div className="flex items-center justify-between mb-4">
-        <p className="text-sm text-gray-500">{coupons.length} coupons</p>
+        <p className="text-sm text-gray-500">{loading ? <Loader2 size={14} className="animate-spin inline" /> : `${coupons.length} coupons`}</p>
         <button onClick={() => setShowAdd(!showAdd)} className="flex items-center gap-2 px-4 py-2 bg-purple-600 text-white rounded-lg text-sm hover:bg-purple-700"><Plus size={16} /> Create Coupon</button>
       </div>
 
@@ -55,7 +91,12 @@ export default function VendorPromotionsPage() {
           </div>
         )}
 
-        {coupons.map((c) => (
+        {loading ? (
+          <div className="bg-white rounded-xl p-12 text-center">
+            <Loader2 size={24} className="animate-spin text-gray-400 mx-auto" />
+            <p className="text-sm text-gray-400 mt-2">Loading coupons...</p>
+          </div>
+        ) : coupons.map((c) => (
           <div key={c.id} className={`bg-white rounded-xl p-5 border ${c.active ? "border-gray-200" : "border-gray-100 opacity-60"}`}>
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-4">

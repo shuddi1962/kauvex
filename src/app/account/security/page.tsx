@@ -1,29 +1,32 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import {
   Shield, Smartphone, Key, Lock, Globe, Clock, CheckCircle2,
   XCircle, AlertTriangle, Copy, Eye, EyeOff, RefreshCw, History,
   Monitor, Tablet, Laptop, ChevronRight, QrCode,
-  ToggleLeft, ToggleRight, Save,
+  ToggleLeft, ToggleRight, Save, Loader2,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
-const demoDevices = [
-  { id: "1", name: "iPhone 15 Pro", type: "mobile", browser: "Safari", ip: "192.168.1.42", lastActive: "2 min ago", isCurrent: true },
-  { id: "2", name: "MacBook Pro", type: "desktop", browser: "Chrome 124", ip: "192.168.1.42", lastActive: "1 hour ago", isCurrent: false },
-  { id: "3", name: "Samsung Galaxy S24", type: "mobile", browser: "Chrome Mobile", ip: "10.0.0.15", lastActive: "2 days ago", isCurrent: false },
-];
+interface Device {
+  id: string;
+  name: string;
+  type: string;
+  browser: string;
+  ip: string;
+  lastActive: string;
+  isCurrent: boolean;
+}
 
-const loginHistory = [
-  { id: "1", date: "2026-04-05 09:15 AM", device: "iPhone 15 Pro", location: "Lagos, NG", ip: "192.168.1.42", success: true },
-  { id: "2", date: "2026-04-04 07:30 PM", device: "MacBook Pro", location: "Lagos, NG", ip: "192.168.1.42", success: true },
-  { id: "3", date: "2026-04-03 02:15 AM", device: "Unknown", location: "Beijing, CN", ip: "203.0.113.42", success: false },
-  { id: "4", date: "2026-04-02 06:45 PM", device: "Samsung Galaxy S24", location: "Abuja, NG", ip: "10.0.0.15", success: true },
-  { id: "5", date: "2026-04-01 11:30 AM", device: "iPhone 15 Pro", location: "Lagos, NG", ip: "192.168.1.42", success: true },
-];
-
-const recoveryCodes = ["KX7A-9B2C", "M4P8-R1T5", "W3N6-E8K9", "J2H5-L7Q4", "F1G8-V3N6", "D9C2-X5M7", "B4K7-P1R9", "S8T3-Y6W2"];
+interface LoginEntry {
+  id: string;
+  date: string;
+  device: string;
+  location: string;
+  ip: string;
+  success: boolean;
+}
 
 const deviceIcons: Record<string, typeof Smartphone> = {
   mobile: Smartphone, desktop: Monitor, tablet: Tablet, laptop: Laptop,
@@ -39,6 +42,38 @@ export default function SecurityPage() {
   const [passwordForm, setPasswordForm] = useState({ current: "", newPass: "", confirm: "" });
   const [passwordStrength, setPasswordStrength] = useState(0);
 
+  const [loading, setLoading] = useState(true);
+  const [devices, setDevices] = useState<Device[]>([]);
+  const [loginHistory, setLoginHistory] = useState<LoginEntry[]>([]);
+  const [recoveryCodes, setRecoveryCodes] = useState<string[]>([]);
+
+  useEffect(() => {
+    async function load() {
+      try {
+        const [sessRes, histRes] = await Promise.all([
+          fetch("/api/v1/account/sessions"),
+          fetch("/api/v1/account/login-history").catch(() => fetch("/api/v1/account/sessions")),
+        ]);
+        if (sessRes.ok) {
+          const d = await sessRes.json();
+          if (d.devices) setDevices(d.devices);
+          else if (Array.isArray(d)) setDevices(d);
+          if (d.recoveryCodes) setRecoveryCodes(d.recoveryCodes);
+        }
+        if (histRes.ok) {
+          const d = await histRes.json();
+          if (Array.isArray(d)) setLoginHistory(d);
+          else if (d.history) setLoginHistory(d.history);
+        }
+      } catch {
+        // keep empty arrays
+      } finally {
+        setLoading(false);
+      }
+    }
+    load();
+  }, []);
+
   const copyToClipboard = (text: string, index: number) => {
     navigator.clipboard.writeText(text);
     setCopiedIndex(index);
@@ -53,6 +88,14 @@ export default function SecurityPage() {
     if (/[^A-Za-z0-9]/.test(val)) score++;
     setPasswordStrength(score);
   };
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center py-20">
+        <Loader2 size={24} className="animate-spin text-blue" />
+      </div>
+    );
+  }
 
   return (
     <div>
@@ -166,7 +209,7 @@ export default function SecurityPage() {
             </div>
           </div>
           <div className="space-y-2">
-            {demoDevices.map((device) => {
+            {devices.map((device) => {
               const Icon = deviceIcons[device.type] || Monitor;
               return (
                 <div key={device.id} className="flex items-center gap-3 p-3 rounded-lg border border-border hover:bg-off-white transition-colors">
@@ -176,7 +219,7 @@ export default function SecurityPage() {
                       <p className="text-sm font-medium text-text-1">{device.name}</p>
                       {device.isCurrent && <span className="text-[9px] px-1.5 py-0.5 bg-blue-50 text-blue rounded-full font-medium">Current</span>}
                     </div>
-                    <p className="text-xs text-text-4">{device.browser} · IP: {device.ip} · Active {device.lastActive}</p>
+                    <p className="text-xs text-text-4">{device.browser} &middot; IP: {device.ip} &middot; Active {device.lastActive}</p>
                   </div>
                   {!device.isCurrent && (
                     <Button variant="outline" size="sm" className="text-red hover:text-red border-red/20 hover:bg-red-50 text-xs">
@@ -210,7 +253,7 @@ export default function SecurityPage() {
                 )}
                 <div className="flex-1">
                   <p className="text-sm text-text-1">{log.device}</p>
-                  <p className="text-xs text-text-4">{log.location} · IP: {log.ip}</p>
+                  <p className="text-xs text-text-4">{log.location} &middot; IP: {log.ip}</p>
                 </div>
                 <span className="text-xs text-text-4">{log.date}</span>
                 {!log.success && (

@@ -4,9 +4,8 @@ import { useMemo, useState, useEffect, useCallback, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import Image from "next/image";
-import { Search, SlidersHorizontal, X, Grid3X3, List, Star, ChevronLeft, ChevronRight, Package } from "lucide-react";
-import { products, categories, brands } from "@/lib/demo-data";
-import { searchProducts, searchCategories, searchBrands, addRecentSearch } from "@/lib/search";
+import { Search, SlidersHorizontal, X, Grid3X3, List, Star, ChevronLeft, ChevronRight, Package, Loader2 } from "lucide-react";
+import { addRecentSearch } from "@/lib/search";
 import { KAUVEX_CATEGORIES } from "@/lib/categories";
 import { useCurrencyStore } from "@/store/currency-store";
 import { isSponsoredProduct } from "@/lib/sponsored-products";
@@ -57,6 +56,10 @@ function SearchPageInner() {
   const [priceMax, setPriceMax] = useState(maxPrice);
   const [minRating, setMinRating] = useState(ratingFilter ? parseInt(ratingFilter) : 0);
 
+  const [products, setProducts] = useState<Product[]>([]);
+  const [totalResults, setTotalResults] = useState(0);
+  const [loading, setLoading] = useState(true);
+
   useEffect(() => {
     setSelectedCategories(categoryFilter ? categoryFilter.split(",") : []);
   }, [categoryFilter]);
@@ -65,67 +68,46 @@ function SearchPageInner() {
     setPage(1);
   }, [q, categoryFilter, minPrice, maxPrice, ratingFilter, sortParam]);
 
-  const allResults = useMemo(() => {
-    let results: Product[] = [];
+  useEffect(() => {
+    const controller = new AbortController();
+    const timer = setTimeout(async () => {
+      setLoading(true);
+      try {
+        const params = new URLSearchParams();
+        if (q) params.set("q", q);
+        if (selectedCategories.length > 0) params.set("category", selectedCategories.join(","));
+        if (priceMin) params.set("min_price", priceMin);
+        if (priceMax) params.set("max_price", priceMax);
+        if (minRating > 0) params.set("rating", String(minRating));
+        if (sortParam) params.set("sort", sortParam);
+        params.set("page", String(page));
+        params.set("limit", "20");
 
-    if (q) {
-      results = searchProducts(q, 200).map((r) => r.product);
-    } else {
-      results = [...products];
-    }
+        const res = await fetch(`/api/v1/search?${params.toString()}`, { signal: controller.signal });
+        const json = await res.json();
+        setProducts(json.products || []);
+        setTotalResults(json.total || 0);
+      } catch (err: any) {
+        if (err.name !== "AbortError") {
+          console.error("Search fetch failed:", err);
+          setProducts([]);
+          setTotalResults(0);
+        }
+      } finally {
+        setLoading(false);
+      }
+    }, q ? 300 : 0);
 
-    if (selectedCategories.length > 0) {
-      results = results.filter((p) => selectedCategories.includes(p.category.slug));
-    }
+    return () => {
+      clearTimeout(timer);
+      controller.abort();
+    };
+  }, [q, selectedCategories, priceMin, priceMax, minRating, sortParam, page]);
 
-    if (priceMin) {
-      const min = parseFloat(priceMin);
-      if (!isNaN(min)) results = results.filter((p) => (p.salePrice || p.regularPrice) >= min);
-    }
-    if (priceMax) {
-      const max = parseFloat(priceMax);
-      if (!isNaN(max)) results = results.filter((p) => (p.salePrice || p.regularPrice) <= max);
-    }
+  const allResults = products;
 
-    if (minRating > 0) {
-      results = results.filter((p) => p.rating >= minRating);
-    }
-
-    if (selectedTiers.length > 0) {
-      results = results.filter((p) => {
-        const tier = p.brand.name.toLowerCase();
-        if (selectedTiers.includes("gold") && (tier.includes("gold") || tier.includes("platinum"))) return true;
-        if (selectedTiers.includes("platinum") && tier.includes("platinum")) return true;
-        if (selectedTiers.includes("official") && (tier === "official" || tier.includes("brand"))) return true;
-        return false;
-      });
-    }
-
-    switch (sortParam) {
-      case "price-asc":
-        results.sort((a, b) => (a.salePrice || a.regularPrice) - (b.salePrice || b.regularPrice));
-        break;
-      case "price-desc":
-        results.sort((a, b) => (b.salePrice || b.regularPrice) - (a.salePrice || a.regularPrice));
-        break;
-      case "top-rated":
-        results.sort((a, b) => b.rating - a.rating);
-        break;
-      case "most-orders":
-        results.sort((a, b) => b.reviewCount - a.reviewCount);
-        break;
-      case "newest":
-        results.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
-        break;
-      default:
-        break;
-    }
-
-    return results;
-  }, [q, selectedCategories, priceMin, priceMax, minRating, selectedTiers, sortParam]);
-
-  const totalPages = Math.max(1, Math.ceil(allResults.length / PRODUCTS_PER_PAGE));
-  const pagedResults = allResults.slice((page - 1) * PRODUCTS_PER_PAGE, page * PRODUCTS_PER_PAGE);
+  const totalPages = Math.max(1, Math.ceil(totalResults / 20));
+  const pagedResults = allResults;
 
   const pageNumbers = useMemo(() => {
     const pages: (number | "...")[] = [];
@@ -204,7 +186,7 @@ function SearchPageInner() {
       map.set(slug, (map.get(slug) || 0) + 1);
     });
     return map;
-  }, []);
+  }, [products]);
 
   return (
     <div className="min-h-screen bg-off-white">
@@ -372,12 +354,12 @@ function SearchPageInner() {
                 <h1 className="text-xl font-bold text-text-1">
                   {q ? (
                     <>
-                      <span className="text-text-3 font-normal">{allResults.length} results for</span>{" "}
+                      <span className="text-text-3 font-normal">{loading ? "Searching..." : `${totalResults} results for`}</span>{" "}
                       &ldquo;{q}&rdquo;
                     </>
                   ) : (
                     <>
-                      <span className="text-text-3 font-normal">{allResults.length} products</span>
+                      <span className="text-text-3 font-normal">{loading ? "Loading..." : `${totalResults} products`}</span>
                     </>
                   )}
                 </h1>
@@ -420,7 +402,12 @@ function SearchPageInner() {
             </div>
 
             {/* Products */}
-            {pagedResults.length > 0 ? (
+            {loading ? (
+              <div className="flex flex-col items-center justify-center py-20">
+                <Loader2 className="animate-spin text-[#FF6B00] mb-3" size={32} />
+                <p className="text-sm text-text-4">Searching products...</p>
+              </div>
+            ) : pagedResults.length > 0 ? (
               <>
                 {viewMode === "grid" ? (
                   <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import {
   RotateCcw,
   ChevronRight,
@@ -9,47 +9,24 @@ import {
   Clock,
   Truck,
   Plus,
+  Loader2,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useCurrencyStore } from "@/store/currency-store";
 
-const returns = [
-  {
-    id: "RMA-001",
-    orderId: "ORD-8801",
-    product: "Hikvision 4MP IP Dome Camera",
-    reason: "Defective product",
-    status: "approved" as const,
-    requestDate: "2026-03-28",
-    resolvedDate: "2026-04-02",
-    refundAmount: 72500,
-    refundMethod: "Store Credit",
-  },
-  {
-    id: "RMA-002",
-    orderId: "ORD-8790",
-    product: "TP-Link Omada EAP670 Access Point",
-    reason: "Wrong item received",
-    status: "in-transit" as const,
-    requestDate: "2026-04-01",
-    resolvedDate: null,
-    refundAmount: 108000,
-    refundMethod: "Original Payment",
-  },
-  {
-    id: "RMA-003",
-    orderId: "ORD-8765",
-    product: "Honeywell Addressable Smoke Detector",
-    reason: "Changed mind",
-    status: "pending" as const,
-    requestDate: "2026-04-05",
-    resolvedDate: null,
-    refundAmount: 23800,
-    refundMethod: "Store Credit",
-  },
-];
+interface Return {
+  id: string;
+  orderId: string;
+  product: string;
+  reason: string;
+  status: "pending" | "approved" | "in-transit" | "completed" | "rejected";
+  requestDate: string;
+  resolvedDate: string | null;
+  refundAmount: number;
+  refundMethod: string;
+}
 
-const statusConfig = {
+const statusConfig: Record<string, { label: string; color: string; icon: typeof Clock }> = {
   pending: { label: "Pending Review", color: "bg-yellow-50 text-yellow-700", icon: Clock },
   approved: { label: "Approved", color: "bg-green-50 text-green-700", icon: CheckCircle },
   "in-transit": { label: "Return In Transit", color: "bg-blue-50 text-blue", icon: Truck },
@@ -60,6 +37,34 @@ const statusConfig = {
 export default function ReturnsPage() {
   const [showForm, setShowForm] = useState(false);
   const { formatNGN } = useCurrencyStore();
+  const [loading, setLoading] = useState(true);
+  const [returns, setReturns] = useState<Return[]>([]);
+
+  useEffect(() => {
+    async function load() {
+      try {
+        const res = await fetch("/api/v1/account/returns");
+        if (res.ok) {
+          const d = await res.json();
+          if (Array.isArray(d)) setReturns(d);
+          else if (d.returns) setReturns(d.returns);
+        }
+      } catch {
+        // keep empty
+      } finally {
+        setLoading(false);
+      }
+    }
+    load();
+  }, []);
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center py-20">
+        <Loader2 size={24} className="animate-spin text-blue" />
+      </div>
+    );
+  }
 
   return (
     <div>
@@ -128,7 +133,7 @@ export default function ReturnsPage() {
       {/* Returns List */}
       <div className="space-y-4">
         {returns.map((ret) => {
-          const config = statusConfig[ret.status];
+          const config = statusConfig[ret.status] || statusConfig.pending;
           const StatusIcon = config.icon;
           return (
             <div key={ret.id} className="bg-white rounded-xl border border-border p-5 hover:shadow-soft transition-shadow">

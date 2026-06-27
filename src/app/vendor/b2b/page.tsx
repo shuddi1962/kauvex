@@ -1,11 +1,12 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Link from "next/link";
 import {
   Building2, TrendingUp, ShoppingCart, FileText,
   Package, BadgePercent, Truck, CheckCircle2, X,
   Send, Clock, AlertCircle, ChevronDown, ChevronUp,
+  Loader2,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import VendorShell from "@/components/vendor/vendor-shell";
@@ -34,77 +35,17 @@ interface DiscountTier {
   description: string;
 }
 
-const MOCK_OPPORTUNITIES: Opportunity[] = [
-  {
-    id: "1",
-    product: "Yamaha F150 Outboard Motor",
-    category: "Marine",
-    demand: "High",
-    reason: "14 B2B inquiries in last 30 days, trending +25%",
-  },
-  {
-    id: "2",
-    product: "Marine LED Navigation Kit",
-    category: "Boat Parts",
-    demand: "Medium",
-    reason: "Wholesale pricing requested by 3 marina operators",
-  },
-  {
-    id: "3",
-    product: "Stainless Steel Propeller Set",
-    category: "Marine",
-    demand: "High",
-    reason: "5 fleet maintenance companies seeking bulk pricing",
-  },
-];
-
-const MOCK_QUOTES: QuoteRequest[] = [
-  {
-    id: "QT-001",
-    buyer: "James Wilson",
-    company: "Atlantic Marine Services",
-    products: "Yamaha F150 (x4), Propeller Set (x8)",
-    quantity: 12,
-    status: "pending",
-    date: "2026-06-18",
-  },
-  {
-    id: "QT-002",
-    buyer: "Sarah Okonkwo",
-    company: "Lagos Boatyard Ltd",
-    products: "Marine LED Kit (x20)",
-    quantity: 20,
-    status: "responded",
-    date: "2026-06-15",
-  },
-  {
-    id: "QT-003",
-    buyer: "Michael Chen",
-    company: "Pacific Fleet Solutions",
-    products: "Navigation Systems (x5)",
-    quantity: 5,
-    status: "accepted",
-    date: "2026-06-10",
-  },
-  {
-    id: "QT-004",
-    buyer: "Emeka Obi",
-    company: "Delta Marine Logistics",
-    products: "Propeller Set (x15)",
-    quantity: 15,
-    status: "declined",
-    date: "2026-06-05",
-  },
-];
-
-const MOCK_DISCOUNT_TIERS: DiscountTier[] = [
-  { quantity: "10+", discount: "5%", description: "Buy 10+, get 5% off" },
-  { quantity: "50+", discount: "12%", description: "Buy 50+, get 12% off" },
-  { quantity: "100+", discount: "20%", description: "Buy 100+, get 20% off" },
-];
+interface B2BData {
+  opportunities: Opportunity[];
+  quotes: QuoteRequest[];
+  discountTiers: DiscountTier[];
+}
 
 export default function VendorB2BPage() {
-  const [quotes, setQuotes] = useState<QuoteRequest[]>(MOCK_QUOTES);
+  const [quotes, setQuotes] = useState<QuoteRequest[]>([]);
+  const [opportunities, setOpportunities] = useState<Opportunity[]>([]);
+  const [discountTiers, setDiscountTiers] = useState<DiscountTier[]>([]);
+  const [loading, setLoading] = useState(true);
   const [activeQuote, setActiveQuote] = useState<string | null>(null);
   const [respondedQuote, setRespondedQuote] = useState<string | null>(null);
   const [toast, setToast] = useState<{ type: "success" | "error"; message: string } | null>(null);
@@ -117,6 +58,22 @@ export default function VendorB2BPage() {
     validity: "30",
     notes: "",
   });
+
+  useEffect(() => {
+    fetch("/api/v1/vendor/b2b")
+      .then((r) => r.json())
+      .then((data: B2BData) => {
+        setOpportunities(data.opportunities ?? []);
+        setQuotes(data.quotes ?? []);
+        setDiscountTiers(data.discountTiers ?? []);
+      })
+      .catch(() => {
+        setOpportunities([]);
+        setQuotes([]);
+        setDiscountTiers([]);
+      })
+      .finally(() => setLoading(false));
+  }, []);
 
   const showToast = (type: "success" | "error", message: string) => {
     setToast({ type, message });
@@ -182,7 +139,7 @@ export default function VendorB2BPage() {
               </span>
             </div>
             <p className="text-2xl font-bold text-gray-900">
-              {MOCK_OPPORTUNITIES.length}
+              {loading ? <Loader2 size={18} className="animate-spin inline" /> : opportunities.length}
             </p>
             <p className="text-[10px] text-green-600 font-medium">
               AI-flagged with high B2B demand
@@ -206,7 +163,7 @@ export default function VendorB2BPage() {
               <span className="text-xs text-gray-500">Discount Tiers</span>
             </div>
             <p className="text-2xl font-bold text-gray-900">
-              {MOCK_DISCOUNT_TIERS.length}
+              {loading ? <Loader2 size={18} className="animate-spin inline" /> : discountTiers.length}
             </p>
             <p className="text-[10px] text-green-600 font-medium">
               Volume-based savings
@@ -237,7 +194,11 @@ export default function VendorB2BPage() {
                 </h3>
               </div>
               <div className="divide-y divide-gray-100">
-                {MOCK_OPPORTUNITIES.map((opp) => (
+                {loading ? (
+                  <div className="p-8 text-center">
+                    <Loader2 size={20} className="animate-spin text-gray-400 mx-auto" />
+                  </div>
+                ) : opportunities.map((opp) => (
                   <div
                     key={opp.id}
                     className="p-4 hover:bg-gray-50 transition-colors"
@@ -280,6 +241,11 @@ export default function VendorB2BPage() {
                 </h3>
               </div>
               <div className="overflow-x-auto">
+                {loading ? (
+                  <div className="p-8 text-center">
+                    <Loader2 size={20} className="animate-spin text-gray-400 mx-auto" />
+                  </div>
+                ) : (
                 <table className="w-full text-sm">
                   <thead>
                     <tr className="border-b border-gray-100 bg-gray-50">
@@ -351,6 +317,7 @@ export default function VendorB2BPage() {
                     ))}
                   </tbody>
                 </table>
+                )}
               </div>
             </div>
 
@@ -412,7 +379,7 @@ export default function VendorB2BPage() {
                 Business Discount Insights — Volume Discount Tiers
               </h3>
               <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
-                {MOCK_DISCOUNT_TIERS.map((tier, i) => (
+                {discountTiers.map((tier, i) => (
                   <div
                     key={i}
                     className="border border-gray-200 rounded-xl p-4 text-center hover:border-purple-300 transition-colors"

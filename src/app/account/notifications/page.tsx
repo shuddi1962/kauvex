@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import {
   Bell,
   Package,
@@ -12,26 +12,96 @@ import {
   Star,
   Trash2,
   Check,
+  Loader2,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
-const notifications = [
-  { id: "1", type: "order", title: "Order Shipped", message: "Your order #ORD-8842 has been shipped and is on its way!", time: "2 hours ago", read: false, icon: Truck },
-  { id: "2", type: "promo", title: "Flash Sale Starting!", message: "Up to 40% off security systems. Limited time only!", time: "5 hours ago", read: false, icon: Tag },
-  { id: "3", type: "payment", title: "Payment Confirmed", message: "Payment of ₦85,000 for order #ORD-8842 was successful.", time: "1 day ago", read: true, icon: CreditCard },
-  { id: "4", type: "order", title: "Order Confirmed", message: "Your order #ORD-8842 has been confirmed and is being prepared.", time: "1 day ago", read: true, icon: Package },
-  { id: "5", type: "loyalty", title: "Points Earned!", message: "You earned 350 loyalty points from your recent purchase.", time: "1 day ago", read: true, icon: Star },
-  { id: "6", type: "promo", title: "Welcome Gift", message: "Use code WELCOME10 for 10% off your first order!", time: "3 days ago", read: true, icon: Gift },
-  { id: "7", type: "alert", title: "Price Drop Alert", message: "Hikvision 4MP Camera is now ₦72,500 (was ₦85,000)", time: "5 days ago", read: true, icon: AlertCircle },
-];
+interface Notification {
+  id: string;
+  type: string;
+  title: string;
+  message: string;
+  time: string;
+  read: boolean;
+  icon: typeof Truck;
+}
+
+const iconMap: Record<string, typeof Truck> = {
+  order: Package, promo: Tag, payment: CreditCard, loyalty: Star, alert: AlertCircle, truck: Truck, gift: Gift,
+};
 
 export default function NotificationsPage() {
   const [filter, setFilter] = useState("all");
+  const [loading, setLoading] = useState(true);
+  const [notifications, setNotifications] = useState<Notification[]>([]);
+  const [acting, setActing] = useState(false);
+
+  useEffect(() => {
+    async function load() {
+      try {
+        const res = await fetch("/api/v1/account/notifications");
+        if (res.ok) {
+          const d = await res.json();
+          const arr = Array.isArray(d) ? d : d.notifications || [];
+          setNotifications(
+            arr.map((n: Record<string, unknown>) => ({
+              ...n,
+              icon: iconMap[n.type as string] || Bell,
+            }))
+          );
+        }
+      } catch {
+        // keep empty
+      } finally {
+        setLoading(false);
+      }
+    }
+    load();
+  }, []);
+
+  const markAllRead = async () => {
+    setActing(true);
+    try {
+      await fetch("/api/v1/account/notifications/read-all", { method: "POST" });
+      setNotifications((prev) => prev.map((n) => ({ ...n, read: true })));
+    } finally {
+      setActing(false);
+    }
+  };
+
+  const clearAll = async () => {
+    setActing(true);
+    try {
+      await fetch("/api/v1/account/notifications", { method: "DELETE" });
+      setNotifications([]);
+    } finally {
+      setActing(false);
+    }
+  };
+
+  const toggleRead = async (id: string) => {
+    setNotifications((prev) => prev.map((n) => (n.id === id ? { ...n, read: !n.read } : n)));
+    try {
+      await fetch("/api/v1/account/notifications", { method: "PATCH", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ id }) });
+    } catch {
+      // revert on failure
+      setNotifications((prev) => prev.map((n) => (n.id === id ? { ...n, read: !n.read } : n)));
+    }
+  };
+
   const unreadCount = notifications.filter((n) => !n.read).length;
 
   const filtered = filter === "all" ? notifications :
     filter === "unread" ? notifications.filter((n) => !n.read) :
     notifications.filter((n) => n.type === filter);
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center py-20">
+        <Loader2 size={24} className="animate-spin text-blue" />
+      </div>
+    );
+  }
 
   return (
     <div>
@@ -43,10 +113,10 @@ export default function NotificationsPage() {
           )}
         </div>
         <div className="flex gap-2">
-          <Button variant="outline" size="sm" className="gap-1.5">
-            <Check size={14} /> Mark All Read
+          <Button variant="outline" size="sm" className="gap-1.5" onClick={markAllRead} disabled={acting}>
+            {acting ? <Loader2 size={14} className="animate-spin" /> : <Check size={14} />} Mark All Read
           </Button>
-          <Button variant="outline" size="sm" className="gap-1.5 text-red hover:bg-red-50">
+          <Button variant="outline" size="sm" className="gap-1.5 text-red hover:bg-red-50" onClick={clearAll} disabled={acting}>
             <Trash2 size={14} /> Clear All
           </Button>
         </div>
@@ -83,6 +153,7 @@ export default function NotificationsPage() {
           return (
             <div
               key={notif.id}
+              onClick={() => toggleRead(notif.id)}
               className={`flex items-start gap-4 p-4 rounded-xl border transition-colors cursor-pointer ${
                 notif.read
                   ? "bg-white border-border hover:bg-off-white"

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Link from "next/link";
 import VendorShell from "@/components/vendor/vendor-shell";
 import { Button } from "@/components/ui/button";
@@ -18,22 +18,17 @@ const paymentMethods = [
   { value: "ussd", label: "USSD", icon: Smartphone, desc: "Pay via USSD code on your phone" },
 ];
 
-const demoTransactions = [
-  { id: "TXN-001", type: "deposit", amount: 200000, method: "Card Payment", status: "completed", date: "2026-03-15 10:30 AM", reference: "REF-20260315-001" },
-  { id: "TXN-002", type: "deposit", amount: 50000, method: "Bank Transfer", status: "completed", date: "2026-03-10 02:15 PM", reference: "REF-20260310-002" },
-  { id: "TXN-003", type: "spend", amount: 43200, method: "Ad Campaign", status: "completed", date: "2026-03-08 08:00 AM", reference: "CAMP-001" },
-  { id: "TXN-004", type: "spend", amount: 28000, method: "Ad Campaign", status: "completed", date: "2026-03-07 08:00 AM", reference: "CAMP-003" },
-  { id: "TXN-005", type: "deposit", amount: 150000, method: "Card Payment", status: "completed", date: "2026-03-01 11:45 AM", reference: "REF-20260301-005" },
-  { id: "TXN-006", type: "spend", amount: 15600, method: "Ad Campaign", status: "completed", date: "2026-02-28 08:00 AM", reference: "CAMP-001" },
-  { id: "TXN-007", type: "spend", amount: 34000, method: "Ad Campaign", status: "completed", date: "2026-02-25 08:00 AM", reference: "CAMP-003" },
-  { id: "TXN-008", type: "deposit", amount: 300000, method: "Bank Transfer", status: "pending", date: "2026-03-16 09:00 AM", reference: "REF-20260316-008" },
-  { id: "TXN-009", type: "refund", amount: 5000, method: "Credit Adjustment", status: "completed", date: "2026-02-20 12:00 PM", reference: "ADJ-20260220-001" },
-];
+interface WalletData {
+  balance: number;
+  transactions: { id: string; type: string; amount: number; method: string; status: string; date: string; reference: string }[];
+}
 
 const topUpAmounts = [50000, 100000, 200000, 500000, 1000000];
 
 export default function VendorAdWalletPage() {
-  const [balance] = useState(284800);
+  const [balance, setBalance] = useState(0);
+  const [transactions, setTransactions] = useState<WalletData["transactions"]>([]);
+  const [loading, setLoading] = useState(true);
   const [autoRecharge, setAutoRecharge] = useState(false);
   const [autoThreshold, setAutoThreshold] = useState(50000);
   const [autoAmount, setAutoAmount] = useState(200000);
@@ -45,7 +40,21 @@ export default function VendorAdWalletPage() {
 
   const formatNaira = (n: number) => `₦${n.toLocaleString()}`;
 
-  const filteredTransactions = demoTransactions.filter((t) => filter === "all" || t.type === filter);
+  useEffect(() => {
+    fetch("/api/v1/vendor/ads/wallet")
+      .then((r) => r.json())
+      .then((data: WalletData) => {
+        setBalance(data.balance ?? 0);
+        setTransactions(data.transactions ?? []);
+      })
+      .catch(() => {
+        setBalance(0);
+        setTransactions([]);
+      })
+      .finally(() => setLoading(false));
+  }, []);
+
+  const filteredTransactions = transactions.filter((t) => filter === "all" || t.type === filter);
 
   const handleTopUp = async () => {
     if (topUpAmount < 1000) { alert("Minimum top-up is ₦1,000"); return; }
@@ -73,7 +82,7 @@ export default function VendorAdWalletPage() {
                 <Wallet size={18} className="text-white/70" />
                 <span className="text-sm text-white/70">Available Ad Balance</span>
               </div>
-              <p className="text-4xl font-bold tracking-tight mt-1">{formatNaira(balance)}</p>
+              <p className="text-4xl font-bold tracking-tight mt-1">{loading ? <Loader2 size={24} className="animate-spin" /> : formatNaira(balance)}</p>
               <p className="text-sm text-white/70 mt-1">Total spent this month: ₦84,800</p>
             </div>
             <Button onClick={() => setShowTopUp(!showTopUp)} className="bg-white text-blue hover:bg-white/90 font-semibold">
@@ -202,7 +211,13 @@ export default function VendorAdWalletPage() {
                 </tr>
               </thead>
               <tbody>
-                {filteredTransactions.map((tx) => (
+                {loading ? (
+                  <tr>
+                    <td colSpan={6} className="px-4 py-12 text-center">
+                      <Loader2 size={24} className="animate-spin text-text-4 mx-auto" />
+                    </td>
+                  </tr>
+                ) : filteredTransactions.map((tx) => (
                   <tr key={tx.id} className="border-b border-gray-50 hover:bg-gray-50/50 transition-colors">
                     <td className="px-4 py-3 text-sm text-text-2">{tx.date}</td>
                     <td className="px-4 py-3 text-sm font-mono text-text-2">{tx.reference}</td>
@@ -231,7 +246,7 @@ export default function VendorAdWalletPage() {
                     </td>
                   </tr>
                 ))}
-                {filteredTransactions.length === 0 && (
+                {filteredTransactions.length === 0 && !loading && (
                   <tr>
                     <td colSpan={6} className="px-4 py-12 text-center">
                       <Wallet size={32} className="text-text-4/30 mx-auto mb-2" />

@@ -1,40 +1,65 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import {
   Gift, Share2, Users, DollarSign, Copy, CheckCircle2,
   TrendingUp, Link as LinkIcon, Mail, MessageCircle, Hash,
-  Globe, ChevronRight, Star, Award, Zap,
+  Globe, ChevronRight, Star, Award, Zap, Loader2,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
+interface ReferralStats {
+  totalReferrals: number;
+  earnedRewards: string;
+  pendingRewards: string;
+  conversionRate: string;
+}
+
+interface ReferralEntry {
+  id: string;
+  name: string;
+  email: string;
+  date: string;
+  status: string;
+  reward: string;
+}
+
+interface RewardRule {
+  action: string;
+  reward: string;
+  desc: string;
+}
+
 export default function ReferralPage() {
   const [copied, setCopied] = useState(false);
-  const referralCode = "john123";
-  const referralLink = `https://kauvex.com/ref/${referralCode}`;
+  const [loading, setLoading] = useState(true);
+  const [referralCode, setReferralCode] = useState("");
+  const [referralLink, setReferralLink] = useState("");
+  const [stats, setStats] = useState<ReferralStats>({ totalReferrals: 0, earnedRewards: "₦0", pendingRewards: "₦0", conversionRate: "0%" });
+  const [referralHistory, setReferralHistory] = useState<ReferralEntry[]>([]);
+  const [rewards, setRewards] = useState<RewardRule[]>([]);
 
-  const stats = [
-    { label: "Total Referrals", value: 12, icon: Users, color: "text-blue", bg: "bg-blue-50" },
-    { label: "Earned Rewards", value: "₦45,500", icon: DollarSign, color: "text-green-600", bg: "bg-green-50" },
-    { label: "Pending Rewards", value: "₦5,000", icon: Star, color: "text-amber-600", bg: "bg-amber-50" },
-    { label: "Conversion Rate", value: "68%", icon: TrendingUp, color: "text-purple-600", bg: "bg-purple-50" },
-  ];
-
-  const referralHistory = [
-    { id: "1", name: "Amara O.", email: "amara@email.com", date: "2026-04-03", status: "completed", reward: "₦2,000" },
-    { id: "2", name: "Chidi E.", email: "chidi@email.com", date: "2026-04-01", status: "completed", reward: "₦5,000" },
-    { id: "3", name: "Fatima A.", email: "fatima@email.com", date: "2026-03-28", status: "completed", reward: "₦1,500" },
-    { id: "4", name: "Emeka N.", email: "emeka@email.com", date: "2026-03-25", status: "completed", reward: "₦10,000" },
-    { id: "5", name: "Kemi B.", email: "kemi@email.com", date: "2026-03-20", status: "completed", reward: "₦3,000" },
-    { id: "6", name: "Tunde A.", email: "tunde@email.com", date: "2026-03-15", status: "completed", reward: "₦2,500" },
-    { id: "7", name: "Ngozi C.", email: "ngozi@email.com", date: "2026-03-10", status: "pending", reward: "₦1,000" },
-  ];
-
-  const rewards = [
-    { action: "Friend Signs Up", reward: "₦10,000", desc: "When your friend creates an account using your referral link" },
-    { action: "Friend Makes First Purchase", reward: "5% Commission", desc: "Earn 5% of their first order value" },
-    { action: "Repeat Purchase", reward: "₦5,000 Bonus", desc: "Earn an additional bonus when they make a second purchase" },
-  ];
+  useEffect(() => {
+    async function load() {
+      try {
+        const res = await fetch("/api/v1/account/referrals");
+        if (res.ok) {
+          const d = await res.json();
+          if (d.code) setReferralCode(d.code);
+          if (d.link) setReferralLink(d.link);
+          else if (d.code) setReferralLink(`https://kauvex.com/ref/${d.code}`);
+          if (d.stats) setStats(d.stats);
+          if (Array.isArray(d.history)) setReferralHistory(d.history);
+          if (Array.isArray(d.rewards)) setRewards(d.rewards);
+        }
+      } catch {
+        // keep defaults
+      } finally {
+        setLoading(false);
+      }
+    }
+    load();
+  }, []);
 
   const copyLink = () => {
     navigator.clipboard.writeText(referralLink);
@@ -52,6 +77,21 @@ export default function ReferralPage() {
     };
     window.open(urls[platform], "_blank", "width=600,height=400");
   };
+
+  const statCards = [
+    { label: "Total Referrals", value: stats.totalReferrals, icon: Users, color: "text-blue", bg: "bg-blue-50" },
+    { label: "Earned Rewards", value: stats.earnedRewards, icon: DollarSign, color: "text-green-600", bg: "bg-green-50" },
+    { label: "Pending Rewards", value: stats.pendingRewards, icon: Star, color: "text-amber-600", bg: "bg-amber-50" },
+    { label: "Conversion Rate", value: stats.conversionRate, icon: TrendingUp, color: "text-purple-600", bg: "bg-purple-50" },
+  ];
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center py-20">
+        <Loader2 size={24} className="animate-spin text-blue" />
+      </div>
+    );
+  }
 
   return (
     <div>
@@ -98,7 +138,7 @@ export default function ReferralPage() {
 
       {/* Stats */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
-        {stats.map((stat) => {
+        {statCards.map((stat) => {
           const Icon = stat.icon;
           return (
             <div key={stat.label} className="bg-white rounded-xl border border-border p-4">

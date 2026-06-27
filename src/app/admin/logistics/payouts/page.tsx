@@ -36,6 +36,8 @@ export default function PayoutsPage() {
   const [statusFilter, setStatusFilter] = useState("");
   const [periodFilter, setPeriodFilter] = useState("");
   const [runBatchLoading, setRunBatchLoading] = useState(false);
+  const [batchSuccess, setBatchSuccess] = useState("");
+  const [batchError, setBatchError] = useState("");
 
   useEffect(() => { loadData(); }, []);
 
@@ -50,12 +52,42 @@ export default function PayoutsPage() {
     }
   };
 
-  const handleRunBatch = () => {
+  const handleRunBatch = async () => {
     setRunBatchLoading(true);
-    setTimeout(() => {
-      alert("Payout batch initiated. This will process all pending payouts.");
+    setBatchSuccess("");
+    setBatchError("");
+    try {
+      const pendingIds = payouts
+        .filter((p) => p.status === "pending")
+        .map((p) => p.id)
+        .filter(Boolean) as string[];
+
+      if (pendingIds.length === 0) {
+        setBatchError("No pending payouts to process.");
+        return;
+      }
+
+      const res = await fetch("/api/v1/admin/payouts/batch", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ payout_ids: pendingIds }),
+      });
+
+      const json = await res.json();
+
+      if (!res.ok) {
+        setBatchError(json.error || "Failed to process payout batch.");
+        return;
+      }
+
+      setBatchSuccess(`Batch initiated. ${pendingIds.length} payout(s) queued for processing.`);
+      loadData();
+    } catch (err) {
+      console.error("Batch payout error:", err);
+      setBatchError("Network error. Please try again.");
+    } finally {
       setRunBatchLoading(false);
-    }, 1000);
+    }
   };
 
   const filtered = payouts.filter(p => {
@@ -139,6 +171,18 @@ export default function PayoutsPage() {
           Run Payout Batch
         </button>
       </div>
+      {batchSuccess && (
+        <div className="mb-4 flex items-center gap-2 px-4 py-2 bg-green-50 border border-green-200 rounded-lg text-sm text-green-700">
+          <CheckCircle size={14} />
+          {batchSuccess}
+        </div>
+      )}
+      {batchError && (
+        <div className="mb-4 flex items-center gap-2 px-4 py-2 bg-red-50 border border-red-200 rounded-lg text-sm text-red-600">
+          <AlertTriangle size={14} />
+          {batchError}
+        </div>
+      )}
 
       <div className="bg-white rounded-xl border border-gray-200 overflow-hidden">
         <table className="w-full">

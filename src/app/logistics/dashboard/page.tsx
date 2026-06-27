@@ -49,11 +49,12 @@ import {
   User,
   UserPlus,
 } from "lucide-react";
+import { useDashboard } from "./dashboard-context";
 
-type TabId = "available" | "active" | "history" | "earnings" | "performance" | "fleet" | "settings";
+type TabId = "available" | "active" | "history" | "earnings" | "performance" | "fuel" | "settings";
 
 export default function LogisticsDashboard() {
-  const [activeTab, setActiveTab] = useState<TabId>("available");
+  const { activeTab, setActiveTab } = useDashboard();
   const [showPayoutModal, setShowPayoutModal] = useState(false);
   const [showProofModal, setShowProofModal] = useState(false);
   const [deliveryPin, setDeliveryPin] = useState("");
@@ -87,7 +88,7 @@ export default function LogisticsDashboard() {
     { id: "history" as TabId, label: "Job History" },
     { id: "earnings" as TabId, label: "Earnings" },
     { id: "performance" as TabId, label: "Performance" },
-    { id: "fleet" as TabId, label: "Fleet" },
+    { id: "fuel" as TabId, label: "Fuel & Profitability" },
     { id: "settings" as TabId, label: "Settings" },
   ];
 
@@ -158,8 +159,8 @@ export default function LogisticsDashboard() {
       {/* ============ PERFORMANCE TAB ============ */}
       {activeTab === "performance" && <PerformanceTab />}
 
-      {/* ============ FLEET TAB ============ */}
-      {activeTab === "fleet" && <FleetTab />}
+      {/* ============ FUEL TAB ============ */}
+      {activeTab === "fuel" && <FuelTab />}
 
       {/* ============ SETTINGS TAB ============ */}
       {activeTab === "settings" && <SettingsTab />}
@@ -857,52 +858,94 @@ function PerformanceTab() {
   );
 }
 
-/* ==================== FLEET MANAGEMENT ==================== */
-function FleetTab() {
-  const [members, setMembers] = useState([
-    { id: "1", name: "Chioma Eze", phone: "08031234567", vehicle: "Motorcycle", status: "active", jobs: 145, rating: 4.6 },
-    { id: "2", name: "David Okafor", phone: "08079876543", vehicle: "Toyota Camry", status: "active", jobs: 89, rating: 4.3 },
-    { id: "3", name: "Funmi Adeyemi", phone: "08051223344", vehicle: "Ford Transit Van", status: "offline", jobs: 212, rating: 4.8 },
-  ]);
+/* ==================== FUEL & PROFITABILITY ==================== */
+function FuelTab() {
+  const [fuelData, setFuelData] = useState<{
+    currentPrice: number;
+    breakEvenPrice: number;
+    monthlyFuelCost: number;
+    monthlyEarnings: number;
+    profitMargin: number;
+    routes: Array<{ name: string; distance: number; fuelCost: number; payout: number; profitable: boolean }>;
+  } | null>(null);
 
-  const toggleActive = (id: string) => setMembers(prev => prev.map(m => m.id === id ? { ...m, status: m.status === "active" ? "offline" : "active" } : m));
+  useEffect(() => {
+    setFuelData({
+      currentPrice: 1150,
+      breakEvenPrice: 1400,
+      monthlyFuelCost: 285000,
+      monthlyEarnings: 450000,
+      profitMargin: 36.7,
+      routes: [
+        { name: "Lagos → Abuja", distance: 750, fuelCost: 301300, payout: 85000, profitable: false },
+        { name: "Lagos → Ibadan", distance: 130, fuelCost: 52600, payout: 25000, profitable: true },
+        { name: "Abuja → Port Harcourt", distance: 620, fuelCost: 249100, payout: 72000, profitable: true },
+      ],
+    });
+  }, []);
+
+  if (!fuelData) return <div className="flex items-center justify-center py-16"><div className="w-6 h-6 border-2 border-gray-300 border-t-[#FF6B00] rounded-full animate-spin" /></div>;
+
+  const headroom = fuelData.breakEvenPrice - fuelData.currentPrice;
+  const headroomPercent = fuelData.breakEvenPrice > 0 ? (headroom / fuelData.breakEvenPrice) * 100 : 0;
 
   return (
-    <div className="bg-white rounded-xl border border-border p-6">
-      <div className="flex items-center justify-between mb-6">
-        <div>
-          <h3 className="font-bold text-lg text-text-1">Fleet Management</h3>
-          <p className="text-xs text-text-4 mt-1">Manage your riders, drivers, and vehicles under one account</p>
+    <div className="space-y-4">
+      <div className="bg-white rounded-xl border border-border p-6">
+        <div className="flex items-center justify-between mb-4">
+          <div>
+            <h3 className="font-bold text-lg text-text-1">Fuel & Profitability</h3>
+            <p className="text-xs text-text-4 mt-1">Monitor diesel prices and route profitability</p>
+          </div>
+          <a href="/logistics/fuel" className="px-4 h-9 bg-orange text-white text-sm font-bold rounded-lg hover:bg-orange/90 transition-colors">View Full Dashboard</a>
         </div>
-        <button className="px-4 h-9 bg-orange text-white text-sm font-bold rounded-lg hover:bg-orange/90 transition-colors flex items-center gap-1.5">
-          <UserPlus className="w-4 h-4" /> Add Member
-        </button>
-      </div>
-      <div className="space-y-3">
-        {members.map(m => (
-          <div key={m.id} className="border border-border rounded-xl p-4 flex items-center justify-between">
-            <div className="flex items-center gap-3">
-              <div className={`w-10 h-10 rounded-full flex items-center justify-center text-white text-sm font-bold ${m.status === "active" ? "bg-green-600" : "bg-gray-400"}`}>{m.name.charAt(0)}</div>
-              <div>
-                <p className="font-semibold text-sm text-text-1">{m.name}</p>
-                <p className="text-xs text-text-4">{m.phone} &bull; {m.vehicle}</p>
-                <p className="text-[10px] text-text-4 mt-0.5">{m.jobs} jobs completed &bull; {m.rating} rating</p>
+
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-6">
+          <div className="bg-gray-50 rounded-xl p-4">
+            <p className="text-[10px] text-text-4 uppercase tracking-wider mb-1">Current Diesel</p>
+            <p className="text-xl font-bold text-text-1">₦{fuelData.currentPrice.toLocaleString()}<span className="text-xs font-normal text-text-4">/L</span></p>
+          </div>
+          <div className="bg-gray-50 rounded-xl p-4">
+            <p className="text-[10px] text-text-4 uppercase tracking-wider mb-1">Break-Even Price</p>
+            <p className="text-xl font-bold text-text-1">₦{fuelData.breakEvenPrice.toLocaleString()}<span className="text-xs font-normal text-text-4">/L</span></p>
+          </div>
+          <div className="bg-gray-50 rounded-xl p-4">
+            <p className="text-[10px] text-text-4 uppercase tracking-wider mb-1">Headroom</p>
+            <p className={`text-xl font-bold ${headroom > 100 ? "text-green-700" : headroom > 0 ? "text-amber-600" : "text-red"}`}>₦{headroom.toLocaleString()}<span className="text-xs font-normal text-text-4">/L</span></p>
+          </div>
+          <div className="bg-gray-50 rounded-xl p-4">
+            <p className="text-[10px] text-text-4 uppercase tracking-wider mb-1">Profit Margin</p>
+            <p className={`text-xl font-bold ${fuelData.profitMargin > 25 ? "text-green-700" : fuelData.profitMargin > 10 ? "text-amber-600" : "text-red"}`}>{fuelData.profitMargin}%</p>
+          </div>
+        </div>
+
+        <div className="mb-4">
+          <div className="flex items-center justify-between text-xs mb-1">
+            <span className="text-text-4">Fuel Price vs Break-Even</span>
+            <span className="text-text-4">{Math.round(headroomPercent)}% headroom</span>
+          </div>
+          <div className="h-3 bg-gray-100 rounded-full overflow-hidden">
+            <div className="h-full rounded-full transition-all" style={{ width: `${Math.min(100, (fuelData.currentPrice / fuelData.breakEvenPrice) * 100)}%`, backgroundColor: headroom > 100 ? "#16a34a" : headroom > 0 ? "#d97706" : "#dc2626" }} />
+          </div>
+        </div>
+
+        <h4 className="font-semibold text-sm text-text-1 mb-3">Route Profitability</h4>
+        <div className="space-y-2">
+          {fuelData.routes.map((route, i) => (
+            <div key={i} className="flex items-center justify-between p-3 rounded-lg border border-border">
+              <div className="flex items-center gap-3">
+                <div className={`w-2 h-2 rounded-full ${route.profitable ? "bg-green" : "bg-red"}`} />
+                <div>
+                  <p className="text-sm font-medium text-text-1">{route.name}</p>
+                  <p className="text-[10px] text-text-4">{route.distance}km • Fuel: ₦{route.fuelCost.toLocaleString()}</p>
+                </div>
+              </div>
+              <div className="text-right">
+                <p className="text-sm font-bold text-text-1">₦{route.payout.toLocaleString()}</p>
+                <p className={`text-[10px] font-medium ${route.profitable ? "text-green-700" : "text-red"}`}>{route.profitable ? "Profitable" : "Unprofitable"}</p>
               </div>
             </div>
-            <div className="flex items-center gap-2">
-              <span className={`text-[10px] px-2 py-0.5 rounded-full font-semibold ${m.status === "active" ? "bg-green-50 text-green-700" : "bg-gray-100 text-gray-500"}`}>{m.status === "active" ? "Online" : "Offline"}</span>
-              <button onClick={() => toggleActive(m.id)} className={`relative w-9 h-5 rounded-full transition-colors ${m.status === "active" ? "bg-orange" : "bg-gray-300"}`}>
-                <div className={`absolute top-0.5 w-4 h-4 bg-white rounded-full shadow transition-transform ${m.status === "active" ? "translate-x-4" : "translate-x-0.5"}`} />
-              </button>
-            </div>
-          </div>
-        ))}
-      </div>
-      <div className="mt-6 p-4 bg-gray-50 rounded-xl">
-        <div className="grid grid-cols-3 gap-4 text-center text-sm">
-          <div><p className="text-xs text-text-4">Total Members</p><p className="font-bold text-text-1">{members.length}</p></div>
-          <div><p className="text-xs text-text-4">Active Now</p><p className="font-bold text-green-700">{members.filter(m => m.status === "active").length}</p></div>
-          <div><p className="text-xs text-text-4">Total Jobs</p><p className="font-bold text-text-1">{members.reduce((a, m) => a + m.jobs, 0)}</p></div>
+          ))}
         </div>
       </div>
     </div>

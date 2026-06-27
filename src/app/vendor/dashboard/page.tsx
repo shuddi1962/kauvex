@@ -4,6 +4,26 @@ import Link from "next/link";
 import VendorShell from "@/components/vendor/vendor-shell";
 import { DollarSign, ShoppingCart, Package, TrendingUp, BarChart3, Settings, Store, Truck, Megaphone, Eye, Plus, CreditCard, Bell, Users, MessageSquare, Heart, Star, Shield, RefreshCw, Wallet, ChevronDown, Clock, Award, ArrowUp, ArrowDown, Zap, X, Sparkles, GraduationCap, Globe, MonitorSmartphone, Percent, AlertTriangle, Target, BookOpen, Lightbulb } from "lucide-react";
 
+const quickActions = [
+  { label: "Match Competitive Price", icon: Zap, color: "bg-orange/10 text-orange", desc: "3 products above Buy Box price", href: "/vendor/inventory" },
+  { label: "Restock Now", icon: Package, color: "bg-red-100 text-red-600", desc: "2 products approaching stockout", href: "/vendor/inventory/replenishment-alerts" },
+  { label: "Promote with Coupons", icon: Percent, color: "bg-green-100 text-green-700", desc: "Create a coupon campaign", href: "/vendor/promotions" },
+  { label: "Create a Coupon", icon: Plus, color: "bg-purple-100 text-purple-700", desc: "Discount %, code, expiry", href: "/vendor/promotions" },
+];
+
+const growthOpportunities = [
+  { label: "New Selection Recommendations", icon: Lightbulb, desc: "5 trending products in your category" },
+  { label: "Global Product Demand", icon: Globe, desc: "Expand to UK, CA, AU storefronts" },
+  { label: "Categories with Insights", icon: BarChart3, desc: "Category trend data available" },
+  { label: "Add More Products", icon: Plus, desc: "Shortcut to product creation" },
+];
+
+const onboardingCards = [
+  { label: "Free webinars to grow your store", icon: MonitorSmartphone, desc: "Learn from Kauvex experts" },
+  { label: "Grow your business globally", icon: Globe, desc: "Expand to other storefronts" },
+  { label: "Tutorials and Training", icon: GraduationCap, desc: "Kauvex Seller University" },
+];
+
 export default function VendorDashboard() {
   const [activeModule, setActiveModule] = useState("overview");
   const [dismissedCards, setDismissedCards] = useState<string[]>([]);
@@ -44,57 +64,6 @@ export default function VendorDashboard() {
     };
     fetchDashboard();
   }, []);
-
-const kpis = [
-  { label: "Daily Sales", value: "₦284,500", change: "+12.3%", up: true, icon: DollarSign, color: "bg-emerald-100 text-emerald-700" },
-  { label: "Buy Box Win Rate", value: "78%", change: "+5.2%", up: true, icon: Target, color: "bg-blue-100 text-blue" },
-  { label: "Out of Stock", value: "3", change: "", up: false, icon: AlertTriangle, color: "bg-red-100 text-red-600" },
-  { label: "Total Balance", value: "₦1,234,500", change: "+18.5%", up: true, icon: Wallet, color: "bg-purple-100 text-purple-700" },
-  { label: "Pending Orders", value: "23", change: "-5", up: false, icon: Clock, color: "bg-amber-100 text-amber-700" },
-  { label: "Shipped Orders", value: "133", change: "+12", up: true, icon: Truck, color: "bg-green-100 text-green-700" },
-  { label: "Days of Supply", value: "14.2", change: "+2.1", up: true, icon: Package, color: "bg-cyan-100 text-cyan-700" },
-  { label: "Conversion Rate", value: "3.2%", change: "+0.4%", up: true, icon: TrendingUp, color: "bg-teal-100 text-teal-700" },
-];
-
-const topProducts = [
-  { name: "Marine GPS Navigator", sales: 234, revenue: "₦11,700,000", rating: 4.8 },
-  { name: "Yacht Anchor Chain", sales: 189, revenue: "₦5,670,000", rating: 4.6 },
-  { name: "LED Navigation Light", sales: 156, revenue: "₦2,340,000", rating: 4.9 },
-  { name: "Marine VHF Radio", sales: 134, revenue: "₦4,020,000", rating: 4.7 },
-  { name: "Boat Cover Heavy Duty", sales: 98, revenue: "₦2,940,000", rating: 4.5 },
-];
-
-const recentOrders = [
-  { id: "ORD-2024-3841", customer: "John D.", items: 3, total: "₦234,500", status: "Shipped", date: "2h ago" },
-  { id: "ORD-2024-3840", customer: "Sarah M.", items: 1, total: "₦89,000", status: "Pending", date: "4h ago" },
-  { id: "ORD-2024-3839", customer: "TechCorp Ltd", items: 5, total: "₦567,000", status: "Processing", date: "6h ago" },
-  { id: "ORD-2024-3838", customer: "MarinePro", items: 2, total: "₦178,000", status: "Delivered", date: "1d ago" },
-];
-
-const quickActions = [
-  { label: "Match Competitive Price", icon: Zap, color: "bg-orange/10 text-orange", desc: "3 products above Buy Box price", href: "/vendor/inventory" },
-  { label: "Restock Now", icon: Package, color: "bg-red-100 text-red-600", desc: "2 products approaching stockout", href: "/vendor/inventory/replenishment-alerts" },
-  { label: "Promote with Coupons", icon: Percent, color: "bg-green-100 text-green-700", desc: "Create a coupon campaign", href: "/vendor/promotions" },
-  { label: "Create a Coupon", icon: Plus, color: "bg-purple-100 text-purple-700", desc: "Discount %, code, expiry", href: "/vendor/promotions" },
-];
-
-const growthOpportunities = [
-  { label: "New Selection Recommendations", icon: Lightbulb, desc: "5 trending products in your category" },
-  { label: "Global Product Demand", icon: Globe, desc: "Expand to UK, CA, AU storefronts" },
-  { label: "Categories with Insights", icon: BarChart3, desc: "Category trend data available" },
-  { label: "Add More Products", icon: Plus, desc: "Shortcut to product creation" },
-];
-
-const onboardingCards = [
-  { label: "Free webinars to grow your store", icon: MonitorSmartphone, desc: "Learn from Kauvex experts" },
-  { label: "Grow your business globally", icon: Globe, desc: "Expand to other storefronts" },
-  { label: "Tutorials and Training", icon: GraduationCap, desc: "Kauvex Seller University" },
-];
-
-export default function VendorDashboard() {
-  const [activeModule, setActiveModule] = useState("overview");
-  const [dismissedCards, setDismissedCards] = useState<string[]>([]);
-  const [couponModal, setCouponModal] = useState(false);
 
   const healthMetrics = [
     { label: "Order Defect Rate", value: "1.2%", target: "< 2%", status: "good" },

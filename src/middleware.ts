@@ -10,21 +10,17 @@ const SUBDOMAIN_ROUTES: Record<string, string> = {
   warehouse: "/warehouse",
   express: "/express",
   supplier: "/supplier",
-  api: "/api",
 };
 
-const PROTECTED_SUBDOMAINS = ["admin", "seller", "partners", "logistics", "warehouse", "supplier"];
-
-// Kauvex country TLDs
-const KAUVEX_TLDS = [
-  "kauvex.com", "kauvex.co.uk", "kauvex.ca", "kauvex.com.au",
+// Kauvex country TLDs (reserved — not live until domains are purchased)
+const KAUVEX_COUNTRY_TLDS = [
+  "kauvex.co.uk", "kauvex.ca", "kauvex.com.au",
   "kauvex.ng", "kauvex.in", "kauvex.ae", "kauvex.de", "kauvex.fr",
   "kauvex.com.gh", "kauvex.co.ke", "kauvex.co.za", "kauvex.sa",
   "kauvex.com.br", "kauvex.jp",
 ];
 
-const COUNTRY_TLD_MAP: Record<string, { currency: string; country: string; language: string }> = {
-  "kauvex.com": { currency: "USD", country: "US", language: "en" },
+const COUNTRY_TLD_CONFIG: Record<string, { currency: string; country: string; language: string }> = {
   "kauvex.co.uk": { currency: "GBP", country: "UK", language: "en" },
   "kauvex.ca": { currency: "CAD", country: "CA", language: "en" },
   "kauvex.com.au": { currency: "AUD", country: "AU", language: "en" },
@@ -41,66 +37,91 @@ const COUNTRY_TLD_MAP: Record<string, { currency: string; country: string; langu
   "kauvex.jp": { currency: "JPY", country: "JP", language: "ja" },
 };
 
+const COUNTRY_PATHS: Record<string, { currency: string; country: string; language: string }> = {
+  ng: { currency: "NGN", country: "NG", language: "en" },
+  uk: { currency: "GBP", country: "UK", language: "en" },
+  ca: { currency: "CAD", country: "CA", language: "en" },
+  au: { currency: "AUD", country: "AU", language: "en" },
+  in: { currency: "INR", country: "IN", language: "en" },
+  ae: { currency: "AED", country: "AE", language: "en" },
+  de: { currency: "EUR", country: "DE", language: "de" },
+  gh: { currency: "GHS", country: "GH", language: "en" },
+  ke: { currency: "KES", country: "KE", language: "en" },
+  za: { currency: "ZAR", country: "ZA", language: "en" },
+  sa: { currency: "SAR", country: "SA", language: "ar" },
+  br: { currency: "BRL", country: "BR", language: "pt" },
+  jp: { currency: "JPY", country: "JP", language: "ja" },
+  fr: { currency: "EUR", country: "FR", language: "fr" },
+};
+
 export async function middleware(request: NextRequest) {
   const url = request.nextUrl.clone();
   const hostname = request.headers.get("host") || "";
-  const host = hostname.replace(":3000", "").replace(":3001", "");
+  const host = hostname.replace(":3000", "").replace(":3001", "").replace(":8080", "");
 
-  // ─── STEP 1: IDENTIFY DOMAIN TYPE ───
-  const isKauvexCountryDomain = KAUVEX_TLDS.includes(host);
-  const isKauvexSubdomain = host.endsWith(`.${ROOT_DOMAIN}`) && !isKauvexCountryDomain;
-  const subdomain = isKauvexSubdomain ? host.replace(`.${ROOT_DOMAIN}`, "") : null;
-  const isRootDomain = host === ROOT_DOMAIN || host === `www.${ROOT_DOMAIN}`;
-  const isCustomDomain = !isKauvexCountryDomain && !isKauvexSubdomain && !isRootDomain && !host.includes("localhost");
+  const pathname = url.pathname;
 
-  // ─── STEP 2: HANDLE KAUVEX COUNTRY DOMAINS ───
-  // kauvex.co.uk, kauvex.ca, kauvex.ng, etc.
-  if (isKauvexCountryDomain) {
-    const countryConfig = COUNTRY_TLD_MAP[host];
-    if (countryConfig) {
+  // Skip: static files, Next.js internals, API routes
+  if (
+    pathname.startsWith("/_next") ||
+    pathname.startsWith("/api/") ||
+    pathname.includes(".")
+  ) {
+    return NextResponse.next();
+  }
+
+  // ─── IDENTIFY HOSTNAME ───
+  const isKauvexRoot = host === ROOT_DOMAIN || host === `www.${ROOT_DOMAIN}`;
+  const isKauvexCountryTLD = KAUVEX_COUNTRY_TLDS.includes(host);
+  const isKauvexSubdomain = host.endsWith(`.${ROOT_DOMAIN}`) && !isKauvexRoot && !isKauvexCountryTLD;
+  const subdomain = isKauvexSubdomain ? host.split(".")[0] : null;
+
+  // ─── COUNTRY TLDs (kauvex.co.uk, kauvex.ng, etc.) ───
+  if (isKauvexCountryTLD) {
+    const config = COUNTRY_TLD_CONFIG[host];
+    if (config) {
       const response = NextResponse.next();
       response.headers.set("x-storefront-id", host);
-      response.headers.set("x-storefront-currency", countryConfig.currency);
-      response.headers.set("x-storefront-country", countryConfig.country);
-      response.headers.set("x-storefront-language", countryConfig.language);
+      response.headers.set("x-storefront-currency", config.currency);
+      response.headers.set("x-storefront-country", config.country);
+      response.headers.set("x-storefront-language", config.language);
       response.headers.set("x-storefront-type", "country_domain");
       return response;
     }
     return NextResponse.next();
   }
 
-  // ─── STEP 3: HANDLE ROOT DOMAIN + PATH STOREFRONTS ───
-  // kauvex.com or kauvex.com/ng
-  if (isRootDomain) {
-    const pathParts = url.pathname.split("/");
-    const potentialStorefront = pathParts[1];
+  // ─── CORE SUBDOMAINS (admin.kauvex.com → /admin, seller.kauvex.com → /vendor, etc.) ───
+  if (isKauvexSubdomain && subdomain && SUBDOMAIN_ROUTES[subdomain]) {
+    url.pathname = `${SUBDOMAIN_ROUTES[subdomain]}${url.pathname}`;
+    const response = NextResponse.rewrite(url);
+    response.headers.set("x-subdomain", subdomain);
+    return response;
+  }
 
-    // Known country path prefixes
-    const countryPaths: Record<string, { currency: string; country: string }> = {
-      ng: { currency: "NGN", country: "NG" },
-      uk: { currency: "GBP", country: "UK" },
-      ca: { currency: "CAD", country: "CA" },
-      au: { currency: "AUD", country: "AU" },
-      us: { currency: "USD", country: "US" },
-      in: { currency: "INR", country: "IN" },
-      ae: { currency: "AED", country: "AE" },
-      de: { currency: "EUR", country: "DE" },
-      gh: { currency: "GHS", country: "GH" },
-      ke: { currency: "KES", country: "KE" },
-      za: { currency: "ZAR", country: "ZA" },
-      sa: { currency: "SAR", country: "SA" },
-      br: { currency: "BRL", country: "BR" },
-      jp: { currency: "JPY", country: "JP" },
-      fr: { currency: "EUR", country: "FR" },
-    };
+  // ─── VENDOR SUBDOMAINS (shopname.kauvex.com) ───
+  // Only if (stores) route group exists
+  if (isKauvexSubdomain && subdomain && !SUBDOMAIN_ROUTES[subdomain]) {
+    const storesDir = url.pathname.startsWith("/(stores)") ? "" : `/(stores)/${subdomain}`;
+    url.pathname = `${storesDir}${url.pathname}`;
+    const response = NextResponse.rewrite(url);
+    response.headers.set("x-vendor-slug", subdomain);
+    response.headers.set("x-store-type", "subdomain");
+    return response;
+  }
 
-    if (potentialStorefront && countryPaths[potentialStorefront]) {
-      const cp = countryPaths[potentialStorefront];
+  // ─── ROOT DOMAIN with country path (kauvex.com/ng, kauvex.com/uk, etc.) ───
+  if (isKauvexRoot) {
+    const segments = pathname.split("/").filter(Boolean);
+    const firstSegment = segments[0];
+
+    if (firstSegment && COUNTRY_PATHS[firstSegment]) {
+      const cp = COUNTRY_PATHS[firstSegment];
       const response = NextResponse.next();
-      response.headers.set("x-storefront-id", potentialStorefront);
+      response.headers.set("x-storefront-id", firstSegment);
       response.headers.set("x-storefront-currency", cp.currency);
       response.headers.set("x-storefront-country", cp.country);
-      response.headers.set("x-storefront-language", "en");
+      response.headers.set("x-storefront-language", cp.language);
       response.headers.set("x-storefront-type", "path");
       return response;
     }
@@ -113,39 +134,7 @@ export async function middleware(request: NextRequest) {
     return response;
   }
 
-  // ─── STEP 4: HANDLE CORE SUBDOMAINS ───
-  if (subdomain && SUBDOMAIN_ROUTES[subdomain]) {
-    if (PROTECTED_SUBDOMAINS.includes(subdomain)) {
-      const token = request.cookies.get("sb-access-token")?.value;
-      if (!token) {
-        const loginUrl = new URL(`/login?redirect=${url.pathname}`, `https://${subdomain}.${ROOT_DOMAIN}`);
-        return NextResponse.redirect(loginUrl);
-      }
-    }
-
-    url.pathname = `${SUBDOMAIN_ROUTES[subdomain]}${url.pathname}`;
-    const response = NextResponse.rewrite(url);
-    response.headers.set("x-subdomain", subdomain);
-    return response;
-  }
-
-  // ─── STEP 5: HANDLE VENDOR SUBDOMAINS ───
-  if (subdomain && !SUBDOMAIN_ROUTES[subdomain]) {
-    url.pathname = `/(stores)/${subdomain}${url.pathname}`;
-    const response = NextResponse.rewrite(url);
-    response.headers.set("x-vendor-slug", subdomain);
-    response.headers.set("x-store-type", "subdomain");
-    return response;
-  }
-
-  // ─── STEP 6: HANDLE CUSTOM VENDOR DOMAINS ───
-  if (isCustomDomain) {
-    url.pathname = `/(stores)/${host}${url.pathname}`;
-    const response = NextResponse.rewrite(url);
-    response.headers.set("x-store-type", "custom_domain");
-    return response;
-  }
-
+  // ─── FALLBACK: everything else passes through ───
   return NextResponse.next();
 }
 

@@ -48,6 +48,7 @@ import {
   MapPinned,
   History,
   Fuel,
+  Truck,
 } from "lucide-react";
 
 const TIER_BADGES: Record<string, { label: string; color: string }> = {

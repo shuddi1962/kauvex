@@ -61,13 +61,17 @@ const TIER_BADGES: Record<string, { label: string; color: string }> = {
 
 const NAV_SECTIONS = [
   {
-    label: "Main",
+    label: "MAIN",
     items: [
       { icon: LayoutDashboard, label: "Dashboard", href: "/express/dashboard/overview" },
+      { icon: DollarSign, label: "Get a Quote", href: "/express/quote-calculator" },
+      { icon: PackageCheck, label: "Shipments", href: "/express/history", badge: "active" },
+      { icon: Search, label: "Tracking", href: "/express/track" },
+      { icon: MapPin, label: "Lockers", href: "/express/lockers/map" },
     ],
   },
   {
-    label: "Ship",
+    label: "SHIP",
     items: [
       { icon: Send, label: "Quick Ship", href: "/express/dashboard/ship" },
       { icon: Upload, label: "Bulk Upload", href: "/express/dashboard/bulk-upload" },
@@ -76,77 +80,43 @@ const NAV_SECTIONS = [
     ],
   },
   {
-    label: "Track",
-    items: [
-      { icon: PackageCheck, label: "Active Shipments", href: "/express/track" },
-      { icon: Map, label: "Shipment Map (live)", href: "/express/track/map" },
-      { icon: Bell, label: "Delivery Alerts", href: "/express/track/alerts" },
-    ],
-  },
-  {
-    label: "Fuel",
-    items: [
-      { icon: Fuel, label: "Fuel Dashboard", href: "/express/fuel" },
-      { icon: MapPin, label: "Fuel Stations", href: "/express/fuel-stations" },
-      { icon: Route, label: "Route Impact", href: "/express/fuel/route-impact" },
-      { icon: DollarSign, label: "Cost Planner", href: "/express/fuel/cost-planner" },
-      { icon: History, label: "Fuel History", href: "/express/fuel/history" },
-      { icon: Bell, label: "Price Alerts", href: "/express/fuel/alerts" },
-      { icon: TrendingUp, label: "Fuel Tracker", href: "/express/fuel-tracker" },
-    ],
-  },
-  {
-    label: "Analytics",
+    label: "ANALYTICS",
     items: [
       { icon: BarChart3, label: "Overview", href: "/express/analytics" },
       { icon: TrendingUp, label: "Shipment Trends", href: "/express/analytics#trends" },
       { icon: DollarSign, label: "Cost Analysis", href: "/express/analytics#cost" },
       { icon: Route, label: "Route Performance", href: "/express/analytics#routes" },
       { icon: Clock, label: "Delivery Success", href: "/express/analytics#delivery" },
-      { icon: Leaf, label: "Carbon Footprint", href: "/express/analytics#carbon" },
+      { icon: Leaf, label: "Carbon Footprint", href: "/express/carbon" },
+      { icon: Fuel, label: "Fuel Intelligence", href: "/express/fuel", showForTier: ["business_bronze", "business_silver", "business_gold", "business_platinum", "enterprise"] },
     ],
   },
   {
-    label: "History",
+    label: "SERVICES",
     items: [
-      { icon: History, label: "All Shipments", href: "/express/history" },
-      { icon: RotateCcw, label: "Returns", href: "/express/returns" },
-      { icon: Shield, label: "Claims", href: "/express/claims" },
-      { icon: Receipt, label: "Invoices", href: "/express/invoices" },
+      { icon: Globe, label: "Domestic Shipping", href: "/express/coverage" },
+      { icon: Globe, label: "International", href: "/express/coverage" },
+      { icon: Briefcase, label: "Corporate & B2B", href: "/express/corporate" },
+      { icon: Shield, label: "Insurance", href: "/express/claims" },
     ],
   },
   {
-    label: "Lockers",
+    label: "PLATFORM",
     items: [
-      { icon: Search, label: "Find a Locker", href: "/express/lockers/map" },
-      { icon: Bookmark, label: "My Locker Bookings", href: "/express/lockers" },
-      { icon: Layers, label: "Locker History", href: "/express/lockers/history" },
-    ],
-  },
-  {
-    label: "Address Book",
-    items: [
-      { icon: CircleUser, label: "Saved Contacts", href: "/express/address-book/contacts" },
-      { icon: MapPinned, label: "Frequent Destinations", href: "/express/address-book/destinations" },
-    ],
-  },
-  {
-    label: "Business",
-    showForTier: ["business_bronze", "business_silver", "business_gold", "business_platinum", "enterprise"],
-    items: [
-      { icon: Users, label: "Team Members", href: "/express/team" },
-      { icon: CreditCard, label: "Billing", href: "/express/billing" },
-      { icon: Key, label: "API Keys", href: "/express/api-keys" },
       { icon: Plug, label: "Integrations", href: "/express/integrations" },
-      { icon: Paintbrush, label: "Custom Branding", href: "/express/branding" },
+      { icon: Truck, label: "Couriers", href: "/express/multi-carrier" },
+      { icon: Key, label: "API & Webhooks", href: "/express/api-keys" },
+      { icon: Map, label: "Branded Tracking", href: "/express/branding" },
     ],
   },
   {
-    label: "Settings",
+    label: "ACCOUNT",
     items: [
       { icon: CircleUser, label: "Profile", href: "/express/settings/profile" },
-      { icon: Bell, label: "Notifications", href: "/express/settings/notifications" },
+      { icon: Users, label: "Team Members", href: "/express/team" },
       { icon: CreditCard, label: "Payment Methods", href: "/express/settings/payments" },
+      { icon: Receipt, label: "Billing", href: "/express/billing" },
+      { icon: Bell, label: "Notifications", href: "/express/settings/notifications" },
       { icon: Shield, label: "Security", href: "/express/settings/security" },
     ],
   },

@@ -55,6 +55,11 @@ alwaysApply: true
 - /app/admin/logistics/jobs/ — Admin logistics jobs management
 - /app/admin/logistics/warehouses/ — Admin warehouse locations
 - /app/admin/cj-dropshipping/packaging/ — CJ Dropshipping packaging config
+- /app/express/carbon/ — Carbon footprint tracker (Phase 23)
+- /app/express/corporate/ — Corporate & B2B services (Phase 23)
+- /app/express/rates/calendar/ — Smart rate calendar (Phase 23)
+- /app/express/delivery-confidence/ — Delivery confidence score (Phase 23)
+- /app/logistics/why-kauvex/ — Competitor comparison page (Phase 23)
 - /app/vendor/logistics/ — Vendor logistics section (shipments, pickups, manifests, performance, packaging guide)
 - /app/vendor/fbk/packaging/ — FBK packaging tier configuration
 - /app/supplier/logistics/ — Supplier packaging + delivery management
@@ -137,6 +142,7 @@ alwaysApply: true
 - /app/api/v1/cron/cashback-process/ — Cashback processing cron job
 - /app/api/v1/cron/float-track/ — Float tracking cron job
 - /supabase/migrations/00018_kcc_phase18_kauvex_pay.sql — KV Pay database migration
+- /supabase/migrations/00023_kcc_phase23_logistics_upgrade.sql — Phase 23 logistics upgrade (14 new tables, 15 carrier seeds)
 
 Brand Quick Reference:
   Primary color: #0A1628 (navy) — kauvex-navy
@@ -230,6 +236,7 @@ Key V2 Enterprise+ tables: erp_accounts, journal_entries, cost_centers, budgets,
 - [x] Phase 20 (KSP + DB Migrations): Complete
 - [x] Phase 21 (Fuel Intelligence System): Complete
 - [x] Phase 22 (Domain Provisioning System): Complete
+- [x] Phase 23 (Shipping & Logistics Platform Upgrade): Complete
 
 ## Recent Enhancements (August 2026)
 - **V3 Database**: 40+ new Prisma models (local suppliers, sourcing, POD, dropshipping, art/NFT, group buy, price alerts, live commerce, mentorship, carbon offsets, competition intel, Kauvex Originals, subscription boxes)

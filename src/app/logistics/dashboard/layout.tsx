@@ -23,15 +23,25 @@ import {
 import { DashboardProvider, useDashboard } from "./dashboard-context";
 
 const tabs = [
-  { id: "available" as const, label: "Available Jobs", icon: ClipboardList },
+  { id: "available" as const, label: "Available Jobs", icon: ClipboardList, badge: "live" },
   { id: "active" as const, label: "My Active Jobs", icon: Package },
   { id: "history" as const, label: "Job History", icon: History },
   { id: "earnings" as const, label: "Earnings", icon: DollarSign },
   { id: "performance" as const, label: "Performance", icon: TrendingUp },
-  { id: "fuel" as const, label: "Fuel & Profitability", icon: Fuel },
+  { id: "fuel" as const, label: "Fuel Calculator", icon: Fuel },
   { id: "fleet" as const, label: "Fleet Management", icon: Truck },
   { id: "delivery-stats" as const, label: "Delivery Stats", icon: BarChart3 },
   { id: "settings" as const, label: "Settings", icon: Settings },
+];
+
+const JOB_TYPE_FILTERS = [
+  { id: "marketplace", label: "Marketplace", emoji: "🛒" },
+  { id: "express", label: "Express", emoji: "⚡" },
+  { id: "freight", label: "Freight", emoji: "🏗️" },
+  { id: "corporate", label: "Corporate", emoji: "🏢" },
+  { id: "locker", label: "Locker", emoji: "📍" },
+  { id: "cold_chain", label: "Cold Chain", emoji: "❄️" },
+  { id: "document", label: "Document", emoji: "📬" },
 ];
 
 function DashboardSidebar({ sidebarOpen, setSidebarOpen }: { sidebarOpen: boolean; setSidebarOpen: (v: boolean) => void }) {
@@ -84,10 +94,33 @@ function DashboardSidebar({ sidebarOpen, setSidebarOpen }: { sidebarOpen: boolea
               >
                 <Icon className="w-4 h-4" />
                 {tab.label}
+                {tab.badge === "live" && (
+                  <span className="ml-auto flex items-center gap-1">
+                    <span className="relative flex h-2 w-2">
+                      <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75" />
+                      <span className="relative inline-flex rounded-full h-2 w-2 bg-green-500" />
+                    </span>
+                  </span>
+                )}
               </button>
             );
           })}
         </nav>
+
+        {/* Job Type Filters */}
+        {sidebarOpen && (
+          <div className="px-3 py-2 border-t border-border">
+            <p className="text-[10px] font-semibold uppercase tracking-wider text-text-4 mb-2 px-3">Job Types</p>
+            <div className="space-y-0.5">
+              {JOB_TYPE_FILTERS.map(jt => (
+                <div key={jt.id} className="flex items-center gap-2 px-3 py-1.5 text-xs text-text-3 hover:bg-gray-50 rounded-lg cursor-pointer">
+                  <span>{jt.emoji}</span>
+                  <span>{jt.label}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
 
         <div className="absolute bottom-0 left-0 right-0 p-3 border-t border-border">
           <div className="space-y-1">

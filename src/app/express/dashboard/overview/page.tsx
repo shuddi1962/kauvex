@@ -273,47 +273,48 @@ export default function ExpressDashboardOverview() {
     {
       label: "Total Shipments",
       value: m.totalShipments.toLocaleString(),
-      sub: `↑ 18% vs last month`,
+      sub: `+18% vs last month`,
       icon: Package,
       iconBg: "bg-[#EEF2FF]",
       iconColor: "text-[#0A1628]",
     },
     {
-      label: "Delivered",
+      label: "Active Right Now",
+      value: m.activeCount.toLocaleString(),
+      sub: "Live",
+      icon: Truck,
+      iconBg: "bg-orange-50",
+      iconColor: "text-[#FF6B00]",
+      pulse: true,
+    },
+    {
+      label: "Delivered Today",
       value: m.deliveredTodayCount.toLocaleString(),
-      sub: `↑ ${m.deliveredTodaySuccess}% success rate`,
+      sub: `${m.deliveredTodaySuccess}% success`,
       icon: CheckCircle2,
       iconBg: "bg-green-50",
       iconColor: "text-green-600",
     },
     {
-      label: "In Transit",
-      value: m.activeCount.toLocaleString(),
-      sub: "Avg 2.4 days",
-      icon: Truck,
-      iconBg: "bg-orange-50",
-      iconColor: "text-[#FF6B00]",
+      label: "Pending Pickup",
+      value: m.pendingCount.toLocaleString(),
+      sub: `Oldest: ${m.oldestPendingMinutes} min`,
+      icon: Clock,
+      iconBg: "bg-amber-50",
+      iconColor: "text-amber-600",
     },
     {
-      label: "Express Orders",
-      value: "189",
-      sub: "↑ 34% this week",
-      icon: Zap,
-      iconBg: "bg-red-50",
-      iconColor: "text-red-600",
-    },
-    {
-      label: "Revenue",
+      label: "Total Spend",
       value: formatCurrency(m.thisMonthSpend, currency),
-      sub: `↑ ${m.spendChange}% vs last month`,
+      sub: `${m.spendChange > 0 ? "+" : ""}${m.spendChange}% vs last`,
       icon: DollarSign,
       iconBg: "bg-green-50",
       iconColor: "text-green-600",
     },
     {
-      label: "Intl Shipments",
-      value: "638",
-      sub: "↑ 41% to 87 countries",
+      label: "In Transit Value",
+      value: formatCurrency(m.totalActiveValue, currency),
+      sub: `${m.insuredActiveCount} insured`,
       icon: Globe,
       iconBg: "bg-blue-50",
       iconColor: "text-blue-600",
@@ -390,7 +391,7 @@ export default function ExpressDashboardOverview() {
         </div>
       </div>
 
-      {/* Stat Cards - Roshana Style */}
+      {/* Stat Cards - Kauvex Style */}
       <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-4">
         {statCards.map((card) => (
           <div

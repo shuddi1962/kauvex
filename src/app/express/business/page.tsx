@@ -182,7 +182,7 @@ export default function ExpressBusinessPage() {
         </div>
       </section>
 
-      {/* Pricing Tiers - Roshana Style */}
+      {/* Pricing Tiers - Kauvex Style */}
       <section className="py-16 lg:py-20 bg-white">
         <div className="max-w-7xl mx-auto px-4">
           <h2 className="text-2xl lg:text-3xl font-syne font-700 text-center text-text-1 mb-4">Choose your plan</h2>

@@ -1,4 +1,4 @@
-const CACHE_NAME = "roshanal-v1";
+const CACHE_NAME = "kauvex-v1";
 const OFFLINE_URL = "/offline";
 
 const PRECACHE_URLS = [

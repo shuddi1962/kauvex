@@ -178,7 +178,7 @@ export default function AdminLogisticsDashboard() {
           </div>
         </div>
 
-        {/* Stat Cards - Roshana Style */}
+        {/* Stat Cards - Kauvex Style */}
         <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-4">
           {statCards.map((card) => (
             <div

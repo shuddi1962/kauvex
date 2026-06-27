@@ -256,13 +256,14 @@ export default function LogisticsDashboard() {
 
 /* ==================== AVAILABLE JOBS ==================== */
 function AvailableJobsTab() {
-  const [jobs, setJobs] = useState<{ id: string; pickup: string; dropoff: string; distance: string; weight: string; payout: number; type: string; minTier: string; expiresIn: number; pickupCode: string }[]>([]);
+  const [jobs, setJobs] = useState<{ id: string; pickup: string; dropoff: string; distance: string; weight: string; payout: number; jobType: string; source: string; minTier: string; expiresIn: number; pickupCode: string; isFbk?: boolean; coldChain?: boolean; fragile?: boolean; postedAgo?: string }[]>([]);
   const [loading, setLoading] = useState(true);
   const [filters, setFilters] = useState({ type: "all", minPayout: "", maxDistance: "" });
   const [accepted, setAccepted] = useState<string[]>([]);
+  const [viewMode, setViewMode] = useState<"list" | "map">("list");
 
   useEffect(() => {
-    fetch("/api/v1/logistics/jobs?status=open&limit=20")
+    fetch("/api/v1/logistics/jobs?status=open&limit=30")
       .then(r => r.json())
       .then(json => {
         const items = (json.data || []).map((j: Record<string, unknown>) => ({
@@ -272,23 +273,24 @@ function AvailableJobsTab() {
           distance: j.distance_km ? `${j.distance_km} km` : "— km",
           weight: j.weight_category || "Small (< 2 kg)",
           payout: Number(j.payout_amount || j.earnings || j.payout || 2000),
-          type: j.shipment_type || j.type || "Standard",
+          jobType: j.job_type || j.type || "Standard",
+          source: j.job_source || "marketplace",
           minTier: j.min_tier || "New",
           expiresIn: j.expires_in || 15,
           pickupCode: j.pickup_code || `PK-${Math.floor(Math.random() * 900 + 100)}`,
+          isFbk: j.is_fbk || false,
+          coldChain: j.cold_chain || false,
+          fragile: j.fragile || false,
+          postedAgo: j.posted_ago || "2 min ago",
         }));
-        setJobs(items.length > 0 ? items : [
-          { id: "JOB-8742", pickup: "Ikeja City Mall, Lagos", dropoff: "VI, Lagos 106104", distance: "12.5 km", weight: "Small (< 2 kg)", payout: 2500, type: "Express", minTier: "New", expiresIn: 14, pickupCode: "PK-482" },
-          { id: "JOB-8741", pickup: "Marina, Lagos Island", dropoff: "Lekki Phase 1", distance: "18.2 km", weight: "Medium (2-10 kg)", payout: 3800, type: "Standard", minTier: "Verified", expiresIn: 8, pickupCode: "PK-481" },
-          { id: "JOB-8740", pickup: "Surulere, Lagos", dropoff: "Yaba, Lagos", distance: "6.8 km", weight: "Small (< 2 kg)", payout: 1800, type: "Express", minTier: "New", expiresIn: 3, pickupCode: "PK-480" },
-        ]);
+        setJobs(items.length > 0 ? items : DEMO_JOBS);
         setLoading(false);
       })
-      .catch(() => setLoading(false));
+      .catch(() => { setJobs(DEMO_JOBS); setLoading(false); });
   }, []);
 
   const filtered = jobs.filter(j => {
-    if (filters.type !== "all" && j.type.toLowerCase() !== filters.type) return false;
+    if (filters.type !== "all" && j.source.toLowerCase() !== filters.type) return false;
     if (filters.minPayout && j.payout < parseInt(filters.minPayout)) return false;
     if (filters.maxDistance) {
       const dist = parseFloat(j.distance);
@@ -299,21 +301,43 @@ function AvailableJobsTab() {
 
   const acceptJob = (id: string) => setAccepted(prev => [...prev, id]);
 
+  const JOB_SOURCE_STYLES: Record<string, { emoji: string; label: string; bg: string; text: string }> = {
+    marketplace: { emoji: "🛒", label: "MARKETPLACE ORDER", bg: "bg-blue-50", text: "text-blue-700" },
+    express: { emoji: "⚡", label: "EXPRESS SHIPMENT", bg: "bg-orange/10", text: "text-orange" },
+    freight: { emoji: "🏗️", label: "FREIGHT JOB", bg: "bg-purple-100", text: "text-purple-700" },
+    corporate: { emoji: "🏢", label: "CORPORATE JOB", bg: "bg-amber-100", text: "text-amber-700" },
+    locker: { emoji: "📍", label: "LOCKER JOB", bg: "bg-cyan-100", text: "text-cyan-700" },
+    cold_chain: { emoji: "❄️", label: "COLD CHAIN JOB", bg: "bg-red-50", text: "text-red-700" },
+    document: { emoji: "📬", label: "DOCUMENT", bg: "bg-gray-100", text: "text-gray-700" },
+  };
+
   return (
     <div className="space-y-4">
-      {/* Filters */}
+      {/* Filter Bar */}
       <div className="bg-white rounded-xl border border-border p-4">
         <div className="flex items-center gap-2 flex-wrap">
           <Filter className="w-4 h-4 text-text-4" />
-          <select value={filters.type} onChange={e => setFilters(f => ({ ...f, type: e.target.value }))} className="h-9 px-3 border border-border rounded-lg text-xs bg-white">
-            <option value="all">All Types</option>
-            <option value="express">Express</option>
-            <option value="standard">Standard</option>
-            <option value="heavy">Heavy</option>
-          </select>
-          <input value={filters.minPayout} onChange={e => setFilters(f => ({ ...f, minPayout: e.target.value }))} placeholder="Min payout" className="h-9 w-24 px-3 border border-border rounded-lg text-xs" />
-          <input value={filters.maxDistance} onChange={e => setFilters(f => ({ ...f, maxDistance: e.target.value }))} placeholder="Max km" className="h-9 w-24 px-3 border border-border rounded-lg text-xs" />
-          <span className="text-xs text-text-4 ml-auto">{filtered.length} jobs available</span>
+          <div className="flex items-center gap-1 flex-wrap">
+            {["all", "marketplace", "express", "freight", "corporate", "locker", "cold_chain", "document"].map(type => (
+              <button
+                key={type}
+                onClick={() => setFilters(f => ({ ...f, type }))}
+                className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-all ${
+                  filters.type === type ? "bg-navy text-white" : "bg-gray-100 text-text-3 hover:bg-gray-200"
+                }`}
+              >
+                {type === "all" ? "All" : type === "cold_chain" ? "❄️ Cold" : type === "marketplace" ? "🛒 Market" : type === "express" ? "⚡ Express" : type === "freight" ? "🏗️ Freight" : type === "corporate" ? "🏢 Corporate" : type === "locker" ? "📍 Locker" : "📬 Doc"}
+              </button>
+            ))}
+          </div>
+          <div className="ml-auto flex items-center gap-2">
+            <button onClick={() => setViewMode("list")} className={`p-2 rounded-lg ${viewMode === "list" ? "bg-navy text-white" : "bg-gray-100 text-text-4"}`}>
+              <Package className="w-4 h-4" />
+            </button>
+            <button onClick={() => setViewMode("map")} className={`p-2 rounded-lg ${viewMode === "map" ? "bg-navy text-white" : "bg-gray-100 text-text-4"}`}>
+              <Map className="w-4 h-4" />
+            </button>
+          </div>
         </div>
       </div>
 
@@ -321,17 +345,19 @@ function AvailableJobsTab() {
       {filtered.map(job => {
         const isAccepted = accepted.includes(job.id);
         const minutesLeft = job.expiresIn;
+        const sourceStyle = JOB_SOURCE_STYLES[job.source] || JOB_SOURCE_STYLES.marketplace;
         return (
           <div key={job.id} className={`bg-white rounded-xl border transition-all ${isAccepted ? "border-orange/30 bg-orange-50/30" : "border-border hover:shadow-sm"}`}>
             <div className="p-4">
+              {/* Header with job type badge */}
               <div className="flex items-start justify-between mb-3">
                 <div className="flex items-center gap-2">
                   <span className="text-sm font-bold text-text-1">{job.id}</span>
-                  <span className={`text-[10px] px-2 py-0.5 rounded-full font-medium ${
-                    job.type === "Express" ? "bg-orange/10 text-orange" :
-                    job.type === "Heavy" ? "bg-purple-100 text-purple-700" :
-                    "bg-blue-100 text-blue"
-                  }`}>{job.type}</span>
+                  <span className={`text-[10px] px-2 py-0.5 rounded-full font-medium ${sourceStyle.bg} ${sourceStyle.text}`}>
+                    {sourceStyle.emoji} {sourceStyle.label}
+                  </span>
+                  {job.isFbk && <span className="text-[10px] px-2 py-0.5 rounded-full font-medium bg-green-100 text-green-700">FBK</span>}
+                  {job.coldChain && <span className="text-[10px] px-2 py-0.5 rounded-full font-medium bg-red-50 text-red-700">🌡️ Cold</span>}
                 </div>
                 <div className="flex items-center gap-1 text-xs text-amber-600">
                   <Timer className="w-3 h-3" />
@@ -339,6 +365,7 @@ function AvailableJobsTab() {
                 </div>
               </div>
 
+              {/* Pickup and Dropoff */}
               <div className="grid sm:grid-cols-2 gap-3 mb-4">
                 <div className="flex items-start gap-2">
                   <MapPin className="w-4 h-4 text-green-600 mt-0.5 shrink-0" />
@@ -357,12 +384,15 @@ function AvailableJobsTab() {
                 </div>
               </div>
 
+              {/* Job details */}
               <div className="flex items-center gap-4 text-xs text-text-4 mb-4">
                 <span className="flex items-center gap-1"><Navigation className="w-3 h-3" /> {job.distance}</span>
                 <span className="flex items-center gap-1"><Weight className="w-3 h-3" /> {job.weight}</span>
                 <span className="flex items-center gap-1"><Award className="w-3 h-3" /> Min: {job.minTier}</span>
+                {job.fragile && <span className="flex items-center gap-1 text-amber-600">⚠️ Fragile</span>}
               </div>
 
+              {/* Action row */}
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-1">
                   <DollarSign className="w-4 h-4 text-green-600" />
@@ -393,6 +423,15 @@ function AvailableJobsTab() {
     </div>
   );
 }
+
+const DEMO_JOBS = [
+  { id: "JOB-8742", pickup: "Kauvex FBK Warehouse — Lekki Hub, Lagos", dropoff: "Customer — Victoria Island, Lagos", distance: "8.4 km", weight: "1.2 kg · Standard Parcel", payout: 1800, jobType: "Marketplace", source: "marketplace", minTier: "New", expiresIn: 11, pickupCode: "PK-482", isFbk: true, fragile: false, postedAgo: "2 min ago" },
+  { id: "JOB-8741", pickup: "Sender — Yaba, Lagos", dropoff: "Receiver — Surulere, Lagos", distance: "5.1 km", weight: "0.8 kg · Documents", payout: 1400, jobType: "Express", source: "express", minTier: "New", expiresIn: 8, pickupCode: "PK-481", postedAgo: "5 min ago" },
+  { id: "JOB-8740", pickup: "GTBank HQ — Marina, Lagos", dropoff: "GTBank Ikeja Branch — Ikeja, Lagos", distance: "18.2 km", weight: "8.4 kg · Document Bags", payout: 4200, jobType: "Corporate", source: "corporate", minTier: "Trusted", expiresIn: 14, pickupCode: "PK-480", postedAgo: "1 min ago" },
+  { id: "JOB-8739", pickup: "Kauvex Hub — Ikeja Mall", dropoff: "Locker Bank — Lekki Mall (M-04)", distance: "12.8 km", weight: "0.6 kg · Small box", payout: 900, jobType: "Locker", source: "locker", minTier: "New", expiresIn: 9, pickupCode: "PK-479", postedAgo: "3 min ago" },
+  { id: "JOB-8738", pickup: "Roche Pharma — Ilupeju, Lagos", dropoff: "Lagos University Hospital, Surulere", distance: "9.7 km", weight: "1.5 kg · Medical samples", payout: 6500, jobType: "Cold Chain", source: "cold_chain", minTier: "Trusted", expiresIn: 12, pickupCode: "PK-478", coldChain: true, postedAgo: "1 min ago" },
+  { id: "JOB-8737", pickup: "Apapa Port — Container Yard", dropoff: "Ikeja Warehouse District", distance: "32.5 km", weight: "450 kg · Pallet", payout: 15000, jobType: "Freight", source: "freight", minTier: "Premium", expiresIn: 20, pickupCode: "PK-477", postedAgo: "8 min ago" },
+];
 
 /* ==================== ACTIVE JOBS ==================== */
 function ActiveJobsTab({ onOpenProof, deliveryPin, setDeliveryPin }: { onOpenProof: () => void; deliveryPin: string; setDeliveryPin: (v: string) => void }) {

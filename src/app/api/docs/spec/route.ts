@@ -9,7 +9,7 @@ const apiSpec = {
     contact: { name: "KAUVEX Support", email: "api@kauvex.com" },
   },
   servers: [
-    { url: "https://roshana-pi.vercel.app", description: "Production" },
+    { url: "https://kauvex.com", description: "Production" },
     { url: "http://localhost:3000", description: "Local Development" },
   ],
   security: [

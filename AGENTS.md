@@ -43,6 +43,7 @@ alwaysApply: true
 - /lib/packaging-engine.ts — Packaging material selection, tier logic, compliance, order packaging records
 - /lib/logistics-warehouse.ts — Warehouse staff portal (pick tasks, pack tasks, inbound receiving, inventory)
 - /lib/logistics/ — Logistics engine (dispatch.ts, shipping-engine.ts, partner-tiers.ts, delivery-tiers.ts, fbk-debt.ts, terminology.ts)
+- /lib/fuel/ — Fuel management engine (surcharge.ts, data-service.ts)
 - /components/logistics/ShipmentTimeline.tsx — Unified cross-tier tracking display
 - /app/express/ — Kauvex Express public courier (landing, book, track, business)
 - /app/logistics/ — Partner portal (register, login, dashboard)
@@ -248,6 +249,7 @@ Key V2 Enterprise+ tables: erp_accounts, journal_entries, cost_centers, budgets,
 - **Seller Central (Phase 11)**: `supabase/migrations/00011_kcc_seller_central.sql` — 9 new tables for restricted categories, approval requests, university lessons/progress, business customers, B2B volume tiers, brand registry, authorized sellers, counterfeit reports, A+ content, and multi-channel product sync
 
 - **Phase 11 (Seller Central Full Replication)**: Amazon-style vendor dashboard with enhanced widgets, catalog matching with gated categories, multi-storefront offer management, bulk CSV upload, tabbed listing editor (8 tabs), full inventory management with FBK tools, orders with returns/claims/RMA, full Campaign Manager with 6-step wizard, granular user permissions matrix, Kauvex Seller University, B2B Central (quotes/volume tiers), Reports Repository (custom reports builder), Brand Registry (enrollment/counterfeit reporting), A+ Content module builder, Account Health dashboard with deactivation warnings, and Multi-Channel Integration Hub (eBay/Etsy product sync)
+- **Fuel Management System**: Full fuel price tracking, surcharge rules, cost analysis, route impact calculator, fuel stations map, partner profitability dashboard, price alerts, fuel history — integrated across Express, Logistics partner, and Admin panels
 
 ## Navigation & UI Links
 - **Footer**: All V3 features linked under "Explore" section
@@ -255,6 +257,9 @@ Key V2 Enterprise+ tables: erp_accounts, journal_entries, cost_centers, budgets,
 - **Homepage**: "Explore Kauvex" feature card section showing all V3 features
 - **Admin Sidebar**: POD, Art Marketplace, Group Buy, Sourcing under "Sourcing & Products" in Marketplace section
 - **Admin Sidebar**: Logistics section: Global Overview, Countries, Carriers, IOSS, DDP, Compliance
+- **Admin Sidebar**: Fuel Management section: Fuel Dashboard, Fuel Prices, Surcharge Rules, Cost Analysis
+- **Express Sidebar**: Fuel section: Fuel Dashboard, Fuel Stations, Route Impact, Cost Planner, Fuel History, Price Alerts, Fuel Tracker
+- **Logistics Partner Sidebar**: Fuel & Profitability tab added to partner dashboard
 - **Vendor Sidebar**: POD section (Dashboard, Design Studio, Products, Orders, Design Marketplace) and Dropshipping section under Products
 - **Admin Pages**: `/admin/pod`, `/admin/art-marketplace`, `/admin/group-buy` created with management tables
 - **Admin Pages**: `/admin/logistics/global`, `/admin/logistics/countries`, `/admin/logistics/countries/[code]`, `/admin/logistics/carriers`, `/admin/logistics/ioss`, `/admin/logistics/ddp`, `/admin/logistics/compliance`
@@ -505,3 +510,49 @@ Key V2 Enterprise+ tables: erp_accounts, journal_entries, cost_centers, budgets,
   Every country has own carriers, rates, partners, currency, tax, customs
   IOSS = EU €150 threshold for VAT collection at checkout
   DDP = required for DE, FR, SA, IN
+
+## Fuel Management System
+
+**Key Directories:**
+  `/lib/fuel/surcharge.ts` — Fuel surcharge calculation engine
+  `/lib/fuel/data-service.ts` — Fuel price data service (external API integration)
+  `/app/express/fuel/` — Express fuel dashboard, route impact, cost planner, history, alerts
+  `/app/express/fuel-stations/` — Express fuel stations map
+  `/app/express/fuel-tracker/` — Express fuel tracker
+  `/app/logistics/fuel/` — Logistics partner fuel dashboard & profitability
+  `/app/admin/fuel/` — Admin fuel management (dashboard, prices, surcharge rules, cost analysis)
+  `/app/admin/logistics/fuel/` — Admin logistics fuel stations management
+
+**Express Fuel Pages:**
+  /express/fuel — Fuel Dashboard (overview, stats)
+  /express/fuel-stations — Nearby fuel stations map
+  /express/fuel/route-impact — Fuel cost impact per route
+  /express/fuel/cost-planner — Route cost planning tool
+  /express/fuel/history — Historical fuel spend
+  /express/fuel/alerts — Fuel price change alerts
+  /express/fuel-tracker — Full fuel tracker
+
+**Logistics Partner Fuel Pages:**
+  /logistics/fuel — Fuel & Profitability tab (partner dashboard)
+  /logistics/fuel/profitability — Detailed profitability breakdown
+
+**Admin Fuel Pages:**
+  /admin/fuel — Fuel Dashboard (system-wide overview)
+  /admin/fuel/prices — Fuel price management per country
+  /admin/fuel/surcharge-rules — Surcharge rule configuration
+  /admin/fuel/cost-analysis — Cost analysis & reporting
+  /admin/logistics/fuel — Fuel stations management
+
+**API Endpoints:**
+  GET /api/v1/fuel/prices — Get fuel prices
+  GET /api/v1/fuel/prices/[countryCode] — Get prices for country
+  GET /api/v1/fuel/surcharge — Calculate surcharge
+  POST /api/v1/fuel/surcharge/rules — Manage surcharge rules
+  GET /api/v1/fuel/dashboard — Admin fuel dashboard
+  GET /api/v1/fuel/cost-planner — Cost planner data
+  GET /api/v1/fuel/history — Fuel history
+  GET /api/v1/fuel/alerts — Price alerts
+  GET /api/v1/fuel/data-sources — External data source status
+  GET /api/v1/fuel/profitability — Partner profitability
+  GET /api/v1/fuel/partner-profile — Partner fuel profile
+  POST /api/v1/cron/fuel-fetch — Cron: fetch latest fuel prices

@@ -84,9 +84,15 @@ const NAV_SECTIONS = [
     ],
   },
   {
-    label: "Operations",
+    label: "Fuel",
     items: [
-      { icon: Fuel, label: "Fuel Stations", href: "/express/fuel-stations" },
+      { icon: Fuel, label: "Fuel Dashboard", href: "/express/fuel" },
+      { icon: MapPin, label: "Fuel Stations", href: "/express/fuel-stations" },
+      { icon: Route, label: "Route Impact", href: "/express/fuel/route-impact" },
+      { icon: DollarSign, label: "Cost Planner", href: "/express/fuel/cost-planner" },
+      { icon: History, label: "Fuel History", href: "/express/fuel/history" },
+      { icon: Bell, label: "Price Alerts", href: "/express/fuel/alerts" },
+      { icon: TrendingUp, label: "Fuel Tracker", href: "/express/fuel-tracker" },
     ],
   },
   {

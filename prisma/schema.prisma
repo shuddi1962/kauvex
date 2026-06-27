@@ -5799,3 +5799,210 @@ model KspCarbonFootprint {
   @@index([calculatedAt], map: "idx_ksp_carbon_date")
   @@map("kv_ksp_carbon_footprints")
 }
+
+// ============================================================
+// PHASE 21: FUEL PRICE TRACKING & SURCHARGE SYSTEM
+// ============================================================
+
+model KspFuelDataSource {
+  id                  String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  sourceName          String   @map("source_name") @db.VarChar(100)
+  sourceType          String   @map("source_type") @db.VarChar(30)
+  apiEndpoint         String?  @map("api_endpoint") @db.VarChar(500)
+  apiKeyEncrypted     String?  @map("api_key_encrypted")
+  refreshIntervalHours Int     @default(24) @map("refresh_interval_hours")
+  currencyCode        String   @map("currency_code") @db.VarChar(10)
+  coverageCountries   String[] @map("coverage_countries")
+  isActive            Boolean  @default(true) @map("is_active")
+  lastFetchedAt       DateTime? @map("last_fetched_at")
+  reliabilityScore    Decimal  @default(1.00) @map("reliability_score") @db.Decimal(3, 2)
+  metadata            Json?
+  createdAt           DateTime @default(now()) @map("created_at")
+  updatedAt           DateTime @default(now()) @map("updated_at")
+
+  fuelPrices          KspFuelPrice[]
+  fuelPriceHistory    KspFuelPriceHistory[]
+
+  @@index([isActive], map: "idx_kv_fuel_data_sources_active")
+  @@index([sourceType], map: "idx_kv_fuel_data_sources_type")
+  @@map("kv_fuel_data_sources")
+}
+
+model KspFuelPrice {
+  id             String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  countryCode    String   @map("country_code") @db.VarChar(10)
+  fuelType       String   @map("fuel_type") @db.VarChar(30)
+  pricePerUnit   Decimal  @map("price_per_unit") @db.Decimal(10, 4)
+  currencyCode   String   @map("currency_code") @db.VarChar(10)
+  unit           String   @default("liter") @db.VarChar(20)
+  region         String?  @db.VarChar(100)
+  city           String?  @db.VarChar(100)
+  sourceId       String?  @map("source_id") @db.Uuid
+  fetchedAt      DateTime @default(now()) @map("fetched_at")
+  effectiveFrom  DateTime @default(now()) @map("effective_from")
+  isCurrent      Boolean  @default(true) @map("is_current")
+  metadata       Json?
+  createdAt      DateTime @default(now()) @map("created_at")
+  updatedAt      DateTime @default(now()) @map("updated_at")
+
+  source         KspFuelDataSource? @relation(fields: [sourceId], references: [id])
+  historyRecords KspFuelPriceHistory[]
+
+  @@index([countryCode], map: "idx_kv_fuel_prices_country")
+  @@index([fuelType], map: "idx_kv_fuel_prices_type")
+  @@index([isCurrent], map: "idx_kv_fuel_prices_current")
+  @@index([effectiveFrom], map: "idx_kv_fuel_prices_effective")
+  @@map("kv_fuel_prices")
+}
+
+model KspFuelPriceHistory {
+  id             String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  countryCode    String   @map("country_code") @db.VarChar(10)
+  fuelType       String   @map("fuel_type") @db.VarChar(30)
+  pricePerUnit   Decimal  @map("price_per_unit") @db.Decimal(10, 4)
+  currencyCode   String   @map("currency_code") @db.VarChar(10)
+  unit           String   @default("liter") @db.VarChar(20)
+  region         String?  @db.VarChar(100)
+  city           String?  @db.VarChar(100)
+  sourceId       String?  @map("source_id") @db.Uuid
+  recordedAt     DateTime @default(now()) @map("recorded_at")
+  changePct      Decimal? @map("change_pct") @db.Decimal(7, 4)
+  previousPriceId String? @map("previous_price_id") @db.Uuid
+  metadata       Json?
+  createdAt      DateTime @default(now()) @map("created_at")
+
+  source         KspFuelDataSource? @relation(fields: [sourceId], references: [id])
+  fuelPrice      KspFuelPrice? @relation(fields: [], references: [id])
+
+  @@index([countryCode], map: "idx_kv_fuel_price_history_country")
+  @@index([fuelType], map: "idx_kv_fuel_price_history_type")
+  @@index([recordedAt], map: "idx_kv_fuel_price_history_recorded")
+  @@map("kv_fuel_price_history")
+}
+
+model KspFuelSurchargeRule {
+  id             String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  ruleName       String    @map("rule_name") @db.VarChar(150)
+  countryCode    String    @map("country_code") @db.VarChar(10)
+  fuelType       String    @map("fuel_type") @db.VarChar(30)
+  tierMin        Decimal   @map("tier_min") @db.Decimal(10, 4)
+  tierMax        Decimal?  @map("tier_max") @db.Decimal(10, 4)
+  surchargeType  String    @map("surcharge_type") @db.VarChar(20)
+  surchargeValue Decimal   @map("surcharge_value") @db.Decimal(10, 4)
+  currencyCode   String    @map("currency_code") @db.VarChar(10)
+  carrierCode    String?   @map("carrier_code") @db.VarChar(50)
+  serviceLevel   String?   @map("service_level") @db.VarChar(30)
+  isActive       Boolean   @default(true) @map("is_active")
+  priority       Int       @default(100)
+  validFrom      DateTime  @default(now()) @map("valid_from")
+  validUntil     DateTime? @map("valid_until")
+  createdAt      DateTime  @default(now()) @map("created_at")
+  updatedAt      DateTime  @default(now()) @map("updated_at")
+
+  surchargeLogs  KspFuelSurchargeLog[]
+
+  @@index([countryCode], map: "idx_kv_fuel_surcharge_rules_country")
+  @@index([isActive], map: "idx_kv_fuel_surcharge_rules_active")
+  @@index([tierMin, tierMax], map: "idx_kv_fuel_surcharge_rules_tier")
+  @@map("kv_fuel_surcharge_rules")
+}
+
+model KspFuelSurchargeLog {
+  id             String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  shipmentId     String?  @map("shipment_id") @db.Uuid
+  orderId        String?  @map("order_id") @db.Uuid
+  ruleId         String?  @map("rule_id") @db.Uuid
+  countryCode    String   @map("country_code") @db.VarChar(10)
+  fuelType       String   @map("fuel_type") @db.VarChar(30)
+  fuelPriceAtCalc Decimal @map("fuel_price_at_calc") @db.Decimal(10, 4)
+  surchargeType  String   @map("surcharge_type") @db.VarChar(20)
+  surchargeValue Decimal  @map("surcharge_value") @db.Decimal(10, 4)
+  surchargeAmount Decimal @map("surcharge_amount") @db.Decimal(10, 4)
+  currencyCode   String   @map("currency_code") @db.VarChar(10)
+  carrierCode    String?  @map("carrier_code") @db.VarChar(50)
+  serviceLevel   String?  @map("service_level") @db.VarChar(30)
+  calculatedAt   DateTime @default(now()) @map("calculated_at")
+  metadata       Json?
+  createdAt      DateTime @default(now()) @map("created_at")
+
+  rule           KspFuelSurchargeRule? @relation(fields: [ruleId], references: [id])
+
+  @@index([shipmentId], map: "idx_kv_fuel_surcharge_log_shipment")
+  @@index([orderId], map: "idx_kv_fuel_surcharge_log_order")
+  @@index([ruleId], map: "idx_kv_fuel_surcharge_log_rule")
+  @@index([calculatedAt], map: "idx_kv_fuel_surcharge_log_calc")
+  @@map("kv_fuel_surcharge_log")
+}
+
+model KspFuelAlert {
+  id              String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  accountId       String   @map("account_id") @db.Uuid
+  countryCode     String   @map("country_code") @db.VarChar(10)
+  fuelType        String   @map("fuel_type") @db.VarChar(30)
+  alertType       String   @map("alert_type") @db.VarChar(30)
+  thresholdValue  Decimal  @map("threshold_value") @db.Decimal(10, 4)
+  currencyCode    String   @map("currency_code") @db.VarChar(10)
+  notifyChannels  String[] @default(["email"]) @map("notify_channels")
+  webhookUrl      String?  @map("webhook_url") @db.VarChar(500)
+  isActive        Boolean  @default(true) @map("is_active")
+  lastTriggeredAt DateTime? @map("last_triggered_at")
+  triggerCount    Int      @default(0) @map("trigger_count")
+  createdAt       DateTime @default(now()) @map("created_at")
+  updatedAt       DateTime @default(now()) @map("updated_at")
+
+  alertHistory    KspFuelAlertHistory[]
+
+  @@index([accountId], map: "idx_kv_fuel_alerts_account")
+  @@index([countryCode], map: "idx_kv_fuel_alerts_country")
+  @@index([isActive], map: "idx_kv_fuel_alerts_active")
+  @@map("kv_fuel_alerts")
+}
+
+model KspFuelAlertHistory {
+  id              String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  alertId         String   @map("alert_id") @db.Uuid
+  accountId       String   @map("account_id") @db.Uuid
+  countryCode     String   @map("country_code") @db.VarChar(10)
+  fuelType        String   @map("fuel_type") @db.VarChar(30)
+  alertType       String   @map("alert_type") @db.VarChar(30)
+  thresholdValue  Decimal  @map("threshold_value") @db.Decimal(10, 4)
+  actualValue     Decimal  @map("actual_value") @db.Decimal(10, 4)
+  changePct       Decimal? @map("change_pct") @db.Decimal(7, 4)
+  fuelPriceId     String?  @map("fuel_price_id") @db.Uuid
+  channelsNotified String[] @default(["email"]) @map("channels_notified")
+  notificationStatus String @default("sent") @map("notification_status") @db.VarChar(20)
+  triggeredAt     DateTime @default(now()) @map("triggered_at")
+
+  alert           KspFuelAlert @relation(fields: [alertId], references: [id])
+
+  @@index([alertId], map: "idx_kv_fuel_alert_history_alert")
+  @@index([accountId], map: "idx_kv_fuel_alert_history_account")
+  @@index([triggeredAt], map: "idx_kv_fuel_alert_history_triggered")
+  @@map("kv_fuel_alert_history")
+}
+
+model KspFuelPartnerProfile {
+  id                  String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  partnerId           String   @map("partner_id") @db.Uuid
+  partnerType         String   @map("partner_type") @db.VarChar(30)
+  countryCode         String   @map("country_code") @db.VarChar(10)
+  fuelType            String   @default("diesel") @map("fuel_type") @db.VarChar(30)
+  vehicleClass        String?  @map("vehicle_class") @db.VarChar(50)
+  avgConsumptionUnit  Decimal? @map("avg_consumption_unit") @db.Decimal(8, 4)
+  consumptionUnit     String?  @map("consumption_unit") @db.VarChar(20)
+  monthlyFuelBudget   Decimal? @map("monthly_fuel_budget") @db.Decimal(12, 2)
+  currencyCode        String?  @map("currency_code") @db.VarChar(10)
+  preferredSourceId   String?  @map("preferred_source_id") @db.Uuid
+  enableAutoSurcharge Boolean  @default(true) @map("enable_auto_surcharge")
+  fuelSurchargeActive Boolean  @default(true) @map("fuel_surcharge_active")
+  lastSyncedAt        DateTime? @map("last_synced_at")
+  createdAt           DateTime @default(now()) @map("created_at")
+  updatedAt           DateTime @default(now()) @map("updated_at")
+
+  preferredSource     KspFuelDataSource? @relation(fields: [preferredSourceId], references: [id])
+
+  @@index([partnerId], map: "idx_kv_fuel_partner_profile_partner")
+  @@index([countryCode], map: "idx_kv_fuel_partner_profile_country")
+  @@index([partnerType], map: "idx_kv_fuel_partner_profile_type")
+  @@map("kv_fuel_partner_profile")
+}

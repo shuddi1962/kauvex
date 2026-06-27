@@ -17,6 +17,7 @@ import {
   Wifi,
   WifiOff,
   Clock,
+  Fuel,
 } from "lucide-react";
 import { DashboardProvider, useDashboard } from "./dashboard-context";
 
@@ -26,6 +27,7 @@ const tabs = [
   { id: "history" as const, label: "Job History", icon: History },
   { id: "earnings" as const, label: "Earnings", icon: DollarSign },
   { id: "performance" as const, label: "Performance", icon: TrendingUp },
+  { id: "fuel" as const, label: "Fuel & Profitability", icon: Fuel },
   { id: "settings" as const, label: "Settings", icon: Settings },
 ];
 

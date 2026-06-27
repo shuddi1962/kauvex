@@ -1,15 +1,30 @@
-import { createBrowserClient } from '@supabase/ssr'
+import { createBrowserClient, type SupabaseClient } from '@supabase/ssr'
 
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || ''
-const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || ''
+let _client: SupabaseClient | null = null
 
-const supabaseClient = createBrowserClient(supabaseUrl, supabaseKey)
+function getClient(): SupabaseClient {
+  if (_client) return _client
+  const url = process.env.NEXT_PUBLIC_SUPABASE_URL
+  const key = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
+  if (!url || !key) {
+    throw new Error(
+      'Missing Supabase env vars. Set NEXT_PUBLIC_SUPABASE_URL and NEXT_PUBLIC_SUPABASE_ANON_KEY in your Vercel dashboard.'
+    )
+  }
+  _client = createBrowserClient(url, key)
+  return _client
+}
 
-export const supabase = supabaseClient
+export const supabase = new Proxy({} as SupabaseClient, {
+  get(_, prop) {
+    return (getClient() as any)[prop]
+  },
+})
 
-function createAuthShim(auth: typeof supabaseClient.auth) {
-  return new Proxy({} as typeof supabaseClient.auth, {
+function createAuthShim() {
+  return new Proxy({} as any, {
     get(_, prop: string) {
+      const auth = getClient().auth
       if (prop === 'getCurrentUser') {
         return async () => {
           const result = await auth.getUser()
@@ -74,17 +89,17 @@ export const insforge = new Proxy({} as any, {
   get(_, prop: string) {
     if (prop === 'database') {
       return {
-        from: (table: string) => supabaseClient.from(table as any),
+        from: (table: string) => getClient().from(table as any),
       }
     }
-    if (prop === 'auth') return createAuthShim(supabaseClient.auth)
-    if (prop === 'storage') return supabaseClient.storage
-    if (prop === 'realtime') return supabaseClient.realtime
-    if (prop === 'channel') return supabaseClient.channel.bind(supabaseClient)
-    if (prop === 'rpc') return supabaseClient.rpc.bind(supabaseClient)
+    if (prop === 'auth') return createAuthShim()
+    if (prop === 'storage') return getClient().storage
+    if (prop === 'realtime') return getClient().realtime
+    if (prop === 'channel') return getClient().channel.bind(getClient())
+    if (prop === 'rpc') return getClient().rpc.bind(getClient())
     if (['from', 'select', 'insert', 'update', 'delete', 'upsert'].includes(prop)) {
-      return (supabaseClient as any)[prop].bind(supabaseClient)
+      return (getClient() as any)[prop].bind(getClient())
     }
-    return (supabaseClient as any)[prop]
+    return (getClient() as any)[prop]
   },
 })

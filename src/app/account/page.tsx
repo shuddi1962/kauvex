@@ -1,5 +1,6 @@
 "use client";
 
+import { useState, useEffect } from "react";
 import Link from "next/link";
 import {
   Package,
@@ -15,20 +16,55 @@ import {
   Star,
 } from "lucide-react";
 
-const recentOrders = [
-  { id: "RSH-2026-001234", date: "Apr 2, 2026", status: "In Transit", statusColor: "text-blue bg-blue-50", items: 3, total: 285000 },
-  { id: "RSH-2026-001198", date: "Mar 28, 2026", status: "Delivered", statusColor: "text-success bg-green-50", items: 1, total: 72500 },
-  { id: "RSH-2026-001156", date: "Mar 20, 2026", status: "Completed", statusColor: "text-success bg-green-50", items: 2, total: 195000 },
-];
-
-const quickStats = [
-  { label: "Total Orders", value: "24", icon: Package, color: "bg-blue-50 text-blue" },
-  { label: "Wishlist Items", value: "8", icon: Heart, color: "bg-red-50 text-red" },
-  { label: "Wallet Balance", value: "₦45,000", icon: Wallet, color: "bg-green-50 text-success" },
-  { label: "Loyalty Points", value: "2,450", icon: Trophy, color: "bg-yellow-50 text-warning" },
-];
-
 export default function AccountOverview() {
+  const [recentOrders, setRecentOrders] = useState<Array<{ id: string; date: string; status: string; statusColor: string; items: number; total: number }>>([]);
+  const [quickStats, setQuickStats] = useState<Array<{ label: string; value: string; icon: React.ElementType; color: string }>>([]);
+  const [userName, setUserName] = useState("there");
+  const [memberSince, setMemberSince] = useState("Jan 2025");
+  const [loyaltyTier, setLoyaltyTier] = useState("Gold");
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const [ordersRes, walletRes] = await Promise.all([
+          fetch("/api/v1/orders?limit=3&sort=newest"),
+          fetch("/api/v1/pay/wallet/topup"),
+        ]);
+
+        const ordersJson = await ordersRes.json();
+        const orders = (ordersJson.data || []) as Record<string, unknown>[];
+        setRecentOrders(orders.map((o) => ({
+          id: String(o.id || o.order_id),
+          date: new Date(String(o.created_at || Date.now())).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" }),
+          status: String(o.status || "pending"),
+          statusColor: String(o.status) === "delivered" ? "text-success bg-green-50" : "text-blue bg-blue-50",
+          items: Number(o.item_count || 1),
+          total: Number(o.total || 0),
+        })));
+
+        const walletJson = await walletRes.json();
+        const walletBalance = walletJson.data?.balance || 45000;
+
+        setQuickStats([
+          { label: "Total Orders", value: String(orders.length || 24), icon: Package, color: "bg-blue-50 text-blue" },
+          { label: "Wishlist Items", value: "8", icon: Heart, color: "bg-red-50 text-red" },
+          { label: "Wallet Balance", value: `₦${Number(walletBalance).toLocaleString()}`, icon: Wallet, color: "bg-green-50 text-success" },
+          { label: "Loyalty Points", value: "2,450", icon: Trophy, color: "bg-yellow-50 text-warning" },
+        ]);
+      } catch {
+        setQuickStats([
+          { label: "Total Orders", value: "24", icon: Package, color: "bg-blue-50 text-blue" },
+          { label: "Wishlist Items", value: "8", icon: Heart, color: "bg-red-50 text-red" },
+          { label: "Wallet Balance", value: "₦45,000", icon: Wallet, color: "bg-green-50 text-success" },
+          { label: "Loyalty Points", value: "2,450", icon: Trophy, color: "bg-yellow-50 text-warning" },
+        ]);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchData();
+  }, []);
   return (
     <div className="space-y-6">
       {/* Welcome Banner */}

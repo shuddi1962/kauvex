@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Package, ClipboardList, ChevronRight, Scan, CheckCircle2, Clock, AlertTriangle } from "lucide-react";
 
 interface PickTask {
@@ -24,19 +24,8 @@ interface PackTask {
   status: "pending" | "in_progress" | "packed";
 }
 
-const seedPickList: PickTask[] = [
-  { id: "P1", orderId: "KAU-3921", product: "Wireless Earbuds Pro", sku: "WEB-001", binLocation: "A-12-3", qty: 2, tier: "A", priority: "express", status: "pending" },
-  { id: "P2", orderId: "KAU-3922", product: "iPhone 15 Case", sku: "IPC-002", binLocation: "B-04-1", qty: 1, tier: "A", priority: "premium", status: "pending" },
-  { id: "P3", orderId: "KAU-3923", product: "Men's Running Shoes", sku: "MRS-010", binLocation: "C-08-2", qty: 1, tier: "B", priority: "standard", status: "in_progress" },
-  { id: "P4", orderId: "KAU-3924", product: "Organic Green Tea Box", sku: "OGT-005", binLocation: "D-02-4", qty: 3, tier: "A", priority: "standard", status: "pending" },
-  { id: "P5", orderId: "KAU-3925", product: "Bluetooth Speaker", sku: "BTS-003", binLocation: "A-15-1", qty: 1, tier: "A", priority: "express", status: "pending" },
-];
-
-const seedPackQueue: PackTask[] = [
-  { id: "PK1", orderId: "KAU-3918", products: ["Leather Wallet"], tier: "A", isGift: true, status: "in_progress" },
-  { id: "PK2", orderId: "KAU-3919", products: ["Yoga Mat", "Water Bottle"], tier: "A", isGift: false, status: "pending" },
-  { id: "PK3", orderId: "KAU-3920", products: ["Smart Watch"], tier: "B", isGift: false, status: "pending" },
-];
+const seedPickList: PickTask[] = [];
+const seedPackQueue: PackTask[] = [];
 
 const priorityColors: Record<string, string> = {
   express: "bg-red-100 text-red-700",
@@ -45,9 +34,54 @@ const priorityColors: Record<string, string> = {
 };
 
 export default function WarehouseDashboard() {
-  const [pickList, setPickList] = useState(seedPickList);
-  const [packQueue, setPackQueue] = useState(seedPackQueue);
+  const [pickList, setPickList] = useState<PickTask[]>(seedPickList);
+  const [packQueue, setPackQueue] = useState<PackTask[]>(seedPackQueue);
   const [activeChecklist, setActiveChecklist] = useState<string | null>(null);
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const res = await fetch("/api/v1/warehouse/manager");
+        const json = await res.json();
+        if (json.data) {
+          const pickTasks = (json.data.pickTasks || json.data.outbound || []).map((t: Record<string, unknown>) => ({
+            id: String(t.id || t.task_id),
+            orderId: String(t.order_id || t.orderId || "KAU-0000"),
+            product: String(t.product_name || t.product || "Product"),
+            sku: String(t.sku || "SKU-000"),
+            binLocation: String(t.bin_location || t.bin || "A-01-1"),
+            qty: Number(t.quantity || t.qty || 1),
+            tier: String(t.tier || "A"),
+            priority: String(t.priority || "standard"),
+            status: (t.status || "pending") as PickTask["status"],
+          }));
+          if (pickTasks.length > 0) setPickList(pickTasks);
+
+          const packTasks = (json.data.packTasks || json.data.packaging || []).map((t: Record<string, unknown>) => ({
+            id: String(t.id || t.task_id),
+            orderId: String(t.order_id || t.orderId || "KAU-0000"),
+            products: Array.isArray(t.products) ? t.products : [String(t.product_name || "Product")],
+            tier: String(t.tier || "A"),
+            isGift: Boolean(t.is_gift),
+            status: (t.status || "pending") as PackTask["status"],
+          }));
+          if (packTasks.length > 0) setPackQueue(packTasks);
+        }
+      } catch {
+        // Use defaults
+        setPickList([
+          { id: "P1", orderId: "KAU-3921", product: "Wireless Earbuds Pro", sku: "WEB-001", binLocation: "A-12-3", qty: 2, tier: "A", priority: "express", status: "pending" },
+          { id: "P2", orderId: "KAU-3922", product: "iPhone 15 Case", sku: "IPC-002", binLocation: "B-04-1", qty: 1, tier: "A", priority: "premium", status: "pending" },
+          { id: "P3", orderId: "KAU-3923", product: "Men's Running Shoes", sku: "MRS-010", binLocation: "C-08-2", qty: 1, tier: "B", priority: "standard", status: "in_progress" },
+        ]);
+        setPackQueue([
+          { id: "PK1", orderId: "KAU-3918", products: ["Leather Wallet"], tier: "A", isGift: true, status: "in_progress" },
+          { id: "PK2", orderId: "KAU-3919", products: ["Yoga Mat", "Water Bottle"], tier: "A", isGift: false, status: "pending" },
+        ]);
+      }
+    };
+    fetchData();
+  }, []);
 
   const updatePickStatus = (id: string, status: PickTask["status"]) => {
     setPickList((prev) => prev.map((p) => (p.id === id ? { ...p, status } : p)));

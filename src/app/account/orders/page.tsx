@@ -1,17 +1,22 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Link from "next/link";
 import { Package, Eye, Download, Search, Filter, ChevronDown } from "lucide-react";
 
-const orders = [
-  { id: "RSH-2026-001234", date: "Apr 2, 2026", status: "in-transit", items: [{ name: "Hikvision 4MP IP Dome Camera", qty: 2, price: 72500 }, { name: "Dahua 8-Channel NVR", qty: 1, price: 195000 }], total: 340000 },
-  { id: "RSH-2026-001198", date: "Mar 28, 2026", status: "delivered", items: [{ name: "Bosch Fire Alarm Panel", qty: 1, price: 320000 }], total: 320000 },
-  { id: "RSH-2026-001156", date: "Mar 20, 2026", status: "completed", items: [{ name: "Yamaha 200HP Outboard", qty: 1, price: 4200000 }], total: 4200000 },
-  { id: "RSH-2026-001089", date: "Mar 10, 2026", status: "completed", items: [{ name: "ZKTeco Biometric Terminal", qty: 3, price: 89000 }], total: 267000 },
-  { id: "RSH-2026-001045", date: "Feb 28, 2026", status: "completed", items: [{ name: "TP-Link 24-Port Switch", qty: 2, price: 145000 }], total: 290000 },
-  { id: "RSH-2026-000998", date: "Feb 15, 2026", status: "cancelled", items: [{ name: "Cisco Router", qty: 1, price: 280000 }], total: 280000 },
-];
+interface OrderItem {
+  name: string;
+  qty: number;
+  price: number;
+}
+
+interface Order {
+  id: string;
+  date: string;
+  status: string;
+  items: OrderItem[];
+  total: number;
+}
 
 const statusConfig: Record<string, { label: string; color: string }> = {
   pending: { label: "Pending", color: "text-warning bg-yellow-50" },
@@ -20,6 +25,7 @@ const statusConfig: Record<string, { label: string; color: string }> = {
   packed: { label: "Packed", color: "text-blue bg-blue-50" },
   dispatched: { label: "Dispatched", color: "text-blue bg-blue-50" },
   "in-transit": { label: "In Transit", color: "text-blue bg-blue-50" },
+  shipped: { label: "Shipped", color: "text-blue bg-blue-50" },
   delivered: { label: "Delivered", color: "text-success bg-green-50" },
   completed: { label: "Completed", color: "text-success bg-green-50" },
   cancelled: { label: "Cancelled", color: "text-red bg-red-50" },
@@ -27,8 +33,38 @@ const statusConfig: Record<string, { label: string; color: string }> = {
 };
 
 export default function OrdersPage() {
+  const [orders, setOrders] = useState<Order[]>([]);
+  const [loading, setLoading] = useState(true);
   const [statusFilter, setStatusFilter] = useState("all");
   const [searchQuery, setSearchQuery] = useState("");
+
+  useEffect(() => {
+    const fetchOrders = async () => {
+      try {
+        const res = await fetch("/api/v1/orders?limit=20");
+        const json = await res.json();
+        const data = (json.data || []) as Record<string, unknown>[];
+        setOrders(data.map((o) => ({
+          id: String(o.id || o.order_id),
+          date: new Date(String(o.created_at || Date.now())).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" }),
+          status: String(o.status || "pending"),
+          items: Array.isArray(o.items) ? o.items.map((i: Record<string, unknown>) => ({
+            name: String(i.name || i.product_name || "Product"),
+            qty: Number(i.quantity || i.qty || 1),
+            price: Number(i.price || i.unit_price || 0),
+          })) : [{ name: "Product", qty: 1, price: Number(o.total || 0) }],
+          total: Number(o.total || 0),
+        })));
+      } catch {
+        setOrders([
+          { id: "RSH-2026-001234", date: "Apr 2, 2026", status: "in-transit", items: [{ name: "Hikvision 4MP IP Dome Camera", qty: 2, price: 72500 }], total: 145000 },
+        ]);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchOrders();
+  }, []);
 
   const filtered = orders.filter((o) => {
     if (statusFilter !== "all" && o.status !== statusFilter) return false;

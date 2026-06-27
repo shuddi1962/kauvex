@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Link from "next/link";
 import {
   SlidersHorizontal,
@@ -13,7 +13,33 @@ import {
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import ProductCard from "@/components/product/product-card";
-import { products, categories, brands } from "@/lib/demo-data";
+
+interface Product {
+  id: string;
+  name: string;
+  slug: string;
+  regularPrice: number;
+  salePrice?: number;
+  image: string;
+  rating: number;
+  reviewCount: number;
+  category: { name: string; slug: string };
+  brand: { name: string; slug: string };
+}
+
+interface Category {
+  id: string;
+  name: string;
+  slug: string;
+  productCount: number;
+}
+
+interface Brand {
+  id: string;
+  name: string;
+  slug: string;
+  productCount: number;
+}
 
 const sortOptions = ["Featured", "Newest", "Price: Low to High", "Price: High to Low", "Top Rated", "Best Selling"];
 
@@ -24,6 +50,60 @@ export default function ShopPage() {
   const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
   const [filtersOpen, setFiltersOpen] = useState(false);
   const [priceRange, setPriceRange] = useState<[number, number]>([0, 100000000]);
+  const [products, setProducts] = useState<Product[]>([]);
+  const [categories, setCategories] = useState<Category[]>([]);
+  const [brands, setBrands] = useState<Brand[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const [productsRes, categoriesRes, brandsRes] = await Promise.all([
+          fetch("/api/v1/products?limit=50"),
+          fetch("/api/v1/categories"),
+          fetch("/api/v1/brands"),
+        ]);
+
+        const productsJson = await productsRes.json();
+        const productsData = (productsJson.data || []) as Record<string, unknown>[];
+        setProducts(productsData.map((p) => ({
+          id: String(p.id),
+          name: String(p.name || "Product"),
+          slug: String(p.slug || "product"),
+          regularPrice: Number(p.regular_price || p.price || 0),
+          salePrice: p.sale_price ? Number(p.sale_price) : undefined,
+          image: String(p.image || p.images?.[0] || "/images/placeholder.png"),
+          rating: Number(p.rating || 4.5),
+          reviewCount: Number(p.review_count || 0),
+          category: { name: String(p.category_name || "Category"), slug: String(p.category_slug || "category") },
+          brand: { name: String(p.brand_name || "Brand"), slug: String(p.brand_slug || "brand") },
+        })));
+
+        const categoriesJson = await categoriesRes.json();
+        const categoriesData = (categoriesJson.data || []) as Record<string, unknown>[];
+        setCategories(categoriesData.map((c) => ({
+          id: String(c.id),
+          name: String(c.name || "Category"),
+          slug: String(c.slug || "category"),
+          productCount: Number(c.product_count || 0),
+        })));
+
+        const brandsJson = await brandsRes.json();
+        const brandsData = (brandsJson.data || []) as Record<string, unknown>[];
+        setBrands(brandsData.map((b) => ({
+          id: String(b.id),
+          name: String(b.name || "Brand"),
+          slug: String(b.slug || "brand"),
+          productCount: Number(b.product_count || 0),
+        })));
+      } catch {
+        // Use defaults
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchData();
+  }, []);
 
   const filteredProducts = products.filter((p) => {
     if (selectedCategory !== "all" && p.category.slug !== selectedCategory) return false;

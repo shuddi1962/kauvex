@@ -57,6 +57,29 @@ export default function LogisticsDashboard() {
   const [showPayoutModal, setShowPayoutModal] = useState(false);
   const [showProofModal, setShowProofModal] = useState(false);
   const [deliveryPin, setDeliveryPin] = useState("");
+  const [partnerInfo, setPartnerInfo] = useState<{ id: string; name: string; status: string } | null>(null);
+  const [authChecked, setAuthChecked] = useState(false);
+
+  useEffect(() => {
+    const stored = localStorage.getItem("logistics_partner");
+    if (!stored) {
+      window.location.href = "/logistics/login";
+      return;
+    }
+    try {
+      const info = JSON.parse(stored);
+      if (info.status === "suspended") {
+        window.location.href = "/logistics/login";
+        return;
+      }
+      setPartnerInfo(info);
+    } catch {
+      localStorage.removeItem("logistics_partner");
+      window.location.href = "/logistics/login";
+      return;
+    }
+    setAuthChecked(true);
+  }, []);
 
   const tabs = [
     { id: "available" as TabId, label: "Available Jobs" },
@@ -68,8 +91,35 @@ export default function LogisticsDashboard() {
     { id: "settings" as TabId, label: "Settings" },
   ];
 
+  if (!authChecked) {
+    return (
+      <div className="flex items-center justify-center py-16">
+        <div className="w-6 h-6 border-2 border-gray-300 border-t-[#FF6B00] rounded-full animate-spin" />
+      </div>
+    );
+  }
+
   return (
     <div>
+      {/* Partner Welcome */}
+      {partnerInfo && (
+        <div className="mb-4 bg-white rounded-xl border border-border p-4 flex items-center justify-between">
+          <div>
+            <p className="text-sm font-bold text-text-1">Welcome back, {partnerInfo.name}</p>
+            <p className="text-xs text-text-4">Partner ID: {partnerInfo.id}</p>
+          </div>
+          <button
+            onClick={() => {
+              localStorage.removeItem("logistics_partner");
+              window.location.href = "/logistics/login";
+            }}
+            className="text-xs text-red-500 hover:text-red-700 transition-colors"
+          >
+            Sign Out
+          </button>
+        </div>
+      )}
+
       {/* Tab Navigation */}
       <div className="flex items-center gap-1 overflow-x-auto no-scrollbar mb-6 pb-1">
         {tabs.map(tab => (

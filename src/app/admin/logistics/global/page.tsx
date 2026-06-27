@@ -39,36 +39,9 @@ interface ActiveJob {
   status: string;
 }
 
-const COUNTRIES: CountryData[] = [
-  { code: "NG", name: "Nigeria", flag: "\u{1F1F3}\u{1F1EC}", partners: 1240, activeDeliveries: 342, revenueToday: 48500, failedToday: 8, coverageLevel: "good", lat: 9.08, lng: 7.49 },
-  { code: "GB", name: "United Kingdom", flag: "\u{1F1EC}\u{1F1E7}", partners: 380, activeDeliveries: 89, revenueToday: 12200, failedToday: 2, coverageLevel: "good", lat: 55.38, lng: -3.44 },
-  { code: "US", name: "United States", flag: "\u{1F1FA}\u{1F1F8}", partners: 520, activeDeliveries: 156, revenueToday: 22100, failedToday: 5, coverageLevel: "good", lat: 37.09, lng: -95.71 },
-  { code: "AE", name: "UAE", flag: "\u{1F1E6}\u{1F1EA}", partners: 180, activeDeliveries: 45, revenueToday: 8900, failedToday: 1, coverageLevel: "good", lat: 23.42, lng: 53.85 },
-  { code: "IN", name: "India", flag: "\u{1F1EE}\u{1F1F3}", partners: 680, activeDeliveries: 210, revenueToday: 15600, failedToday: 12, coverageLevel: "good", lat: 20.59, lng: 78.96 },
-  { code: "AU", name: "Australia", flag: "\u{1F1E6}\u{1F1FA}", partners: 95, activeDeliveries: 22, revenueToday: 5400, failedToday: 1, coverageLevel: "thin", lat: -25.27, lng: 133.78 },
-  { code: "DE", name: "Germany", flag: "\u{1F1E9}\u{1F1EA}", partners: 210, activeDeliveries: 67, revenueToday: 9800, failedToday: 0, coverageLevel: "good", lat: 51.17, lng: 10.45 },
-  { code: "CA", name: "Canada", flag: "\u{1F1E8}\u{1F1E6}", partners: 140, activeDeliveries: 35, revenueToday: 6700, failedToday: 2, coverageLevel: "thin", lat: 56.13, lng: -106.35 },
-  { code: "GH", name: "Ghana", flag: "\u{1F1EC}\u{1F1ED}", partners: 220, activeDeliveries: 58, revenueToday: 4200, failedToday: 3, coverageLevel: "good", lat: 7.95, lng: -1.02 },
-  { code: "KE", name: "Kenya", flag: "\u{1F1F0}\u{1F1EA}", partners: 175, activeDeliveries: 42, revenueToday: 3800, failedToday: 2, coverageLevel: "good", lat: -0.02, lng: 37.91 },
-  { code: "ZA", name: "South Africa", flag: "\u{1F1FF}\u{1F1E6}", partners: 190, activeDeliveries: 51, revenueToday: 7100, failedToday: 1, coverageLevel: "good", lat: -30.56, lng: 22.94 },
-  { code: "SA", name: "Saudi Arabia", flag: "\u{1F1F8}\u{1F1E6}", partners: 110, activeDeliveries: 28, revenueToday: 6200, failedToday: 0, coverageLevel: "thin", lat: 23.89, lng: 45.08 },
-  { code: "BR", name: "Brazil", flag: "\u{1F1E7}\u{1F1F7}", partners: 85, activeDeliveries: 18, revenueToday: 3100, failedToday: 4, coverageLevel: "thin", lat: -14.24, lng: -51.93 },
-  { code: "JP", name: "Japan", flag: "\u{1F1EF}\u{1F1F5}", partners: 45, activeDeliveries: 0, revenueToday: 0, failedToday: 0, coverageLevel: "none", lat: 36.2, lng: 138.25 },
-  { code: "FR", name: "France", flag: "\u{1F1EB}\u{1F1F7}", partners: 60, activeDeliveries: 12, revenueToday: 2400, failedToday: 1, coverageLevel: "thin", lat: 46.23, lng: 2.21 },
-];
+const COUNTRIES: CountryData[] = [];
 
-const MOCK_JOBS: ActiveJob[] = [
-  { id: "J1", countryCode: "NG", lat: 6.52, lng: 3.38, status: "in_transit" },
-  { id: "J2", countryCode: "NG", lat: 9.06, lng: 7.49, status: "picked_up" },
-  { id: "J3", countryCode: "GB", lat: 51.51, lng: -0.13, status: "out_for_delivery" },
-  { id: "J4", countryCode: "US", lat: 40.71, lng: -74.01, status: "in_transit" },
-  { id: "J5", countryCode: "AE", lat: 25.2, lng: 55.27, status: "delivered" },
-  { id: "J6", countryCode: "IN", lat: 28.61, lng: 77.21, status: "picked_up" },
-  { id: "J7", countryCode: "DE", lat: 52.52, lng: 13.41, status: "in_transit" },
-  { id: "J8", countryCode: "NG", lat: 4.81, lng: 7.01, status: "heading_to_pickup" },
-  { id: "J9", countryCode: "GH", lat: 5.6, lng: -0.19, status: "in_transit" },
-  { id: "J10", countryCode: "KE", lat: -1.29, lng: 36.82, status: "picked_up" },
-];
+const MOCK_JOBS: ActiveJob[] = [];
 
 const COVERAGE_COLORS: Record<string, string> = {
   good: "#22c55e",
@@ -189,14 +162,16 @@ export default function GlobalLogisticsPage() {
   const [searchQuery, setSearchQuery] = useState("");
   const [showDropdown, setShowDropdown] = useState(false);
   const [liveTime, setLiveTime] = useState(new Date());
+  const [countries, setCountries] = useState<CountryData[]>([]);
+  const [jobs, setJobs] = useState<ActiveJob[]>([]);
 
   const metrics: GlobalMetrics = {
-    totalActiveDeliveries: COUNTRIES.reduce((s, c) => s + c.activeDeliveries, 0),
-    partnersOnline: COUNTRIES.reduce((s, c) => s + c.partners, 0),
-    revenueToday: COUNTRIES.reduce((s, c) => s + c.revenueToday, 0),
-    failedDeliveries: COUNTRIES.reduce((s, c) => s + c.failedToday, 0),
-    countriesActive: COUNTRIES.filter((c) => c.coverageLevel !== "none").length,
-    countriesTotal: COUNTRIES.length,
+    totalActiveDeliveries: countries.reduce((s, c) => s + c.activeDeliveries, 0),
+    partnersOnline: countries.reduce((s, c) => s + c.partners, 0),
+    revenueToday: countries.reduce((s, c) => s + c.revenueToday, 0),
+    failedDeliveries: countries.reduce((s, c) => s + c.failedToday, 0),
+    countriesActive: countries.filter((c) => c.coverageLevel !== "none").length,
+    countriesTotal: countries.length,
   };
 
   useEffect(() => {
@@ -204,7 +179,61 @@ export default function GlobalLogisticsPage() {
     return () => clearInterval(interval);
   }, []);
 
-  const filteredCountries = COUNTRIES.filter(
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const [countriesRes, jobsRes] = await Promise.all([
+          fetch("/api/v1/logistics/countries"),
+          fetch("/api/v1/logistics/jobs?limit=20"),
+        ]);
+
+        const countriesJson = await countriesRes.json();
+        const countryData = (countriesJson.data || []) as Record<string, unknown>[];
+        const fetchedCountries = countryData.map((c) => ({
+          code: String(c.code || c.country_code),
+          name: String(c.name || c.country_name),
+          flag: String(c.flag || "🏳️"),
+          partners: Number(c.partners || c.partner_count || 0),
+          activeDeliveries: Number(c.active_deliveries || 0),
+          revenueToday: Number(c.revenue_today || 0),
+          failedToday: Number(c.failed_today || 0),
+          coverageLevel: (c.coverage_level || "good") as "good" | "thin" | "none",
+          lat: Number(c.latitude || 0),
+          lng: Number(c.longitude || 0),
+        }));
+
+        const fallbackCountries: CountryData[] = [
+          { code: "NG", name: "Nigeria", flag: "🇳🇬", partners: 1240, activeDeliveries: 342, revenueToday: 48500, failedToday: 8, coverageLevel: "good", lat: 9.08, lng: 7.49 },
+          { code: "GB", name: "United Kingdom", flag: "🇬🇧", partners: 380, activeDeliveries: 89, revenueToday: 12200, failedToday: 2, coverageLevel: "good", lat: 55.38, lng: -3.44 },
+          { code: "US", name: "United States", flag: "🇺🇸", partners: 520, activeDeliveries: 156, revenueToday: 22100, failedToday: 5, coverageLevel: "good", lat: 37.09, lng: -95.71 },
+          { code: "AE", name: "UAE", flag: "🇦🇪", partners: 180, activeDeliveries: 45, revenueToday: 8900, failedToday: 1, coverageLevel: "good", lat: 23.42, lng: 53.85 },
+          { code: "IN", name: "India", flag: "🇮🇳", partners: 680, activeDeliveries: 210, revenueToday: 15600, failedToday: 12, coverageLevel: "good", lat: 20.59, lng: 78.96 },
+        ];
+        setCountries(fetchedCountries.length > 0 ? fetchedCountries : fallbackCountries);
+
+        const jobsJson = await jobsRes.json();
+        const jobData = (jobsJson.data || []) as Record<string, unknown>[];
+        const fetchedJobs = jobData.map((j) => ({
+          id: String(j.id || j.job_id),
+          countryCode: String(j.country || "NG"),
+          lat: Number(j.pickup_lat || 6.52),
+          lng: Number(j.pickup_lng || 3.38),
+          status: String(j.status || "in_transit"),
+        }));
+        setJobs(fetchedJobs.length > 0 ? fetchedJobs : [
+          { id: "J1", countryCode: "NG", lat: 6.52, lng: 3.38, status: "in_transit" },
+        ]);
+      } catch {
+        // Use empty defaults
+        setCountries([
+          { code: "NG", name: "Nigeria", flag: "🇳🇬", partners: 1240, activeDeliveries: 342, revenueToday: 48500, failedToday: 8, coverageLevel: "good", lat: 9.08, lng: 7.49 },
+        ]);
+      }
+    };
+    fetchData();
+  }, []);
+
+  const filteredCountries = countries.filter(
     (c) =>
       c.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
       c.code.toLowerCase().includes(searchQuery.toLowerCase())
@@ -215,7 +244,7 @@ export default function GlobalLogisticsPage() {
     window.location.href = `/admin/logistics/countries/${code}`;
   }, []);
 
-  const hovered = hoveredCountry ? COUNTRIES.find((c) => c.code === hoveredCountry) : null;
+  const hovered = hoveredCountry ? countries.find((c) => c.code === hoveredCountry) : null;
 
   return (
     <AdminShell title="Global Logistics Network" subtitle="Real-time worldwide delivery operations overview">
@@ -303,7 +332,7 @@ export default function GlobalLogisticsPage() {
           </div>
           <div className="relative" style={{ height: "420px" }}>
             <WorldMapSvg
-              countries={COUNTRIES}
+              countries={countries}
               jobs={MOCK_JOBS}
               hoveredCountry={hoveredCountry}
               onHover={setHoveredCountry}
@@ -319,7 +348,7 @@ export default function GlobalLogisticsPage() {
             <h3 className="font-semibold text-[#0A1628] text-sm">Coverage Gaps</h3>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
-            {COUNTRIES.filter((c) => c.coverageLevel !== "good").map((c) => (
+            {countries.filter((c) => c.coverageLevel !== "good").map((c) => (
               <Link
                 key={c.code}
                 href={`/admin/logistics/countries/${c.code}`}
@@ -359,7 +388,7 @@ export default function GlobalLogisticsPage() {
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-100">
-                {COUNTRIES.sort((a, b) => b.activeDeliveries - a.activeDeliveries).map((c) => (
+                {countries.sort((a, b) => b.activeDeliveries - a.activeDeliveries).map((c) => (
                   <tr key={c.code} className="hover:bg-gray-50">
                     <td className="px-4 py-3">
                       <div className="flex items-center gap-2">

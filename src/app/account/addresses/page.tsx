@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { MapPin, Plus, Edit2, Trash2, Star, Check } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
@@ -17,33 +17,6 @@ interface SavedAddress {
   isDefault: boolean;
 }
 
-const addresses: SavedAddress[] = [
-  {
-    id: "1",
-    label: "Home",
-    fullName: "John Doe",
-    phone: "+234 812 345 6789",
-    address: "42 Ada George Road, Rumuola",
-    city: "Lagos",
-    state: "Lagos State",
-    lga: "Ikeja",
-    country: "Nigeria",
-    isDefault: true,
-  },
-  {
-    id: "2",
-    label: "Office",
-    fullName: "John Doe",
-    phone: "+234 812 345 6789",
-    address: "15 Aba Road, GRA Phase 3",
-    city: "Lagos",
-    state: "Lagos State",
-    lga: "Eti-Osa",
-    country: "Nigeria",
-    isDefault: false,
-  },
-];
-
 const nigerianStates = [
   "Abia", "Adamawa", "Akwa Ibom", "Anambra", "Bauchi", "Bayelsa", "Benue",
   "Borno", "Cross River", "Delta", "Ebonyi", "Edo", "Ekiti", "Enugu", "FCT",
@@ -53,8 +26,39 @@ const nigerianStates = [
 ];
 
 export default function AddressesPage() {
+  const [addresses, setAddresses] = useState<SavedAddress[]>([]);
+  const [loading, setLoading] = useState(true);
   const [showForm, setShowForm] = useState(false);
   const [editId, setEditId] = useState<string | null>(null);
+
+  useEffect(() => {
+    const fetchAddresses = async () => {
+      try {
+        const res = await fetch("/api/v1/account/addresses");
+        const json = await res.json();
+        const data = (json.data || []) as Record<string, unknown>[];
+        setAddresses(data.map((a) => ({
+          id: String(a.id),
+          label: String(a.label || "Address"),
+          fullName: String(a.full_name || a.fullName || "User"),
+          phone: String(a.phone || ""),
+          address: String(a.address || a.street || ""),
+          city: String(a.city || ""),
+          state: String(a.state || ""),
+          lga: String(a.lga || ""),
+          country: String(a.country || "Nigeria"),
+          isDefault: Boolean(a.is_default),
+        })));
+      } catch {
+        setAddresses([
+          { id: "1", label: "Home", fullName: "User", phone: "+234 812 345 6789", address: "42 Ada George Road", city: "Lagos", state: "Lagos State", lga: "Ikeja", country: "Nigeria", isDefault: true },
+        ]);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchAddresses();
+  }, []);
 
   return (
     <div>

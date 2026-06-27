@@ -36,7 +36,8 @@ export const useAuthStore = create<AuthStore>((set) => ({
 
   initialize: async () => {
     try {
-      const { data } = await insforge.auth.getCurrentUser();
+      const result = await insforge.auth.getCurrentUser();
+      const data = result?.data;
       if (data?.user) {
         const meta = data.user.user_metadata as Record<string, string> | undefined;
         let role = meta?.role || "customer";

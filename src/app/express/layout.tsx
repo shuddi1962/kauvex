@@ -1,7 +1,17 @@
+"use client";
+
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 import { Truck } from "lucide-react";
 
 export default function ExpressLayout({ children }: { children: React.ReactNode }) {
+  const pathname = usePathname();
+  const isDashboard = pathname.startsWith("/express/dashboard") || pathname.startsWith("/express/settings") || pathname.startsWith("/express/analytics") || pathname.startsWith("/express/fuel") || pathname.startsWith("/express/history") || pathname.startsWith("/express/returns") || pathname.startsWith("/express/claims") || pathname.startsWith("/express/invoices") || pathname.startsWith("/express/lockers") || pathname.startsWith("/express/address-book") || pathname.startsWith("/express/team") || pathname.startsWith("/express/billing") || pathname.startsWith("/express/api-keys") || pathname.startsWith("/express/integrations") || pathname.startsWith("/express/branding");
+
+  if (isDashboard) {
+    return <>{children}</>;
+  }
+
   return (
     <div className="min-h-screen bg-white flex flex-col">
       <header className="bg-navy border-b border-navy/10 sticky top-0 z-50">

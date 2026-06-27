@@ -95,46 +95,52 @@ export function StorefrontProvider({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     (async () => {
-      const { data, error } = await insforge.database
-        .from("storefronts")
-        .select("*")
-        .order("is_default", { ascending: false });
-      let list: Storefront[] = [];
-      if (!error && data && data.length > 0) {
-        list = data.map((s: any) => ({
-          id: s.id,
-          name: s.name,
-          slug: s.slug,
-          domainType: s.domain_type,
-          activeDomain: s.active_domain,
-          currencyCode: s.currency_code,
-          currencySymbol: s.currency_symbol,
-          languageCode: s.language_code,
-          countryCode: s.country_code || "",
-          taxRate: s.tax_rate,
-          taxLabel: s.tax_label || "VAT",
-          taxInclusive: s.tax_inclusive || false,
-          isDefault: s.is_default || false,
-          metaTitle: s.meta_title,
-          metaDescription: s.meta_description,
-        }));
-      }
-      setStorefronts(list);
-      if (list.length > 0) {
-        const stored = localStorage.getItem("kauvex-storefront");
-        if (stored) {
+      try {
+        const { data, error } = await insforge.database
+          .from("storefronts")
+          .select("*")
+          .order("is_default", { ascending: false });
+        let list: Storefront[] = [];
+        if (!error && data && data.length > 0) {
+          list = data.map((s: any) => ({
+            id: s.id,
+            name: s.name,
+            slug: s.slug,
+            domainType: s.domain_type,
+            activeDomain: s.active_domain,
+            currencyCode: s.currency_code,
+            currencySymbol: s.currency_symbol,
+            languageCode: s.language_code,
+            countryCode: s.country_code || "",
+            taxRate: s.tax_rate,
+            taxLabel: s.tax_label || "VAT",
+            taxInclusive: s.tax_inclusive || false,
+            isDefault: s.is_default || false,
+            metaTitle: s.meta_title,
+            metaDescription: s.meta_description,
+          }));
+        }
+        setStorefronts(list);
+        if (list.length > 0) {
           try {
-            const parsed = JSON.parse(stored);
-            const match = list.find(s => s.id === parsed.id);
-            if (match) { applyStorefront(match); setLoading(false); return; }
+            const stored = localStorage.getItem("kauvex-storefront");
+            if (stored) {
+              try {
+                const parsed = JSON.parse(stored);
+                const match = list.find(s => s.id === parsed.id);
+                if (match) { applyStorefront(match); setLoading(false); return; }
+              } catch {}
+            }
+            const byHost = detectStorefrontByHost(list);
+            if (byHost) { applyStorefront(byHost); setLoading(false); return; }
+            const def = list.find(s => s.isDefault) || list[0];
+            applyStorefront(def);
           } catch {}
         }
-        const byHost = detectStorefrontByHost(list);
-        if (byHost) { applyStorefront(byHost); setLoading(false); return; }
-        const def = list.find(s => s.isDefault) || list[0];
-        applyStorefront(def);
+        setLoading(false);
+      } catch {
+        setLoading(false);
       }
-      setLoading(false);
     })();
   }, [applyStorefront]);
 

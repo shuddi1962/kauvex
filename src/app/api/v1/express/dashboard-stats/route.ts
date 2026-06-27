@@ -307,6 +307,13 @@ export async function POST(request: NextRequest) {
         worstRoute: topDests.length >= 2 ? `${topDests[topDests.length - 1]?.city} → ${topDests[0]?.city}` : "N/A",
       },
       hasData: totalAll > 0,
+      recentShipments: ((recentActivity.data || []) as any[]).slice(0, 5).map((r: any) => ({
+        tracking: r.waybill_number || "—",
+        destination: [r.dropoff_city, r.dropoff_country].filter(Boolean).join(", ") || "Unknown",
+        courier: "Kauvex Express",
+        status: r.status || "pending",
+        date: r.created_at ? new Date(r.created_at).toLocaleDateString("en-US", { month: "short", day: "numeric" }) : "—",
+      })),
     });
   } catch (error: any) {
     console.error("[Express Dashboard Stats]", error);

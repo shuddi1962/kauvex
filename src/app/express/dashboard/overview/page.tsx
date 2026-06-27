@@ -250,7 +250,12 @@ export default function ExpressDashboardOverview() {
       if (res.ok) {
         const json = await res.json();
         if (json.hasData) {
-          setData(json);
+          setData({
+            ...DEMO_DATA,
+            ...json,
+            recentShipments: json.recentShipments || DEMO_DATA.recentShipments,
+            hasData: true,
+          });
         } else {
           setData({ ...DEMO_DATA, hasData: false });
         }

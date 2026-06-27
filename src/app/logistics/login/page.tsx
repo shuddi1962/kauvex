@@ -23,6 +23,22 @@ export default function LogisticsLogin() {
     }
     setLoading(true);
     try {
+      // Demo bypass — allow demo credentials without Supabase auth
+      if (email === "logistics.demo@kauvex.com" && password === "KauvexDemo2026!") {
+        const demoPartner = {
+          id: "demo-partner-001",
+          user_id: "demo-user-001",
+          name: "Demo Logistics Partner",
+          company_name: "Kauvex Express Logistics",
+          status: "active",
+          partner_type: "driver",
+          email: email,
+        };
+        localStorage.setItem("logistics_partner", JSON.stringify(demoPartner));
+        router.push("/logistics/dashboard");
+        return;
+      }
+
       const supabase = createClient();
       const { data, error: authError } = await supabase.auth.signInWithPassword({ email, password });
 
@@ -148,6 +164,30 @@ export default function LogisticsLogin() {
             Don&apos;t have an account?{" "}
             <Link href="/logistics/register" className="text-orange hover:underline font-medium">Register here</Link>
           </p>
+
+          <div className="relative my-4">
+            <div className="absolute inset-0 flex items-center"><div className="w-full border-t border-white/10" /></div>
+            <div className="relative flex justify-center text-[10px]"><span className="bg-transparent px-3 text-white/30 uppercase tracking-widest">or</span></div>
+          </div>
+
+          <button
+            type="button"
+            onClick={() => {
+              localStorage.setItem("logistics_partner", JSON.stringify({
+                id: "demo-partner-001",
+                user_id: "demo-user-001",
+                name: "Demo Logistics Partner",
+                company_name: "Kauvex Express Logistics",
+                status: "active",
+                partner_type: "driver",
+                email: "logistics.demo@kauvex.com",
+              }));
+              router.push("/logistics/dashboard");
+            }}
+            className="w-full h-11 bg-white/10 text-white/70 font-medium rounded-lg hover:bg-white/15 hover:text-white transition-all flex items-center justify-center gap-2 text-sm"
+          >
+            <Truck className="w-4 h-4" /> Quick Demo Access
+          </button>
         </form>
       </div>
     </div>

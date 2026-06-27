@@ -7,10 +7,14 @@ export async function GET(request: NextRequest) {
     const type = searchParams.get("type");
     const status = searchParams.get("status");
     const city = searchParams.get("city");
+    const userId = searchParams.get("user_id");
+    const id = searchParams.get("id");
 
     const supabase = createAdminClient();
     let query = supabase.from("kv_logistics_partners").select("*");
 
+    if (id) query = query.eq("id", id);
+    if (userId) query = query.eq("user_id", userId);
     if (type) query = query.eq("partner_type", type);
     if (status) query = query.eq("status", status);
     if (city) query = query.ilike("base_city", `%${city}%`);
@@ -18,7 +22,7 @@ export async function GET(request: NextRequest) {
     const { data, error } = await query.order("created_at", { ascending: false });
     if (error) throw error;
 
-    return NextResponse.json({ partners: data, total: data?.length || 0 });
+    return NextResponse.json({ data: data, partners: data, total: data?.length || 0 });
   } catch (error) {
     console.error("[Partners API]", error);
     return NextResponse.json({ error: "Failed to fetch partners" }, { status: 500 });

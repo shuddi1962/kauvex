@@ -111,14 +111,14 @@ const DEMO_DATA: DashboardData = {
     currency: "NGN",
   },
   activityFeed: [
-    { waybill: "KVX-20481", type: "in_transit", emoji: "✈️", city: "London", time: new Date(Date.now() - 2 * 60000).toISOString() },
-    { waybill: "KVX-20480", type: "delivered", emoji: "✅", city: "Abuja", time: new Date(Date.now() - 8 * 60000).toISOString() },
-    { waybill: "KVX-20479", type: "customs", emoji: "⚠️", city: "Houston", time: new Date(Date.now() - 15 * 60000).toISOString() },
-    { waybill: "KVX-20477", type: "delivered", emoji: "✅", city: "Kano", time: new Date(Date.now() - 22 * 60000).toISOString() },
-    { waybill: "KVX-20476", type: "in_transit", emoji: "✈️", city: "Dubai", time: new Date(Date.now() - 31 * 60000).toISOString() },
-    { waybill: "KVX-20475", type: "delivered", emoji: "✅", city: "Accra", time: new Date(Date.now() - 45 * 60000).toISOString() },
-    { waybill: "KVX-20474", type: "out_for_delivery", emoji: "🚴", city: "Port Harcourt", time: new Date(Date.now() - 60 * 60000).toISOString() },
-    { waybill: "KVX-20473", type: "delivered", emoji: "✅", city: "Lagos", time: new Date(Date.now() - 75 * 60000).toISOString() },
+    { waybill: "KVX-20481", type: "in_transit", emoji: "✈️", city: "London", time: "2026-06-27T10:00:00.000Z" },
+    { waybill: "KVX-20480", type: "delivered", emoji: "✅", city: "Abuja", time: "2026-06-27T09:52:00.000Z" },
+    { waybill: "KVX-20479", type: "customs", emoji: "⚠️", city: "Houston", time: "2026-06-27T09:45:00.000Z" },
+    { waybill: "KVX-20477", type: "delivered", emoji: "✅", city: "Kano", time: "2026-06-27T09:38:00.000Z" },
+    { waybill: "KVX-20476", type: "in_transit", emoji: "✈️", city: "Dubai", time: "2026-06-27T09:29:00.000Z" },
+    { waybill: "KVX-20475", type: "delivered", emoji: "✅", city: "Accra", time: "2026-06-27T09:15:00.000Z" },
+    { waybill: "KVX-20474", type: "out_for_delivery", emoji: "🚴", city: "Port Harcourt", time: "2026-06-27T09:00:00.000Z" },
+    { waybill: "KVX-20473", type: "delivered", emoji: "✅", city: "Lagos", time: "2026-06-27T08:45:00.000Z" },
   ],
   statusBreakdown: {
     delivered: 4390,
@@ -144,10 +144,23 @@ const DEMO_DATA: DashboardData = {
     { city: "Nairobi", avgDays: 3.2, slaMet: false },
     { city: "Johannesburg", avgDays: 4.5, slaMet: false },
   ],
-  spendTrend: Array.from({ length: 30 }, (_, i) => ({
-    date: new Date(Date.now() - (29 - i) * 86400000).toISOString().substring(0, 10),
-    amount: +(800 + Math.random() * 1200 + i * 20).toFixed(2),
-  })),
+  spendTrend: [
+    { date: "2026-05-28", amount: 820 }, { date: "2026-05-29", amount: 860 },
+    { date: "2026-05-30", amount: 910 }, { date: "2026-05-31", amount: 880 },
+    { date: "2026-06-01", amount: 950 }, { date: "2026-06-02", amount: 920 },
+    { date: "2026-06-03", amount: 990 }, { date: "2026-06-04", amount: 1020 },
+    { date: "2026-06-05", amount: 980 }, { date: "2026-06-06", amount: 1050 },
+    { date: "2026-06-07", amount: 1080 }, { date: "2026-06-08", amount: 1040 },
+    { date: "2026-06-09", amount: 1100 }, { date: "2026-06-10", amount: 1130 },
+    { date: "2026-06-11", amount: 1090 }, { date: "2026-06-12", amount: 1160 },
+    { date: "2026-06-13", amount: 1190 }, { date: "2026-06-14", amount: 1150 },
+    { date: "2026-06-15", amount: 1210 }, { date: "2026-06-16", amount: 1240 },
+    { date: "2026-06-17", amount: 1200 }, { date: "2026-06-18", amount: 1270 },
+    { date: "2026-06-19", amount: 1300 }, { date: "2026-06-20", amount: 1260 },
+    { date: "2026-06-21", amount: 1330 }, { date: "2026-06-22", amount: 1360 },
+    { date: "2026-06-23", amount: 1320 }, { date: "2026-06-24", amount: 1390 },
+    { date: "2026-06-25", amount: 1420 }, { date: "2026-06-26", amount: 1380 },
+  ],
   routeEfficiency: {
     score: 91,
     bestRoute: "Lagos → Abuja",
@@ -196,8 +209,8 @@ const STATUS_MAP: Record<string, { label: string; color: string }> = {
   out_for_delivery: { label: "Out for Delivery", color: "bg-cyan-50 text-cyan-700" },
 };
 
-function formatTimeAgo(isoString: string): string {
-  const diff = Date.now() - new Date(isoString).getTime();
+function formatTimeAgo(isoString: string, now: number): string {
+  const diff = now - new Date(isoString).getTime();
   const mins = Math.floor(diff / 60000);
   if (mins < 1) return "just now";
   if (mins < 60) return `${mins} min ago`;
@@ -219,7 +232,12 @@ export default function ExpressDashboardOverview() {
   const [data, setData] = useState<DashboardData>(DEMO_DATA);
   const [loading, setLoading] = useState(true);
   const [feedPaused, setFeedPaused] = useState(false);
+  const [now, setNow] = useState(0);
   const feedRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    setNow(Date.now());
+  }, []);
 
   const fetchData = useCallback(async () => {
     setLoading(true);
@@ -639,7 +657,7 @@ export default function ExpressDashboardOverview() {
                         : item.type}{" "}
                       in <span className="font-medium">{item.city}</span>
                     </p>
-                    <p className="text-[11px] text-gray-400 mt-0.5">{formatTimeAgo(item.time)}</p>
+                    <p className="text-[11px] text-gray-400 mt-0.5">{now > 0 ? formatTimeAgo(item.time, now) : "—"}</p>
                   </div>
                 </Link>
               ))}

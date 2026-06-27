@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import {
   Lock,
   Key,
@@ -42,6 +42,9 @@ export default function SecuritySettingsPage() {
   const [showPassword, setShowPassword] = useState(false);
   const [twoFA, setTwoFA] = useState(false);
   const [showRevokeConfirm, setShowRevokeConfirm] = useState(false);
+  const [now, setNow] = useState(0);
+
+  useEffect(() => { setNow(Date.now()); }, []);
 
   const [passwords, setPasswords] = useState({
     current: "",
@@ -125,7 +128,8 @@ export default function SecuritySettingsPage() {
   };
 
   const formatTimeAgo = (iso: string) => {
-    const diff = Date.now() - new Date(iso).getTime();
+    if (now === 0) return "—";
+    const diff = now - new Date(iso).getTime();
     const mins = Math.floor(diff / 60000);
     if (mins < 60) return `${mins}m ago`;
     const hrs = Math.floor(mins / 60);

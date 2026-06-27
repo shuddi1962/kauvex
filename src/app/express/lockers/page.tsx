@@ -153,8 +153,8 @@ const TYPE_BADGES: Record<string, { label: string; color: string; icon: typeof P
 
 type Tab = "bookings" | "find" | "dropoff" | "history";
 
-function getTimeRemaining(expiresAt: string): string {
-  const diff = new Date(expiresAt).getTime() - Date.now();
+function getTimeRemaining(expiresAt: string, now: number): string {
+  const diff = new Date(expiresAt).getTime() - now;
   if (diff <= 0) return "Expired";
   const hours = Math.floor(diff / (1000 * 60 * 60));
   const mins = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
@@ -176,6 +176,9 @@ export default function LockerBookingsPage() {
   const [showCollectModal, setShowCollectModal] = useState<string | null>(null);
   const [collectPin, setCollectPin] = useState("");
   const [collectError, setCollectError] = useState("");
+  const [now, setNow] = useState(0);
+
+  useEffect(() => { setNow(Date.now()); }, []);
 
   const togglePin = useCallback((id: string) => {
     setPinVisible((prev) => ({ ...prev, [id]: !prev[id] }));
@@ -357,7 +360,7 @@ export default function LockerBookingsPage() {
                         <div className="mt-3 pt-3 border-t border-white/10 text-center">
                           <div className="text-xs text-amber-400 font-medium">
                             <Clock className="w-3 h-3 inline mr-1" />
-                            {getTimeRemaining(booking.expiresAt)}
+                            {now > 0 ? getTimeRemaining(booking.expiresAt, now) : "—"}
                           </div>
                         </div>
                       </div>

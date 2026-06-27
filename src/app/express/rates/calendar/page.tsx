@@ -15,17 +15,18 @@ function getDaysInMonth(year: number, month: number) {
 
 const RATE_DATA: Record<string, { base: number; surge: number; demand: string }> = {};
 const DEMAND_LEVELS = ["low", "medium", "high", "peak"];
-const NOW = new Date();
+const NOW_YEAR = 2026;
 for (let m = 0; m < 12; m++) {
-  const { daysInMonth } = getDaysInMonth(NOW.getFullYear(), m);
+  const { daysInMonth } = getDaysInMonth(NOW_YEAR, m);
   for (let d = 1; d <= daysInMonth; d++) {
-    const key = `${NOW.getFullYear()}-${String(m + 1).padStart(2, "0")}-${String(d).padStart(2, "0")}`;
-    const dayOfWeek = new Date(NOW.getFullYear(), m, d).getDay();
+    const key = `${NOW_YEAR}-${String(m + 1).padStart(2, "0")}-${String(d).padStart(2, "0")}`;
+    const dayOfWeek = new Date(NOW_YEAR, m, d).getDay();
     const isWeekend = dayOfWeek === 0 || dayOfWeek === 6;
-    const isPast = new Date(NOW.getFullYear(), m, d) < NOW;
     const base = isWeekend ? 12.99 : 9.99;
-    const surge = isWeekend ? 1.3 : Math.random() > 0.8 ? 1.5 : 1.0;
-    const demand = isPast ? "past" : isWeekend ? "peak" : surge > 1.2 ? "high" : Math.random() > 0.5 ? "medium" : "low";
+    const surgeSeed = ((m * 31 + d) * 7) % 10;
+    const surge = isWeekend ? 1.3 : surgeSeed > 7 ? 1.5 : 1.0;
+    const demandSeed = ((m * 31 + d) * 13) % 10;
+    const demand = isWeekend ? "peak" : surge > 1.2 ? "high" : demandSeed > 5 ? "medium" : "low";
     RATE_DATA[key] = { base, surge, demand };
   }
 }
@@ -38,8 +39,8 @@ const QUICK_RATES = [
 ];
 
 export default function RateCalendarPage() {
-  const [currentMonth, setCurrentMonth] = useState(NOW.getMonth());
-  const [currentYear, setCurrentYear] = useState(NOW.getFullYear());
+  const [currentMonth, setCurrentMonth] = useState(5);
+  const [currentYear, setCurrentYear] = useState(2026);
   const [selectedDate, setSelectedDate] = useState<string | null>(null);
 
   const { daysInMonth, startDay } = getDaysInMonth(currentYear, currentMonth);
@@ -116,7 +117,7 @@ export default function RateCalendarPage() {
               const day = i + 1;
               const key = `${currentYear}-${String(currentMonth + 1).padStart(2, "0")}-${String(day).padStart(2, "0")}`;
               const data = RATE_DATA[key];
-              const isToday = currentYear === NOW.getFullYear() && currentMonth === NOW.getMonth() && day === NOW.getDate();
+              const isToday = currentYear === 2026 && currentMonth === 5 && day === 27;
 
               return (
                 <button

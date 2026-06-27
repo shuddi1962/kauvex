@@ -227,6 +227,9 @@ Key V2 Enterprise+ tables: erp_accounts, journal_entries, cost_centers, budgets,
 - [x] Phase 17 (Complete Brand System): Complete
 - [x] Phase 18 (Kauvex Pay Wallet + BNPL): Complete
 - [x] Phase 19 (Global Logistics Network GL1-GL15): Complete
+- [x] Phase 20 (KSP + DB Migrations): Complete
+- [x] Phase 21 (Fuel Intelligence System): Complete
+- [x] Phase 22 (Domain Provisioning System): Complete
 
 ## Recent Enhancements (August 2026)
 - **V3 Database**: 40+ new Prisma models (local suppliers, sourcing, POD, dropshipping, art/NFT, group buy, price alerts, live commerce, mentorship, carbon offsets, competition intel, Kauvex Originals, subscription boxes)
@@ -250,6 +253,112 @@ Key V2 Enterprise+ tables: erp_accounts, journal_entries, cost_centers, budgets,
 
 - **Phase 11 (Seller Central Full Replication)**: Amazon-style vendor dashboard with enhanced widgets, catalog matching with gated categories, multi-storefront offer management, bulk CSV upload, tabbed listing editor (8 tabs), full inventory management with FBK tools, orders with returns/claims/RMA, full Campaign Manager with 6-step wizard, granular user permissions matrix, Kauvex Seller University, B2B Central (quotes/volume tiers), Reports Repository (custom reports builder), Brand Registry (enrollment/counterfeit reporting), A+ Content module builder, Account Health dashboard with deactivation warnings, and Multi-Channel Integration Hub (eBay/Etsy product sync)
 - **Fuel Management System**: Full fuel price tracking, surcharge rules, cost analysis, route impact calculator, fuel stations map, partner profitability dashboard, price alerts, fuel history — integrated across Express, Logistics partner, and Admin panels
+- **Domain Provisioning System** (`/admin/domains`, `/vendor/settings/domain`): Multi-storefront domain routing (15 country TLDs + vendor subdomains + custom domains + white label), Vercel/Cloudflare API provisioning, SSL monitoring cron, middleware-based domain detection, subdomain availability checker
+
+## Phase 21 Fuel Intelligence System Knowledge Base
+
+**Key Directories:**
+  `/lib/fuel/surcharge.ts` — Fuel surcharge calculation engine
+  `/lib/fuel/data-service.ts` — Fuel price data service (external API integration)
+  `/app/express/fuel/` — Express fuel dashboard, route impact, cost planner, history, alerts
+  `/app/express/fuel-stations/` — Express fuel stations map
+  `/app/express/fuel-tracker/` — Express fuel tracker
+  `/app/logistics/fuel/` — Logistics partner fuel dashboard & profitability
+  `/app/admin/fuel/` — Admin fuel management (dashboard, prices, surcharge rules, cost analysis)
+  `/app/admin/logistics/fuel/` — Admin logistics fuel stations management
+
+**Express Fuel Pages:**
+  /express/fuel — Fuel Dashboard (overview, stats)
+  /express/fuel-stations — Nearby fuel stations map
+  /express/fuel/route-impact — Fuel cost impact per route
+  /express/fuel/cost-planner — Route cost planning tool
+  /express/fuel/history — Historical fuel spend
+  /express/fuel/alerts — Fuel price change alerts
+  /express/fuel-tracker — Full fuel tracker
+
+**Logistics Partner Fuel Pages:**
+  /logistics/fuel — Fuel & Profitability tab (partner dashboard)
+  /logistics/fuel/profitability — Detailed profitability breakdown
+
+**Admin Fuel Pages:**
+  /admin/fuel — Fuel Dashboard (system-wide overview)
+  /admin/fuel/prices — Fuel price management per country
+  /admin/fuel/surcharge-rules — Surcharge rule configuration
+  /admin/fuel/cost-analysis — Cost analysis & reporting
+  /admin/logistics/fuel — Fuel stations management
+
+**API Endpoints:**
+  GET /api/v1/fuel/prices — Get fuel prices
+  GET /api/v1/fuel/prices/[countryCode] — Get prices for country
+  GET /api/v1/fuel/surcharge — Calculate surcharge
+  POST /api/v1/fuel/surcharge/rules — Manage surcharge rules
+  GET /api/v1/fuel/dashboard — Admin fuel dashboard
+  GET /api/v1/fuel/cost-planner — Cost planner data
+  GET /api/v1/fuel/history — Fuel history
+  GET /api/v1/fuel/alerts — Price alerts
+  GET /api/v1/fuel/data-sources — External data source status
+  GET /api/v1/fuel/profitability — Partner profitability
+  GET /api/v1/fuel/partner-profile — Partner fuel profile
+  POST /api/v1/cron/fuel-fetch — Cron: fetch latest fuel prices
+
+## Phase 22 Domain Provisioning System Knowledge Base
+
+**Key Directories:**
+  `/lib/domains/country-domains.ts` — 15 Kauvex country TLD config, provision, remove
+  `/lib/domains/provisioning.ts` — Vercel + Cloudflare API service
+  `/lib/domains/vendor-subdomain.ts` — Vendor subdomain provisioning + availability check
+  `/lib/domains/vendor-custom-domain.ts` — Custom domain provisioning + DNS instructions
+  `/lib/domains/remove-domain.ts` — Domain removal service
+  `/lib/domains/whitelabel-domain.ts` — White label domain provisioning
+  `/lib/middleware/helpers.ts` — Middleware helper functions (getStorefrontByPath, getVendorBySubdomain, getVendorByCustomDomain)
+  `/src/middleware.ts` — Master domain routing middleware
+  `/app/admin/domains/` — Admin domain management dashboard
+  `/app/vendor/settings/domain/` — Vendor domain settings page
+
+**Kauvex Country Domains (15):**
+  kauvex.com (US/Global — USD), kauvex.co.uk (UK — GBP), kauvex.ca (Canada — CAD),
+  kauvex.com.au (Australia — AUD), kauvex.ng (Nigeria — NGN), kauvex.in (India — INR),
+  kauvex.ae (UAE — AED), kauvex.de (Germany — EUR/DE), kauvex.fr (France — EUR/FR),
+  kauvex.com.gh (Ghana — GHS), kauvex.co.ke (Kenya — KES), kauvex.co.za (South Africa — ZAR),
+  kauvex.sa (Saudi Arabia — SAR), kauvex.com.br (Brazil — BRL), kauvex.jp (Japan — JPY)
+
+**Domain Types:**
+  `core` — kauvex.com + subdomains (admin, seller, logistics, etc.)
+  `kauvex_country` — Country-specific TLDs (kauvex.co.uk, kauvex.ca, etc.)
+  `vendor_subdomain` — {shop}.kauvex.com
+  `vendor_custom` — merchants own domain (e.g., mystore.com)
+  `whitelabel` — Enterprise white-label domains
+
+**Middleware Routing Logic:**
+  1. Kauvex country TLDs → set storefront headers (currency, country, language)
+  2. Root domain + path → /ng, /uk, /ca, /au, etc. storefront routing
+  3. Core subdomains → rewrite to admin/vendor/logistics/etc.
+  4. Vendor subdomains → rewrite to (stores)/{vendor-slug}/
+  5. Custom domains → rewrite to (stores)/{hostname}/
+  6. Protected subdomains require auth cookie
+
+**API Endpoints:**
+  GET /api/v1/domains/check-availability?subdomain= — Check subdomain availability
+  POST /api/v1/domains/provision — Provision subdomain or custom domain
+  GET /api/v1/domains/status?vendor_id= — Get domain status
+  DELETE /api/v1/domains/remove?vendor_id=&domain= — Remove domain
+  GET /api/v1/domains/country-domains — List all 15 country TLDs with status
+  POST /api/v1/domains/country-domains — Provision all pending country domains
+  POST /api/v1/domains/whitelabel — Provision white label domain
+  GET /api/cron/ssl-check — SSL certificate status check (cron)
+
+**Database Tables (kv_dom_ prefix):**
+  kv_dom_domains — All domains (core, country, vendor, custom, whitelabel)
+  kv_dom_subdomain_checks — Subdomain availability check history
+  kv_dom_ssl_checks — SSL certificate status tracking
+  kv_dom_dns_events — DNS provisioning event log
+
+**Critical Rules:**
+  Country domains are KEPT ACTIVE — never removed on vendor cancellation
+  Vendor subdomains use wildcard CNAME — no per-vendor DNS needed
+  Custom domains require vendor to add CNAME at their registrar
+  SSL is auto-provisioned by Vercel for verified domains
+  Middleware sets x-storefront-* headers for downstream use by storefront context
 
 ## Navigation & UI Links
 - **Footer**: All V3 features linked under "Explore" section
@@ -258,6 +367,8 @@ Key V2 Enterprise+ tables: erp_accounts, journal_entries, cost_centers, budgets,
 - **Admin Sidebar**: POD, Art Marketplace, Group Buy, Sourcing under "Sourcing & Products" in Marketplace section
 - **Admin Sidebar**: Logistics section: Global Overview, Countries, Carriers, IOSS, DDP, Compliance
 - **Admin Sidebar**: Fuel Management section: Fuel Dashboard, Fuel Prices, Surcharge Rules, Cost Analysis
+- **Admin Sidebar**: System > Developers: Domains (new)
+- **Vendor Sidebar**: Settings > Domain (new)
 - **Express Sidebar**: Fuel section: Fuel Dashboard, Fuel Stations, Route Impact, Cost Planner, Fuel History, Price Alerts, Fuel Tracker
 - **Logistics Partner Sidebar**: Fuel & Profitability tab added to partner dashboard
 - **Vendor Sidebar**: POD section (Dashboard, Design Studio, Products, Orders, Design Marketplace) and Dropshipping section under Products

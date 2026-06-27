@@ -187,6 +187,7 @@ const topNav: { key: SectionKey; label: string; icon: React.ElementType; groups:
       { title: "Account", items: [
         { label: "Profile", href: "/vendor/settings" },
         { label: "Subscription", href: "/vendor/subscription" },
+        { label: "Domain", href: "/vendor/settings/domain", badge: "New" },
         { label: "Staff", href: "/vendor/dashboard/staff" },
         { label: "Permissions", href: "/vendor/settings/permissions", badge: "New" },
         { label: "Permission History", href: "/vendor/settings/permissions/history" },

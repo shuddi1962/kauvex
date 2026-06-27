@@ -5986,3 +5986,74 @@ model KspFuelPartnerProfile {
   @@index([partnerType], map: "idx_kv_fuel_partner_profile_type")
   @@map("kv_fuel_partner_profile")
 }
+
+// ─── Phase 22: Domain Provisioning System ───────────────────────────────────────
+
+model KspDomDomain {
+  id                    String   @id @default(uuid()) @db.Uuid
+  vendorId              String?  @map("vendor_id") @db.Uuid
+  whitelabelClientId    String?  @map("whitelabel_client_id") @db.Uuid
+  domain                String   @unique @db.VarChar(200)
+  subdomain             String?  @map("subdomain") @db.VarChar(100)
+  domainType            String   @map("domain_type") @db.VarChar(30) @default("vendor_subdomain")
+  status                String   @db.VarChar(20) @default("pending")
+  sslStatus             String?  @map("ssl_status") @db.VarChar(20) @default("pending")
+  vercelDomainId        String?  @map("vercel_domain_id") @db.VarChar(200)
+  cfRecordId            String?  @map("cf_record_id") @db.VarChar(200)
+  dnsInstructions       Json?    @map("dns_instructions")
+  dnsVerified           Boolean  @map("dns_verified") @default(false)
+  dnsReminderSent       Boolean  @map("dns_reminder_sent") @default(false)
+  errorMessage          String?  @map("error_message") @db.Text
+  provisionedAt         DateTime? @map("provisioned_at")
+  activatedAt           DateTime? @map("activated_at")
+  suspendedAt           DateTime? @map("suspended_at")
+  removedAt             DateTime? @map("removed_at")
+  createdAt             DateTime @map("created_at") @default(now())
+  updatedAt             DateTime @map("updated_at") @default(now())
+
+  sslChecks             KspDomSslCheck[]
+  dnsEvents             KspDomDnsEvent[]
+
+  @@index([vendorId], map: "idx_ksp_dom_domain_vendor")
+  @@index([domain], map: "idx_ksp_dom_domain_name")
+  @@index([status], map: "idx_ksp_dom_domain_status")
+  @@map("kv_dom_domains")
+}
+
+model KspDomSubdomainCheck {
+  id                    String   @id @default(uuid()) @db.Uuid
+  subdomain             String   @db.VarChar(100)
+  checkedByVendorId     String?  @map("checked_by_vendor_id") @db.Uuid
+  isAvailable           Boolean? @map("is_available")
+  reason                String?  @db.VarChar(50)
+  checkedAt             DateTime @map("checked_at") @default(now())
+
+  @@index([subdomain], map: "idx_ksp_dom_subdomain_check_name")
+  @@map("kv_dom_subdomain_checks")
+}
+
+model KspDomSslCheck {
+  id                    String   @id @default(uuid()) @db.Uuid
+  domainId              String   @map("domain_id") @db.Uuid
+  sslStatus             String?  @map("ssl_status") @db.VarChar(20)
+  vercelResponse        Json?    @map("vercel_response")
+  checkedAt             DateTime @map("checked_at") @default(now())
+
+  domain KspDomDomain @relation(fields: [domainId], references: [id])
+
+  @@index([domainId], map: "idx_ksp_dom_ssl_check_domain")
+  @@map("kv_dom_ssl_checks")
+}
+
+model KspDomDnsEvent {
+  id                    String   @id @default(uuid()) @db.Uuid
+  domainId              String   @map("domain_id") @db.Uuid
+  eventType             String   @map("event_type") @db.VarChar(30)
+  details               Json?
+  createdAt             DateTime @map("created_at") @default(now())
+
+  domain KspDomDomain @relation(fields: [domainId], references: [id])
+
+  @@index([domainId], map: "idx_ksp_dom_dns_event_domain")
+  @@map("kv_dom_dns_events")
+}

@@ -5,7 +5,7 @@ import Link from "next/link";
 import {
   Building2, Users, Upload, Key, CreditCard, FileText,
   TrendingUp, BarChart3, Shield, ChevronRight, CheckCircle2,
-  Zap, Globe, Star, Loader2, ArrowLeft, Tag,
+  Zap, Globe, Star, Loader2, ArrowLeft, Tag, Package,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
@@ -39,6 +39,57 @@ const features = [
     icon: FileText,
     title: "Monthly Invoicing",
     desc: "Consolidate all shipments into one monthly invoice with 30-day payment terms.",
+  },
+];
+
+const pricingTiers = [
+  {
+    name: "Starter",
+    price: "Free",
+    period: "forever",
+    features: [
+      "Up to 10 shipments/month",
+      "2 courier options",
+      "Basic tracking",
+      "Email support",
+    ],
+    cta: "Current plan",
+    ctaStyle: "bg-gray-100 text-gray-500",
+    popular: false,
+  },
+  {
+    name: "Business",
+    price: "₦25,000",
+    period: "/month",
+    features: [
+      "Unlimited shipments",
+      "All 18+ couriers",
+      "Priority pickup scheduling",
+      "Branded tracking page",
+      "Shipping rules & automation",
+      "Shopify / WooCommerce sync",
+      "Phone + chat support",
+    ],
+    cta: "Upgrade now →",
+    ctaStyle: "bg-[#FF6B00] hover:bg-[#e55f00] text-white",
+    popular: true,
+  },
+  {
+    name: "Enterprise",
+    price: "Custom",
+    period: "pricing",
+    features: [
+      "Dedicated account manager",
+      "Custom SLAs",
+      "API access + webhooks",
+      "White-label option",
+      "Multi-user / team access",
+      "Monthly invoicing",
+      "24/7 dedicated support",
+    ],
+    cta: "Contact sales →",
+    ctaStyle: "bg-[#0A1628] hover:bg-[#0A1628]/90 text-white",
+    popular: false,
   },
 ];
 
@@ -131,15 +182,61 @@ export default function ExpressBusinessPage() {
         </div>
       </section>
 
-      {/* Features */}
+      {/* Pricing Tiers - Roshana Style */}
       <section className="py-16 lg:py-20 bg-white">
+        <div className="max-w-7xl mx-auto px-4">
+          <h2 className="text-2xl lg:text-3xl font-syne font-700 text-center text-text-1 mb-4">Choose your plan</h2>
+          <p className="text-text-3 text-center max-w-xl mx-auto mb-10">Start free, upgrade when you need more power.</p>
+          <div className="grid md:grid-cols-3 gap-6 max-w-5xl mx-auto">
+            {pricingTiers.map((tier) => (
+              <div
+                key={tier.name}
+                className={`rounded-xl border p-6 relative ${
+                  tier.popular
+                    ? "border-[#FF6B00] ring-1 ring-[#FF6B00] shadow-lg"
+                    : "border-border"
+                }`}
+              >
+                {tier.popular && (
+                  <span className="absolute -top-2.5 left-1/2 -translate-x-1/2 bg-[#FF6B00] text-white text-[10px] font-bold px-3 py-1 rounded-full">
+                    Most Popular
+                  </span>
+                )}
+                <p className="text-sm font-semibold text-text-1 mb-1">{tier.name}</p>
+                <div className="flex items-baseline gap-1 mb-4">
+                  <span className="text-2xl font-bold font-syne text-text-1">{tier.price}</span>
+                  <span className="text-xs text-text-4">{tier.period}</span>
+                </div>
+                <ul className="space-y-2.5 mb-6">
+                  {tier.features.map((f) => (
+                    <li key={f} className="text-xs text-text-3 flex items-start gap-2">
+                      <span className="text-green-600 mt-0.5 font-bold">✓</span>
+                      {f}
+                    </li>
+                  ))}
+                </ul>
+                {tier.popular ? (
+                  <Button className={`w-full ${tier.ctaStyle}`}>{tier.cta}</Button>
+                ) : (
+                  <button className={`w-full h-10 rounded-lg text-sm font-semibold transition-colors ${tier.ctaStyle}`}>
+                    {tier.cta}
+                  </button>
+                )}
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* Features */}
+      <section className="py-16 lg:py-20 bg-off-white">
         <div className="max-w-7xl mx-auto px-4">
           <h2 className="text-2xl lg:text-3xl font-syne font-700 text-center text-text-1 mb-12">Everything your business needs</h2>
           <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
             {features.map((f) => {
               const Icon = f.icon;
               return (
-                <div key={f.title} className="bg-off-white rounded-xl p-6 border border-border">
+                <div key={f.title} className="bg-white rounded-xl p-6 border border-border">
                   <div className="w-10 h-10 rounded-lg bg-orange-50 flex items-center justify-center mb-3">
                     <Icon className="w-5 h-5 text-orange" />
                   </div>
@@ -152,7 +249,7 @@ export default function ExpressBusinessPage() {
         </div>
       </section>
 
-      {/* Billing */}
+      {/* Billing Options */}
       <section className="py-16 lg:py-20 bg-off-white">
         <div className="max-w-7xl mx-auto px-4">
           <h2 className="text-2xl lg:text-3xl font-syne font-700 text-center text-text-1 mb-4">Billing that fits your volume</h2>

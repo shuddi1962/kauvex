@@ -3,9 +3,10 @@
 import { useState, useEffect } from "react";
 import AdminShell from "@/components/admin/admin-shell";
 import { insforge } from "@/lib/insforge";
+import Link from "next/link";
 import {
   Loader2, Truck, PackageCheck, DollarSign, Wifi, AlertTriangle, Clock,
-  Package,
+  Package, Globe, TrendingUp, BarChart3, Send, ArrowRight,
 } from "lucide-react";
 
 interface JobsCountResult {
@@ -56,6 +57,29 @@ const statusConfig: Record<string, { label: string; color: string }> = {
   returned: { label: "Returned", color: "bg-gray-200 text-gray-700" },
   cancelled: { label: "Cancelled", color: "bg-red-50 text-red" },
 };
+
+const ROUTE_PERFORMANCE = [
+  { route: "Lagos → Abuja", percentage: 87, color: "#FF6B00" },
+  { route: "PHC → Lagos", percentage: 74, color: "#0A1628" },
+  { route: "Nigeria → UK", percentage: 65, color: "#FF6B00" },
+  { route: "Nigeria → USA", percentage: 52, color: "#FF6B00" },
+  { route: "China → NG", percentage: 48, color: "#10B981" },
+];
+
+const MONTHLY_VOLUME = [
+  { month: "Jan", value: 60 },
+  { month: "Feb", value: 80 },
+  { month: "Mar", value: 55 },
+  { month: "Apr", value: 90 },
+  { month: "May", value: 70 },
+  { month: "Jun", value: 95 },
+  { month: "Jul", value: 75 },
+  { month: "Aug", value: 85 },
+  { month: "Sep", value: 65, accent: true },
+  { month: "Oct", value: 100, accent: true },
+  { month: "Nov", value: 88, accent: true },
+  { month: "Dec", value: 92, accent: true },
+];
 
 export default function AdminLogisticsDashboard() {
   const [loading, setLoading] = useState(true);
@@ -118,12 +142,12 @@ export default function AdminLogisticsDashboard() {
   };
 
   const statCards = [
-    { label: "Active Deliveries", value: totalJobs, icon: Truck, color: "text-blue", bg: "bg-blue-50" },
-    { label: "Delivered Today", value: deliveredToday, icon: PackageCheck, color: "text-green-600", bg: "bg-green-50" },
-    { label: "Revenue Today", value: `₦${totalRevenue.toLocaleString()}`, icon: DollarSign, color: "text-orange", bg: "bg-orange-50" },
-    { label: "Partners Online", value: onlinePartners, icon: Wifi, color: "text-emerald-600", bg: "bg-emerald-50" },
-    { label: "Failed Today", value: failedToday, icon: AlertTriangle, color: failedToday > 0 && deliveredToday > 0 && (failedToday / (failedToday + deliveredToday)) > 0.05 ? "text-red" : "text-amber-600", bg: failedToday > 0 && deliveredToday > 0 && (failedToday / (failedToday + deliveredToday)) > 0.05 ? "bg-red-50" : "bg-amber-50" },
-    { label: "Avg Delivery Time", value: avgDeliveryTime, icon: Clock, color: "text-purple-600", bg: "bg-purple-50" },
+    { label: "Total Shipments", value: totalJobs.toLocaleString(), sub: "All time", icon: Package, iconBg: "bg-[#EEF2FF]", iconColor: "text-[#0A1628]" },
+    { label: "Delivered Today", value: deliveredToday, sub: "Completed", icon: PackageCheck, iconBg: "bg-green-50", iconColor: "text-green-600" },
+    { label: "In Transit", value: totalJobs - deliveredToday - failedToday, sub: "Moving now", icon: Truck, iconBg: "bg-orange-50", iconColor: "text-[#FF6B00]" },
+    { label: "Partners Online", value: onlinePartners, sub: "Active now", icon: Wifi, iconBg: "bg-blue-50", iconColor: "text-blue-600" },
+    { label: "Revenue", value: `₦${totalRevenue.toLocaleString()}`, sub: "Total earned", icon: DollarSign, iconBg: "bg-green-50", iconColor: "text-green-600" },
+    { label: "Avg Delivery", value: avgDeliveryTime, sub: "Time", icon: Clock, iconBg: "bg-purple-50", iconColor: "text-purple-600" },
   ];
 
   if (loading) {
@@ -137,25 +161,41 @@ export default function AdminLogisticsDashboard() {
   return (
     <AdminShell title="Logistics Dashboard" subtitle="Overview of the logistics network">
       <div className="space-y-6">
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-          {statCards.map((card) => {
-            const Icon = card.icon;
-            const isAlert = card.label === "Failed Today" && failedToday > 0 && deliveredToday > 0 && (failedToday / (failedToday + deliveredToday)) > 0.05;
-            return (
-              <div key={card.label} className={`bg-white rounded-xl border border-gray-200 p-5 hover:shadow-soft transition-shadow ${isAlert ? "border-red-200 ring-1 ring-red-200" : ""}`}>
-                <div className="flex items-start justify-between mb-3">
-                  <div className={`w-10 h-10 rounded-xl ${card.bg} flex items-center justify-center`}>
-                    <Icon size={18} className={card.color} />
-                  </div>
-                  {isAlert && <span className="text-[9px] font-bold text-red bg-red-50 px-1.5 py-0.5 rounded-full uppercase">Alert</span>}
-                </div>
-                <p className="font-bold text-2xl text-text-1 tracking-tight">{card.value}</p>
-                <p className="text-xs text-text-4 mt-0.5">{card.label}</p>
-              </div>
-            );
-          })}
+        {/* Header */}
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+          <div>
+            <h1 className="text-2xl font-bold text-[#0A1628]">Logistics Overview</h1>
+            <p className="text-sm text-gray-500 mt-1">Network performance at a glance</p>
+          </div>
+          <div className="flex items-center gap-3">
+            <Link
+              href="/admin/logistics/jobs"
+              className="inline-flex items-center gap-2 bg-[#FF6B00] hover:bg-[#e55f00] text-white px-4 py-2.5 rounded-lg font-medium text-sm transition-colors"
+            >
+              <Send className="w-4 h-4" />
+              View All Jobs
+            </Link>
+          </div>
         </div>
 
+        {/* Stat Cards - Roshana Style */}
+        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-4">
+          {statCards.map((card) => (
+            <div
+              key={card.label}
+              className="bg-white border border-gray-200 rounded-xl p-4 hover:shadow-md transition-shadow"
+            >
+              <div className={`w-10 h-10 rounded-lg ${card.iconBg} flex items-center justify-center mb-3`}>
+                <card.icon className={`w-5 h-5 ${card.iconColor}`} />
+              </div>
+              <p className="text-[11px] text-gray-400 uppercase tracking-wider mb-1">{card.label}</p>
+              <p className="text-2xl font-bold text-[#0A1628]">{card.value}</p>
+              <p className="text-[11px] text-gray-500 mt-1">{card.sub}</p>
+            </div>
+          ))}
+        </div>
+
+        {/* Failure Rate Alert */}
         {failedToday > 0 && deliveredToday > 0 && (failedToday / (failedToday + deliveredToday)) > 0.05 && (
           <div className="bg-red-50 border border-red-200 rounded-xl p-4 flex items-center gap-3">
             <AlertTriangle size={16} className="text-red shrink-0" />
@@ -165,40 +205,102 @@ export default function AdminLogisticsDashboard() {
           </div>
         )}
 
-        <div className="bg-white rounded-xl border border-gray-200 overflow-hidden">
-          <div className="px-5 py-4 border-b border-gray-200 flex items-center justify-between">
-            <div>
-              <h3 className="font-bold text-sm text-text-1">Recent Jobs</h3>
-              <p className="text-[11px] text-text-4 mt-0.5">Latest 5 logistics jobs</p>
+        {/* Two Column: Chart + Performance */}
+        <div className="grid grid-cols-1 xl:grid-cols-2 gap-6">
+          {/* Shipment Volume Chart */}
+          <div className="bg-white rounded-xl border border-gray-200 p-6">
+            <div className="flex items-center justify-between mb-5">
+              <div>
+                <h3 className="text-sm font-semibold text-[#0A1628]">Shipment Volume</h3>
+                <p className="text-xs text-gray-500 mt-0.5">Monthly volume over last 12 months</p>
+              </div>
             </div>
-            <Package size={16} className="text-text-4" />
+            <div className="flex items-end gap-2 h-44 px-2">
+              {MONTHLY_VOLUME.map((bar) => (
+                <div key={bar.month} className="flex-1 flex flex-col items-center gap-1">
+                  <div
+                    className="w-full rounded-t-md transition-all duration-300"
+                    style={{
+                      height: `${bar.value}%`,
+                      backgroundColor: bar.accent ? "#FF6B00" : "#0A1628",
+                      opacity: bar.accent ? 1 : 0.85,
+                    }}
+                  />
+                  <span className="text-[10px] text-gray-400">{bar.month}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* Route Performance */}
+          <div className="bg-white rounded-xl border border-gray-200 p-6">
+            <div className="flex items-center justify-between mb-5">
+              <div>
+                <h3 className="text-sm font-semibold text-[#0A1628]">Route Performance</h3>
+                <p className="text-xs text-gray-500 mt-0.5">Top shipping routes</p>
+              </div>
+              <Link href="/admin/logistics/rates" className="text-xs text-[#FF6B00] hover:underline font-medium">
+                View all →
+              </Link>
+            </div>
+            <div className="space-y-4">
+              {ROUTE_PERFORMANCE.map((route) => (
+                <div key={route.route} className="flex items-center gap-3">
+                  <span className="text-xs text-gray-600 w-28 shrink-0">{route.route}</span>
+                  <div className="flex-1 bg-gray-100 rounded-full h-3 overflow-hidden">
+                    <div
+                      className="h-full rounded-full transition-all duration-700"
+                      style={{ width: `${route.percentage}%`, backgroundColor: route.color }}
+                    />
+                  </div>
+                  <span className="text-xs font-semibold text-gray-700 w-10 text-right">{route.percentage}%</span>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+
+        {/* Recent Jobs Table */}
+        <div className="bg-white rounded-xl border border-gray-200 overflow-hidden">
+          <div className="px-6 py-4 border-b border-gray-200 flex items-center justify-between">
+            <div>
+              <h3 className="text-sm font-semibold text-[#0A1628]">Recent Jobs</h3>
+              <p className="text-xs text-gray-500 mt-0.5">Latest 5 logistics jobs</p>
+            </div>
+            <Link href="/admin/logistics/jobs" className="text-xs text-[#FF6B00] hover:underline font-medium">
+              View all →
+            </Link>
           </div>
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
               <thead>
-                <tr className="bg-gray-50 border-b border-gray-200">
-                  <th className="p-3 text-left text-xs font-medium text-text-4 uppercase">Job #</th>
-                  <th className="p-3 text-left text-xs font-medium text-text-4 uppercase">Tier</th>
-                  <th className="p-3 text-left text-xs font-medium text-text-4 uppercase">Status</th>
-                  <th className="p-3 text-left text-xs font-medium text-text-4 uppercase">Pickup</th>
-                  <th className="p-3 text-left text-xs font-medium text-text-4 uppercase">Dropoff</th>
-                  <th className="p-3 text-left text-xs font-medium text-text-4 uppercase">Created</th>
+                <tr className="border-b border-gray-100">
+                  <th className="px-6 py-3 text-left text-[11px] font-medium text-gray-400 uppercase tracking-wider">Job #</th>
+                  <th className="px-6 py-3 text-left text-[11px] font-medium text-gray-400 uppercase tracking-wider">Tier</th>
+                  <th className="px-6 py-3 text-left text-[11px] font-medium text-gray-400 uppercase tracking-wider">Status</th>
+                  <th className="px-6 py-3 text-left text-[11px] font-medium text-gray-400 uppercase tracking-wider">Pickup</th>
+                  <th className="px-6 py-3 text-left text-[11px] font-medium text-gray-400 uppercase tracking-wider">Dropoff</th>
+                  <th className="px-6 py-3 text-left text-[11px] font-medium text-gray-400 uppercase tracking-wider">Created</th>
                 </tr>
               </thead>
               <tbody>
                 {recentJobs.length === 0 ? (
-                  <tr><td colSpan={6} className="p-8 text-center text-text-4">No jobs found</td></tr>
+                  <tr><td colSpan={6} className="p-8 text-center text-gray-400">No jobs found</td></tr>
                 ) : recentJobs.map((job) => {
                   const tc = tierConfig[job.tier] || { label: job.tier, color: "bg-gray-100 text-gray-600" };
                   const sc = statusConfig[job.status] || { label: job.status, color: "bg-gray-100 text-gray-600" };
                   return (
-                    <tr key={job.id} className="border-b border-gray-100 hover:bg-gray-50/50">
-                      <td className="p-3 font-mono text-xs font-medium text-text-1">{job.job_number}</td>
-                      <td className="p-3"><span className={`text-[10px] px-2 py-0.5 rounded-full font-medium ${tc.color}`}>{tc.label}</span></td>
-                      <td className="p-3"><span className={`text-[10px] px-2 py-0.5 rounded-full font-medium ${sc.color}`}>{sc.label}</span></td>
-                      <td className="p-3 text-text-2">{job.pickup_city || "—"}</td>
-                      <td className="p-3 text-text-2">{job.dropoff_city || "—"}</td>
-                      <td className="p-3 text-[11px] text-text-4">{new Date(job.created_at).toLocaleString()}</td>
+                    <tr key={job.id} className="border-b border-gray-50 hover:bg-gray-50/50 transition-colors">
+                      <td className="px-6 py-3 font-mono text-xs font-medium text-[#0A1628]">{job.job_number}</td>
+                      <td className="px-6 py-3">
+                        <span className={`text-[11px] px-2.5 py-0.5 rounded-full font-medium ${tc.color}`}>{tc.label}</span>
+                      </td>
+                      <td className="px-6 py-3">
+                        <span className={`text-[11px] px-2.5 py-0.5 rounded-full font-medium ${sc.color}`}>{sc.label}</span>
+                      </td>
+                      <td className="px-6 py-3 text-gray-600">{job.pickup_city || "—"}</td>
+                      <td className="px-6 py-3 text-gray-600">{job.dropoff_city || "—"}</td>
+                      <td className="px-6 py-3 text-[11px] text-gray-400">{new Date(job.created_at).toLocaleString()}</td>
                     </tr>
                   );
                 })}

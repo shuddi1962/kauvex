@@ -22,6 +22,9 @@ import {
   ShieldCheck,
   BarChart3,
   Navigation,
+  Globe,
+  Send,
+  Route,
 } from "lucide-react";
 
 interface DashboardData {
@@ -78,43 +81,48 @@ interface DashboardData {
     bestRoute: string;
     worstRoute: string;
   };
+  recentShipments: Array<{
+    tracking: string;
+    destination: string;
+    courier: string;
+    status: string;
+    date: string;
+  }>;
   hasData: boolean;
 }
 
 const DEMO_DATA: DashboardData = {
   metrics: {
-    totalShipments: 12847,
+    totalShipments: 4821,
     thisMonthCount: 1423,
-    monthChange: 12.3,
-    activeCount: 342,
+    monthChange: 18.0,
+    activeCount: 312,
     deliveredTodayCount: 89,
-    deliveredTodaySuccess: 94,
+    deliveredTodaySuccess: 91,
     pendingCount: 23,
     oldestPendingMinutes: 45,
     hasHighPendingAlert: true,
-    thisMonthSpend: 48291,
-    spendChange: 3.4,
-    avgCostPerShipment: 33.94,
+    thisMonthSpend: 12400000,
+    spendChange: 22.0,
+    avgCostPerShipment: 3394,
     totalActiveValue: 1200000,
     insuredActiveCount: 218,
     activeValueInsured: true,
     currency: "NGN",
   },
   activityFeed: [
-    { waybill: "KVX-7842", type: "delivered", emoji: "✅", city: "Lagos", time: new Date(Date.now() - 2 * 60000).toISOString() },
-    { waybill: "KVX-7843", type: "pickup", emoji: "📦", city: "Abuja", time: new Date(Date.now() - 8 * 60000).toISOString() },
-    { waybill: "KVX-7810", type: "attempted", emoji: "⚠️", city: "Abuja", time: new Date(Date.now() - 15 * 60000).toISOString() },
-    { waybill: "KVX-7839", type: "delivered", emoji: "✅", city: "Accra", time: new Date(Date.now() - 22 * 60000).toISOString() },
-    { waybill: "KVX-7844", type: "out_for_delivery", emoji: "🚴", city: "Port Harcourt", time: new Date(Date.now() - 31 * 60000).toISOString() },
-    { waybill: "KVX-7838", type: "delivered", emoji: "✅", city: "Nairobi", time: new Date(Date.now() - 45 * 60000).toISOString() },
-    { waybill: "KVX-7845", type: "pickup", emoji: "📦", city: "Lagos", time: new Date(Date.now() - 60 * 60000).toISOString() },
-    { waybill: "KVX-7846", type: "out_for_delivery", emoji: "🚴", city: "Kano", time: new Date(Date.now() - 75 * 60000).toISOString() },
-    { waybill: "KVX-7840", type: "delivered", emoji: "✅", city: "Johannesburg", time: new Date(Date.now() - 90 * 60000).toISOString() },
-    { waybill: "KVX-7837", type: "pickup", emoji: "📦", city: "Cape Town", time: new Date(Date.now() - 120 * 60000).toISOString() },
+    { waybill: "KVX-20481", type: "in_transit", emoji: "✈️", city: "London", time: new Date(Date.now() - 2 * 60000).toISOString() },
+    { waybill: "KVX-20480", type: "delivered", emoji: "✅", city: "Abuja", time: new Date(Date.now() - 8 * 60000).toISOString() },
+    { waybill: "KVX-20479", type: "customs", emoji: "⚠️", city: "Houston", time: new Date(Date.now() - 15 * 60000).toISOString() },
+    { waybill: "KVX-20477", type: "delivered", emoji: "✅", city: "Kano", time: new Date(Date.now() - 22 * 60000).toISOString() },
+    { waybill: "KVX-20476", type: "in_transit", emoji: "✈️", city: "Dubai", time: new Date(Date.now() - 31 * 60000).toISOString() },
+    { waybill: "KVX-20475", type: "delivered", emoji: "✅", city: "Accra", time: new Date(Date.now() - 45 * 60000).toISOString() },
+    { waybill: "KVX-20474", type: "out_for_delivery", emoji: "🚴", city: "Port Harcourt", time: new Date(Date.now() - 60 * 60000).toISOString() },
+    { waybill: "KVX-20473", type: "delivered", emoji: "✅", city: "Lagos", time: new Date(Date.now() - 75 * 60000).toISOString() },
   ],
   statusBreakdown: {
-    delivered: 412,
-    in_transit: 198,
+    delivered: 4390,
+    in_transit: 312,
     picked_up: 67,
     failed: 12,
     pending: 23,
@@ -122,11 +130,11 @@ const DEMO_DATA: DashboardData = {
     returned: 5,
   },
   topDestinations: [
-    { city: "Lagos", count: 4492, percentage: 35 },
-    { city: "Abuja", count: 2826, percentage: 22 },
-    { city: "Port Harcourt", count: 1927, percentage: 15 },
-    { city: "Accra", count: 1542, percentage: 12 },
-    { city: "Nairobi", count: 1028, percentage: 8 },
+    { city: "Lagos", count: 1688, percentage: 35 },
+    { city: "Abuja", count: 1061, percentage: 22 },
+    { city: "Port Harcourt", count: 723, percentage: 15 },
+    { city: "Accra", count: 482, percentage: 10 },
+    { city: "Nairobi", count: 386, percentage: 8 },
   ],
   deliveryTimes: [
     { city: "Lagos", avgDays: 0.8, slaMet: true },
@@ -141,11 +149,51 @@ const DEMO_DATA: DashboardData = {
     amount: +(800 + Math.random() * 1200 + i * 20).toFixed(2),
   })),
   routeEfficiency: {
-    score: 87,
+    score: 91,
     bestRoute: "Lagos → Abuja",
     worstRoute: "Lagos → Johannesburg",
   },
+  recentShipments: [
+    { tracking: "KVX-20481", destination: "London, UK", courier: "DHL Express", status: "in_transit", date: "Dec 18" },
+    { tracking: "KVX-20480", destination: "Abuja, NG", courier: "Kauvex Express", status: "delivered", date: "Dec 17" },
+    { tracking: "KVX-20479", destination: "Houston, USA", courier: "FedEx Intl", status: "customs", date: "Dec 16" },
+    { tracking: "KVX-20477", destination: "Kano, NG", courier: "Kauvex Express", status: "delivered", date: "Dec 15" },
+    { tracking: "KVX-20476", destination: "Dubai, UAE", courier: "Aramex", status: "in_transit", date: "Dec 14" },
+  ],
   hasData: false,
+};
+
+const ROUTE_PERFORMANCE = [
+  { route: "Lagos → Abuja", percentage: 87, color: "#FF6B00" },
+  { route: "PHC → Lagos", percentage: 74, color: "#0A1628" },
+  { route: "Nigeria → UK", percentage: 65, color: "#FF6B00" },
+  { route: "Nigeria → USA", percentage: 52, color: "#FF6B00" },
+  { route: "China → NG", percentage: 48, color: "#10B981" },
+  { route: "NG → UAE", percentage: 38, color: "#10B981" },
+];
+
+const MONTHLY_VOLUME = [
+  { month: "Jan", value: 60 },
+  { month: "Feb", value: 80 },
+  { month: "Mar", value: 55 },
+  { month: "Apr", value: 90 },
+  { month: "May", value: 70 },
+  { month: "Jun", value: 95 },
+  { month: "Jul", value: 75 },
+  { month: "Aug", value: 85 },
+  { month: "Sep", value: 65, accent: true },
+  { month: "Oct", value: 100, accent: true },
+  { month: "Nov", value: 88, accent: true },
+  { month: "Dec", value: 92, accent: true },
+];
+
+const STATUS_MAP: Record<string, { label: string; color: string }> = {
+  in_transit: { label: "In Transit", color: "bg-blue-50 text-blue-700" },
+  delivered: { label: "Delivered", color: "bg-green-50 text-green-700" },
+  customs: { label: "Customs Hold", color: "bg-amber-50 text-amber-700" },
+  exception: { label: "Exception", color: "bg-red-50 text-red-700" },
+  pending: { label: "Pending", color: "bg-gray-100 text-gray-600" },
+  out_for_delivery: { label: "Out for Delivery", color: "bg-cyan-50 text-cyan-700" },
 };
 
 function formatTimeAgo(isoString: string): string {
@@ -159,50 +207,18 @@ function formatTimeAgo(isoString: string): string {
 }
 
 function formatCurrency(amount: number, currency = "NGN"): string {
-  if (currency === "NGN") return `₦${amount.toLocaleString()}`;
+  if (currency === "NGN") {
+    if (amount >= 1000000) return `₦${(amount / 1000000).toFixed(1)}M`;
+    return `₦${amount.toLocaleString()}`;
+  }
   if (currency === "USD") return `$${amount.toLocaleString()}`;
   return `${currency} ${amount.toLocaleString()}`;
-}
-
-function CircularProgress({ value, size = 80 }: { value: number; size?: number }) {
-  const radius = (size - 8) / 2;
-  const circumference = 2 * Math.PI * radius;
-  const offset = circumference - (value / 100) * circumference;
-  return (
-    <svg width={size} height={size} className="transform -rotate-90">
-      <circle cx={size / 2} cy={size / 2} r={radius} fill="none" stroke="#E5E7EB" strokeWidth="6" />
-      <circle
-        cx={size / 2}
-        cy={size / 2}
-        r={radius}
-        fill="none"
-        stroke={value >= 80 ? "#10B981" : value >= 60 ? "#F59E0B" : "#EF4444"}
-        strokeWidth="6"
-        strokeLinecap="round"
-        strokeDasharray={circumference}
-        strokeDashoffset={offset}
-        className="transition-all duration-1000"
-      />
-      <text
-        x={size / 2}
-        y={size / 2}
-        textAnchor="middle"
-        dominantBaseline="central"
-        className="transform rotate-90"
-        style={{ transformOrigin: "center", fontSize: size * 0.22, fontWeight: 700, fill: "#0A1628" }}
-      >
-        {value}%
-      </text>
-    </svg>
-  );
 }
 
 export default function ExpressDashboardOverview() {
   const [data, setData] = useState<DashboardData>(DEMO_DATA);
   const [loading, setLoading] = useState(true);
   const [feedPaused, setFeedPaused] = useState(false);
-  const [statusPeriod, setStatusPeriod] = useState<"week" | "month" | "year">("week");
-  const [spendPeriod, setSpendPeriod] = useState<"daily" | "weekly" | "monthly">("daily");
   const feedRef = useRef<HTMLDivElement>(null);
 
   const fetchData = useCallback(async () => {
@@ -235,71 +251,54 @@ export default function ExpressDashboardOverview() {
   const m = data.metrics;
   const currency = m.currency;
 
-  const metricCards = [
+  const statCards = [
     {
       label: "Total Shipments",
       value: m.totalShipments.toLocaleString(),
-      sub: `This month: ${m.thisMonthCount.toLocaleString()}`,
-      change: `${m.monthChange >= 0 ? "+" : ""}${m.monthChange}% vs last month`,
-      trend: m.monthChange >= 0 ? ("up" as const) : ("down" as const),
+      sub: `↑ 18% vs last month`,
       icon: Package,
-      bg: "bg-[#0A1628]",
-      textColor: "text-white",
-      subColor: "text-white/60",
-      changeColor: m.monthChange >= 0 ? "text-green-400" : "text-red-400",
+      iconBg: "bg-[#EEF2FF]",
+      iconColor: "text-[#0A1628]",
     },
     {
-      label: "Active Right Now",
-      value: m.activeCount.toLocaleString(),
-      sub: "packages moving",
-      pulse: true,
-      icon: Truck,
-      bg: "bg-[#FF6B00]",
-      textColor: "text-white",
-      subColor: "text-white/70",
-    },
-    {
-      label: "Delivered Today",
+      label: "Delivered",
       value: m.deliveredTodayCount.toLocaleString(),
-      sub: `${m.deliveredTodaySuccess}% success rate`,
-      detail: `${Math.round(m.deliveredTodayCount * 0.7)} on time | ${Math.round(m.deliveredTodayCount * 0.3)} delayed`,
+      sub: `↑ ${m.deliveredTodaySuccess}% success rate`,
       icon: CheckCircle2,
-      bg: "bg-emerald-600",
-      textColor: "text-white",
-      subColor: "text-white/70",
+      iconBg: "bg-green-50",
+      iconColor: "text-green-600",
     },
     {
-      label: "Pending Pickup",
-      value: m.pendingCount.toLocaleString(),
-      sub: m.oldestPendingMinutes > 0 ? `Oldest: ${m.oldestPendingMinutes} min` : "None pending",
-      alert: m.hasHighPendingAlert,
-      icon: Clock,
-      bg: "bg-amber-500",
-      textColor: "text-white",
-      subColor: "text-white/70",
+      label: "In Transit",
+      value: m.activeCount.toLocaleString(),
+      sub: "Avg 2.4 days",
+      icon: Truck,
+      iconBg: "bg-orange-50",
+      iconColor: "text-[#FF6B00]",
     },
     {
-      label: "Total Spend",
+      label: "Express Orders",
+      value: "189",
+      sub: "↑ 34% this week",
+      icon: Zap,
+      iconBg: "bg-red-50",
+      iconColor: "text-red-600",
+    },
+    {
+      label: "Revenue",
       value: formatCurrency(m.thisMonthSpend, currency),
-      sub: `Avg: ${formatCurrency(m.avgCostPerShipment, currency)}/shipment`,
-      change: `${m.spendChange >= 0 ? "+" : ""}${m.spendChange}% vs last month`,
-      trend: m.spendChange <= 0 ? ("up" as const) : ("down" as const),
+      sub: `↑ ${m.spendChange}% vs last month`,
       icon: DollarSign,
-      bg: "bg-blue-600",
-      textColor: "text-white",
-      subColor: "text-white/70",
-      changeColor: m.spendChange <= 0 ? "text-green-400" : "text-red-400",
+      iconBg: "bg-green-50",
+      iconColor: "text-green-600",
     },
     {
-      label: "Active Shipments Value",
-      value: formatCurrency(m.totalActiveValue, currency),
-      sub: "declared value in transit",
-      badge: m.activeValueInsured,
-      badgeText: "Insured",
-      icon: ShieldCheck,
-      bg: "bg-purple-600",
-      textColor: "text-white",
-      subColor: "text-white/70",
+      label: "Intl Shipments",
+      value: "638",
+      sub: "↑ 41% to 87 countries",
+      icon: Globe,
+      iconBg: "bg-blue-50",
+      iconColor: "text-blue-600",
     },
   ];
 
@@ -330,8 +329,6 @@ export default function ExpressDashboardOverview() {
     .map((p, i) => `${i === 0 ? "M" : "L"} ${p.x} ${p.y}`)
     .join(" ");
 
-  const maxDestCount = Math.max(...data.topDestinations.map((d) => d.count), 1);
-
   const maxDeliveryDays = Math.max(...data.deliveryTimes.map((d) => d.avgDays), 1);
 
   return (
@@ -351,19 +348,18 @@ export default function ExpressDashboardOverview() {
         </div>
       )}
 
+      {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-bold text-[#0A1628]">Express Dashboard</h1>
-          <p className="text-sm text-gray-500 mt-1">
-            Your shipping overview at a glance
-          </p>
+          <h1 className="text-2xl font-bold text-[#0A1628]">Analytics</h1>
+          <p className="text-sm text-gray-500 mt-1">/ Overview</p>
         </div>
         <div className="flex items-center gap-3">
           <Link
-            href="/express/dashboard/ship"
-            className="inline-flex items-center gap-2 bg-[#FF6B00] hover:bg-[#E56000] text-white px-4 py-2.5 rounded-lg font-medium text-sm transition-colors"
+            href="/express/book"
+            className="inline-flex items-center gap-2 bg-[#FF6B00] hover:bg-[#e55f00] text-white px-4 py-2.5 rounded-lg font-medium text-sm transition-colors"
           >
-            <Zap className="w-4 h-4" />
+            <Send className="w-4 h-4" />
             New Shipment
           </Link>
           <button
@@ -371,138 +367,163 @@ export default function ExpressDashboardOverview() {
             disabled={loading}
             className="p-2.5 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors disabled:opacity-50"
           >
-            <RefreshCw className={`w-4.5 h-4.5 text-gray-500 ${loading ? "animate-spin" : ""}`} />
+            <RefreshCw className={`w-4 h-4 text-gray-500 ${loading ? "animate-spin" : ""}`} />
           </button>
         </div>
       </div>
 
-      {/* Metric Cards */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-4">
-        {metricCards.map((card) => (
+      {/* Stat Cards - Roshana Style */}
+      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-4">
+        {statCards.map((card) => (
           <div
             key={card.label}
-            className={`${card.bg} rounded-xl p-4 hover:shadow-lg transition-shadow relative overflow-hidden`}
+            className="bg-white border border-gray-200 rounded-xl p-4 hover:shadow-md transition-shadow"
           >
-            <div className="flex items-center justify-between mb-3">
-              <div className="w-10 h-10 rounded-lg bg-white/15 flex items-center justify-center">
-                <card.icon className="w-5 h-5 text-white" />
-              </div>
-              {card.pulse && (
-                <span className="flex items-center gap-1.5">
-                  <span className="relative flex h-2.5 w-2.5">
-                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-white opacity-75" />
-                    <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-white" />
-                  </span>
-                  <span className="text-[11px] font-semibold text-white/90">LIVE</span>
-                </span>
-              )}
-              {card.change && (
-                <span className={`text-xs font-semibold ${card.changeColor || "text-white/70"}`}>
-                  {card.change}
-                </span>
-              )}
-              {card.alert && (
-                <span className="flex items-center gap-1 bg-white/20 rounded-full px-2 py-0.5">
-                  <AlertCircle className="w-3 h-3 text-white" />
-                  <span className="text-[10px] font-bold text-white">ALERT</span>
-                </span>
-              )}
-              {card.badge && (
-                <span className="flex items-center gap-1 bg-white/20 rounded-full px-2 py-0.5">
-                  <ShieldCheck className="w-3 h-3 text-white" />
-                  <span className="text-[10px] font-bold text-white">{card.badgeText}</span>
-                </span>
-              )}
+            <div className={`w-10 h-10 rounded-lg ${card.iconBg} flex items-center justify-center mb-3`}>
+              <card.icon className={`w-5 h-5 ${card.iconColor}`} />
             </div>
-            <p className={`text-2xl font-bold ${card.textColor}`}>{card.value}</p>
-            <p className={`text-xs ${card.subColor} mt-1`}>{card.sub}</p>
-            {card.detail && (
-              <p className="text-[11px] text-white/50 mt-0.5">{card.detail}</p>
-            )}
+            <p className="text-[11px] text-gray-400 uppercase tracking-wider mb-1">{card.label}</p>
+            <p className="text-2xl font-bold text-[#0A1628]">{card.value}</p>
+            <p className="text-[11px] text-gray-500 mt-1">{card.sub}</p>
           </div>
         ))}
       </div>
 
-      {/* Main Grid */}
+      {/* Two Column Layout */}
+      <div className="grid grid-cols-1 xl:grid-cols-2 gap-6">
+        {/* Shipment Volume Chart */}
+        <div className="bg-white rounded-xl border border-gray-200 p-6">
+          <div className="flex items-center justify-between mb-5">
+            <div>
+              <h3 className="text-sm font-semibold text-[#0A1628]">Shipment Volume</h3>
+              <p className="text-xs text-gray-500 mt-0.5">Daily volume over last 30 days</p>
+            </div>
+            <button className="text-xs text-gray-500 border border-gray-200 rounded-lg px-3 py-1.5 hover:bg-gray-50 transition-colors">
+              Export ↗
+            </button>
+          </div>
+          <div className="flex items-end gap-2 h-44 px-2">
+            {MONTHLY_VOLUME.map((bar) => (
+              <div key={bar.month} className="flex-1 flex flex-col items-center gap-1">
+                <div
+                  className="w-full rounded-t-md transition-all duration-300"
+                  style={{
+                    height: `${bar.value}%`,
+                    backgroundColor: bar.accent ? "#FF6B00" : "#0A1628",
+                    opacity: bar.accent ? 1 : 0.85,
+                  }}
+                />
+                <span className="text-[10px] text-gray-400">{bar.month}</span>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* Route Performance */}
+        <div className="bg-white rounded-xl border border-gray-200 p-6">
+          <div className="flex items-center justify-between mb-5">
+            <div>
+              <h3 className="text-sm font-semibold text-[#0A1628]">Route Performance</h3>
+              <p className="text-xs text-gray-500 mt-0.5">Top shipping routes</p>
+            </div>
+          </div>
+          <div className="space-y-4">
+            {ROUTE_PERFORMANCE.map((route) => (
+              <div key={route.route} className="flex items-center gap-3">
+                <span className="text-xs text-gray-600 w-28 shrink-0">{route.route}</span>
+                <div className="flex-1 bg-gray-100 rounded-full h-3 overflow-hidden">
+                  <div
+                    className="h-full rounded-full transition-all duration-700"
+                    style={{ width: `${route.percentage}%`, backgroundColor: route.color }}
+                  />
+                </div>
+                <span className="text-xs font-semibold text-gray-700 w-10 text-right">{route.percentage}%</span>
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+
+      {/* Two Column: Recent + Performance */}
+      <div className="grid grid-cols-1 xl:grid-cols-2 gap-6">
+        {/* Recent Shipments */}
+        <div className="bg-white rounded-xl border border-gray-200">
+          <div className="px-6 py-4 border-b border-gray-200 flex items-center justify-between">
+            <h3 className="text-sm font-semibold text-[#0A1628]">Recent Shipments</h3>
+            <Link href="/express/history" className="text-xs text-[#FF6B00] hover:underline font-medium">
+              View all →
+            </Link>
+          </div>
+          <div className="overflow-x-auto">
+            <table className="w-full text-sm">
+              <thead>
+                <tr className="border-b border-gray-100">
+                  <th className="px-6 py-3 text-left text-[11px] font-medium text-gray-400 uppercase tracking-wider">Tracking #</th>
+                  <th className="px-6 py-3 text-left text-[11px] font-medium text-gray-400 uppercase tracking-wider">Destination</th>
+                  <th className="px-6 py-3 text-left text-[11px] font-medium text-gray-400 uppercase tracking-wider">Courier</th>
+                  <th className="px-6 py-3 text-left text-[11px] font-medium text-gray-400 uppercase tracking-wider">Status</th>
+                </tr>
+              </thead>
+              <tbody>
+                {data.recentShipments.map((s) => {
+                  const sc = STATUS_MAP[s.status] || { label: s.status, color: "bg-gray-100 text-gray-600" };
+                  return (
+                    <tr key={s.tracking} className="border-b border-gray-50 hover:bg-gray-50/50 transition-colors">
+                      <td className="px-6 py-3 font-semibold text-[#0A1628]">{s.tracking}</td>
+                      <td className="px-6 py-3 text-gray-600">{s.destination}</td>
+                      <td className="px-6 py-3 text-gray-600">{s.courier}</td>
+                      <td className="px-6 py-3">
+                        <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-[11px] font-medium ${sc.color}`}>
+                          {sc.label}
+                        </span>
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        {/* Delivery Performance */}
+        <div className="bg-white rounded-xl border border-gray-200 p-6">
+          <div className="flex items-center justify-between mb-5">
+            <div>
+              <h3 className="text-sm font-semibold text-[#0A1628]">Delivery Performance</h3>
+              <p className="text-xs text-gray-500 mt-0.5">This month vs target</p>
+            </div>
+          </div>
+          <div className="grid grid-cols-2 gap-3">
+            <div className="bg-[#F5F7FA] rounded-xl p-4 text-center">
+              <p className="text-3xl font-bold text-green-600">91%</p>
+              <p className="text-[11px] text-gray-500 mt-1">On-time rate</p>
+            </div>
+            <div className="bg-[#F5F7FA] rounded-xl p-4 text-center">
+              <p className="text-3xl font-bold text-[#0A1628]">2.1d</p>
+              <p className="text-[11px] text-gray-500 mt-1">Avg delivery</p>
+            </div>
+            <div className="bg-[#F5F7FA] rounded-xl p-4 text-center">
+              <p className="text-3xl font-bold text-[#FF6B00]">0.8%</p>
+              <p className="text-[11px] text-gray-500 mt-1">Loss/damage</p>
+            </div>
+            <div className="bg-[#F5F7FA] rounded-xl p-4 text-center">
+              <p className="text-3xl font-bold text-green-600">4.8★</p>
+              <p className="text-[11px] text-gray-500 mt-1">Customer rating</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Main Grid: Charts + Sidebar */}
       <div className="grid grid-cols-1 xl:grid-cols-3 gap-6">
         {/* Left Column */}
         <div className="xl:col-span-2 space-y-6">
-          {/* Shipment Status Chart */}
-          <div className="bg-white rounded-xl border border-gray-200 p-6">
-            <div className="flex items-center justify-between mb-5">
-              <div>
-                <h3 className="text-sm font-semibold text-[#0A1628]">Shipment Status</h3>
-                <p className="text-xs text-gray-500 mt-0.5">Current distribution of shipments</p>
-              </div>
-              <div className="flex bg-gray-100 rounded-lg p-0.5">
-                {(["week", "month", "year"] as const).map((p) => (
-                  <button
-                    key={p}
-                    onClick={() => setStatusPeriod(p)}
-                    className={`px-3 py-1.5 rounded-md text-xs font-medium transition-colors ${
-                      statusPeriod === p
-                        ? "bg-[#0A1628] text-white shadow"
-                        : "text-gray-500 hover:text-gray-700"
-                    }`}
-                  >
-                    {p.charAt(0).toUpperCase() + p.slice(1)}
-                  </button>
-                ))}
-              </div>
-            </div>
-            <div className="space-y-3">
-              {statusBars.map((s) => {
-                const pct = totalForStatusBars > 0 ? Math.round((s.count / totalForStatusBars) * 100) : 0;
-                return (
-                  <div key={s.label} className="group">
-                    <div className="flex items-center gap-3">
-                      <span className="text-xs text-gray-600 w-24 shrink-0">{s.label}</span>
-                      <div className="flex-1 bg-gray-100 rounded-full h-6 overflow-hidden relative">
-                        <div
-                          className="h-full rounded-full transition-all duration-700 flex items-center"
-                          style={{ width: `${Math.max(pct, 5)}%`, backgroundColor: s.color }}
-                        />
-                        <span className="absolute inset-0 flex items-center justify-center text-[11px] font-bold text-[#0A1628]">
-                          {s.count}
-                        </span>
-                      </div>
-                      <span className="text-xs text-gray-400 w-10 text-right">{pct}%</span>
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
-            <div className="mt-4 flex flex-wrap gap-3">
-              {statusBars.map((s) => (
-                <div key={s.label} className="flex items-center gap-1.5">
-                  <span className="w-2.5 h-2.5 rounded-full" style={{ backgroundColor: s.color }} />
-                  <span className="text-[11px] text-gray-500">{s.label}</span>
-                </div>
-              ))}
-            </div>
-          </div>
-
-          {/* Spend Trend Chart */}
+          {/* Spend Trend */}
           <div className="bg-white rounded-xl border border-gray-200 p-6">
             <div className="flex items-center justify-between mb-5">
               <div>
                 <h3 className="text-sm font-semibold text-[#0A1628]">Spend Trend</h3>
                 <p className="text-xs text-gray-500 mt-0.5">Shipping costs over time</p>
-              </div>
-              <div className="flex bg-gray-100 rounded-lg p-0.5">
-                {(["daily", "weekly", "monthly"] as const).map((p) => (
-                  <button
-                    key={p}
-                    onClick={() => setSpendPeriod(p)}
-                    className={`px-3 py-1.5 rounded-md text-xs font-medium transition-colors ${
-                      spendPeriod === p
-                        ? "bg-[#0A1628] text-white shadow"
-                        : "text-gray-500 hover:text-gray-700"
-                    }`}
-                  >
-                    {p.charAt(0).toUpperCase() + p.slice(1)}
-                  </button>
-                ))}
               </div>
             </div>
             <div className="relative h-48">
@@ -562,9 +583,7 @@ export default function ExpressDashboardOverview() {
                     <p className="text-[11px] text-gray-600 mt-2 font-medium truncate">{c.city}</p>
                     <span
                       className={`inline-block mt-1 text-[9px] font-semibold px-1.5 py-0.5 rounded-full ${
-                        c.slaMet
-                          ? "bg-green-50 text-green-700"
-                          : "bg-red-50 text-red-700"
+                        c.slaMet ? "bg-green-50 text-green-700" : "bg-red-50 text-red-700"
                       }`}
                     >
                       {c.slaMet ? "SLA Met" : "Over SLA"}
@@ -572,40 +591,6 @@ export default function ExpressDashboardOverview() {
                   </div>
                 );
               })}
-            </div>
-          </div>
-
-          {/* Route Efficiency */}
-          <div className="bg-white rounded-xl border border-gray-200 p-6">
-            <div className="flex items-center justify-between mb-5">
-              <div>
-                <h3 className="text-sm font-semibold text-[#0A1628]">Route Efficiency</h3>
-                <p className="text-xs text-gray-500 mt-0.5">Performance score based on on-time deliveries</p>
-              </div>
-              <Link href="/express/analytics?tab=routes" className="text-xs text-[#FF6B00] hover:underline font-medium">
-                View all routes
-              </Link>
-            </div>
-            <div className="flex flex-col sm:flex-row items-center gap-6">
-              <div className="shrink-0">
-                <CircularProgress value={data.routeEfficiency.score} size={100} />
-              </div>
-              <div className="flex-1 space-y-3 w-full">
-                <div className="flex items-center gap-3 p-3 bg-green-50 rounded-lg">
-                  <Navigation className="w-4 h-4 text-green-600 shrink-0" />
-                  <div className="min-w-0">
-                    <p className="text-[11px] text-green-600 font-medium">Most Efficient</p>
-                    <p className="text-sm font-semibold text-[#0A1628] truncate">{data.routeEfficiency.bestRoute}</p>
-                  </div>
-                </div>
-                <div className="flex items-center gap-3 p-3 bg-red-50 rounded-lg">
-                  <Navigation className="w-4 h-4 text-red-500 shrink-0" />
-                  <div className="min-w-0">
-                    <p className="text-[11px] text-red-500 font-medium">Least Efficient</p>
-                    <p className="text-sm font-semibold text-[#0A1628] truncate">{data.routeEfficiency.worstRoute}</p>
-                  </div>
-                </div>
-              </div>
             </div>
           </div>
         </div>
@@ -629,11 +614,7 @@ export default function ExpressDashboardOverview() {
                 className="p-1.5 rounded-md hover:bg-gray-100 transition-colors"
                 title={feedPaused ? "Resume feed" : "Pause feed"}
               >
-                {feedPaused ? (
-                  <Play className="w-3.5 h-3.5 text-green-600" />
-                ) : (
-                  <Pause className="w-3.5 h-3.5 text-gray-500" />
-                )}
+                {feedPaused ? <Play className="w-3.5 h-3.5 text-green-600" /> : <Pause className="w-3.5 h-3.5 text-gray-500" />}
               </button>
             </div>
             <div ref={feedRef} className="space-y-2 max-h-80 overflow-y-auto pr-1">
@@ -646,8 +627,17 @@ export default function ExpressDashboardOverview() {
                   <span className="text-base mt-0.5 shrink-0">{item.emoji}</span>
                   <div className="min-w-0 flex-1">
                     <p className="text-xs text-[#0A1628] leading-relaxed group-hover:text-[#FF6B00] transition-colors">
-                      <span className="font-semibold">{item.waybill}</span> — {item.type === "delivered" ? "Delivered" : item.type === "pickup" ? "Picked up" : item.type === "out_for_delivery" ? "Out for delivery" : item.type === "attempted" ? "Delivery attempted" : item.type} in{" "}
-                      <span className="font-medium">{item.city}</span>
+                      <span className="font-semibold">{item.waybill}</span> —{" "}
+                      {item.type === "delivered"
+                        ? "Delivered"
+                        : item.type === "in_transit"
+                        ? "In transit"
+                        : item.type === "out_for_delivery"
+                        ? "Out for delivery"
+                        : item.type === "customs"
+                        ? "Customs hold"
+                        : item.type}{" "}
+                      in <span className="font-medium">{item.city}</span>
                     </p>
                     <p className="text-[11px] text-gray-400 mt-0.5">{formatTimeAgo(item.time)}</p>
                   </div>
@@ -665,52 +655,43 @@ export default function ExpressDashboardOverview() {
           <div className="bg-white rounded-xl border border-gray-200 p-6">
             <h3 className="text-sm font-semibold text-[#0A1628] mb-4">Popular Destinations</h3>
             <div className="space-y-3">
-              {data.topDestinations.map((d, i) => (
-                <Link
-                  key={d.city}
-                  href={`/express/track?city=${encodeURIComponent(d.city)}`}
-                  className="block group"
-                >
-                  <div className="flex items-center gap-3">
-                    <span className="text-xs font-bold text-gray-400 w-4 text-right">{i + 1}</span>
-                    <div className="flex-1">
-                      <div className="flex items-center justify-between mb-1">
-                        <span className="text-xs font-medium text-[#0A1628] group-hover:text-[#FF6B00] transition-colors">
-                          {d.city}
-                        </span>
-                        <span className="text-[11px] text-gray-500">
-                          {d.count.toLocaleString()} ({d.percentage}%)
-                        </span>
-                      </div>
-                      <div className="bg-gray-100 rounded-full h-2 overflow-hidden">
-                        <div
-                          className="h-full rounded-full transition-all duration-700"
-                          style={{
-                            width: `${maxDestCount > 0 ? (d.count / maxDestCount) * 100 : 0}%`,
-                            backgroundColor: i === 0 ? "#FF6B00" : i === 1 ? "#0A1628" : "#3B82F6",
-                          }}
-                        />
-                      </div>
+              {data.topDestinations.map((d, i) => {
+                const maxCount = Math.max(...data.topDestinations.map((x) => x.count), 1);
+                return (
+                  <div key={d.city}>
+                    <div className="flex items-center justify-between mb-1">
+                      <span className="text-xs font-medium text-[#0A1628]">{d.city}</span>
+                      <span className="text-[11px] text-gray-500">
+                        {d.count.toLocaleString()} ({d.percentage}%)
+                      </span>
+                    </div>
+                    <div className="bg-gray-100 rounded-full h-2 overflow-hidden">
+                      <div
+                        className="h-full rounded-full transition-all duration-700"
+                        style={{
+                          width: `${maxCount > 0 ? (d.count / maxCount) * 100 : 0}%`,
+                          backgroundColor: i === 0 ? "#FF6B00" : i === 1 ? "#0A1628" : "#3B82F6",
+                        }}
+                      />
                     </div>
                   </div>
-                </Link>
-              ))}
+                );
+              })}
             </div>
           </div>
 
-          {/* Delivery Map */}
+          {/* Shipping Routes Map */}
           <div className="bg-white rounded-xl border border-gray-200 p-6">
             <h3 className="text-sm font-semibold text-[#0A1628] mb-4">Shipping Routes</h3>
             <div className="relative bg-[#0A1628] rounded-xl h-56 overflow-hidden">
               <svg viewBox="0 0 400 200" className="w-full h-full opacity-90">
-                {/* Simplified world map dots */}
                 {[
                   { x: 85, y: 95, label: "Lagos", size: 5 },
                   { x: 90, y: 82, label: "Abuja", size: 4 },
                   { x: 82, y: 100, label: "Accra", size: 3 },
                   { x: 95, y: 110, label: "Nairobi", size: 3 },
                   { x: 80, y: 140, label: "Johannesburg", size: 3 },
-                  { x: 120, y: 105, label: "Port Harcourt", size: 3.5 },
+                  { x: 120, y: 105, label: "PHC", size: 3.5 },
                   { x: 180, y: 75, label: "Dubai", size: 2.5 },
                   { x: 310, y: 60, label: "London", size: 2.5 },
                   { x: 290, y: 50, label: "NYC", size: 2.5 },
@@ -724,7 +705,6 @@ export default function ExpressDashboardOverview() {
                     </text>
                   </g>
                 ))}
-                {/* Route lines */}
                 {[
                   { x1: 85, y1: 95, x2: 90, y2: 82, w: 2 },
                   { x1: 85, y1: 95, x2: 120, y2: 105, w: 1.8 },

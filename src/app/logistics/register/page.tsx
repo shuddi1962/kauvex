@@ -138,8 +138,47 @@ export default function LogisticsRegister() {
     }
   };
 
-  const handleSubmit = () => {
-    setSubmitted(true);
+  const [submitting, setSubmitting] = useState(false);
+  const [submitError, setSubmitError] = useState("");
+
+  const handleSubmit = async () => {
+    setSubmitting(true);
+    setSubmitError("");
+    try {
+      const res = await fetch("/api/v1/logistics/register", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          firstName: form.firstName,
+          lastName: form.lastName,
+          email: form.email,
+          phone: form.phone,
+          partnerType: selectedType,
+          businessName: form.businessName,
+          businessReg: form.businessReg,
+          baseLocation: form.baseLocation,
+          radius: form.radius,
+          vehicleType: form.vehicleType,
+          vehicleReg: form.vehicleReg,
+          bankName: form.bankName,
+          accountNumber: form.accountNumber,
+          accountName: form.accountName,
+          payoutSchedule: form.payoutSchedule,
+          coverageRoutes: selectedRoutes,
+        }),
+      });
+      const json = await res.json();
+      if (!res.ok) {
+        setSubmitError(json.error || "Registration failed. Please try again.");
+        setSubmitting(false);
+        return;
+      }
+      setSubmitted(true);
+    } catch {
+      setSubmitError("Network error. Please check your connection and try again.");
+    } finally {
+      setSubmitting(false);
+    }
   };
 
   if (submitted) {
@@ -450,13 +489,22 @@ export default function LogisticsRegister() {
                   Continue <ChevronRight className="w-4 h-4" />
                 </button>
               ) : (
-                <button
-                  onClick={handleSubmit}
-                  disabled={!canProceed()}
-                  className="flex items-center gap-1.5 px-6 py-2.5 bg-orange text-white font-bold rounded-lg hover:bg-orange/90 disabled:opacity-40 disabled:cursor-not-allowed transition-all text-sm"
-                >
-                  <ShieldCheck className="w-4 h-4" /> Submit Application
-                </button>
+                <div className="flex flex-col items-end gap-2">
+                  {submitError && (
+                    <p className="text-xs text-red-400 max-w-xs text-right">{submitError}</p>
+                  )}
+                  <button
+                    onClick={handleSubmit}
+                    disabled={!canProceed() || submitting}
+                    className="flex items-center gap-1.5 px-6 py-2.5 bg-orange text-white font-bold rounded-lg hover:bg-orange/90 disabled:opacity-40 disabled:cursor-not-allowed transition-all text-sm"
+                  >
+                    {submitting ? (
+                      <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                    ) : (
+                      <><ShieldCheck className="w-4 h-4" /> Submit Application</>
+                    )}
+                  </button>
+                </div>
               )}
             </div>
           </div>

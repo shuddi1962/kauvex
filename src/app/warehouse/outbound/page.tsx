@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Package, Scan, CheckCircle2, Truck, Printer, Download, Loader2 } from "lucide-react";
 
 interface DispatchItem {
@@ -13,17 +13,29 @@ interface DispatchItem {
   status: "staged" | "handed" | "dispatched";
 }
 
-const seedDispatch: DispatchItem[] = [
-  { id: "D1", orderId: "KAU-3918", tier: "A", destination: "Lagos, Ikeja", carrier: "GIG", weight: "0.5kg", status: "staged" },
-  { id: "D2", orderId: "KAU-3919", tier: "A", destination: "Abuja, Wuse", carrier: "Kauvex Rider", weight: "1.2kg", status: "staged" },
-  { id: "D3", orderId: "KAU-3920", tier: "B", destination: "Port Harcourt", carrier: "DHL", weight: "0.8kg", status: "staged" },
-  { id: "D4", orderId: "KAU-3915", tier: "A", destination: "Lagos, VI", carrier: "Kauvex Rider", weight: "2.0kg", status: "handed" },
-  { id: "D5", orderId: "KAU-3910", tier: "A", destination: "Ibadan", carrier: "GIG", weight: "1.5kg", status: "dispatched" },
-];
-
 export default function WarehouseOutboundPage() {
-  const [dispatch, setDispatch] = useState(seedDispatch);
+  const [dispatch, setDispatch] = useState<DispatchItem[]>([]);
+  const [loading, setLoading] = useState(true);
   const [showQR, setShowQR] = useState<string | null>(null);
+
+  useEffect(() => {
+    fetch("/api/v1/warehouses")
+      .then(r => r.json())
+      .then(json => {
+        const items = json.data?.outbound || [];
+        setDispatch(items.map((s: any) => ({
+          id: s.id,
+          orderId: s.orderId,
+          tier: s.tier,
+          destination: s.destination,
+          carrier: s.carrier,
+          weight: s.weight,
+          status: s.status,
+        })));
+        setLoading(false);
+      })
+      .catch(() => setLoading(false));
+  }, []);
 
   const updateStatus = (id: string, status: DispatchItem["status"]) => {
     setDispatch((prev) => prev.map((d) => (d.id === id ? { ...d, status } : d)));
@@ -32,6 +44,14 @@ export default function WarehouseOutboundPage() {
   const staged = dispatch.filter(d => d.status === "staged");
   const handed = dispatch.filter(d => d.status === "handed");
   const dispatched = dispatch.filter(d => d.status === "dispatched");
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center h-64">
+        <Loader2 size={24} className="animate-spin text-[#FF6B00]" />
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6">

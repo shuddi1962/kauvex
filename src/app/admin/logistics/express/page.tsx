@@ -2,7 +2,6 @@
 
 import { useState, useEffect } from "react";
 import AdminShell from "@/components/admin/admin-shell";
-import { insforge } from "@/lib/insforge";
 import { Loader2, Package, DollarSign, TrendingUp, Zap, Eye } from "lucide-react";
 
 interface ExpressShipment {
@@ -34,37 +33,34 @@ const statusConfig: Record<string, { label: string; color: string }> = {
   cancelled: { label: "Cancelled", color: "bg-red-50 text-red" },
 };
 
-const seedShipments: ExpressShipment[] = [
-  { id: "1", waybill_number: "KX-EX-10001", sender_name: "Chidi Okafor", receiver_name: "Amina Bello", pickup_city: "Lagos", dropoff_city: "Abuja", service_level: "express", status: "delivered", price_paid: 12500, created_at: "2026-06-20T10:30:00Z" },
-  { id: "2", waybill_number: "KX-EX-10002", sender_name: "Tunde Ade", receiver_name: "Grace Eze", pickup_city: "Port Harcourt", dropoff_city: "Lagos", service_level: "standard", status: "in_transit", price_paid: 8500, created_at: "2026-06-22T14:00:00Z" },
-  { id: "3", waybill_number: "KX-EX-10003", sender_name: "Kunle Ajayi", receiver_name: "Musa Abdullahi", pickup_city: "Abuja", dropoff_city: "Kano", service_level: "same_day", status: "out_for_delivery", price_paid: 18000, created_at: "2026-06-23T07:00:00Z" },
-  { id: "4", waybill_number: "KX-EX-10004", sender_name: "Blessing Ade", receiver_name: "Emeka Nwachukwu", pickup_city: "Lagos", dropoff_city: "Port Harcourt", service_level: "economy", status: "picked_up", price_paid: 6500, created_at: "2026-06-22T09:00:00Z" },
-  { id: "5", waybill_number: "KX-EX-10005", sender_name: "Ngozi Eze", receiver_name: "Yusuf Hassan", pickup_city: "Warri", dropoff_city: "Benin", service_level: "express", status: "pending", price_paid: 11000, created_at: "2026-06-23T08:30:00Z" },
-];
-
 export default function AdminExpressPage() {
   const [shipments, setShipments] = useState<ExpressShipment[]>([]);
   const [loading, setLoading] = useState(true);
   const [filterService, setFilterService] = useState("all");
   const [filterStatus, setFilterStatus] = useState("all");
 
-  useEffect(() => { loadData(); }, []);
-
-  const loadData = async () => {
-    try {
-      const { data } = await insforge.database
-        .from("kv_ship_express_shipments")
-        .select("*")
-        .order("created_at", { ascending: false });
-      if (data && data.length > 0) {
-        setShipments(data);
-      } else {
-        setShipments(seedShipments);
-      }
-    } catch {
-      setShipments(seedShipments);
-    } finally { setLoading(false); }
-  };
+  useEffect(() => {
+    fetch("/api/v1/express/waybills")
+      .then((r) => r.json())
+      .then((json) => {
+        const raw = json.data || json.waybills || [];
+        const mapped: ExpressShipment[] = raw.map((s: Record<string, unknown>) => ({
+          id: String(s.id ?? ""),
+          waybill_number: String(s.waybill_number ?? s.waybillNumber ?? ""),
+          sender_name: String(s.sender_name ?? s.senderName ?? ""),
+          receiver_name: String(s.receiver_name ?? s.receiverName ?? ""),
+          pickup_city: String(s.pickup_city ?? s.pickupCity ?? ""),
+          dropoff_city: String(s.dropoff_city ?? s.dropoffCity ?? ""),
+          service_level: String(s.service_level ?? s.serviceLevel ?? "standard"),
+          status: String(s.status ?? "pending"),
+          price_paid: Number(s.price_paid ?? s.pricePaid ?? 0),
+          created_at: String(s.created_at ?? s.createdAt ?? new Date().toISOString()),
+        }));
+        setShipments(mapped);
+        setLoading(false);
+      })
+      .catch(() => setLoading(false));
+  }, []);
 
   const totalRevenue = shipments.reduce((sum, s) => sum + s.price_paid, 0);
   const thisMonth = shipments.filter(s => {

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import AdminShell from "@/components/admin/admin-shell";
 import { Truck, Package, CheckCircle2, XCircle, Clock, AlertTriangle, RefreshCw, Loader2, Phone } from "lucide-react";
 
@@ -17,16 +17,6 @@ interface LogisticsJob {
   customer: string;
 }
 
-const seedJobs: LogisticsJob[] = [
-  { id: "J1", jobNumber: "KVX-JOB-001", type: "Parcel", pickupCity: "Lagos, Ikeja", dropoffCity: "Lagos, VI", tier: "Tier 1", partner: "Emeka O.", status: "in_transit", timeElapsed: "45 min", customer: "Chioma A." },
-  { id: "J2", jobNumber: "KVX-JOB-002", type: "Document", pickupCity: "Lagos, Surulere", dropoffCity: "Lagos, Lekki", tier: "Tier 1", partner: "Blessing K.", status: "out_for_delivery", timeElapsed: "1h 20m", customer: "Tunde B." },
-  { id: "J3", jobNumber: "KVX-JOB-003", type: "Fragile", pickupCity: "Abuja, Wuse", dropoffCity: "Abuja, Garki", tier: "Tier 1", partner: "Adamu G.", status: "picked_up", timeElapsed: "30 min", customer: "Grace M." },
-  { id: "J4", jobNumber: "KVX-JOB-004", type: "Parcel", pickupCity: "Port Harcourt", dropoffCity: "Lagos", tier: "Tier 2", partner: "—", status: "offered", timeElapsed: "2h 10m", customer: "Samuel K." },
-  { id: "J5", jobNumber: "KVX-JOB-005", type: "Food", pickupCity: "Ikeja", dropoffCity: "Magodo", tier: "Tier 1", partner: "Femi A.", status: "delivered", timeElapsed: "3h 00m", customer: "Ngozi E." },
-  { id: "J6", jobNumber: "KVX-JOB-006", type: "Parcel", pickupCity: "Abuja", dropoffCity: "Kano", tier: "Tier 2", partner: "—", status: "pending", timeElapsed: "5h 00m", customer: "Yusuf I." },
-  { id: "J7", jobNumber: "KVX-JOB-007", type: "Parcel", pickupCity: "Lagos", dropoffCity: "Abuja", tier: "Tier 3", partner: "DHL", status: "in_transit", timeElapsed: "8h 00m", customer: "Amara O." },
-];
-
 const statusConfig: Record<string, { label: string; color: string }> = {
   pending: { label: "Pending", color: "bg-gray-100 text-gray-600" },
   offered: { label: "Offered", color: "bg-blue-50 text-blue-700" },
@@ -42,7 +32,31 @@ const statusConfig: Record<string, { label: string; color: string }> = {
 
 export default function AdminJobsPage() {
   const [tab, setTab] = useState<"active" | "available" | "failed" | "escalations">("active");
-  const [jobs] = useState(seedJobs);
+  const [jobs, setJobs] = useState<LogisticsJob[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    fetch("/api/v1/logistics/jobs")
+      .then((r) => r.json())
+      .then((json) => {
+        const raw = json.data || json.jobs || [];
+        const mapped: LogisticsJob[] = raw.map((j: Record<string, unknown>) => ({
+          id: String(j.id ?? ""),
+          jobNumber: String(j.jobNumber ?? j.job_number ?? ""),
+          type: String(j.type ?? "Parcel"),
+          pickupCity: String(j.pickupCity ?? j.pickup_city ?? ""),
+          dropoffCity: String(j.dropoffCity ?? j.dropoff_city ?? ""),
+          tier: String(j.tier ?? "Tier 1"),
+          partner: String(j.partner ?? "—"),
+          status: String(j.status ?? "pending"),
+          timeElapsed: String(j.timeElapsed ?? j.time_elapsed ?? ""),
+          customer: String(j.customer ?? ""),
+        }));
+        setJobs(mapped);
+        setLoading(false);
+      })
+      .catch(() => setLoading(false));
+  }, []);
 
   const tabs = [
     { id: "active" as const, label: "Active Jobs", count: jobs.filter(j => !["delivered", "failed"].includes(j.status)).length },
@@ -57,6 +71,9 @@ export default function AdminJobsPage() {
 
   return (
     <AdminShell title="Logistics Jobs" subtitle="Manage all delivery jobs across the network">
+      {loading ? (
+        <div className="flex items-center justify-center py-20"><Loader2 className="animate-spin text-blue" size={32} /></div>
+      ) : (
       <div className="space-y-4">
         {/* Tab Bar */}
         <div className="flex gap-2">
@@ -157,6 +174,7 @@ export default function AdminJobsPage() {
           </div>
         )}
       </div>
+      )}
     </AdminShell>
   );
 }

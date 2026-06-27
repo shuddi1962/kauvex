@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import AdminShell from "@/components/admin/admin-shell";
 import { Warehouse, MapPin, Package, Users, Truck, BarChart3, Loader2, Search } from "lucide-react";
 
@@ -16,18 +16,32 @@ interface WarehouseItem {
   status: "active" | "maintenance" | "inactive";
 }
 
-const seedWarehouses: WarehouseItem[] = [
-  { id: "W1", name: "Lagos Main Fulfillment Center", city: "Lagos, Ikeja", type: "FBK", capacityUsed: 78, staffCount: 24, activeInbounds: 5, activeOutbounds: 120, status: "active" },
-  { id: "W2", name: "Abuja Logistics Hub", city: "Abuja, Wuse", type: "Cross-Dock", capacityUsed: 55, staffCount: 12, activeInbounds: 3, activeOutbounds: 45, status: "active" },
-  { id: "W3", name: "Port Harcourt Distribution", city: "Port Harcourt", type: "FBK", capacityUsed: 42, staffCount: 8, activeInbounds: 2, activeOutbounds: 30, status: "active" },
-  { id: "W4", name: "Ibadan Forward Stocking", city: "Ibadan", type: "Forward Stock", capacityUsed: 30, staffCount: 5, activeInbounds: 1, activeOutbounds: 15, status: "active" },
-  { id: "W5", name: "Lagos Returns Center", city: "Lagos, Apapa", type: "Returns", capacityUsed: 60, staffCount: 6, activeInbounds: 8, activeOutbounds: 10, status: "active" },
-  { id: "W6", name: "Kano Hub", city: "Kano", type: "Cross-Dock", capacityUsed: 20, staffCount: 4, activeInbounds: 0, activeOutbounds: 8, status: "maintenance" },
-];
-
 export default function AdminWarehousesPage() {
-  const [warehouses] = useState(seedWarehouses);
+  const [warehouses, setWarehouses] = useState<WarehouseItem[]>([]);
+  const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
+
+  useEffect(() => {
+    fetch("/api/warehouses")
+      .then((r) => r.json())
+      .then((json) => {
+        const raw = json.data || json.warehouses || [];
+        const mapped: WarehouseItem[] = raw.map((w: Record<string, unknown>) => ({
+          id: String(w.id ?? ""),
+          name: String(w.name ?? ""),
+          city: String(w.city ?? w.location ?? ""),
+          type: String(w.type ?? "FBK"),
+          capacityUsed: Number(w.capacityUsed ?? w.capacity_used ?? 0),
+          staffCount: Number(w.staffCount ?? w.staff_count ?? 0),
+          activeInbounds: Number(w.activeInbounds ?? w.active_inbounds ?? 0),
+          activeOutbounds: Number(w.activeOutbounds ?? w.active_outbounds ?? 0),
+          status: (String(w.status ?? "active") as "active" | "maintenance" | "inactive"),
+        }));
+        setWarehouses(mapped);
+        setLoading(false);
+      })
+      .catch(() => setLoading(false));
+  }, []);
 
   const filtered = warehouses.filter(w =>
     w.name.toLowerCase().includes(search.toLowerCase()) || w.city.toLowerCase().includes(search.toLowerCase())
@@ -35,6 +49,9 @@ export default function AdminWarehousesPage() {
 
   return (
     <AdminShell title="Warehouses" subtitle="All Kauvex warehouse locations">
+      {loading ? (
+        <div className="flex items-center justify-center py-20"><Loader2 className="animate-spin text-blue" size={32} /></div>
+      ) : (
       <div className="space-y-6">
         {/* Search */}
         <div className="relative max-w-md">
@@ -116,6 +133,7 @@ export default function AdminWarehousesPage() {
           ))}
         </div>
       </div>
+      )}
     </AdminShell>
   );
 }

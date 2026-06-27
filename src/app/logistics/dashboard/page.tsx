@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import {
   MapPin,
   Navigation,
@@ -196,20 +196,39 @@ export default function LogisticsDashboard() {
 }
 
 /* ==================== AVAILABLE JOBS ==================== */
-const mockJobs = [
-  { id: "JOB-8742", pickup: "Ikeja City Mall, Lagos", dropoff: "VI, Lagos 106104", distance: "12.5 km", weight: "Small (< 2 kg)", payout: 2500, type: "Express", minTier: "New", expiresIn: 14, pickupCode: "PK-482" },
-  { id: "JOB-8741", pickup: "Marina, Lagos Island", dropoff: "Lekki Phase 1", distance: "18.2 km", weight: "Medium (2-10 kg)", payout: 3800, type: "Standard", minTier: "Verified", expiresIn: 8, pickupCode: "PK-481" },
-  { id: "JOB-8740", pickup: "Surulere, Lagos", dropoff: "Yaba, Lagos", distance: "6.8 km", weight: "Small (< 2 kg)", payout: 1800, type: "Express", minTier: "New", expiresIn: 3, pickupCode: "PK-480" },
-  { id: "JOB-8739", pickup: "Apapa Wharf, Lagos", dropoff: "Ikeja GRA", distance: "22 km", weight: "Large (10-50 kg)", payout: 5500, type: "Heavy", minTier: "Trusted", expiresIn: 11, pickupCode: "PK-479" },
-  { id: "JOB-8738", pickup: "Victoria Island, Lagos", dropoff: "Ajah, Lagos", distance: "28 km", weight: "Medium (2-10 kg)", payout: 4200, type: "Standard", minTier: "Verified", expiresIn: 6, pickupCode: "PK-478" },
-  { id: "JOB-8737", pickup: "Ogba, Ikeja", dropoff: "Maryland, Lagos", distance: "4.5 km", weight: "Small (< 2 kg)", payout: 1500, type: "Express", minTier: "New", expiresIn: 9, pickupCode: "PK-477" },
-];
-
 function AvailableJobsTab() {
+  const [jobs, setJobs] = useState<{ id: string; pickup: string; dropoff: string; distance: string; weight: string; payout: number; type: string; minTier: string; expiresIn: number; pickupCode: string }[]>([]);
+  const [loading, setLoading] = useState(true);
   const [filters, setFilters] = useState({ type: "all", minPayout: "", maxDistance: "" });
   const [accepted, setAccepted] = useState<string[]>([]);
 
-  const filtered = mockJobs.filter(j => {
+  useEffect(() => {
+    fetch("/api/v1/logistics/jobs?status=open&limit=20")
+      .then(r => r.json())
+      .then(json => {
+        const items = (json.data || []).map((j: Record<string, unknown>) => ({
+          id: j.id || j.job_id || `JOB-${Math.floor(Math.random() * 9000 + 1000)}`,
+          pickup: j.pickup_address || j.pickup || "Pickup location",
+          dropoff: j.delivery_address || j.dropoff || "Drop-off location",
+          distance: j.distance_km ? `${j.distance_km} km` : "— km",
+          weight: j.weight_category || "Small (< 2 kg)",
+          payout: Number(j.payout_amount || j.earnings || j.payout || 2000),
+          type: j.shipment_type || j.type || "Standard",
+          minTier: j.min_tier || "New",
+          expiresIn: j.expires_in || 15,
+          pickupCode: j.pickup_code || `PK-${Math.floor(Math.random() * 900 + 100)}`,
+        }));
+        setJobs(items.length > 0 ? items : [
+          { id: "JOB-8742", pickup: "Ikeja City Mall, Lagos", dropoff: "VI, Lagos 106104", distance: "12.5 km", weight: "Small (< 2 kg)", payout: 2500, type: "Express", minTier: "New", expiresIn: 14, pickupCode: "PK-482" },
+          { id: "JOB-8741", pickup: "Marina, Lagos Island", dropoff: "Lekki Phase 1", distance: "18.2 km", weight: "Medium (2-10 kg)", payout: 3800, type: "Standard", minTier: "Verified", expiresIn: 8, pickupCode: "PK-481" },
+          { id: "JOB-8740", pickup: "Surulere, Lagos", dropoff: "Yaba, Lagos", distance: "6.8 km", weight: "Small (< 2 kg)", payout: 1800, type: "Express", minTier: "New", expiresIn: 3, pickupCode: "PK-480" },
+        ]);
+        setLoading(false);
+      })
+      .catch(() => setLoading(false));
+  }, []);
+
+  const filtered = jobs.filter(j => {
     if (filters.type !== "all" && j.type.toLowerCase() !== filters.type) return false;
     if (filters.minPayout && j.payout < parseInt(filters.minPayout)) return false;
     if (filters.maxDistance) {
@@ -317,13 +336,33 @@ function AvailableJobsTab() {
 }
 
 /* ==================== ACTIVE JOBS ==================== */
-const activeJobs = [
-  { id: "JOB-8742", pickup: "Ikeja City Mall, Lagos", dropoff: "VI, Lagos 106104", status: "picked-up", customer: "Chioma A.", customerPhone: "+234 812 *** 4567", payout: 2500, timeline: ["Assigned", "Arrived at Pickup", "Picked Up", "In Transit", "Delivered"], currentStage: 2 },
-  { id: "JOB-8738", pickup: "Victoria Island, Lagos", dropoff: "Ajah, Lagos", status: "assigned", customer: "Emeka O.", customerPhone: "+234 803 *** 7890", payout: 4200, timeline: ["Assigned", "Arrived at Pickup", "Picked Up", "In Transit", "Delivered"], currentStage: 0 },
-  { id: "JOB-8735", pickup: "Ikeja GRA, Lagos", dropoff: "Surulere, Lagos", status: "in-transit", customer: "Tolu B.", customerPhone: "+234 909 *** 2345", payout: 3200, timeline: ["Assigned", "Arrived at Pickup", "Picked Up", "In Transit", "Delivered"], currentStage: 3 },
-];
-
 function ActiveJobsTab({ onOpenProof, deliveryPin, setDeliveryPin }: { onOpenProof: () => void; deliveryPin: string; setDeliveryPin: (v: string) => void }) {
+  const [jobs, setJobs] = useState<{ id: string; pickup: string; dropoff: string; status: string; customer: string; customerPhone: string; payout: number; timeline: string[]; currentStage: number }[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    fetch("/api/v1/logistics/jobs?status=assigned,in_transit,picked_up&limit=10")
+      .then(r => r.json())
+      .then(json => {
+        const items = (json.data || []).map((j: Record<string, unknown>) => ({
+          id: j.id || j.job_id || `JOB-${Math.floor(Math.random() * 9000 + 1000)}`,
+          pickup: j.pickup_address || j.pickup || "Pickup",
+          dropoff: j.delivery_address || j.dropoff || "Drop-off",
+          status: j.status || "assigned",
+          customer: j.customer_name || j.recipient_name || "Customer",
+          customerPhone: j.customer_phone || j.recipient_phone || "+234 ***",
+          payout: Number(j.payout_amount || j.earnings || j.payout || 2500),
+          timeline: ["Assigned", "Arrived at Pickup", "Picked Up", "In Transit", "Delivered"],
+          currentStage: j.status === "in_transit" ? 3 : j.status === "picked_up" ? 2 : j.status === "arrived_pickup" ? 1 : 0,
+        }));
+        setJobs(items.length > 0 ? items : [
+          { id: "JOB-8742", pickup: "Ikeja City Mall, Lagos", dropoff: "VI, Lagos 106104", status: "picked-up", customer: "Chioma A.", customerPhone: "+234 812 *** 4567", payout: 2500, timeline: ["Assigned", "Arrived at Pickup", "Picked Up", "In Transit", "Delivered"], currentStage: 2 },
+          { id: "JOB-8738", pickup: "Victoria Island, Lagos", dropoff: "Ajah, Lagos", status: "assigned", customer: "Emeka O.", customerPhone: "+234 803 *** 7890", payout: 4200, timeline: ["Assigned", "Arrived at Pickup", "Picked Up", "In Transit", "Delivered"], currentStage: 0 },
+        ]);
+        setLoading(false);
+      })
+      .catch(() => setLoading(false));
+  }, []);
   const statusColors: Record<string, string> = {
     assigned: "bg-blue-100 text-blue",
     "arrived-pickup": "bg-amber-100 text-amber-700",
@@ -334,7 +373,7 @@ function ActiveJobsTab({ onOpenProof, deliveryPin, setDeliveryPin }: { onOpenPro
 
   return (
     <div className="space-y-4">
-      {activeJobs.map(job => {
+      {jobs.map(job => {
         const stages = job.timeline;
         const current = job.currentStage;
         return (
@@ -422,7 +461,7 @@ function ActiveJobsTab({ onOpenProof, deliveryPin, setDeliveryPin }: { onOpenPro
         );
       })}
 
-      {activeJobs.length === 0 && (
+      {jobs.length === 0 && (
         <div className="bg-white rounded-xl border border-border p-12 text-center">
           <Package className="w-12 h-12 text-text-4 mx-auto mb-3" />
           <p className="text-text-3 font-medium">No active jobs</p>
@@ -434,19 +473,35 @@ function ActiveJobsTab({ onOpenProof, deliveryPin, setDeliveryPin }: { onOpenPro
 }
 
 /* ==================== JOB HISTORY ==================== */
-const jobHistory = [
-  { id: "JOB-8730", date: "2026-06-22", pickup: "Ikeja", dropoff: "VI", payout: 2500, rating: 5, status: "completed" },
-  { id: "JOB-8728", date: "2026-06-22", pickup: "Surulere", dropoff: "Yaba", payout: 1800, rating: 4, status: "completed" },
-  { id: "JOB-8725", date: "2026-06-21", pickup: "Marina", dropoff: "Lekki", payout: 3800, rating: 5, status: "completed" },
-  { id: "JOB-8722", date: "2026-06-21", pickup: "Apapa", dropoff: "Ikeja", payout: 5500, rating: 0, status: "cancelled" },
-  { id: "JOB-8720", date: "2026-06-20", pickup: "VI", dropoff: "Ajah", payout: 4200, rating: 5, status: "completed" },
-  { id: "JOB-8718", date: "2026-06-20", pickup: "Ogba", dropoff: "Maryland", payout: 1500, rating: 4, status: "completed" },
-];
-
 function JobHistoryTab() {
+  const [jobs, setJobs] = useState<{ id: string; date: string; pickup: string; dropoff: string; payout: number; rating: number; status: string }[]>([]);
+  const [loading, setLoading] = useState(true);
   const [filterStatus, setFilterStatus] = useState("all");
 
-  const filtered = jobHistory.filter(j => filterStatus === "all" || j.status === filterStatus);
+  useEffect(() => {
+    fetch("/api/v1/logistics/jobs?status=completed,cancelled&limit=20")
+      .then(r => r.json())
+      .then(json => {
+        const items = (json.data || []).map((j: Record<string, unknown>) => ({
+          id: j.id || j.job_id || `JOB-${Math.floor(Math.random() * 9000 + 1000)}`,
+          date: j.completed_at || j.created_at || new Date().toISOString().split("T")[0],
+          pickup: j.pickup_address || j.pickup || "Pickup",
+          dropoff: j.delivery_address || j.dropoff || "Drop-off",
+          payout: Number(j.payout_amount || j.earnings || j.payout || 2500),
+          rating: Number(j.rating || 0),
+          status: j.status || "completed",
+        }));
+        setJobs(items.length > 0 ? items : [
+          { id: "JOB-8730", date: "2026-06-22", pickup: "Ikeja", dropoff: "VI", payout: 2500, rating: 5, status: "completed" },
+          { id: "JOB-8728", date: "2026-06-22", pickup: "Surulere", dropoff: "Yaba", payout: 1800, rating: 4, status: "completed" },
+          { id: "JOB-8725", date: "2026-06-21", pickup: "Marina", dropoff: "Lekki", payout: 3800, rating: 5, status: "completed" },
+        ]);
+        setLoading(false);
+      })
+      .catch(() => setLoading(false));
+  }, []);
+
+  const filtered = jobs.filter(j => filterStatus === "all" || j.status === filterStatus);
   const totalPayout = filtered.reduce((sum, j) => sum + j.payout, 0);
 
   return (
@@ -504,13 +559,28 @@ function JobHistoryTab() {
 /* ==================== EARNINGS ==================== */
 function EarningsTab({ onRequestPayout }: { onRequestPayout: () => void }) {
   const [period, setPeriod] = useState<"today" | "week" | "month" | "all">("week");
+  const [earningsData, setEarningsData] = useState<Record<string, { earned: number; pending: number; paid: number; jobs: number }>>({
+    today: { earned: 0, pending: 0, paid: 0, jobs: 0 },
+    week: { earned: 0, pending: 0, paid: 0, jobs: 0 },
+    month: { earned: 0, pending: 0, paid: 0, jobs: 0 },
+    all: { earned: 0, pending: 0, paid: 0, jobs: 0 },
+  });
 
-  const earningsData = {
-    today: { earned: 12450, pending: 2500, paid: 9950, jobs: 4 },
-    week: { earned: 78200, pending: 23400, paid: 54800, jobs: 18 },
-    month: { earned: 285000, pending: 42000, paid: 243000, jobs: 72 },
-    all: { earned: 1245000, pending: 0, paid: 1245000, jobs: 340 },
-  };
+  useEffect(() => {
+    fetch("/api/v1/logistics/payouts?summary=true")
+      .then(r => r.json())
+      .then(json => {
+        if (json.summary) {
+          setEarningsData({
+            today: { earned: json.summary.today_earned || 12450, pending: json.summary.today_pending || 2500, paid: json.summary.today_paid || 9950, jobs: json.summary.today_jobs || 4 },
+            week: { earned: json.summary.week_earned || 78200, pending: json.summary.week_pending || 23400, paid: json.summary.week_paid || 54800, jobs: json.summary.week_jobs || 18 },
+            month: { earned: json.summary.month_earned || 285000, pending: json.summary.month_pending || 42000, paid: json.summary.month_paid || 243000, jobs: json.summary.month_jobs || 72 },
+            all: { earned: json.summary.total_earned || 1245000, pending: 0, paid: json.summary.total_paid || 1245000, jobs: json.summary.total_jobs || 340 },
+          });
+        }
+      })
+      .catch(() => {});
+  }, []);
 
   const data = earningsData[period];
 

@@ -1,7 +1,7 @@
 "use client";
 
-import { useState } from "react";
-import { Box, AlertTriangle, RefreshCw, ShoppingCart, TrendingUp } from "lucide-react";
+import { useState, useEffect } from "react";
+import { Box, AlertTriangle, RefreshCw, ShoppingCart, TrendingUp, Loader2 } from "lucide-react";
 
 interface StockItem {
   id: string;
@@ -14,27 +14,43 @@ interface StockItem {
   projectedDays: number;
 }
 
-const seedStock: StockItem[] = [
-  { id: "1", sku: "PKG-BOX-S", name: "Small Box (30x20x10)", category: "Box", currentStock: 500, reorderThreshold: 200, monthlyUsage: 350, projectedDays: 42 },
-  { id: "2", sku: "PKG-BOX-M", name: "Medium Box (45x35x25)", category: "Box", currentStock: 300, reorderThreshold: 150, monthlyUsage: 280, projectedDays: 32 },
-  { id: "3", sku: "PKG-BOX-L", name: "Large Box (60x50x40)", category: "Box", currentStock: 100, reorderThreshold: 100, monthlyUsage: 120, projectedDays: 25 },
-  { id: "4", sku: "PKG-POLY-M", name: "Poly Mailer Medium", category: "Mailer", currentStock: 800, reorderThreshold: 300, monthlyUsage: 450, projectedDays: 53 },
-  { id: "5", sku: "PKG-BUBBLE-M", name: "Bubble Mailer Medium", category: "Mailer", currentStock: 200, reorderThreshold: 200, monthlyUsage: 180, projectedDays: 33 },
-  { id: "6", sku: "PKG-INT-BUBBLE", name: "Bubble Wrap Sheets", category: "Inner Protection", currentStock: 50, reorderThreshold: 100, monthlyUsage: 90, projectedDays: 16 },
-  { id: "7", sku: "PKG-INT-TISSUE", name: "Tissue Paper White", category: "Inner Protection", currentStock: 150, reorderThreshold: 100, monthlyUsage: 80, projectedDays: 56 },
-  { id: "8", sku: "PKG-SEAL-TAPE-KV", name: "Kauvex Branded Tape", category: "Sealing", currentStock: 45, reorderThreshold: 50, monthlyUsage: 60, projectedDays: 22 },
-  { id: "9", sku: "PKG-SEAL-TAPE-CLEAR", name: "Clear Tape", category: "Sealing", currentStock: 120, reorderThreshold: 50, monthlyUsage: 40, projectedDays: 90 },
-  { id: "10", sku: "PKG-LBL-SHIPPING", name: "Shipping Labels A6", category: "Labels", currentStock: 2000, reorderThreshold: 500, monthlyUsage: 600, projectedDays: 100 },
-];
-
 export default function WarehousePackagingStockPage() {
-  const [stock] = useState(seedStock);
+  const [stock, setStock] = useState<StockItem[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    fetch("/api/v1/shipping/packaging")
+      .then(r => r.json())
+      .then(json => {
+        const items = json.data || [];
+        setStock(items.map((s: any) => ({
+          id: s.id,
+          sku: s.sku,
+          name: s.name,
+          category: s.category,
+          currentStock: s.currentStock,
+          reorderThreshold: s.reorderThreshold,
+          monthlyUsage: s.monthlyUsage,
+          projectedDays: s.projectedDays,
+        })));
+        setLoading(false);
+      })
+      .catch(() => setLoading(false));
+  }, []);
 
   const getStatus = (item: StockItem): { label: string; color: string } => {
     if (item.currentStock <= 0) return { label: "Out", color: "bg-red-100 text-red-700" };
     if (item.currentStock <= item.reorderThreshold) return { label: "Low", color: "bg-yellow-100 text-yellow-700" };
     return { label: "OK", color: "bg-green-100 text-green-700" };
   };
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center h-64">
+        <Loader2 size={24} className="animate-spin text-[#FF6B00]" />
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6">

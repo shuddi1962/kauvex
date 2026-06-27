@@ -1,7 +1,7 @@
 "use client";
 
-import { useState } from "react";
-import { Package, MapPin, BarChart3, CheckCircle2, AlertTriangle, Search } from "lucide-react";
+import { useState, useEffect } from "react";
+import { Package, MapPin, BarChart3, CheckCircle2, AlertTriangle, Search, Loader2 } from "lucide-react";
 
 interface InventoryItem {
   id: string;
@@ -23,32 +23,53 @@ interface BinZone {
   utilization: number;
 }
 
-const seedInventory: InventoryItem[] = [
-  { id: "1", product: "Wireless Earbuds Pro", vendor: "TechGadgets NG", sku: "WEB-001", bin: "A-12-3", onHand: 48, reserved: 5, available: 43, inbound: 50 },
-  { id: "2", product: "iPhone 15 Case", vendor: "TechGadgets NG", sku: "IPC-002", bin: "B-04-1", onHand: 120, reserved: 12, available: 108, inbound: 0 },
-  { id: "3", product: "Men's Running Shoes", vendor: "FashionHub Lagos", sku: "MRS-010", bin: "C-08-2", onHand: 35, reserved: 8, available: 27, inbound: 30 },
-  { id: "4", product: "Organic Green Tea Box", vendor: "HomeEssentials Ltd", sku: "OGT-005", bin: "D-02-4", onHand: 200, reserved: 15, available: 185, inbound: 100 },
-  { id: "5", product: "Bluetooth Speaker", vendor: "ElectroWorld PLC", sku: "BTS-003", bin: "A-15-1", onHand: 18, reserved: 3, available: 15, inbound: 20 },
-  { id: "6", product: "Yoga Mat Premium", vendor: "FashionHub Lagos", sku: "YMP-001", bin: "C-12-1", onHand: 60, reserved: 10, available: 50, inbound: 0 },
-];
-
-const seedBins: BinZone[] = [
-  { id: "A", name: "Zone A - Electronics", total: 200, used: 185, utilization: 92.5 },
-  { id: "B", name: "Zone B - Accessories", total: 150, used: 120, utilization: 80 },
-  { id: "C", name: "Zone C - Fashion", total: 180, used: 95, utilization: 52.8 },
-  { id: "D", name: "Zone D - General", total: 250, used: 210, utilization: 84 },
-  { id: "E", name: "Zone E - Bulk Storage", total: 300, used: 100, utilization: 33.3 },
-];
-
 export default function WarehouseInventoryPage() {
   const [search, setSearch] = useState("");
-  const [inventory] = useState(seedInventory);
-  const [bins] = useState(seedBins);
+  const [inventory, setInventory] = useState<InventoryItem[]>([]);
+  const [bins, setBins] = useState<BinZone[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    fetch("/api/v1/warehouses")
+      .then(r => r.json())
+      .then(json => {
+        const items = json.data?.inventory || [];
+        setInventory(items.map((i: any) => ({
+          id: i.id,
+          product: i.product,
+          vendor: i.vendor,
+          sku: i.sku,
+          bin: i.bin,
+          onHand: i.onHand,
+          reserved: i.reserved,
+          available: i.available,
+          inbound: i.inbound,
+        })));
+        const zones = json.data?.bins || [];
+        setBins(zones.map((z: any) => ({
+          id: z.id,
+          name: z.name,
+          total: z.total,
+          used: z.used,
+          utilization: z.utilization,
+        })));
+        setLoading(false);
+      })
+      .catch(() => setLoading(false));
+  }, []);
 
   const filtered = inventory.filter(i =>
     i.product.toLowerCase().includes(search.toLowerCase()) ||
     i.sku.toLowerCase().includes(search.toLowerCase())
   );
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center h-64">
+        <Loader2 size={24} className="animate-spin text-[#FF6B00]" />
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6">

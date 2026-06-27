@@ -3,6 +3,7 @@
 import { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { createClient } from "@/lib/supabase/client";
 import { Truck, Mail, Lock, Eye, EyeOff, ArrowRight } from "lucide-react";
 
 export default function LogisticsLogin() {
@@ -21,9 +22,51 @@ export default function LogisticsLogin() {
       return;
     }
     setLoading(true);
-    await new Promise(r => setTimeout(r, 1200));
-    setLoading(false);
-    router.push("/logistics/dashboard");
+    try {
+      const supabase = createClient();
+      const { data, error: authError } = await supabase.auth.signInWithPassword({ email, password });
+
+      if (authError) {
+        setError(authError.message === "Invalid login credentials"
+          ? "Invalid email or password. Try: logistics.demo@kauvex.com / KauvexDemo2026!"
+          : authError.message);
+        setLoading(false);
+        return;
+      }
+
+      if (data.user) {
+        // Check if user has a logistics partner record
+        const res = await fetch(`/api/v1/logistics/partners?user_id=${data.user.id}`);
+        const json = await res.json();
+        const partner = json.data?.[0];
+
+        if (!partner) {
+          setError("No logistics partner account found. Please register first.");
+          setLoading(false);
+          return;
+        }
+
+        if (partner.status === "suspended") {
+          setError("Your account has been suspended. Please contact support.");
+          setLoading(false);
+          return;
+        }
+
+        // Store partner info in localStorage for the dashboard
+        localStorage.setItem("logistics_partner", JSON.stringify({
+          id: partner.id,
+          user_id: data.user.id,
+          name: partner.name || partner.company_name,
+          status: partner.status,
+        }));
+
+        router.push("/logistics/dashboard");
+      }
+    } catch {
+      setError("Login failed. Please try again.");
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (

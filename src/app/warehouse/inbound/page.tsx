@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Truck, CheckCircle2, AlertTriangle, Loader2, Search } from "lucide-react";
 
 interface InboundPlan {
@@ -21,12 +21,13 @@ interface ReceivingForm {
   notes: string;
 }
 
-const seedPlans: InboundPlan[] = [
-  { id: "IP1", vendor: "TechGadgets NG", reference: "INB-2024-001", expectedUnits: 50, expectedDate: "2024-03-20", status: "pending" },
-  { id: "IP2", vendor: "FashionHub Lagos", reference: "INB-2024-002", expectedUnits: 120, expectedDate: "2024-03-21", status: "in_transit" },
-  { id: "IP3", vendor: "HomeEssentials Ltd", reference: "INB-2024-003", expectedUnits: 30, expectedDate: "2024-03-19", status: "arrived" },
-  { id: "IP4", vendor: "ElectroWorld PLC", reference: "INB-2024-004", expectedUnits: 200, expectedDate: "2024-03-22", status: "pending" },
-];
+interface InboundHistoryItem {
+  date: string;
+  vendor: string;
+  units: number;
+  discrepancies: number;
+  status: string;
+}
 
 const statusColors: Record<string, string> = {
   pending: "bg-yellow-100 text-yellow-700",
@@ -35,25 +36,51 @@ const statusColors: Record<string, string> = {
 };
 
 export default function WarehouseInboundPage() {
-  const [plans, setPlans] = useState(seedPlans);
-  const [receiving, setReceiving] = useState<ReceivingForm[]>([
-    { sku: "WEB-001", expectedQty: 50, receivedQty: 48, damagedQty: 2, condition: "ok", notes: "" },
-    { sku: "WEB-002", expectedQty: 30, receivedQty: 30, damagedQty: 0, condition: "ok", notes: "" },
-    { sku: "BTS-003", expectedQty: 20, receivedQty: 18, damagedQty: 1, condition: "damaged", notes: "Box crushed on arrival" },
-  ]);
+  const [plans, setPlans] = useState<InboundPlan[]>([]);
+  const [inboundHistory, setInboundHistory] = useState<InboundHistoryItem[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [receiving, setReceiving] = useState<ReceivingForm[]>([]);
   const [activePlan, setActivePlan] = useState<string | null>(null);
   const [confirmed, setConfirmed] = useState(false);
+
+  useEffect(() => {
+    fetch("/api/v1/warehouses")
+      .then(r => r.json())
+      .then(json => {
+        const shipments = json.data?.inbound || [];
+        setPlans(shipments.map((s: any) => ({
+          id: s.id,
+          vendor: s.vendor,
+          reference: s.reference,
+          expectedUnits: s.expectedUnits,
+          expectedDate: s.expectedDate,
+          status: s.status,
+        })));
+        const history = json.data?.inboundHistory || [];
+        setInboundHistory(history.map((h: any) => ({
+          date: h.date,
+          vendor: h.vendor,
+          units: h.units,
+          discrepancies: h.discrepancies,
+          status: h.status,
+        })));
+        setLoading(false);
+      })
+      .catch(() => setLoading(false));
+  }, []);
 
   const confirmReceipt = () => {
     setConfirmed(true);
     setPlans((prev) => prev.map((p) => p.id === activePlan ? { ...p, status: "arrived" as const } : p));
   };
 
-  const inboundHistory = [
-    { date: "2024-03-18", vendor: "TechGadgets NG", units: 100, discrepancies: 2, status: "confirmed" },
-    { date: "2024-03-17", vendor: "FashionHub Lagos", units: 75, discrepancies: 0, status: "confirmed" },
-    { date: "2024-03-15", vendor: "HomeEssentials Ltd", units: 50, discrepancies: 1, status: "confirmed" },
-  ];
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center h-64">
+        <Loader2 size={24} className="animate-spin text-[#FF6B00]" />
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6">

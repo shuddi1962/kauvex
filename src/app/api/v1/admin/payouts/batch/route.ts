@@ -30,43 +30,47 @@ export async function POST(request: NextRequest) {
     }
 
     const { data: payouts, error: fetchError } = await supabase
-      .from("kv_vendor_payouts")
+      .from("kv_ship_partner_payouts")
       .select("*")
       .in("id", payout_ids)
       .eq("status", "pending");
 
     if (fetchError) throw fetchError;
 
-    const totalAmount = (payouts || []).reduce(
-      (sum: number, p: { amount: number }) => sum + (p.amount || 0),
+    if (!payouts || payouts.length === 0) {
+      return NextResponse.json(
+        { error: "No pending payouts found for the provided IDs" },
+        { status: 404 }
+      );
+    }
+
+    const totalAmount = payouts.reduce(
+      (sum: number, p: { net_amount: number }) => sum + Number(p.net_amount || 0),
       0
     );
 
     const batchId = `BATCH-${Date.now().toString(36).toUpperCase()}`;
 
     const { error: updateError } = await supabase
-      .from("kv_vendor_payouts")
+      .from("kv_ship_partner_payouts")
       .update({ status: "processing", batch_id: batchId })
-      .in("id", payout_ids);
+      .in("id", payout_ids)
+      .eq("status", "pending");
 
     if (updateError) throw updateError;
 
     return NextResponse.json({
-      processed: payout_ids.length,
-      total_amount: totalAmount || 450000,
+      processed: payouts.length,
+      total_amount: totalAmount,
       status: "processing",
       batch_id: batchId,
-      message: `${payout_ids.length} payouts queued for processing`,
+      message: `${payouts.length} payout(s) queued for processing`,
     });
-  } catch {
-    const body = await request.json().catch(() => ({ payout_ids: [] }));
-    const ids = body.payout_ids || [];
-    return NextResponse.json({
-      processed: ids.length,
-      total_amount: 450000,
-      status: "processing",
-      batch_id: "BATCH-001",
-      message: `${ids.length} payouts queued for processing`,
-    });
+  } catch (error) {
+    console.error("[Batch Payouts]", error);
+    return NextResponse.json(
+      { error: "Failed to process payout batch" },
+      { status: 500 }
+    );
   }
 }

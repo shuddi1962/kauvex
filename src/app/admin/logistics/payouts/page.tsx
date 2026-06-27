@@ -2,7 +2,6 @@
 
 import { useState, useEffect } from "react";
 import AdminShell from "@/components/admin/admin-shell";
-import { insforge } from "@/lib/insforge";
 import {
   Loader2, DollarSign, Filter, Clock, Play,
   CheckCircle, XCircle, AlertTriangle, ArrowUpDown,
@@ -43,8 +42,11 @@ export default function PayoutsPage() {
 
   const loadData = async () => {
     try {
-      const { data } = await insforge.database.from("kv_ship_partner_payouts").select("*").order("created_at", { ascending: false });
-      if (data) setPayouts(data);
+      const res = await fetch("/api/v1/logistics/payouts");
+      const json = await res.json();
+      if (res.ok && json.payouts) {
+        setPayouts(json.payouts);
+      }
     } catch (e) {
       console.error("Failed to load payouts:", e);
     } finally {

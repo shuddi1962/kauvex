@@ -88,7 +88,7 @@ export default function LiveLogisticsPage() {
         const partnersJson = await partnersRes.json();
         const partnerData = (partnersJson.data || []) as Record<string, unknown>[];
         const fetchedPartners = partnerData.map((p, i) => ({
-          id: i,
+          id: Number(p.id) || i,
           name: String(p.name || p.company_name || `Partner-${i + 1}`),
           x: 12 + (Number(p.longitude) || Math.random() * 76),
           y: 8 + (Number(p.latitude) || Math.random() * 84),
@@ -104,13 +104,13 @@ export default function LiveLogisticsPage() {
         const jobsJson = await jobsRes.json();
         const jobData = (jobsJson.data || []) as Record<string, unknown>[];
         const fetchedJobs = jobData.map((j, i) => ({
-          id: i,
+          id: Number(j.id) || i,
           x: 15 + Math.random() * 70,
           y: 12 + Math.random() * 76,
           targetX: 20 + Math.random() * 60,
           targetY: 15 + Math.random() * 70,
           status: String(j.status || "pickup"),
-          orderId: String(j.id || `ORD-${80000 + i}`),
+          orderId: String(j.order_id || j.id || `ORD-${80000 + i}`),
           partner: String(j.partner_name || j.assigned_partner || "Unassigned"),
         }));
         setJobs(fetchedJobs.length > 0 ? fetchedJobs : [
@@ -139,7 +139,7 @@ export default function LiveLogisticsPage() {
           if (payload.eventType === "INSERT") {
             const p = payload.new as Record<string, unknown>;
             setPartners((prev) => [...prev, {
-              id: prev.length,
+              id: Number(p.id) || Date.now(),
               name: String(p.name || p.company_name || `Partner-${prev.length + 1}`),
               x: 12 + (Number(p.longitude) || Math.random() * 76),
               y: 8 + (Number(p.latitude) || Math.random() * 84),
@@ -149,48 +149,54 @@ export default function LiveLogisticsPage() {
             }]);
           } else if (payload.eventType === "UPDATE") {
             const updated = payload.new as Record<string, unknown>;
+            const updatedId = Number(updated.id);
             setPartners((prev) => prev.map((p) => {
-              const matchIdx = Number(updated.id) === p.id;
-              return matchIdx ? {
+              return p.id === updatedId ? {
                 ...p,
                 name: String(updated.name || updated.company_name || p.name),
+                x: 12 + (Number(updated.longitude) || p.x),
+                y: 8 + (Number(updated.latitude) || p.y),
                 tier: String(updated.tier || p.tier),
                 status: String(updated.status || p.status),
                 orders: Number(updated.total_deliveries || p.orders),
               } : p;
             }));
           } else if (payload.eventType === "DELETE") {
-            setPartners((prev) => prev.filter((p) => p.id !== Number((payload.old as Record<string, unknown>).id)));
+            const deletedId = Number((payload.old as Record<string, unknown>).id);
+            setPartners((prev) => prev.filter((p) => p.id !== deletedId));
           }
         })
         .on("postgres_changes", { event: "*", schema: "public", table: "kv_logistics_jobs" }, (payload) => {
           if (payload.eventType === "INSERT") {
             const j = payload.new as Record<string, unknown>;
             setJobs((prev) => [...prev, {
-              id: prev.length,
+              id: Number(j.id) || Date.now(),
               x: 15 + Math.random() * 70,
               y: 12 + Math.random() * 76,
               targetX: 20 + Math.random() * 60,
               targetY: 15 + Math.random() * 70,
               status: String(j.status || "pickup"),
-              orderId: String(j.id || `ORD-${80000 + prev.length}`),
+              orderId: String(j.order_id || j.id || `ORD-${80000 + prev.length}`),
               partner: String(j.partner_name || j.assigned_partner || "Unassigned"),
             }]);
           } else if (payload.eventType === "UPDATE") {
             const updated = payload.new as Record<string, unknown>;
+            const updatedId = Number(updated.id);
             setJobs((prev) => prev.map((j) => {
-              const matchIdx = Number(updated.id) === j.id;
-              return matchIdx ? {
+              return j.id === updatedId ? {
                 ...j,
                 status: String(updated.status || j.status),
                 partner: String(updated.partner_name || updated.assigned_partner || j.partner),
               } : j;
             }));
+          } else if (payload.eventType === "DELETE") {
+            const deletedId = Number((payload.old as Record<string, unknown>).id);
+            setJobs((prev) => prev.filter((j) => j.id !== deletedId));
           }
         })
         .subscribe();
     } catch {
-      // Realtime not available — continue with polling
+      // Realtime not available — continue with initial data only
     }
 
     return () => {

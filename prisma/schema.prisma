@@ -5725,22 +5725,6 @@ model KspBundleSuggestion {
   @@map("kv_ksp_bundle_suggestions")
 }
 
-model KspFuelPrice {
-  id          String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  countryCode String   @map("country_code") @db.VarChar(10)
-  city        String   @map("city") @db.VarChar(100)
-  fuelType    String   @default("petrol") @map("fuel_type")
-  // petrol | diesel
-  pricePerLitre Decimal @map("price_per_litre") @db.Decimal(10, 2)
-  currencyCode  String  @map("currency_code") @db.VarChar(10)
-  source        String? @map("source") @db.VarChar(100)
-  recordedAt    DateTime @default(now()) @map("recorded_at")
-
-  @@index([countryCode, city], map: "idx_ksp_fuel_location")
-  @@index([recordedAt], map: "idx_ksp_fuel_date")
-  @@map("kv_ksp_fuel_prices")
-}
-
 model KspFuelStation {
   id          String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
   name        String   @map("name") @db.VarChar(200)
@@ -5846,7 +5830,6 @@ model KspFuelPrice {
   updatedAt      DateTime @default(now()) @map("updated_at")
 
   source         KspFuelDataSource? @relation(fields: [sourceId], references: [id])
-  historyRecords KspFuelPriceHistory[]
 
   @@index([countryCode], map: "idx_kv_fuel_prices_country")
   @@index([fuelType], map: "idx_kv_fuel_prices_type")
@@ -5872,7 +5855,6 @@ model KspFuelPriceHistory {
   createdAt      DateTime @default(now()) @map("created_at")
 
   source         KspFuelDataSource? @relation(fields: [sourceId], references: [id])
-  fuelPrice      KspFuelPrice? @relation(fields: [], references: [id])
 
   @@index([countryCode], map: "idx_kv_fuel_price_history_country")
   @@index([fuelType], map: "idx_kv_fuel_price_history_type")
@@ -5998,8 +5980,6 @@ model KspFuelPartnerProfile {
   lastSyncedAt        DateTime? @map("last_synced_at")
   createdAt           DateTime @default(now()) @map("created_at")
   updatedAt           DateTime @default(now()) @map("updated_at")
-
-  preferredSource     KspFuelDataSource? @relation(fields: [preferredSourceId], references: [id])
 
   @@index([partnerId], map: "idx_kv_fuel_partner_profile_partner")
   @@index([countryCode], map: "idx_kv_fuel_partner_profile_country")

@@ -2,7 +2,7 @@
 
 import { createContext, useContext, useState, ReactNode } from "react";
 
-export type TabId = "available" | "active" | "history" | "earnings" | "performance" | "fuel" | "settings";
+export type TabId = "available" | "active" | "history" | "earnings" | "performance" | "fuel" | "fleet" | "delivery-stats" | "settings";
 
 interface DashboardContextValue {
   activeTab: TabId;

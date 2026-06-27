@@ -51,7 +51,7 @@ import {
 } from "lucide-react";
 import { useDashboard } from "./dashboard-context";
 
-type TabId = "available" | "active" | "history" | "earnings" | "performance" | "fuel" | "settings";
+type TabId = "available" | "active" | "history" | "earnings" | "performance" | "fuel" | "fleet" | "delivery-stats" | "settings";
 
 export default function LogisticsDashboard() {
   const { activeTab, setActiveTab } = useDashboard();
@@ -89,6 +89,8 @@ export default function LogisticsDashboard() {
     { id: "earnings" as TabId, label: "Earnings" },
     { id: "performance" as TabId, label: "Performance" },
     { id: "fuel" as TabId, label: "Fuel & Profitability" },
+    { id: "fleet" as TabId, label: "Fleet Management" },
+    { id: "delivery-stats" as TabId, label: "Delivery Stats" },
     { id: "settings" as TabId, label: "Settings" },
   ];
 
@@ -161,6 +163,12 @@ export default function LogisticsDashboard() {
 
       {/* ============ FUEL TAB ============ */}
       {activeTab === "fuel" && <FuelTab />}
+
+      {/* ============ FLEET TAB ============ */}
+      {activeTab === "fleet" && <FleetManagementTab />}
+
+      {/* ============ DELIVERY STATS TAB ============ */}
+      {activeTab === "delivery-stats" && <DeliveryStatsTab />}
 
       {/* ============ SETTINGS TAB ============ */}
       {activeTab === "settings" && <SettingsTab />}
@@ -944,6 +952,282 @@ function FuelTab() {
                 <p className="text-sm font-bold text-text-1">₦{route.payout.toLocaleString()}</p>
                 <p className={`text-[10px] font-medium ${route.profitable ? "text-green-700" : "text-red"}`}>{route.profitable ? "Profitable" : "Unprofitable"}</p>
               </div>
+            </div>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function FleetManagementTab() {
+  const vehicles = [
+    { id: "VH-001", name: "Honda CB500X", type: "Motorcycle", registration: "ABC-123-XY", plate: "LAG-456", capacity: "10 kg", status: "active", fuel: 78, mileage: 34200 },
+    { id: "VH-002", name: "Toyota HiAce", type: "Van", registration: "DEF-789-WZ", plate: "ABJ-789", capacity: "500 kg", status: "active", fuel: 62, mileage: 58100 },
+    { id: "VH-003", name: "Yamaha Tracer 7", type: "Motorcycle", registration: "GHI-012-UV", plate: "PHC-012", capacity: "12 kg", status: "maintenance", fuel: 45, mileage: 28900 },
+    { id: "VH-004", name: "Ford Transit", type: "Truck", registration: "JKL-345-RS", plate: "KAN-345", capacity: "1500 kg", status: "active", fuel: 91, mileage: 72400 },
+    { id: "VH-005", name: "Bajaj Boxer", type: "Motorcycle", registration: "MNO-678-TQ", plate: "IBD-678", capacity: "8 kg", status: "inactive", fuel: 30, mileage: 41200 },
+  ];
+
+  const maintenance = [
+    { vehicle: "Yamaha Tracer 7", task: "Engine Oil Change", due: "2026-07-02", priority: "high" },
+    { vehicle: "Toyota HiAce", task: "Brake Pad Replacement", due: "2026-07-10", priority: "medium" },
+    { vehicle: "Honda CB500X", task: "Chain Lubrication", due: "2026-07-15", priority: "low" },
+    { vehicle: "Ford Transit", task: "Tire Rotation", due: "2026-07-20", priority: "medium" },
+  ];
+
+  const statusStyles: Record<string, string> = {
+    active: "bg-green-100 text-green-700",
+    maintenance: "bg-amber-100 text-amber-700",
+    inactive: "bg-gray-100 text-text-4",
+  };
+
+  const priorityStyles: Record<string, string> = {
+    high: "bg-red-100 text-red",
+    medium: "bg-amber-100 text-amber-700",
+    low: "bg-blue-100 text-blue",
+  };
+
+  return (
+    <div className="space-y-4">
+      <div className="grid grid-cols-3 gap-3">
+        <div className="bg-white rounded-xl border border-border p-4 text-center">
+          <p className="text-3xl font-bold text-text-1">5</p>
+          <p className="text-xs text-text-4 mt-1">Total Vehicles</p>
+        </div>
+        <div className="bg-white rounded-xl border border-border p-4 text-center">
+          <p className="text-3xl font-bold text-green-700">188,800</p>
+          <p className="text-xs text-text-4 mt-1">Total km Driven</p>
+        </div>
+        <div className="bg-white rounded-xl border border-border p-4 text-center">
+          <p className="text-3xl font-bold text-orange">82%</p>
+          <p className="text-xs text-text-4 mt-1">Utilization Rate</p>
+        </div>
+      </div>
+
+      <div className="flex items-center justify-between">
+        <h3 className="font-bold text-sm text-text-1">Fleet Vehicles</h3>
+        <button className="flex items-center gap-1.5 px-4 py-2 bg-orange text-white text-xs font-bold rounded-lg hover:bg-orange/90 transition-colors">
+          <Truck className="w-3.5 h-3.5" /> Add Vehicle
+        </button>
+      </div>
+
+      <div className="space-y-3">
+        {vehicles.map(v => (
+          <div key={v.id} className="bg-white rounded-xl border border-border p-4">
+            <div className="flex items-start justify-between mb-3">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-xl bg-navy/10 flex items-center justify-center">
+                  <Truck className="w-5 h-5 text-navy" />
+                </div>
+                <div>
+                  <p className="text-sm font-bold text-text-1">{v.name}</p>
+                  <p className="text-[10px] text-text-4">{v.id} · {v.type}</p>
+                </div>
+              </div>
+              <span className={`text-[10px] px-2 py-0.5 rounded-full font-medium ${statusStyles[v.status]}`}>{v.status}</span>
+            </div>
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-3">
+              <div>
+                <p className="text-[10px] text-text-4">Registration</p>
+                <p className="text-xs font-medium text-text-1">{v.registration}</p>
+              </div>
+              <div>
+                <p className="text-[10px] text-text-4">Plate</p>
+                <p className="text-xs font-medium text-text-1">{v.plate}</p>
+              </div>
+              <div>
+                <p className="text-[10px] text-text-4">Capacity</p>
+                <p className="text-xs font-medium text-text-1">{v.capacity}</p>
+              </div>
+              <div>
+                <p className="text-[10px] text-text-4">Mileage</p>
+                <p className="text-xs font-medium text-text-1">{v.mileage.toLocaleString()} km</p>
+              </div>
+            </div>
+            <div>
+              <div className="flex items-center justify-between text-[10px] mb-1">
+                <span className="text-text-4">Fuel Level</span>
+                <span className={`font-medium ${v.fuel > 50 ? "text-green-700" : v.fuel > 25 ? "text-amber-600" : "text-red"}`}>{v.fuel}%</span>
+              </div>
+              <div className="h-1.5 bg-gray-100 rounded-full overflow-hidden">
+                <div className="h-full rounded-full transition-all" style={{ width: `${v.fuel}%`, backgroundColor: v.fuel > 50 ? "#16a34a" : v.fuel > 25 ? "#d97706" : "#dc2626" }} />
+              </div>
+            </div>
+          </div>
+        ))}
+      </div>
+
+      <div className="bg-white rounded-xl border border-border">
+        <div className="p-4 border-b border-border">
+          <h3 className="font-bold text-sm text-text-1">Maintenance Schedule</h3>
+        </div>
+        <div className="divide-y divide-border">
+          {maintenance.map((m, i) => (
+            <div key={i} className="px-4 py-3 flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <div className="w-8 h-8 rounded-lg bg-orange/10 flex items-center justify-center">
+                  <Calendar className="w-4 h-4 text-orange" />
+                </div>
+                <div>
+                  <p className="text-xs font-bold text-text-1">{m.task}</p>
+                  <p className="text-[10px] text-text-4">{m.vehicle} · Due {m.due}</p>
+                </div>
+              </div>
+              <span className={`text-[10px] px-2 py-0.5 rounded-full font-medium ${priorityStyles[m.priority]}`}>{m.priority}</span>
+            </div>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function DeliveryStatsTab() {
+  const summary = {
+    totalDeliveries: 1247,
+    onTimeRate: 94.2,
+    avgTime: 38,
+    rating: 4.9,
+  };
+
+  const weeklyData = [
+    { day: "Mon", count: 42 },
+    { day: "Tue", count: 56 },
+    { day: "Wed", count: 48 },
+    { day: "Thu", count: 63 },
+    { day: "Fri", count: 71 },
+    { day: "Sat", count: 58 },
+    { day: "Sun", count: 35 },
+  ];
+
+  const maxCount = Math.max(...weeklyData.map(d => d.count));
+
+  const statusBreakdown = [
+    { label: "Delivered", count: 1102, pct: 88.4, color: "bg-green-500" },
+    { label: "In Transit", count: 89, pct: 7.1, color: "bg-blue" },
+    { label: "Failed", count: 34, pct: 2.7, color: "bg-red" },
+    { label: "Returned", count: 22, pct: 1.8, color: "bg-amber-500" },
+  ];
+
+  const routes = [
+    { route: "Ikeja → VI", deliveries: 186, onTime: 96, avgTime: 32 },
+    { route: "Marina → Lekki", deliveries: 142, onTime: 93, avgTime: 41 },
+    { route: "Surulere → Yaba", deliveries: 128, onTime: 97, avgTime: 25 },
+    { route: "VI → Ajah", deliveries: 98, onTime: 89, avgTime: 52 },
+    { route: "Ikorodu → mainland", deliveries: 87, onTime: 91, avgTime: 45 },
+  ];
+
+  const hourlyData = [
+    { hour: "6AM", vol: 12 }, { hour: "7AM", vol: 28 }, { hour: "8AM", vol: 45 },
+    { hour: "9AM", vol: 62 }, { hour: "10AM", vol: 78 }, { hour: "11AM", vol: 85 },
+    { hour: "12PM", vol: 70 }, { hour: "1PM", vol: 55 }, { hour: "2PM", vol: 48 },
+    { hour: "3PM", vol: 52 }, { hour: "4PM", vol: 68 }, { hour: "5PM", vol: 74 },
+    { hour: "6PM", vol: 58 }, { hour: "7PM", vol: 35 }, { hour: "8PM", vol: 18 },
+  ];
+
+  const maxVol = Math.max(...hourlyData.map(h => h.vol));
+
+  return (
+    <div className="space-y-4">
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+        <div className="bg-white rounded-xl border border-border p-4 text-center">
+          <div className="w-8 h-8 rounded-lg bg-navy/10 flex items-center justify-center mx-auto mb-2">
+            <Package className="w-4 h-4 text-navy" />
+          </div>
+          <p className="text-2xl font-bold text-text-1">{summary.totalDeliveries.toLocaleString()}</p>
+          <p className="text-[10px] text-text-4">Total Deliveries</p>
+        </div>
+        <div className="bg-white rounded-xl border border-border p-4 text-center">
+          <div className="w-8 h-8 rounded-lg bg-green-100 flex items-center justify-center mx-auto mb-2">
+            <CheckCircle className="w-4 h-4 text-green-700" />
+          </div>
+          <p className="text-2xl font-bold text-green-700">{summary.onTimeRate}%</p>
+          <p className="text-[10px] text-text-4">On-Time Rate</p>
+        </div>
+        <div className="bg-white rounded-xl border border-border p-4 text-center">
+          <div className="w-8 h-8 rounded-lg bg-orange/10 flex items-center justify-center mx-auto mb-2">
+            <Clock className="w-4 h-4 text-orange" />
+          </div>
+          <p className="text-2xl font-bold text-orange">{summary.avgTime} min</p>
+          <p className="text-[10px] text-text-4">Avg Delivery Time</p>
+        </div>
+        <div className="bg-white rounded-xl border border-border p-4 text-center">
+          <div className="w-8 h-8 rounded-lg bg-amber-100 flex items-center justify-center mx-auto mb-2">
+            <Star className="w-4 h-4 text-amber-500 fill-amber-400" />
+          </div>
+          <p className="text-2xl font-bold text-amber-500">{summary.rating}</p>
+          <p className="text-[10px] text-text-4">Customer Rating</p>
+        </div>
+      </div>
+
+      <div className="bg-white rounded-xl border border-border p-5">
+        <h3 className="font-bold text-sm text-text-1 mb-4">Weekly Deliveries</h3>
+        <div className="flex items-end gap-2 h-40">
+          {weeklyData.map(d => (
+            <div key={d.day} className="flex-1 flex flex-col items-center gap-1">
+              <span className="text-[10px] font-medium text-text-1">{d.count}</span>
+              <div className="w-full rounded-t-md transition-all" style={{ height: `${(d.count / maxCount) * 100}%`, backgroundColor: d.day === "Fri" ? "#FF6B00" : "#0A1628" }} />
+              <span className="text-[10px] text-text-4">{d.day}</span>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      <div className="bg-white rounded-xl border border-border p-5">
+        <h3 className="font-bold text-sm text-text-1 mb-4">Delivery by Status</h3>
+        <div className="space-y-3">
+          {statusBreakdown.map(s => (
+            <div key={s.label}>
+              <div className="flex items-center justify-between text-xs mb-1">
+                <span className="text-text-3 font-medium">{s.label}</span>
+                <span className="text-text-4">{s.count} ({s.pct}%)</span>
+              </div>
+              <div className="h-2 bg-gray-100 rounded-full overflow-hidden">
+                <div className={`h-full rounded-full ${s.color}`} style={{ width: `${s.pct}%` }} />
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      <div className="bg-white rounded-xl border border-border overflow-hidden">
+        <div className="p-4 border-b border-border">
+          <h3 className="font-bold text-sm text-text-1">Route Performance</h3>
+        </div>
+        <div className="overflow-x-auto">
+          <table className="w-full text-sm">
+            <thead>
+              <tr className="border-b border-border bg-gray-50">
+                <th className="text-left px-4 py-3 text-xs text-text-4 font-medium">Route</th>
+                <th className="text-center px-4 py-3 text-xs text-text-4 font-medium">Deliveries</th>
+                <th className="text-center px-4 py-3 text-xs text-text-4 font-medium">On-Time %</th>
+                <th className="text-center px-4 py-3 text-xs text-text-4 font-medium">Avg Time</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-border">
+              {routes.map((r, i) => (
+                <tr key={i}>
+                  <td className="px-4 py-3 text-xs font-medium text-text-1">{r.route}</td>
+                  <td className="text-center px-4 py-3 text-xs text-text-2">{r.deliveries}</td>
+                  <td className="text-center px-4 py-3">
+                    <span className={`text-xs font-medium ${r.onTime >= 95 ? "text-green-700" : r.onTime >= 90 ? "text-amber-600" : "text-red"}`}>{r.onTime}%</span>
+                  </td>
+                  <td className="text-center px-4 py-3 text-xs text-text-2">{r.avgTime} min</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <div className="bg-white rounded-xl border border-border p-5">
+        <h3 className="font-bold text-sm text-text-1 mb-4">Delivery Volume by Hour</h3>
+        <div className="flex items-end gap-1 h-32">
+          {hourlyData.map(h => (
+            <div key={h.hour} className="flex-1 flex flex-col items-center gap-1">
+              <div className="w-full rounded-t-md transition-all" style={{ height: `${(h.vol / maxVol) * 100}%`, backgroundColor: h.vol > 70 ? "#FF6B00" : h.vol > 40 ? "#0A1628" : "#94a3b8" }} />
+              <span className="text-[8px] text-text-4">{h.hour}</span>
             </div>
           ))}
         </div>

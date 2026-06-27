@@ -1,4 +1,3 @@
-import crypto from "crypto";
 import { type ClassValue, clsx } from "clsx";
 import { twMerge } from "tailwind-merge";
 
@@ -37,15 +36,16 @@ export function truncate(str: string, length: number): string {
   return str.slice(0, length) + "...";
 }
 
-const UUID_NAMESPACE = "6ba7b810-9dad-11d1-80b4-00c04fd430c8"; // DNS namespace
-
 export function demoToUuid(id: string): string {
   if (!id.startsWith("demo-")) return id;
-  const hash = crypto.createHash("sha1").update(UUID_NAMESPACE + id).digest("hex");
-  return [
-    hash.slice(0, 8), hash.slice(8, 12), hash.slice(12, 16),
-    hash.slice(16, 20), hash.slice(20, 32),
-  ].join("-");
+  let hash = 0;
+  const input = "6ba7b810-9dad-11d1-80b4-00c04fd430c8" + id;
+  for (let i = 0; i < input.length; i++) {
+    const char = input.charCodeAt(i);
+    hash = ((hash << 5) - hash + char) | 0;
+  }
+  const hex = Math.abs(hash).toString(16).padStart(8, "0");
+  return `${hex}-0000-4000-8000-${hex.slice(0, 12).padStart(12, "0")}`;
 }
 
 export function generateSKU(category: string, id: number): string {

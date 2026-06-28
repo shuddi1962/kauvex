@@ -68,9 +68,9 @@ export default function ImportPage() {
             </p>
           </div>
         </div>
-        <button className="bg-blue-600 hover:bg-blue-700 text-white font-semibold px-5 py-2.5 rounded-lg text-sm transition-colors">
+        <a href="/account/virtual-address" className="bg-blue-600 hover:bg-blue-700 text-white font-semibold px-5 py-2.5 rounded-lg text-sm transition-colors inline-block">
           Get My Virtual Address
-        </button>
+        </a>
       </section>
 
       {/* Origin Countries */}

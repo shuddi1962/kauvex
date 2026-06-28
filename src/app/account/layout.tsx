@@ -32,6 +32,7 @@ const sidebarLinks = [
   { label: "Loyalty & Rewards", href: "/account/loyalty", icon: Trophy },
   { label: "Referrals", href: "/account/referrals", icon: Users },
   { label: "Addresses", href: "/account/addresses", icon: MapPin },
+  { label: "Virtual Addresses", href: "/account/virtual-address", icon: MapPin },
   { label: "Returns & RMA", href: "/account/returns", icon: RotateCcw },
   { label: "Notifications", href: "/account/notifications", icon: Bell },
   { label: "Security", href: "/account/security", icon: ShieldCheck },

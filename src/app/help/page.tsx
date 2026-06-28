@@ -45,7 +45,7 @@ const helpContent: Record<string, { title: string; articles: { q: string; a: str
       { q: "How do I track my order?", a: "Go to Track Order in the header or visit /track-order. Enter your order ID (found in your confirmation email) to see real-time status." },
       { q: "What shipping methods are available?", a: "Standard (3-5 days), Express (1-2 days), and Store Pickup. Methods vary by location and product type." },
       { q: "Can I change my delivery address after ordering?", a: "Contact support within 1 hour of placing your order. Once the order is packed or dispatched, the address cannot be changed." },
-      { q: "What carriers do you use?", a: "GIG Logistics, DHL, FedEx, and Aramex for reliable delivery across Nigeria and internationally." },
+      { q: "What carriers do you use?", a: "GIG Logistics, Kwik Delivery, DHL, FedEx, and Aramex for reliable delivery across Nigeria and internationally." },
     ],
   },
   returns: {

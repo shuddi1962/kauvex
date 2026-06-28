@@ -18,7 +18,7 @@ export default function TrackOrderPage() {
     setError("");
 
     const isWaybill = /^KEX-\d{4}-\d{7}$/.test(trimmed);
-    const isOrderId = /^RSH-\d{4}-\d{6}$/.test(trimmed);
+    const isOrderId = /^KVX-\d{4}-\d{6}$/.test(trimmed);
 
     if (isWaybill) {
       router.push(`/express/track/${encodeURIComponent(trimmed)}`);
@@ -28,7 +28,7 @@ export default function TrackOrderPage() {
     } else if (/^\d+$/.test(trimmed)) {
       router.push(`/express/track/KEX-2026-${trimmed.padStart(7, "0")}`);
     } else {
-      setError("Enter a valid Kauvex order ID (e.g., RSH-2026-001234) or Express waybill (e.g., KEX-2026-0084729).");
+      setError("Enter a valid Kauvex order ID (e.g., KVX-2026-001234) or Express waybill (e.g., KEX-2026-0084729).");
     }
   };
 
@@ -59,7 +59,7 @@ export default function TrackOrderPage() {
                 type="text"
                 value={query}
                 onChange={(e) => { setQuery(e.target.value); setError(""); }}
-                placeholder="Order ID (RSH-...) or Waybill (KEX-...)"
+                placeholder="Order ID (KVX-...) or Waybill (KEX-...)"
                 className={`w-full pl-10 pr-4 py-3 border ${error ? "border-red-300" : "border-border"} rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-orange/20 focus:border-orange font-mono`}
               />
             </div>

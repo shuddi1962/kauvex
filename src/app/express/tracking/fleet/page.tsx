@@ -246,11 +246,11 @@ export default function FleetTrackingPage() {
 
             <select value={carrierFilter} onChange={(e) => setCarrierFilter(e.target.value)} className="px-3 py-2 border border-gray-200 rounded-lg text-sm text-gray-600 focus:outline-none focus:ring-2 focus:ring-[#FF6B00]/30 bg-white">
               <option value="">All Carriers</option>
-              <option value="GIG">GIG Logistics</option>
+              <option value="gig">GIG Logistics</option>
               <option value="FedEx">FedEx</option>
               <option value="DHL">DHL</option>
               <option value="Aramex">Aramex</option>
-              <option value="Kwik">Kwik Delivery</option>
+              <option value="kwik">Kwik Delivery</option>
               <option value="Local">Local Partner</option>
             </select>
 

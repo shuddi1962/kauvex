@@ -64,20 +64,39 @@ const NAV_SECTIONS = [
   {
     label: "MAIN",
     items: [
-      { icon: LayoutDashboard, label: "Dashboard", href: "/express/dashboard/overview" },
-      { icon: DollarSign, label: "Get a Quote", href: "/express/quote-calculator" },
+      { icon: BarChart3, label: "Analytics", href: "/express/dashboard/overview" },
+      { icon: DollarSign, label: "Get a Quote", href: "/express/book" },
       { icon: PackageCheck, label: "Shipments", href: "/express/history", badge: "active" },
       { icon: Search, label: "Tracking", href: "/express/track" },
-      { icon: MapPin, label: "Lockers", href: "/express/lockers/map" },
+      { icon: MapPin, label: "Pickups", href: "/express/pickups" },
     ],
   },
   {
-    label: "SHIP",
+    label: "SERVICES",
     items: [
-      { icon: Send, label: "Quick Ship", href: "/express/dashboard/ship" },
-      { icon: Upload, label: "Bulk Upload", href: "/express/dashboard/bulk-upload" },
-      { icon: Repeat, label: "Recurring Shipments", href: "/express/dashboard/recurring" },
-      { icon: FileText, label: "Saved Templates", href: "/express/dashboard/templates" },
+      { icon: Globe, label: "Domestic Shipping", href: "/express/coverage" },
+      { icon: Globe, label: "International", href: "/express/coverage#international" },
+      { icon: Layers, label: "Logistics Services", href: "/express/services" },
+      { icon: Briefcase, label: "Express & Business", href: "/express/corporate" },
+      { icon: Shield, label: "Insurance", href: "/express/insurance" },
+    ],
+  },
+  {
+    label: "PLATFORM",
+    items: [
+      { icon: Plug, label: "Integrations", href: "/express/integrations" },
+      { icon: Truck, label: "Couriers", href: "/express/multi-carrier" },
+      { icon: Key, label: "API & Webhooks", href: "/express/api-keys" },
+      { icon: Zap, label: "Automation", href: "/express/automation" },
+      { icon: Map, label: "Tracking Page", href: "/express/branding" },
+    ],
+  },
+  {
+    label: "INVENTORY",
+    items: [
+      { icon: Package, label: "Boxes", href: "/express/boxes" },
+      { icon: PackageCheck, label: "Products", href: "/express/products" },
+      { icon: FileText, label: "Packing", href: "/express/packing" },
     ],
   },
   {
@@ -93,32 +112,22 @@ const NAV_SECTIONS = [
     ],
   },
   {
-    label: "SERVICES",
+    label: "SHIP",
     items: [
-      { icon: Globe, label: "Domestic Shipping", href: "/express/coverage" },
-      { icon: Globe, label: "International", href: "/express/coverage" },
-      { icon: Briefcase, label: "Corporate & B2B", href: "/express/corporate" },
-      { icon: Shield, label: "Insurance", href: "/express/claims" },
-    ],
-  },
-  {
-    label: "PLATFORM",
-    items: [
-      { icon: Plug, label: "Integrations", href: "/express/integrations" },
-      { icon: Truck, label: "Couriers", href: "/express/multi-carrier" },
-      { icon: Key, label: "API & Webhooks", href: "/express/api-keys" },
-      { icon: Map, label: "Branded Tracking", href: "/express/branding" },
+      { icon: Send, label: "Quick Ship", href: "/express/dashboard/ship" },
+      { icon: Upload, label: "Bulk Upload", href: "/express/dashboard/bulk-upload" },
+      { icon: Repeat, label: "Recurring Shipments", href: "/express/dashboard/recurring" },
+      { icon: FileText, label: "Saved Templates", href: "/express/dashboard/templates" },
     ],
   },
   {
     label: "ACCOUNT",
     items: [
+      { icon: Settings, label: "Settings", href: "/express/settings" },
+      { icon: CreditCard, label: "Subscription", href: "/express/subscription" },
       { icon: CircleUser, label: "Profile", href: "/express/settings/profile" },
-      { icon: Users, label: "Team Members", href: "/express/team" },
-      { icon: CreditCard, label: "Payment Methods", href: "/express/settings/payments" },
+      { icon: Users, label: "Team", href: "/express/team" },
       { icon: Receipt, label: "Billing", href: "/express/billing" },
-      { icon: Bell, label: "Notifications", href: "/express/settings/notifications" },
-      { icon: Shield, label: "Security", href: "/express/settings/security" },
     ],
   },
 ];

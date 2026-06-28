@@ -62,7 +62,6 @@ const costByCarrier: CostByCarrier[] = [
   { carrier: "FedEx", total: "₦156,000", avgPerShipment: "₦5,200", shipments: 30 },
   { carrier: "Aramex", total: "₦89,000", avgPerShipment: "₦3,560", shipments: 25 },
   { carrier: "GIG Logistics", total: "₦45,000", avgPerShipment: "₦1,800", shipments: 25 },
-  { carrier: "Kwik", total: "₦32,000", avgPerShipment: "₦1,600", shipments: 20 },
 ];
 
 const costByZone: CostByZone[] = [

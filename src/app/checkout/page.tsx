@@ -604,7 +604,7 @@ export default function CheckoutPage() {
                 </div>
                 <h2 className="font-syne font-bold text-2xl text-text-1 mb-2">Order Placed!</h2>
                 <p className="text-sm text-text-3 mb-1">Thank you for your purchase.</p>
-                <p className="text-xs text-text-4 mb-6">Order #RSH-2026-{Math.floor(Math.random() * 90000 + 10000)}</p>
+                <p className="text-xs text-text-4 mb-6">Order #KVX-2026-{Math.floor(Math.random() * 90000 + 10000)}</p>
 
                 <div className="bg-off-white rounded-xl p-4 mb-6 text-left max-w-md mx-auto">
                   <p className="text-xs text-text-3">Confirmation email sent to <strong>{delivery.email || "your email"}</strong></p>

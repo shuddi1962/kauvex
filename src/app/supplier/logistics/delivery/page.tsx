@@ -4,7 +4,7 @@ import { useState } from "react";
 import { Truck, MapPin, Clock, CheckCircle, ShieldAlert, XCircle, AlertTriangle, Bike, Package2 } from "lucide-react";
 
 type DeliveryStatus = "pending" | "in-transit" | "delivered" | "issue";
-type DeliveryMethod = "own-rider" | "gig" | "kwik" | "kauvex-logistics";
+type DeliveryMethod = "own-rider" | "kauvex-logistics" | "kauvex-go";
 
 interface Delivery {
   id: string;
@@ -78,9 +78,8 @@ export default function SupplierDeliveryPage() {
   const deliveryMethodLabel = (m: DeliveryMethod) => {
     const labels: Record<DeliveryMethod, string> = {
       "own-rider": "Own Rider",
-      gig: "GIG Logistics",
-      kwik: "Kwik Delivery",
-      "kauvex-logistics": "Kauvex Logistics Network",
+      "kauvex-logistics": "Kauvex Logistics",
+      "kauvex-go": "Kauvex Go",
     };
     return labels[m];
   };
@@ -123,34 +122,33 @@ export default function SupplierDeliveryPage() {
         <div className="bg-white rounded-xl border border-gray-200 p-4">
           <h3 className="font-semibold text-[#0A1628] mb-4">Delivery Method Settings</h3>
           <div className="space-y-3">
-            {(["own-rider", "gig", "kwik", "kauvex-logistics"] as DeliveryMethod[]).map(m => (
+            {(["own-rider", "kauvex-logistics", "kauvex-go"] as DeliveryMethod[]).map(m => (
               <label key={m} className="flex items-center gap-3 p-3 rounded-lg border border-gray-200 cursor-pointer hover:border-[#FF6B00] transition-all">
                 <input type="radio" name="delivery-method" value={m} checked={method === m} onChange={() => setMethod(m)}
                   className="accent-[#FF6B00]" />
                 <div className="flex items-center gap-2 flex-1">
                   {m === "own-rider" && <Bike size={18} className="text-gray-500" />}
-                  {m === "gig" && <Truck size={18} className="text-blue-500" />}
-                  {m === "kwik" && <Truck size={18} className="text-orange-500" />}
-                  {m === "kauvex-logistics" && <Package2 size={18} className="text-[#FF6B00]" />}
+                  {m === "kauvex-logistics" && <Truck size={18} className="text-blue-500" />}
+                  {m === "kauvex-go" && <Truck size={18} className="text-orange-500" />}
                   <span className="font-medium text-[#0A1628]">{deliveryMethodLabel(m)}</span>
                 </div>
                 {method === m && <span className="text-xs text-[#FF6B00] font-medium">Active</span>}
               </label>
             ))}
           </div>
-          {method === "gig" && (
+          {method === "kauvex-logistics" && (
             <div className="mt-3 pl-10">
               <label className="flex items-center gap-2 text-sm text-gray-600">
                 <input type="checkbox" checked={gigPartner} onChange={() => setGigPartner(!gigPartner)} className="accent-[#FF6B00]" />
-                I have an active GIG Logistics partner account
+                I have an active Kauvex Logistics partner account
               </label>
             </div>
           )}
-          {method === "kwik" && (
+          {method === "kauvex-go" && (
             <div className="mt-3 pl-10">
               <label className="flex items-center gap-2 text-sm text-gray-600">
                 <input type="checkbox" checked={kwikPartner} onChange={() => setKwikPartner(!kwikPartner)} className="accent-[#FF6B00]" />
-                I have an active Kwik Delivery partner account
+                I have an active Kauvex Go partner account
               </label>
             </div>
           )}

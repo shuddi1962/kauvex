@@ -51,7 +51,7 @@ function getDefaultConfig() {
     tier1RadiusPerCountry: { NG: 60, GH: 50, KE: 50, ZA: 80, US: 40, GB: 50 },
     surgeEnabled: false,
     surgeMultiplier: 1.5,
-    fallbackCarrierOrder: ["gig", "kwik", "dhl", "fedex"],
+    fallbackCarrierOrder: ["gig-logistics", "kwik-delivery", "dhl", "fedex"],
     autoDispatchEnabled: true,
     partnerFallbackAttempts: 3,
   };

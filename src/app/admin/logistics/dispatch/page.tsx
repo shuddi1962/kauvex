@@ -549,7 +549,7 @@ export default function AdminDispatchPage() {
                       <Truck className="w-6 h-6 text-yellow-600" />
                     </div>
                     <p className="font-bold text-yellow-700 text-sm">Local Carrier</p>
-                    <p className="text-[10px] text-yellow-600 mt-1">GIG / Kwik / etc.</p>
+                    <p className="text-[10px] text-yellow-600 mt-1">GIG Logistics / Kwik Delivery / etc.</p>
                     <p className="text-lg font-bold text-yellow-700 mt-2">2 carriers</p>
                     <p className="text-[10px] text-yellow-600">API integration</p>
                   </div>

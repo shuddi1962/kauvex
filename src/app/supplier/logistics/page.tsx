@@ -197,7 +197,7 @@ export default function SupplierLogisticsPage() {
 
             <div className="bg-white rounded-xl border border-gray-200 p-4">
               <h3 className="font-semibold text-[#0A1628] mb-3">Delivery Method</h3>
-              <p className="text-sm text-gray-600 mb-2">Current method: <span className="font-medium text-[#0A1628]">Own Rider + GIG</span></p>
+              <p className="text-sm text-gray-600 mb-2">Current method: <span className="font-medium text-[#0A1628]">Own Rider + GIG Logistics</span></p>
               <Link href="/supplier/logistics/delivery" className="text-sm text-[#FF6B00] hover:underline">Change Settings →</Link>
             </div>
           </div>

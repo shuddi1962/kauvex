@@ -57,7 +57,7 @@ export default function OrdersPage() {
         })));
       } catch {
         setOrders([
-          { id: "RSH-2026-001234", date: "Apr 2, 2026", status: "in-transit", items: [{ name: "Hikvision 4MP IP Dome Camera", qty: 2, price: 72500 }], total: 145000 },
+          { id: "KVX-2026-001234", date: "Apr 2, 2026", status: "in-transit", items: [{ name: "Hikvision 4MP IP Dome Camera", qty: 2, price: 72500 }], total: 145000 },
         ]);
       } finally {
         setLoading(false);

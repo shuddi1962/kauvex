@@ -49,6 +49,11 @@ import {
   History,
   Fuel,
   Truck,
+  Mail,
+  BookOpen,
+  Printer,
+  LogOut,
+  HelpCircle,
 } from "lucide-react";
 
 const TIER_BADGES: Record<string, { label: string; color: string }> = {
@@ -85,9 +90,11 @@ const NAV_SECTIONS = [
     label: "PLATFORM",
     items: [
       { icon: Plug, label: "Integrations", href: "/express/integrations" },
+      { icon: Globe, label: "Platforms", href: "/express/platforms" },
       { icon: Truck, label: "Couriers", href: "/express/multi-carrier" },
       { icon: Key, label: "API & Webhooks", href: "/express/api-keys" },
       { icon: Zap, label: "Automation", href: "/express/automation" },
+      { icon: Mail, label: "Tracking Emails", href: "/express/tracking-emails" },
       { icon: Map, label: "Tracking Page", href: "/express/branding" },
     ],
   },
@@ -96,7 +103,9 @@ const NAV_SECTIONS = [
     items: [
       { icon: Package, label: "Boxes", href: "/express/boxes" },
       { icon: PackageCheck, label: "Products", href: "/express/products" },
+      { icon: BookOpen, label: "Shipping Rules", href: "/express/shipping-rules" },
       { icon: FileText, label: "Packing", href: "/express/packing" },
+      { icon: Printer, label: "Printing", href: "/express/printing" },
     ],
   },
   {
@@ -123,11 +132,18 @@ const NAV_SECTIONS = [
   {
     label: "ACCOUNT",
     items: [
+      { icon: CircleUser, label: "Account", href: "/express/account" },
+      { icon: Bell, label: "Notifications", href: "/express/notifications" },
       { icon: Settings, label: "Settings", href: "/express/settings" },
-      { icon: CreditCard, label: "Subscription", href: "/express/subscription" },
+      { icon: Building2, label: "Company", href: "/express/settings/company" },
+      { icon: MapPinned, label: "Addresses", href: "/express/addresses" },
       { icon: CircleUser, label: "Profile", href: "/express/settings/profile" },
       { icon: Users, label: "Team", href: "/express/team" },
+      { icon: CreditCard, label: "Payment Methods", href: "/express/payment-methods" },
       { icon: Receipt, label: "Billing", href: "/express/billing" },
+      { icon: CreditCard, label: "Subscription", href: "/express/subscription" },
+      { icon: LogOut, label: "Logout", href: "/auth/logout" },
+      { icon: HelpCircle, label: "Help", href: "/express/help" },
     ],
   },
 ];

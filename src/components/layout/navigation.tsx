@@ -198,6 +198,9 @@ const mainNav = [
     children: [
       { label: "Sell on KAUVEX", href: "/sell" },
       { label: "Vendor Dashboard", href: "/vendor/dashboard" },
+      { label: "B2B / Wholesale", href: "/wholesale" },
+      { label: "Manufacturer Portal", href: "/manufacturers" },
+      { label: "Find Manufacturers", href: "/manufacturers/search" },
       { label: "Become a Partner", href: "/sell/partners" },
     ],
   },

@@ -19,6 +19,8 @@ const sellLinks = [
   { label: "Vendor Dashboard", url: "/vendor/dashboard" },
   { label: "Supplier Portal", url: "/supplier/register" },
   { label: "B2B/Wholesale", url: "/wholesale" },
+  { label: "Manufacturer Portal", url: "/manufacturers" },
+  { label: "Find Manufacturers", url: "/manufacturers/search" },
   { label: "Advertising", url: "/advertise" },
   { label: "Seller Resources", url: "/help" },
 ];

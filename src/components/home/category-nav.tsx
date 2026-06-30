@@ -13,6 +13,7 @@ const quickLinks = [
   { label: "Top Sellers", href: "/shop?sort=bestselling" },
   { label: "Brands", href: "/brands" },
   { label: "B2B/Wholesale", href: "/wholesale" },
+  { label: "Manufacturers", href: "/manufacturers/search" },
   { label: "Gift Cards", href: "/shop" },
   { label: "Today's Deals", href: "/deals" },
   { label: "Clearance", href: "/deals" },

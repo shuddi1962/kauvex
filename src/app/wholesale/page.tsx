@@ -30,8 +30,13 @@ export default function WholesalePage() {
               Serving businesses, resellers, and project contractors across Nigeria and beyond.
             </p>
             <div className="flex flex-wrap gap-3">
-              <Link href="/auth/register">
+              <Link href="/wholesale/register">
                 <Button variant="cta" size="lg">Apply for B2B Account <ArrowRight className="w-4 h-4 ml-1" /></Button>
+              </Link>
+              <Link href="/wholesale/login">
+                <Button variant="outline" size="lg" className="border-white/30 text-white hover:bg-white/10">
+                  Wholesale Sign In
+                </Button>
               </Link>
               <Link href="/quote">
                 <Button variant="outline" size="lg" className="border-white/30 text-white hover:bg-white/10">
@@ -100,10 +105,10 @@ export default function WholesalePage() {
           <h2 className="font-syne font-800 text-3xl text-text-1 mb-10 text-center">How to Get Started</h2>
           <div className="grid sm:grid-cols-4 gap-8 max-w-4xl mx-auto">
             {[
-              { step: "01", title: "Apply", desc: "Fill out the B2B application form with your business details" },
+              { step: "01", title: "Apply", desc: "Fill out the B2B application form with your business details", href: "/wholesale/register" },
               { step: "02", title: "Review", desc: "Our team reviews your application within 24-48 hours" },
               { step: "03", title: "Approval", desc: "Get approved and access wholesale pricing instantly" },
-              { step: "04", title: "Order", desc: "Place bulk orders with wholesale pricing and NET terms" },
+              { step: "04", title: "Order", desc: "Place bulk orders with wholesale pricing and NET terms", href: "/wholesale/dashboard" },
             ].map((item) => (
               <div key={item.step} className="text-center">
                 <div className="w-12 h-12 rounded-full bg-blue-50 flex items-center justify-center mx-auto mb-4">
@@ -123,8 +128,13 @@ export default function WholesalePage() {
           <h2 className="font-syne font-800 text-3xl mb-4">Ready for Wholesale Pricing?</h2>
           <p className="text-blue-200 mb-8">Apply today and start saving on bulk orders</p>
           <div className="flex flex-wrap justify-center gap-3">
-            <Link href="/auth/register">
+            <Link href="/wholesale/register">
               <Button variant="cta" size="lg">Apply Now</Button>
+            </Link>
+            <Link href="/wholesale/login">
+              <Button variant="outline" size="lg" className="border-white/30 text-white hover:bg-white/10">
+                Wholesale Sign In
+              </Button>
             </Link>
             <Link href="/contact">
               <Button variant="outline" size="lg" className="border-white/30 text-white hover:bg-white/10">

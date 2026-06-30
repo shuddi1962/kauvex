@@ -143,6 +143,12 @@ alwaysApply: true
 - /app/api/v1/cron/float-track/ — Float tracking cron job
 - /supabase/migrations/00018_kcc_phase18_kauvex_pay.sql — KV Pay database migration
 - /supabase/migrations/00023_kcc_phase23_logistics_upgrade.sql — Phase 23 logistics upgrade (14 new tables, 15 carrier seeds)
+- /lib/manufacturers/ — Manufacturer portal engine (registration.ts, verification.ts, categories.ts, inquiries.ts, production.ts, escrow.ts, disputes.ts, samples.ts, hubs.ts)
+- /app/manufacturers/ — Manufacturer portal (landing, register, search, dashboard, quotes, request-quote, landed-cost, [slug] profile)
+- /app/manufacturers/dashboard/ — Dashboard pages (overview, storefront, inquiries, quotes, orders, samples, production, escrow, reviews, analytics, settings)
+- /app/admin/manufacturers/ — Admin manufacturer management (directory, hubs, disputes)
+- /app/api/v1/manufacturers/ — Manufacturer API routes (registration, slug, stats, inquiries, quotes, orders, production, samples, escrow, rfq, disputes, ai-quote-draft, reviews)
+- /app/api/v1/admin/manufacturers/ — Admin manufacturer API (list, update, hubs, disputes)
 
 Brand Quick Reference:
   Primary color: #0A1628 (navy) — kauvex-navy
@@ -237,6 +243,7 @@ Key V2 Enterprise+ tables: erp_accounts, journal_entries, cost_centers, budgets,
 - [x] Phase 21 (Fuel Intelligence System): Complete
 - [x] Phase 22 (Domain Provisioning System): Complete
 - [x] Phase 23 (Shipping & Logistics Platform Upgrade): Complete
+- [x] Phase 24 (Global Manufacturer Portal): Complete
 
 ## Recent Enhancements (August 2026)
 - **V3 Database**: 40+ new Prisma models (local suppliers, sourcing, POD, dropshipping, art/NFT, group buy, price alerts, live commerce, mentorship, carbon offsets, competition intel, Kauvex Originals, subscription boxes)
@@ -260,6 +267,7 @@ Key V2 Enterprise+ tables: erp_accounts, journal_entries, cost_centers, budgets,
 
 - **Phase 11 (Seller Central Full Replication)**: Amazon-style vendor dashboard with enhanced widgets, catalog matching with gated categories, multi-storefront offer management, bulk CSV upload, tabbed listing editor (8 tabs), full inventory management with FBK tools, orders with returns/claims/RMA, full Campaign Manager with 6-step wizard, granular user permissions matrix, Kauvex Seller University, B2B Central (quotes/volume tiers), Reports Repository (custom reports builder), Brand Registry (enrollment/counterfeit reporting), A+ Content module builder, Account Health dashboard with deactivation warnings, and Multi-Channel Integration Hub (eBay/Etsy product sync)
 - **Fuel Management System**: Full fuel price tracking, surcharge rules, cost analysis, route impact calculator, fuel stations map, partner profitability dashboard, price alerts, fuel history — integrated across Express, Logistics partner, and Admin panels
+- **Phase 24 (Global Manufacturer Portal)**: Cross-border B2B manufacturing marketplace with 12 Prisma models (kv_mfg_*), 13 API routes, 14 frontend pages, 10 lib modules. Features: 7-step manufacturer registration, 4-tier verification system (unverified/document/factory/gold), production tracker with 8-stage pipeline, milestone-based escrow extending Kauvex Pay, AI-assisted quote drafting, RFQ broadcast-to-multiple, quote comparison, sample ordering, landed cost calculator, manufacturing hub directory (31 hubs across 13 countries), admin management panel with dispute resolution. 19 manufacturing categories, 15 manufacturing hubs seeded. Admin sidebar integration, footer links added.
 - **Domain Provisioning System** (`/admin/domains`, `/vendor/settings/domain`): Multi-storefront domain routing (15 country TLDs + vendor subdomains + custom domains + white label), Vercel/Cloudflare API provisioning, SSL monitoring cron, middleware-based domain detection, subdomain availability checker
 
 ## Phase 21 Fuel Intelligence System Knowledge Base
@@ -381,6 +389,8 @@ Key V2 Enterprise+ tables: erp_accounts, journal_entries, cost_centers, budgets,
 - **Vendor Sidebar**: POD section (Dashboard, Design Studio, Products, Orders, Design Marketplace) and Dropshipping section under Products
 - **Admin Pages**: `/admin/pod`, `/admin/art-marketplace`, `/admin/group-buy` created with management tables
 - **Admin Pages**: `/admin/logistics/global`, `/admin/logistics/countries`, `/admin/logistics/countries/[code]`, `/admin/logistics/carriers`, `/admin/logistics/ioss`, `/admin/logistics/ddp`, `/admin/logistics/compliance`
+- **Footer**: Manufacturer Portal, Find Manufacturers added to "Sell" column
+- **Admin Sidebar**: Marketplace > Partner Network: Manufacturers, Manufacturer Hubs, Manufacturer Disputes (Phase 24)
 
 ## Phase 15 Affiliate & Influencer Network Knowledge Base
 

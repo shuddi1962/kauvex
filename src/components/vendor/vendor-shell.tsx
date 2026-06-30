@@ -137,6 +137,16 @@ const topNav: { key: SectionKey; label: string; icon: React.ElementType; groups:
         { label: "Manage Quotes", href: "/vendor/b2b" },
         { label: "Business Profile", href: "/vendor/b2b" },
       ]},
+      { title: "B2B / Wholesale", items: [
+        { label: "Wholesale Portal", href: "/wholesale", badge: "New" },
+        { label: "Wholesale Dashboard", href: "/wholesale/dashboard", badge: "New" },
+      ]},
+      { title: "Manufacturer Sourcing", items: [
+        { label: "Find Manufacturers", href: "/manufacturers/search", badge: "P24" },
+        { label: "Request Quote", href: "/manufacturers/request-quote", badge: "P24" },
+        { label: "My Inquiries", href: "/manufacturers/quotes", badge: "P24" },
+        { label: "Landed Cost Calc", href: "/manufacturers/landed-cost", badge: "P24" },
+      ]},
     ],
   },
   {

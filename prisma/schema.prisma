@@ -6057,3 +6057,293 @@ model KspDomDnsEvent {
   @@index([domainId], map: "idx_ksp_dom_dns_event_domain")
   @@map("kv_dom_dns_events")
 }
+
+// ═══════════════════════════════════════════════════════════════════
+// Phase 24: Global Manufacturer Portal
+// ═══════════════════════════════════════════════════════════════════
+
+model MfgManufacturer {
+  id                    String   @id @default(uuid()) @db.Uuid
+  userId                String?  @map("user_id") @db.Uuid
+  companyName           String   @map("company_name") @db.VarChar(200)
+  slug                  String   @unique @db.VarChar(100)
+  countryCode           String   @map("country_code") @db.VarChar(10)
+  city                  String?  @db.VarChar(100)
+  manufacturingHub      String?  @map("manufacturing_hub") @db.VarChar(100)
+  registrationNumber    String?  @map("registration_number") @db.VarChar(100)
+  businessType          String   @default("manufacturer") @map("business_type") @db.VarChar(30)
+  yearEstablished       Int?     @map("year_established")
+  employeeCountRange    String?  @map("employee_count_range") @db.VarChar(30)
+  factorySizeSqm        Int?     @map("factory_size_sqm")
+  website               String?
+  verificationTier      String   @default("unverified") @map("verification_tier") @db.VarChar(30)
+  trustScore            Int      @default(0) @map("trust_score")
+  responseRate          Decimal? @map("response_rate") @db.Decimal(5, 2)
+  avgResponseTimeHours  Decimal? @map("avg_response_time_hours") @db.Decimal(6, 2)
+  totalOrdersCompleted  Int      @default(0) @map("total_orders_completed")
+  ratingAverage         Decimal  @default(0) @map("rating_average") @db.Decimal(3, 2)
+  status                String   @default("pending") @db.VarChar(20)
+  createdAt             DateTime @default(now()) @map("created_at")
+  updatedAt             DateTime @default(now()) @map("updated_at")
+
+  categories            MfgCategory[]
+  certifications        MfgCertification[]
+  capabilities          MfgCapability[]
+  factoryMedia          MfgFactoryMedia[]
+  inquiries             MfgInquiry[]
+  quotes                MfgQuote[]
+  orders                MfgOrder[]
+  samples               MfgSample[]
+  reviews               MfgReview[]
+
+  @@index([countryCode], map: "idx_kv_mfg_manufacturers_country")
+  @@index([status], map: "idx_kv_mfg_manufacturers_status")
+  @@index([verificationTier], map: "idx_kv_mfg_manufacturers_verification")
+  @@map("kv_mfg_manufacturers")
+}
+
+model MfgCategory {
+  id              String   @id @default(uuid()) @db.Uuid
+  manufacturerId  String   @map("manufacturer_id") @db.Uuid
+  category        String   @db.VarChar(100)
+  isPrimary       Boolean  @default(false) @map("is_primary")
+  productTypes    String[] @map("product_types")
+  createdAt       DateTime @default(now()) @map("created_at")
+
+  manufacturer MfgManufacturer @relation(fields: [manufacturerId], references: [id], onDelete: Cascade)
+
+  @@index([manufacturerId], map: "idx_kv_mfg_categories_manufacturer")
+  @@index([category], map: "idx_kv_mfg_categories_category")
+  @@map("kv_mfg_categories")
+}
+
+model MfgCertification {
+  id                  String   @id @default(uuid()) @db.Uuid
+  manufacturerId      String   @map("manufacturer_id") @db.Uuid
+  certificationType   String   @map("certification_type") @db.VarChar(100)
+  certificateUrl      String?  @map("certificate_url")
+  issuedBy            String?  @map("issued_by") @db.VarChar(200)
+  validUntil          DateTime? @map("valid_until") @db.Date
+  status              String   @default("pending") @db.VarChar(20)
+  createdAt           DateTime @default(now()) @map("created_at")
+
+  manufacturer MfgManufacturer @relation(fields: [manufacturerId], references: [id], onDelete: Cascade)
+
+  @@index([manufacturerId], map: "idx_kv_mfg_certifications_manufacturer")
+  @@map("kv_mfg_certifications")
+}
+
+model MfgCapability {
+  id                        String   @id @default(uuid()) @db.Uuid
+  manufacturerId            String   @map("manufacturer_id") @db.Uuid
+  monthlyCapacity           Int?     @map("monthly_capacity")
+  capacityUnit              String?  @map("capacity_unit") @db.VarChar(50)
+  currentUtilizationPercent Decimal? @map("current_utilization_percent") @db.Decimal(5, 2)
+  defaultMoq                Int?     @map("default_moq")
+  defaultLeadTimeDays       Int?     @map("default_lead_time_days")
+  sampleLeadTimeDays        Int?     @map("sample_lead_time_days")
+  allowsPrivateLabel        Boolean  @default(false) @map("allows_private_label")
+  allowsCustomPackaging     Boolean  @default(false) @map("allows_custom_packaging")
+  allowsOem                 Boolean  @default(false) @map("allows_oem")
+  allowsOdm                 Boolean  @default(false) @map("allows_odm")
+  createdAt                 DateTime @default(now()) @map("created_at")
+
+  manufacturer MfgManufacturer @relation(fields: [manufacturerId], references: [id], onDelete: Cascade)
+
+  @@index([manufacturerId], map: "idx_kv_mfg_capability_manufacturer")
+  @@map("kv_mfg_capability")
+}
+
+model MfgFactoryMedia {
+  id              String   @id @default(uuid()) @db.Uuid
+  manufacturerId  String   @map("manufacturer_id") @db.Uuid
+  mediaType       String   @map("media_type") @db.VarChar(20)
+  url             String
+  caption         String?  @db.VarChar(300)
+  sortOrder       Int      @default(0) @map("sort_order")
+  createdAt       DateTime @default(now()) @map("created_at")
+
+  manufacturer MfgManufacturer @relation(fields: [manufacturerId], references: [id], onDelete: Cascade)
+
+  @@index([manufacturerId], map: "idx_kv_mfg_factory_media_manufacturer")
+  @@map("kv_mfg_factory_media")
+}
+
+model MfgInquiry {
+  id                     String   @id @default(uuid()) @db.Uuid
+  manufacturerId         String   @map("manufacturer_id") @db.Uuid
+  buyerId                String?  @map("buyer_id") @db.Uuid
+  buyerType              String   @default("vendor") @map("buyer_type") @db.VarChar(20)
+  productDescription     String   @map("product_description")
+  referenceImages        String[] @map("reference_images")
+  desiredQuantity        Int?     @map("desired_quantity")
+  customizationDetails   String?  @map("customization_details")
+  targetPrice            Decimal? @map("target_price") @db.Decimal(14, 2)
+  destinationCountry     String?  @map("destination_country") @db.VarChar(10)
+  status                 String   @default("open") @db.VarChar(20)
+  respondedAt            DateTime? @map("responded_at")
+  createdAt              DateTime @default(now()) @map("created_at")
+  updatedAt              DateTime @default(now()) @map("updated_at")
+
+  manufacturer MfgManufacturer @relation(fields: [manufacturerId], references: [id])
+  quotes       MfgQuote[]
+
+  @@index([manufacturerId], map: "idx_kv_mfg_inquiries_manufacturer")
+  @@index([buyerId], map: "idx_kv_mfg_inquiries_buyer")
+  @@index([status], map: "idx_kv_mfg_inquiries_status")
+  @@map("kv_mfg_inquiries")
+}
+
+model MfgQuote {
+  id              String   @id @default(uuid()) @db.Uuid
+  inquiryId       String   @map("inquiry_id") @db.Uuid
+  manufacturerId  String   @map("manufacturer_id") @db.Uuid
+  pricingTiers    Json?    @map("pricing_tiers")
+  moq             Int?
+  leadTimeDays    Int?     @map("lead_time_days")
+  sampleCost      Decimal? @map("sample_cost") @db.Decimal(10, 2)
+  sampleAvailable Boolean  @default(true) @map("sample_available")
+  paymentTerms    String?  @map("payment_terms")
+  incoterm        String?  @db.VarChar(10)
+  validUntil      DateTime? @map("valid_until")
+  notes           String?
+  status          String   @default("pending") @db.VarChar(20)
+  createdAt       DateTime @default(now()) @map("created_at")
+
+  inquiry      MfgInquiry      @relation(fields: [inquiryId], references: [id])
+  manufacturer MfgManufacturer @relation(fields: [manufacturerId], references: [id])
+
+  @@index([inquiryId], map: "idx_kv_mfg_quotes_inquiry")
+  @@index([manufacturerId], map: "idx_kv_mfg_quotes_manufacturer")
+  @@index([status], map: "idx_kv_mfg_quotes_status")
+  @@map("kv_mfg_quotes")
+}
+
+model MfgOrder {
+  id                    String   @id @default(uuid()) @db.Uuid
+  orderNumber           String?  @unique @map("order_number") @db.VarChar(30)
+  quoteId               String?  @map("quote_id") @db.Uuid
+  manufacturerId        String   @map("manufacturer_id") @db.Uuid
+  buyerId               String   @map("buyer_id") @db.Uuid
+  totalValue            Decimal  @map("total_value") @db.Decimal(14, 2)
+  currencyCode          String   @default("USD") @map("currency_code") @db.VarChar(10)
+  depositPercent        Decimal  @default(30) @map("deposit_percent") @db.Decimal(5, 2)
+  milestoneStructure    Json?    @map("milestone_structure")
+  currentStage          String   @default("confirmed") @map("current_stage") @db.VarChar(30)
+  productionTimeline    Json?    @map("production_timeline")
+  productionPhotos      Json?    @map("production_photos")
+  inspectionRequested   Boolean  @default(false) @map("inspection_requested")
+  inspectionPartner     String?  @map("inspection_partner") @db.VarChar(50)
+  inspectionStatus      String?  @map("inspection_status") @db.VarChar(20)
+  inspectionResult      String?  @map("inspection_result") @db.VarChar(20)
+  inspectionReportUrl   String?  @map("inspection_report_url")
+  trackingNumber        String?  @map("tracking_number") @db.VarChar(100)
+  shippedAt             DateTime? @map("shipped_at")
+  deliveredAt           DateTime? @map("delivered_at")
+  completedAt           DateTime? @map("completed_at")
+  status                String   @default("active") @db.VarChar(20)
+  createdAt             DateTime @default(now()) @map("created_at")
+  updatedAt             DateTime @default(now()) @map("updated_at")
+
+  manufacturer MfgManufacturer @relation(fields: [manufacturerId], references: [id])
+  escrow      MfgEscrow?
+  disputes     MfgDispute[]
+
+  @@index([manufacturerId], map: "idx_kv_mfg_orders_manufacturer")
+  @@index([buyerId], map: "idx_kv_mfg_orders_buyer")
+  @@index([status], map: "idx_kv_mfg_orders_status")
+  @@map("kv_mfg_orders")
+}
+
+model MfgEscrow {
+  id                String   @id @default(uuid()) @db.Uuid
+  orderId           String   @unique @map("order_id") @db.Uuid
+  totalAmount       Decimal  @map("total_amount") @db.Decimal(14, 2)
+  depositedAmount   Decimal  @default(0) @map("deposited_amount") @db.Decimal(14, 2)
+  releasedAmount    Decimal  @default(0) @map("released_amount") @db.Decimal(14, 2)
+  milestoneReleases Json?    @map("milestone_releases")
+  status            String   @default("funded") @db.VarChar(20)
+  createdAt         DateTime @default(now()) @map("created_at")
+  updatedAt         DateTime @default(now()) @map("updated_at")
+
+  order MfgOrder @relation(fields: [orderId], references: [id])
+
+  @@index([orderId], map: "idx_kv_mfg_escrow_order")
+  @@index([status], map: "idx_kv_mfg_escrow_status")
+  @@map("kv_mfg_escrow")
+}
+
+model MfgDispute {
+  id              String    @id @default(uuid()) @db.Uuid
+  orderId         String    @map("order_id") @db.Uuid
+  raisedBy        String    @map("raised_by") @db.Uuid
+  disputeType     String    @map("dispute_type") @db.VarChar(50)
+  description     String
+  evidenceUrls    String[]  @map("evidence_urls")
+  resolution      String?   @db.VarChar(30)
+  resolutionNotes String?   @map("resolution_notes")
+  resolvedBy      String?   @map("resolved_by") @db.Uuid
+  resolvedAt      DateTime? @map("resolved_at")
+  createdAt       DateTime  @default(now()) @map("created_at")
+
+  order MfgOrder @relation(fields: [orderId], references: [id])
+
+  @@index([orderId], map: "idx_kv_mfg_disputes_order")
+  @@map("kv_mfg_disputes")
+}
+
+model MfgSample {
+  id              String   @id @default(uuid()) @db.Uuid
+  inquiryId       String?  @map("inquiry_id") @db.Uuid
+  manufacturerId  String   @map("manufacturer_id") @db.Uuid
+  buyerId         String   @map("buyer_id") @db.Uuid
+  productDescription String? @map("product_description")
+  sampleCost      Decimal  @default(0) @map("sample_cost") @db.Decimal(10, 2)
+  shippingFee     Decimal  @default(0) @map("shipping_fee") @db.Decimal(10, 2)
+  totalCost       Decimal  @default(0) @map("total_cost") @db.Decimal(10, 2)
+  shipmentId      String?  @map("shipment_id") @db.Uuid
+  status          String   @default("pending") @db.VarChar(20)
+  createdAt       DateTime @default(now()) @map("created_at")
+
+  manufacturer MfgManufacturer @relation(fields: [manufacturerId], references: [id])
+
+  @@index([manufacturerId], map: "idx_kv_mfg_samples_manufacturer")
+  @@index([buyerId], map: "idx_kv_mfg_samples_buyer")
+  @@map("kv_mfg_samples")
+}
+
+model MfgHub {
+  id                String   @id @default(uuid()) @db.Uuid
+  countryCode       String   @map("country_code") @db.VarChar(10)
+  city              String   @db.VarChar(100)
+  hubName           String   @map("hub_name") @db.VarChar(200)
+  primaryCategories String[] @map("primary_categories")
+  description       String?
+  isActive          Boolean  @default(true) @map("is_active")
+  createdAt         DateTime @default(now()) @map("created_at")
+
+  @@index([countryCode], map: "idx_kv_mfg_hubs_country")
+  @@map("kv_mfg_hubs")
+}
+
+model MfgReview {
+  id              String   @id @default(uuid()) @db.Uuid
+  orderId         String?  @map("order_id") @db.Uuid
+  manufacturerId  String   @map("manufacturer_id") @db.Uuid
+  buyerId         String   @map("buyer_id") @db.Uuid
+  buyerName       String?  @map("buyer_name") @db.VarChar(200)
+  buyerCountry    String?  @map("buyer_country") @db.VarChar(10)
+  rating          Int
+  comment         String
+  productType     String?  @map("product_type") @db.VarChar(200)
+  orderValue      Decimal? @map("order_value") @db.Decimal(14, 2)
+  helpful         Int      @default(0)
+  createdAt       DateTime @default(now()) @map("created_at")
+
+  manufacturer MfgManufacturer @relation(fields: [manufacturerId], references: [id])
+
+  @@index([manufacturerId], map: "idx_kv_mfg_reviews_manufacturer")
+  @@index([buyerId], map: "idx_kv_mfg_reviews_buyer")
+  @@index([rating], map: "idx_kv_mfg_reviews_rating")
+  @@map("kv_mfg_reviews")
+}

@@ -107,6 +107,27 @@ export const MANUFACTURING_CATEGORIES: Record<string, string[]> = {
     'Solar panel/component assembly',
     'Battery storage manufacturers',
   ],
+  'Machinery & Industrial': [
+    'CNC machining centers',
+    'Hydraulic press manufacturers',
+    'Conveyor system builders',
+    'Industrial pump producers',
+  ],
+  'Chemicals & Adhesives': [
+    'Industrial chemical producers',
+    'Adhesive/glue manufacturers',
+    'Paint/coating formulators',
+  ],
+  'Paper & Pulp': [
+    'Paper mill producers',
+    'Corrugated box manufacturers',
+    'Tissue/napkin producers',
+  ],
+  'Rubber & Tire': [
+    'Rubber product manufacturers',
+    'Tire producers',
+    'Rubber seal/gasket makers',
+  ],
 };
 
 export const CERTIFICATION_TYPES = [

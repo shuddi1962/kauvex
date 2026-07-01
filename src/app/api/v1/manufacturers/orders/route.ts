@@ -1,8 +1,22 @@
 import { NextRequest } from "next/server";
-import { successResponse, errorResponse, getAuthUser } from "@/lib/api-helpers";
+import { successResponse, errorResponse, getAuthUser, validateBody } from "@/lib/api-helpers";
+import { fundEscrow } from "@/lib/manufacturers/escrow";
 import prisma from "@/lib/db";
+import { z } from "zod";
 
 export const dynamic = "force-dynamic";
+
+const createOrderSchema = z.object({
+  manufacturerId: z.string().uuid(),
+  quoteId: z.string().uuid().optional(),
+  totalValue: z.number().positive(),
+  currency: z.string().max(10).default("USD"),
+  depositPercent: z.number().min(0).max(100).default(30),
+  milestoneStructure: z.array(z.object({
+    label: z.string(),
+    percent: z.number().min(1).max(100),
+  })).optional(),
+}).strict();
 
 export async function GET(request: NextRequest) {
   const { user, error: authErr } = await getAuthUser(request);
@@ -10,34 +24,24 @@ export async function GET(request: NextRequest) {
 
   try {
     const { searchParams } = new URL(request.url);
+    const manufacturerId = searchParams.get("manufacturerId");
     const status = searchParams.get("status");
     const page = parseInt(searchParams.get("page") || "1");
     const limit = parseInt(searchParams.get("limit") || "20");
-
-    // Get manufacturer from profile
-    const { data: profile } = await prisma.profiles.findUnique({
-      where: { id: user!.id },
-      select: { vendor_id: true },
-    });
-
-    const manufacturerId = profile?.vendor_id;
-    if (!manufacturerId) {
-      return errorResponse("No manufacturer profile linked to this account", 404);
-    }
-
-    const where: any = { manufacturer_id: manufacturerId };
-    if (status) where.status = status;
-
     const skip = (page - 1) * limit;
+
+    const where: any = {};
+    if (manufacturerId) where.manufacturerId = manufacturerId;
+    else where.buyerId = user!.id;
+    if (status) where.status = status;
 
     const [orders, total] = await Promise.all([
       prisma.mfgOrder.findMany({
         where,
         include: {
-          buyer: { select: { id: true, full_name: true } },
-          escrow: { select: { status: true, total_amount: true, released_amount: true } },
+          escrow: { select: { status: true, totalAmount: true, releasedAmount: true } },
         },
-        orderBy: { created_at: "desc" },
+        orderBy: { createdAt: "desc" },
         skip,
         take: limit,
       }),
@@ -45,7 +49,7 @@ export async function GET(request: NextRequest) {
     ]);
 
     return successResponse({
-      data: orders,
+      results: orders,
       total,
       page,
       limit,
@@ -53,5 +57,36 @@ export async function GET(request: NextRequest) {
     });
   } catch (err) {
     return errorResponse((err as Error).message, 500);
+  }
+}
+
+export async function POST(request: NextRequest) {
+  const { user, error: authErr } = await getAuthUser(request);
+  if (authErr) return authErr;
+
+  const { data: body, error: valErr } = await validateBody(request, createOrderSchema);
+  if (valErr) return valErr;
+
+  try {
+    const order = await prisma.mfgOrder.create({
+      data: {
+        buyerId: user!.id,
+        manufacturerId: body!.manufacturerId,
+        quoteId: body!.quoteId ?? null,
+        totalValue: body!.totalValue,
+        currencyCode: body!.currency,
+        depositPercent: body!.depositPercent,
+        milestoneStructure: body!.milestoneStructure as unknown as Record<string, unknown>[] | undefined,
+        status: "pending",
+        currentStage: "confirmed",
+      },
+    });
+
+    const depositAmount = Math.round(body!.totalValue * body!.depositPercent / 100 * 100) / 100;
+    await fundEscrow(order.id, depositAmount);
+
+    return successResponse(order, 201);
+  } catch (err) {
+    return errorResponse((err as Error).message, 400);
   }
 }

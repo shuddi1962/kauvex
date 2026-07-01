@@ -193,34 +193,33 @@ export async function updateManufacturer(id: string, data: Partial<CreateManufac
     }
 
     if (data.capability) {
-      await tx.mfgCapability.upsert({
+      const existingCap = await tx.mfgCapability.findFirst({
         where: { manufacturerId: id },
-        create: {
-          manufacturerId: id,
-          monthlyCapacity: data.capability.monthlyCapacity ?? null,
-          capacityUnit: data.capability.capacityUnit ?? null,
-          currentUtilizationPercent: data.capability.currentUtilizationPercent ?? null,
-          defaultMoq: data.capability.defaultMoq ?? null,
-          defaultLeadTimeDays: data.capability.defaultLeadTimeDays ?? null,
-          sampleLeadTimeDays: data.capability.sampleLeadTimeDays ?? null,
-          allowsPrivateLabel: data.capability.allowsPrivateLabel ?? false,
-          allowsCustomPackaging: data.capability.allowsCustomPackaging ?? false,
-          allowsOem: data.capability.allowsOem ?? false,
-          allowsOdm: data.capability.allowsOdm ?? false,
-        },
-        update: {
-          monthlyCapacity: data.capability.monthlyCapacity ?? null,
-          capacityUnit: data.capability.capacityUnit ?? null,
-          currentUtilizationPercent: data.capability.currentUtilizationPercent ?? null,
-          defaultMoq: data.capability.defaultMoq ?? null,
-          defaultLeadTimeDays: data.capability.defaultLeadTimeDays ?? null,
-          sampleLeadTimeDays: data.capability.sampleLeadTimeDays ?? null,
-          allowsPrivateLabel: data.capability.allowsPrivateLabel ?? false,
-          allowsCustomPackaging: data.capability.allowsCustomPackaging ?? false,
-          allowsOem: data.capability.allowsOem ?? false,
-          allowsOdm: data.capability.allowsOdm ?? false,
-        },
       });
+
+      const capData = {
+        monthlyCapacity: data.capability.monthlyCapacity ?? null,
+        capacityUnit: data.capability.capacityUnit ?? null,
+        currentUtilizationPercent: data.capability.currentUtilizationPercent ?? null,
+        defaultMoq: data.capability.defaultMoq ?? null,
+        defaultLeadTimeDays: data.capability.defaultLeadTimeDays ?? null,
+        sampleLeadTimeDays: data.capability.sampleLeadTimeDays ?? null,
+        allowsPrivateLabel: data.capability.allowsPrivateLabel ?? false,
+        allowsCustomPackaging: data.capability.allowsCustomPackaging ?? false,
+        allowsOem: data.capability.allowsOem ?? false,
+        allowsOdm: data.capability.allowsOdm ?? false,
+      };
+
+      if (existingCap) {
+        await tx.mfgCapability.update({
+          where: { id: existingCap.id },
+          data: capData,
+        });
+      } else {
+        await tx.mfgCapability.create({
+          data: { manufacturerId: id, ...capData },
+        });
+      }
     }
 
     return manufacturer;

@@ -15,6 +15,7 @@ export interface ProductionUpdate {
   photos?: string[];
   videoUrl?: string;
   notes?: string;
+  estimatedCompletionDate?: string;
 }
 
 export const PRODUCTION_STAGES: { key: ProductionStage; label: string; description: string }[] = [
@@ -35,6 +36,7 @@ export async function updateProductionStage(orderId: string, update: ProductionU
     photos: update.photos ?? [],
     videoUrl: update.videoUrl ?? null,
     notes: update.notes ?? null,
+    estimatedCompletionDate: update.estimatedCompletionDate ?? null,
   };
 
   const order = await prisma.mfgOrder.findUnique({

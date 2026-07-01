@@ -9,25 +9,18 @@ interface Manufacturer {
   id: string;
   slug: string;
   companyName: string;
-  country: string;
-  city: string;
-  isVerified: boolean;
-  rating: number | null;
-  moq: number | null;
-  responseTimeHours: number | null;
-  monthlyCapacity: number | null;
-  businessType: string | null;
-  categories: { name: string }[];
+  countryCode: string;
+  city: string | null;
+  verificationTier: string;
+  ratingAverage: number | null;
+  totalOrdersCompleted: number | null;
+  categories: { category: string }[];
+  capabilities: { defaultMoq?: number | null; defaultLeadTimeDays?: number | null }[];
 }
 
-const categoryOptions = [
-  "Textiles & Apparel","Electronics & Components","Machinery & Industrial",
-  "Automotive Parts","Food & Beverage Processing","Pharmaceuticals & Medical",
-  "Chemicals & Plastics","Building Materials","Furniture & Woodwork",
-  "Packaging & Printing","Metals & Alloys","Rubber & Tire","Paper & Pulp",
-  "Ceramics & Glass","Footwear & Leather","Toys & Consumer Goods",
-  "Energy & Solar","Agriculture & Farming","Handicrafts & Artisans",
-];
+import { MANUFACTURING_CATEGORIES } from "@/lib/manufacturers/categories";
+
+const categoryOptions = Object.keys(MANUFACTURING_CATEGORIES);
 
 const countryOptions = [
   "Nigeria","China","India","Turkey","Bangladesh","Vietnam","Indonesia",
@@ -36,9 +29,10 @@ const countryOptions = [
 ];
 
 const verificationTiers = [
-  { value: "verified", label: "Factory Verified" },
-  { value: "certified", label: "Certified" },
-  { value: "top_rated", label: "Top Rated" },
+  { value: "unverified", label: "Unverified" },
+  { value: "document_verified", label: "Document Verified" },
+  { value: "factory_verified", label: "Factory Verified" },
+  { value: "gold", label: "Gold Certified" },
 ];
 
 export default function SearchPage() {
@@ -292,43 +286,43 @@ export default function SearchPage() {
                             {m.companyName}
                           </h3>
                           <p className="mt-1 text-sm text-gray-500">
-                            {m.city}, {m.country}
+                            {m.city ? `${m.city}, ` : ""}{m.countryCode}
                           </p>
                         </div>
-                        {m.isVerified && (
+                        {m.verificationTier && m.verificationTier !== "unverified" && (
                           <span className="inline-flex items-center rounded-full bg-green-50 border border-green-200 px-2 py-0.5 text-xs font-semibold text-green-700">
-                            ✓ Verified
+                            {m.verificationTier === "gold" ? "★ Gold" : m.verificationTier === "factory_verified" ? "✓ Verified" : "Doc Verified"}
                           </span>
                         )}
                       </div>
                       <div className="mt-3 flex flex-wrap gap-1.5">
                         {m.categories?.slice(0, 2).map((cat) => (
                           <span
-                            key={cat.name}
+                            key={cat.category}
                             className="rounded-full bg-gray-100 px-2 py-0.5 text-xs text-gray-600"
                           >
-                            {cat.name}
+                            {cat.category}
                           </span>
                         ))}
                       </div>
                       <div className="mt-4 grid grid-cols-3 gap-2 border-t border-gray-100 pt-3">
                         <div className="text-center">
                           <p className="text-sm font-bold text-[#0A1628]">
-                            {m.rating ? Number(m.rating).toFixed(1) : "—"}
+                            {m.ratingAverage ? Number(m.ratingAverage).toFixed(1) : "—"}
                           </p>
                           <p className="text-xs text-gray-500">Rating</p>
                         </div>
                         <div className="text-center">
                           <p className="text-sm font-bold text-[#0A1628]">
-                            {m.moq?.toLocaleString() ?? "—"}
+                            {m.capabilities?.[0]?.defaultMoq?.toLocaleString() ?? "—"}
                           </p>
                           <p className="text-xs text-gray-500">MOQ</p>
                         </div>
                         <div className="text-center">
                           <p className="text-sm font-bold text-[#0A1628]">
-                            {m.responseTimeHours ?? "—"}h
+                            {m.capabilities?.[0]?.defaultLeadTimeDays ?? "—"}d
                           </p>
-                          <p className="text-xs text-gray-500">Response</p>
+                          <p className="text-xs text-gray-500">Lead Time</p>
                         </div>
                       </div>
                     </Link>

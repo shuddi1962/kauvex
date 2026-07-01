@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Loader2 } from "lucide-react";
+import { MANUFACTURING_CATEGORIES, CERTIFICATION_TYPES } from "@/lib/manufacturers/categories";
 
 const steps = [
   { id: 1, label: "Business Identity" },
@@ -20,14 +21,7 @@ const countries = [
   "South Africa","Morocco","Ghana","United States","Germany","United Kingdom",
 ];
 
-const categories = [
-  "Textiles & Apparel","Electronics & Components","Machinery & Industrial",
-  "Automotive Parts","Food & Beverage Processing","Pharmaceuticals & Medical",
-  "Chemicals & Plastics","Building Materials","Furniture & Woodwork",
-  "Packaging & Printing","Metals & Alloys","Rubber & Tire","Paper & Pulp",
-  "Ceramics & Glass","Footwear & Leather","Toys & Consumer Goods",
-  "Energy & Solar","Agriculture & Farming","Handicrafts & Artisans",
-];
+const categories = Object.keys(MANUFACTURING_CATEGORIES);
 
 const currencies = ["USD","NGN","CNY","INR","TRY","BDT","VND","IDR","PKR","THB","EUR","GBP","BRL","ZAR","KES","GHS"];
 
@@ -35,12 +29,16 @@ const incoterms = ["FOB","CIF","EXW","DDP","DAP","FCA"];
 
 const paymentTerms = ["100% Advance","30% Deposit + 70% Before Shipping","30% Deposit + 70% on Delivery","Letter of Credit","Net 30","Net 60"];
 
-const certifications = [
-  "ISO 9001","ISO 14001","ISO 45001","CE Marking","FDA","GMP",
-  "HACCP","BSCI","SA8000","WRAP","Oeko-Tex","REACH","RoHS",
-];
+const certifications = CERTIFICATION_TYPES;
 
 const employeeCounts = ["1-10","11-50","51-200","201-500","501-1000","1000+"];
+
+function generateSlug(name: string): string {
+  return name
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-|-$/g, "");
+}
 
 export default function RegisterPage() {
   const [step, setStep] = useState(1);
@@ -116,10 +114,41 @@ export default function RegisterPage() {
   async function handleSubmit() {
     setSubmitting(true);
     try {
+      const slug = generateSlug(form.companyName);
+      const payload = {
+        companyName: form.companyName,
+        slug,
+        countryCode: form.country,
+        city: form.city,
+        manufacturingHub: form.manufacturingHub,
+        registrationNumber: form.registrationNumber,
+        businessType: form.businessType as "manufacturer" | "trading_company" | "agent",
+        yearEstablished: form.yearEstablished ? parseInt(form.yearEstablished) : undefined,
+        employeeCountRange: form.employeeCount,
+        factorySizeSqm: form.factorySize ? parseInt(form.factorySize) : undefined,
+        website: form.website || undefined,
+        categories: [
+          ...(form.primaryCategory ? [{ category: form.primaryCategory, isPrimary: true, productTypes: form.productTypes ? form.productTypes.split(",").map((s) => s.trim()) : [] }] : []),
+          ...form.secondaryCategories.map((c) => ({ category: c, isPrimary: false, productTypes: [] })),
+        ],
+        capability: {
+          monthlyCapacity: form.monthlyCapacity ? parseInt(form.monthlyCapacity.replace(/,/g, "")) : undefined,
+          currentUtilizationPercent: form.capacityUtilization ? parseInt(form.capacityUtilization) : undefined,
+          defaultMoq: form.moq ? parseInt(form.moq.replace(/,/g, "")) : undefined,
+          defaultLeadTimeDays: form.leadTimeDays ? parseInt(form.leadTimeDays) : undefined,
+          allowsPrivateLabel: form.customizationOptions.includes("Private Label"),
+          allowsCustomPackaging: form.customizationOptions.includes("Custom Packaging"),
+          allowsOem: form.customizationOptions.includes("OEM Design"),
+          allowsOdm: form.customizationOptions.includes("ODM Design"),
+        },
+        certifications: form.certifications.map((c) => ({
+          certificationType: c,
+        })),
+      };
       const res = await fetch("/api/v1/manufacturers", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(form),
+        body: JSON.stringify(payload),
       });
       if (res.ok) {
         setSubmitted(true);
@@ -471,7 +500,10 @@ export default function RegisterPage() {
                 <textarea
                   rows={3}
                   value={form.certDocuments.join("\n")}
-                  onChange={(e) => updateField("certDocuments", e.target.value.split("\n").filter(Boolean))}
+                  onChange={(e) => {
+                    const lines = e.target.value.split("\n").filter(Boolean);
+                    setForm((prev) => ({ ...prev, certDocuments: lines }));
+                  }}
                   placeholder="Paste document URLs or describe your certifications (one per line)"
                   className="mt-1 w-full rounded-lg border border-gray-300 px-3 py-2.5 text-sm focus:border-[#FF6B00] focus:outline-none focus:ring-1 focus:ring-[#FF6B00]"
                 />

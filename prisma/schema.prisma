@@ -6347,3 +6347,141 @@ model MfgReview {
   @@index([rating], map: "idx_kv_mfg_reviews_rating")
   @@map("kv_mfg_reviews")
 }
+
+// ═══════════════════════════════════════════════════════════════
+// PHASE 25 — Security & External Services (kv_sec_*)
+// ═══════════════════════════════════════════════════════════════
+
+model kv_sec_blocked_request {
+  id            String   @id @default(uuid()) @db.Uuid
+  ipAddress     String   @map("ip_address") @db.VarChar(50)
+  requestPath   String   @map("request_path")
+  blockReason   String   @map("block_reason") @db.VarChar(100)
+  attackType    String?  @map("attack_type") @db.VarChar(50)
+  countryCode   String?  @map("country_code") @db.VarChar(10)
+  userAgent     String?  @map("user_agent")
+  blockedAt     DateTime @default(now()) @map("blocked_at")
+
+  @@index([ipAddress], map: "idx_kv_sec_blocked_ip")
+  @@index([blockedAt], map: "idx_kv_sec_blocked_at")
+  @@index([attackType], map: "idx_kv_sec_blocked_attack")
+  @@map("kv_sec_blocked_requests")
+}
+
+model kv_sec_identity_verification {
+  id                 String    @id @default(uuid()) @db.Uuid
+  userId             String    @map("user_id") @db.Uuid
+  roleType           String    @map("role_type") @db.VarChar(30)
+  provider           String    @db.VarChar(30)
+  documentType       String?   @map("document_type") @db.VarChar(50)
+  documentUrl        String?   @map("document_url")
+  selfieUrl          String?   @map("selfie_url")
+  providerReference  String?   @map("provider_reference") @db.VarChar(200)
+  confidenceScore    Decimal?  @map("confidence_score") @db.Decimal(5, 2)
+  status             String    @default("pending") @db.VarChar(20)
+  reviewNotes        String?   @map("review_notes")
+  reviewedBy         String?   @map("reviewed_by") @db.Uuid
+  reviewedAt         DateTime? @map("reviewed_at")
+  createdAt          DateTime  @default(now()) @map("created_at")
+  updatedAt          DateTime  @default(now()) @map("updated_at")
+
+  @@index([userId], map: "idx_kv_sec_kyc_user")
+  @@index([status], map: "idx_kv_sec_kyc_status")
+  @@index([roleType], map: "idx_kv_sec_kyc_role")
+  @@map("kv_sec_identity_verifications")
+}
+
+model kv_sec_fraud_score {
+  id           String   @id @default(uuid()) @db.Uuid
+  orderId      String?  @map("order_id") @db.Uuid
+  userId       String   @map("user_id") @db.Uuid
+  riskScore    Int      @map("risk_score")
+  riskSignals  Json?    @map("risk_signals")
+  outcome      String   @default("proceeded") @db.VarChar(20)
+  reviewNotes  String?  @map("review_notes")
+  reviewedBy   String?  @map("reviewed_by") @db.Uuid
+  reviewedAt   DateTime? @map("reviewed_at")
+  createdAt    DateTime @default(now()) @map("created_at")
+
+  @@index([orderId], map: "idx_kv_sec_fraud_order")
+  @@index([userId], map: "idx_kv_sec_fraud_user")
+  @@index([outcome], map: "idx_kv_sec_fraud_outcome")
+  @@index([riskScore], map: "idx_kv_sec_fraud_score")
+  @@map("kv_sec_fraud_scores")
+}
+
+model kv_sec_blacklist {
+  id         String    @id @default(uuid()) @db.Uuid
+  listType   String    @map("list_type") @db.VarChar(20)
+  value      String    @db.VarChar(200)
+  reason     String?
+  addedBy    String?   @map("added_by") @db.Uuid
+  expiresAt  DateTime? @map("expires_at")
+  isActive   Boolean   @default(true) @map("is_active")
+  createdAt  DateTime  @default(now()) @map("created_at")
+
+  @@unique([listType, value])
+  @@index([listType, isActive], map: "idx_kv_sec_blacklist_type")
+  @@map("kv_sec_blacklist")
+}
+
+model kv_sec_file_scan {
+  id              String   @id @default(uuid()) @db.Uuid
+  fileUrl         String   @map("file_url")
+  fileName        String?  @map("file_name") @db.VarChar(255)
+  fileSizeBytes   BigInt?  @map("file_size_bytes")
+  uploadedBy      String?  @map("uploaded_by") @db.Uuid
+  scanProvider    String   @map("scan_provider") @db.VarChar(30)
+  scanResult      String   @default("pending") @map("scan_result") @db.VarChar(20)
+  scanDetails     Json?    @map("scan_details")
+  quarantined     Boolean  @default(false)
+  scannedAt       DateTime? @map("scanned_at")
+  createdAt       DateTime @default(now()) @map("created_at")
+
+  @@index([scanResult], map: "idx_kv_sec_scan_result")
+  @@index([uploadedBy], map: "idx_kv_sec_scan_uploaded")
+  @@map("kv_sec_file_scans")
+}
+
+model kv_sec_backup {
+  id               String   @id @default(uuid()) @db.Uuid
+  backupType       String   @map("backup_type") @db.VarChar(20)
+  storageLocation  String   @map("storage_location")
+  fileName         String?  @map("file_name") @db.VarChar(255)
+  sizeMb           Decimal? @map("size_mb") @db.Decimal(14, 2)
+  status           String   @default("pending") @db.VarChar(20)
+  errorMessage     String?  @map("error_message")
+  verifiedAt       DateTime? @map("verified_at")
+  createdAt        DateTime @default(now()) @map("created_at")
+
+  @@index([backupType], map: "idx_kv_sec_backup_type")
+  @@index([status], map: "idx_kv_sec_backup_status")
+  @@index([createdAt], map: "idx_kv_sec_backup_created")
+  @@map("kv_sec_backups")
+}
+
+model kv_sec_credential_audit {
+  id               String   @id @default(uuid()) @db.Uuid
+  credentialName   String   @map("credential_name") @db.VarChar(100)
+  action           String   @db.VarChar(30)
+  performedBy      String?  @map("performed_by") @db.Uuid
+  notes            String?
+  createdAt        DateTime @default(now()) @map("created_at")
+
+  @@index([credentialName], map: "idx_kv_sec_cred_name")
+  @@index([action], map: "idx_kv_sec_cred_action")
+  @@map("kv_sec_credential_audit")
+}
+
+model kv_sec_otp_rate_limit {
+  id            String    @id @default(uuid()) @db.Uuid
+  identifier    String    @db.VarChar(200)
+  channel       String    @db.VarChar(10)
+  attemptCount  Int       @default(1) @map("attempt_count")
+  windowStart   DateTime  @default(now()) @map("window_start")
+  lockedUntil   DateTime? @map("locked_until")
+  createdAt     DateTime  @default(now()) @map("created_at")
+
+  @@index([identifier, channel], map: "idx_kv_sec_otp_identifier")
+  @@map("kv_sec_otp_rate_limits")
+}

@@ -143,12 +143,21 @@ alwaysApply: true
 - /app/api/v1/cron/float-track/ — Float tracking cron job
 - /supabase/migrations/00018_kcc_phase18_kauvex_pay.sql — KV Pay database migration
 - /supabase/migrations/00023_kcc_phase23_logistics_upgrade.sql — Phase 23 logistics upgrade (14 new tables, 15 carrier seeds)
+- /supabase/migrations/00024_kcc_phase24_manufacturers.sql — Phase 24 manufacturer portal (kv_mfg_* tables)
+- /supabase/migrations/00026_kcc_phase25_security.sql — Phase 25 security tables (kv_sec_*: blocked_requests, identity_verifications, fraud_scores, blacklist, file_scans, backups, credential_audit, otp_rate_limits)
 - /lib/manufacturers/ — Manufacturer portal engine (registration.ts, verification.ts, categories.ts, inquiries.ts, production.ts, escrow.ts, disputes.ts, samples.ts, hubs.ts)
 - /app/manufacturers/ — Manufacturer portal (landing, register, search, dashboard, quotes, request-quote, landed-cost, [slug] profile)
 - /app/manufacturers/dashboard/ — Dashboard pages (overview, storefront, inquiries, quotes, orders, samples, production, escrow, reviews, analytics, settings)
 - /app/admin/manufacturers/ — Admin manufacturer management (directory, hubs, disputes)
 - /app/api/v1/manufacturers/ — Manufacturer API routes (registration, slug, stats, inquiries, quotes, orders, production, samples, escrow, rfq, disputes, ai-quote-draft, reviews)
 - /app/api/v1/admin/manufacturers/ — Admin manufacturer API (list, update, hubs, disputes)
+- /lib/security/ — Security engine (firewall.ts, fraud-rules.ts, file-scan.ts, otp-rate-limit.ts, backups.ts, credentials.ts, identity-verification.ts)
+- /app/admin/security/ — Admin security dashboards (firewall, fraud, identity-review, backups, credentials)
+- /app/api/v1/admin/security/ — Admin security API routes (firewall, fraud, identity, backups, credentials)
+- /app/api/cron/independent-backup/ — Daily backup cron job
+- /app/api/v1/cron/independent-backup/ — Backup API endpoint
+- /scripts/setup-demo-accounts.js — Demo account seeding script
+- /app/api/setup/demo-accounts/ — Demo accounts setup API route
 
 Brand Quick Reference:
   Primary color: #0A1628 (navy) — kauvex-navy
@@ -244,6 +253,7 @@ Key V2 Enterprise+ tables: erp_accounts, journal_entries, cost_centers, budgets,
 - [x] Phase 22 (Domain Provisioning System): Complete
 - [x] Phase 23 (Shipping & Logistics Platform Upgrade): Complete
 - [x] Phase 24 (Global Manufacturer Portal): Complete
+- [x] Phase 25 (Security & External Services): Complete
 
 ## Recent Enhancements (August 2026)
 - **V3 Database**: 40+ new Prisma models (local suppliers, sourcing, POD, dropshipping, art/NFT, group buy, price alerts, live commerce, mentorship, carbon offsets, competition intel, Kauvex Originals, subscription boxes)
@@ -269,6 +279,72 @@ Key V2 Enterprise+ tables: erp_accounts, journal_entries, cost_centers, budgets,
 - **Fuel Management System**: Full fuel price tracking, surcharge rules, cost analysis, route impact calculator, fuel stations map, partner profitability dashboard, price alerts, fuel history — integrated across Express, Logistics partner, and Admin panels
 - **Phase 24 (Global Manufacturer Portal)**: Cross-border B2B manufacturing marketplace with 12 Prisma models (kv_mfg_*), 13 API routes, 14 frontend pages, 10 lib modules. Features: 7-step manufacturer registration, 4-tier verification system (unverified/document/factory/gold), production tracker with 8-stage pipeline, milestone-based escrow extending Kauvex Pay, AI-assisted quote drafting, RFQ broadcast-to-multiple, quote comparison, sample ordering, landed cost calculator, manufacturing hub directory (31 hubs across 13 countries), admin management panel with dispute resolution. 19 manufacturing categories, 15 manufacturing hubs seeded. Admin sidebar integration, footer links added.
 - **Domain Provisioning System** (`/admin/domains`, `/vendor/settings/domain`): Multi-storefront domain routing (15 country TLDs + vendor subdomains + custom domains + white label), Vercel/Cloudflare API provisioning, SSL monitoring cron, middleware-based domain detection, subdomain availability checker
+- **Phase 25 (Security & External Services)**: Defense-in-depth security layer on top of Supabase RLS + Vercel native. 8 kv_sec_* database tables, 7 security lib modules (firewall, fraud detection, file scanning, OTP rate limiting, backups, credential rotation, identity verification), 5 admin API routes, 5 admin dashboards (Firewall & WAF, Fraud Detection, Identity Review, Backups, Credentials), Sentry error monitoring integration, independent daily backup cron job. External services: VirusTotal + Sightengine for file scanning, Smile Identity + Onfido for KYC, Cloudflare R2 for backups. All API keys server-side only via Vercel env vars.
+
+## Phase 25 Security & External Services Knowledge Base
+
+**Key Directories:**
+  `/lib/security/` — Security engine (firewall.ts, fraud-rules.ts, file-scan.ts, otp-rate-limit.ts, backups.ts, credentials.ts, identity-verification.ts)
+  `/app/admin/security/` — Admin security dashboards (firewall, fraud, identity-review, backups, credentials)
+  `/app/api/v1/admin/security/` — Admin security API routes (firewall, fraud, identity, backups, credentials)
+  `/app/api/cron/independent-backup/` — Daily backup cron job
+  `sentry.client.config.ts` — Sentry client-side initialization
+  `sentry.server.config.ts` — Sentry server-side initialization
+  `sentry.edge.config.ts` — Sentry edge runtime initialization
+
+**Security Modules:**
+  `firewall.ts` — Attack pattern detection, IP blocking, WAF logging
+  `fraud-rules.ts` — Risk scoring engine with configurable signals
+  `file-scan.ts` — VirusTotal (malware) + Sightengine (content moderation)
+  `otp-rate-limit.ts` — 3 attempts per 15min, 30min lockout
+  `backups.ts` — Cloudflare R2 backup lifecycle management
+  `credentials.ts` — API key rotation tracking with auto-reminders
+  `identity-verification.ts` — Smile Identity (Africa) + Onfido (Global) KYC
+
+**Admin Security Pages:**
+  /admin/security/firewall — WAF dashboard (blocked requests, attack patterns)
+  /admin/security/fraud — Fraud detection (blacklist, risk scores, order review)
+  /admin/security/identity-review — KYC review queue (pending/approved/rejected)
+  /admin/security/backups — Backup dashboard (status, history, manual trigger)
+  /admin/security/credentials — Credential rotation tracker (API keys, passwords)
+
+**API Endpoints:**
+  GET /api/v1/admin/security/firewall — Blocked requests, IP blocks, attack stats
+  POST /api/v1/admin/security/firewall — Block/unblock IP, log manual blocks
+  GET /api/v1/admin/security/fraud — Fraud scores, blacklist, order risk data
+  POST /api/v1/admin/security/fraud — Add/remove blacklist, update risk scores
+  GET /api/v1/admin/security/identity — Identity verifications (KYC queue)
+  POST /api/v1/admin/security/identity — Approve/reject KYC, update status
+  GET /api/v1/admin/security/backups — Backup list, status, history
+  POST /api/v1/admin/security/backups — Trigger manual backup
+  GET /api/v1/admin/security/credentials — Credential audit log, rotation status
+  POST /api/v1/admin/security/credentials — Log credential rotation
+  POST /api/cron/independent-backup — Daily backup cron endpoint
+
+**Database Tables (kv_sec_ prefix):**
+  kv_sec_blocked_requests — WAF blocked request log
+  kv_sec_identity_verifications — KYC verification attempts
+  kv_sec_fraud_scores — Order fraud risk scores
+  kv_sec_blacklist — IP/email/phone/device blacklist
+  kv_sec_file_scans — File upload scan results
+  kv_sec_backups — Backup history
+  kv_sec_credential_audit — API key rotation audit log
+  kv_sec_otp_rate_limits — OTP abuse prevention
+
+**Security Headers (already in next.config.mjs):**
+  X-Frame-Options: DENY
+  X-Content-Type-Options: nosniff
+  X-XSS-Protection: 1; mode=block
+  Referrer-Policy: strict-origin-when-cross-origin
+  Permissions-Policy: camera=(), microphone=(), geolocation=()
+  Strict-Transport-Security: max-age=63072000; includeSubDomains; preload
+
+**Demo Accounts:**
+  manufacturer@kauvex.com / Manufacturer1! — role: vendor, manufacturer profile (Shenzhen Precision Electronics)
+  wholesale@kauvex.com / Wholesale1! — role: customer
+  Both login pages have demo credential buttons (auto-fill on click)
+  Setup API: POST /api/setup/demo-accounts (Bearer: demo-accounts-secret-key-2026)
+  Standalone script: scripts/setup-demo-accounts.js
 
 ## Phase 21 Fuel Intelligence System Knowledge Base
 

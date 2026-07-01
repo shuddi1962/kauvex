@@ -280,6 +280,7 @@ const topNavSections: { key: SectionKey; label: string; icon: React.ElementType;
         { label: "File Scanning", href: "/admin/security/monitoring" },
         { label: "Backups", href: "/admin/security/backups", badge: "P25" },
         { label: "Credentials", href: "/admin/security/credentials", badge: "P25" },
+        { label: "Environment Vars", href: "/admin/security/environment", badge: "SEC8" },
       ]},
     ],
   },

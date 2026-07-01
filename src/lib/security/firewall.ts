@@ -11,6 +11,28 @@ export interface WafRule {
 // In-memory rules (would be loaded from DB in production)
 const CUSTOM_RULES: WafRule[] = [];
 
+// IP whitelist — these IPs bypass all WAF checks
+const IP_WHITELIST = new Set<string>([
+  "127.0.0.1",
+  "::1",
+]);
+
+export function isIpWhitelisted(ip: string): boolean {
+  return IP_WHITELIST.has(ip);
+}
+
+export function addToWhitelist(ip: string) {
+  IP_WHITELIST.add(ip);
+}
+
+export function removeFromWhitelist(ip: string) {
+  IP_WHITELIST.delete(ip);
+}
+
+export function getWhitelistedIps(): string[] {
+  return Array.from(IP_WHITELIST);
+}
+
 const KNOWN_ATTACK_PATTERNS = [
   { pattern: /(\%27)|(\')|(\-\-)|(\%23)|(#)/i, type: "sql_injection", name: "SQL Injection" },
   { pattern: /<script[\s>]|javascript:|onerror=|onload=|eval\(|document\.cookie/i, type: "xss", name: "XSS" },

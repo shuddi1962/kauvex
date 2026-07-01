@@ -141,6 +141,17 @@ export default function WholesaleLoginPage() {
                 Apply for B2B Account
               </Link>
             </p>
+            <div className="rounded-lg bg-blue-50 border border-blue-200 p-3">
+              <p className="text-xs font-semibold text-blue-800 mb-2">Demo Credentials</p>
+              <button
+                type="button"
+                onClick={() => { setEmail("wholesale@kauvex.com"); setPassword("Wholesale1!"); }}
+                className="w-full text-left rounded bg-white border border-blue-200 px-3 py-2 text-xs hover:bg-blue-100 transition-colors"
+              >
+                <span className="font-medium text-[#0A1628]">wholesale@kauvex.com</span>
+                <span className="ml-2 text-gray-500">/ Wholesale1!</span>
+              </button>
+            </div>
             <p className="text-center text-xs text-text-4 space-x-3">
               <Link href="/wholesale" className="hover:text-text-2 transition-colors">Wholesale info</Link>
               <span>|</span>

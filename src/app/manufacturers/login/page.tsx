@@ -141,6 +141,17 @@ export default function ManufacturerLoginPage() {
                 Register Your Factory
               </Link>
             </p>
+            <div className="rounded-lg bg-orange-50 border border-orange-200 p-3">
+              <p className="text-xs font-semibold text-orange-800 mb-2">Demo Credentials</p>
+              <button
+                type="button"
+                onClick={() => { setEmail("manufacturer@kauvex.com"); setPassword("Manufacturer1!"); }}
+                className="w-full text-left rounded bg-white border border-orange-200 px-3 py-2 text-xs hover:bg-orange-100 transition-colors"
+              >
+                <span className="font-medium text-[#0A1628]">manufacturer@kauvex.com</span>
+                <span className="ml-2 text-gray-500">/ Manufacturer1!</span>
+              </button>
+            </div>
             <p className="text-center text-xs text-text-4 space-x-3">
               <Link href="/manufacturers" className="hover:text-text-2 transition-colors">Manufacturer info</Link>
               <span>|</span>

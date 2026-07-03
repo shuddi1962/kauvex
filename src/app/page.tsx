@@ -1,15 +1,17 @@
 "use client";
 
 import { Truck, Shield, Headphones, CreditCard } from "lucide-react";
-import HeroPremium from "@/components/home/hero-premium";
-import TrendingShowcase from "@/components/home/trending-showcase";
-import DealsOfDay from "@/components/home/deals-of-day";
-import PromoBanners from "@/components/home/promo-banners";
-import BrandCarousel from "@/components/home/brand-carousel";
-import V3FeaturesSection from "@/components/home/v3-features";
-import SellBanner from "@/components/home/sell-banner";
-import HomepageSectionRenderer from "@/components/home/HomepageSectionRenderer";
-import ExpressBanner from "@/components/home/express-banner";
+import HeroSection from "@/components/home/kauvex-homepage-override/HeroSection";
+import PromoStrip from "@/components/home/kauvex-homepage-override/PromoStrip";
+import DealOfDay from "@/components/home/kauvex-homepage-override/DealOfDay";
+import TopProducts from "@/components/home/kauvex-homepage-override/TopProducts";
+import CategoryBlock from "@/components/home/kauvex-homepage-override/CategoryBlock";
+import PromoBanners from "@/components/home/kauvex-homepage-override/PromoBanners";
+import CategoryIcons from "@/components/home/kauvex-homepage-override/CategoryIcons";
+import BrandSlider from "@/components/home/kauvex-homepage-override/BrandSlider";
+import VendorShowcase from "@/components/home/kauvex-homepage-override/VendorShowcase";
+import Newsletter from "@/components/home/kauvex-homepage-override/Newsletter";
+import { categoryBlocks } from "@/lib/homepage-data";
 
 const trustFeatures = [
   { icon: Truck, title: "Free Shipping", desc: "On orders over $50" },
@@ -43,32 +45,44 @@ export default function HomePage() {
         </div>
       </div>
 
-      {/* Hero Banner — Premium */}
-      <HeroPremium />
+      {/* Hero Section */}
+      <HeroSection />
 
-      {/* Promo Category Banners */}
-      <PromoBanners />
-
-      {/* Trending Showcase — Top 100 Tabbed Products */}
-      <TrendingShowcase />
+      {/* Promo Strip */}
+      <PromoStrip />
 
       {/* Deal of the Day */}
-      <DealsOfDay />
+      <DealOfDay />
 
-      {/* V3 Feature Highlights */}
-      <V3FeaturesSection />
+      {/* Top Products */}
+      <TopProducts />
 
-      {/* Kauvex Express Banner */}
-      <ExpressBanner />
+      {/* Category Blocks */}
+      {categoryBlocks.map((block) => (
+        <CategoryBlock
+          key={block.key}
+          title={block.title}
+          bannerImage={block.bannerImage}
+          bannerTag={block.bannerTag}
+          href={block.href}
+          products={block.products}
+        />
+      ))}
 
-      {/* Brand & Vendor Showcase */}
-      <BrandCarousel />
+      {/* Promo Banners */}
+      <PromoBanners />
 
-      {/* Modular Homepage Sections (from DB or defaults) */}
-      <HomepageSectionRenderer />
+      {/* Category Icons */}
+      <CategoryIcons />
 
-      {/* Sell on KAUVEX Banner */}
-      <SellBanner />
+      {/* Brand Slider */}
+      <BrandSlider />
+
+      {/* Vendor Showcase */}
+      <VendorShowcase />
+
+      {/* Newsletter */}
+      <Newsletter />
     </div>
   );
 }

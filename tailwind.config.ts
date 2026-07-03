@@ -157,10 +157,15 @@ const config: Config = {
         info: "#2563EB",
         background: "var(--background)",
         foreground: "var(--foreground)",
+        "navy-mid": "#162040",
+        "bg-page": "#F5F7FA",
+        "bg-card": "#FFFFFF",
       },
       fontFamily: {
         sans: ["Inter", "system-ui", "-apple-system", "sans-serif"],
         syne: ["Syne", "sans-serif"],
+        display: ["Plus Jakarta Sans", "Inter", "system-ui", "sans-serif"],
+        body: ["Inter", "system-ui", "sans-serif"],
         mono: ["JetBrains Mono", "monospace"],
       },
       borderRadius: {
@@ -177,6 +182,7 @@ const config: Config = {
         "card-hover": "0 4px 12px rgba(0,0,0,0.12)",
         navbar: "0 1px 3px rgba(0,0,0,0.06)",
         modal: "0 20px 60px rgba(0,0,0,0.15)",
+        glow: "0 0 24px rgba(255,107,0,0.15)",
       },
       animation: {
         "fade-in": "fadeIn 0.5s ease-in-out",
@@ -187,6 +193,8 @@ const config: Config = {
         "marquee-fast": "marquee 15s linear infinite",
         pulse: "pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite",
         "live-pulse": "livePulse 1.5s ease-in-out infinite",
+        float: "float 3s ease-in-out infinite",
+        "pulse-glow": "pulseGlow 2s ease-in-out infinite",
       },
       keyframes: {
         fadeIn: {
@@ -212,6 +220,14 @@ const config: Config = {
         livePulse: {
           "0%, 100%": { opacity: "1" },
           "50%": { opacity: "0.4" },
+        },
+        float: {
+          "0%, 100%": { transform: "translateY(0px)" },
+          "50%": { transform: "translateY(-8px)" },
+        },
+        pulseGlow: {
+          "0%, 100%": { opacity: "0.3" },
+          "50%": { opacity: "0.6" },
         },
       },
     },

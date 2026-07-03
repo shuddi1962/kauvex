@@ -205,3 +205,48 @@ img[loading="lazy"][src] {
   z-index: 9999;
   transition: width 0.2s ease;
 }
+
+/* ---- Kauvex Homepage Override Styles ---- */
+@import url("https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Plus+Jakarta+Sans:wght@500;600;700;800&family=JetBrains+Mono:wght@400;600;700&display=swap");
+
+.container-kauvex {
+  max-width: 1440px;
+  margin: 0 auto;
+  padding-left: 16px;
+  padding-right: 16px;
+}
+
+@media (min-width: 768px) {
+  .container-kauvex {
+    padding-left: 24px;
+    padding-right: 24px;
+  }
+}
+
+@media (min-width: 1280px) {
+  .container-kauvex {
+    padding-left: 48px;
+    padding-right: 48px;
+  }
+}
+
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+@layer utilities {
+  .bg-grid-white {
+    background-image: linear-gradient(rgba(255,255,255,0.03) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(255,255,255,0.03) 1px, transparent 1px);
+    background-size: 48px 48px;
+  }
+  .bg-grid-navy {
+    background-image: linear-gradient(rgba(10,22,40,0.04) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(10,22,40,0.04) 1px, transparent 1px);
+    background-size: 48px 48px;
+  }
+}

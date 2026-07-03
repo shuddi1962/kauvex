@@ -1,7 +1,7 @@
 "use client";
 
 import { Truck, Shield, Headphones, CreditCard } from "lucide-react";
-import HeroBannerEnhanced from "@/components/home/hero-banner-enhanced";
+import HeroPremium from "@/components/home/hero-premium";
 import CategoryGrid from "@/components/home/category-grid";
 import FeaturedProducts from "@/components/home/featured-products";
 import V3FeaturesSection from "@/components/home/v3-features";
@@ -41,8 +41,8 @@ export default function HomePage() {
         </div>
       </div>
 
-      {/* Hero Banner */}
-      <HeroBannerEnhanced />
+      {/* Hero Banner — Premium */}
+      <HeroPremium />
 
       {/* Shop by Category */}
       <CategoryGrid />

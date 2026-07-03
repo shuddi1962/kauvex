@@ -9,3 +9,4 @@ export { default as BestSellersSection } from "./BestSellersSection";
 export { default as NewArrivalsSection } from "./NewArrivalsSection";
 export { default as FeaturedBrandsSection } from "./FeaturedBrandsSection";
 export { default as TestimonialsSection } from "./TestimonialsSection";
+export { default as HeroPremium } from "./hero-premium";

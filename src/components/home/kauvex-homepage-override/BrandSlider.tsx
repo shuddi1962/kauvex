@@ -1,4 +1,4 @@
-import { brands } from "@/lib/data";
+import { brands } from "@/lib/homepage-data";
 
 export default function BrandSlider() {
   const loop = [...brands, ...brands];

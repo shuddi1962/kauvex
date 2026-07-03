@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { topProducts } from "@/lib/data";
+import { topProducts } from "@/lib/homepage-data";
 import ProductCard from "./ProductCard";
 import Link from "next/link";
 import { ArrowRight, TrendingUp } from "lucide-react";

@@ -5,7 +5,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { ChevronLeft, ChevronRight, Search, Zap, Star, TrendingUp } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
-import { heroSlides, todaysDeals } from "@/lib/data";
+import { heroSlides, todaysDeals } from "@/lib/homepage-data";
 
 export default function HeroSection() {
   const [index, setIndex] = useState(0);

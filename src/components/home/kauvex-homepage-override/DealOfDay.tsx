@@ -1,5 +1,5 @@
 import Image from "next/image";
-import { dealOfDayProducts } from "@/lib/data";
+import { dealOfDayProducts } from "@/lib/homepage-data";
 import ProductCard from "./ProductCard";
 import CountdownTimer from "./CountdownTimer";
 import Link from "next/link";

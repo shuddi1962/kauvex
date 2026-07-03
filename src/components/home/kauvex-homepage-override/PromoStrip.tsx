@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { motion } from "framer-motion";
 import { ArrowRight, Zap, Sun, CloudSun, Calendar } from "lucide-react";
-import { promoStrip } from "@/lib/data";
+import { promoStrip } from "@/lib/homepage-data";
 
 const iconMap: Record<string, any> = { Sun, CloudSun, Zap, Calendar };
 

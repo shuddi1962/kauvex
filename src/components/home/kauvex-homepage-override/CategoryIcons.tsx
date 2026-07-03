@@ -1,6 +1,6 @@
 import Link from "next/link";
 import * as Icons from "lucide-react";
-import { categoryIcons } from "@/lib/data";
+import { categoryIcons } from "@/lib/homepage-data";
 
 export default function CategoryIcons() {
   return (

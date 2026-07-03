@@ -1,5 +1,5 @@
 import Image from "next/image";
-import { vendors } from "@/lib/data";
+import { vendors } from "@/lib/homepage-data";
 import { Store, Star } from "lucide-react";
 
 export default function VendorShowcase() {

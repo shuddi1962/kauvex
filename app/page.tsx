@@ -31,6 +31,7 @@ export default function Home() {
             title={block.title}
             bannerImage={block.bannerImage}
             bannerTag={block.bannerTag}
+            href={block.href}
             products={block.products}
           />
         ))}

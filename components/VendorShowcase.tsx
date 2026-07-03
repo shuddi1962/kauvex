@@ -33,7 +33,7 @@ export default function VendorShowcase() {
               {[0, 1, 2].map((n) => (
                 <div key={n} className="relative aspect-square rounded-md overflow-hidden bg-gray-50">
                   <Image
-                    src={`https://source.unsplash.com/150x150/?product&sig=${300 + i * 3 + n}`}
+                    src={`https://images.unsplash.com/photo-${[1502920912430, 1505740043378, 1523278682452, 1608043158269, 1592078013020, 1496188132472][i * 3 + n] || 1505740043378}?w=150&h=150&fit=crop&q=80`}
                     alt=""
                     fill
                     className="object-cover"

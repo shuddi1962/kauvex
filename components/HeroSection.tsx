@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import Image from "next/image";
+import Link from "next/link";
 import { ChevronLeft, ChevronRight, Search, Zap, Star, TrendingUp } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { heroSlides, todaysDeals } from "@/lib/data";
@@ -60,14 +61,12 @@ export default function HeroSection() {
                 >
                   {slide.subtitle}
                 </motion.p>
-                <motion.button
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: 0.5, duration: 0.6 }}
-                  className="w-fit bg-orange hover:bg-orange/90 text-white font-bold text-sm px-8 py-3.5 rounded-xl transition-all shadow-lg shadow-orange/20 hover:shadow-xl hover:shadow-orange/30 active:scale-95"
+                <Link
+                  href={slide.href}
+                  className="inline-block w-fit bg-orange hover:bg-orange/90 text-white font-bold text-sm px-8 py-3.5 rounded-xl transition-all shadow-lg shadow-orange/20 hover:shadow-xl hover:shadow-orange/30 active:scale-95"
                 >
                   {slide.cta}
-                </motion.button>
+                </Link>
               </div>
             </motion.div>
           </AnimatePresence>
@@ -118,10 +117,10 @@ export default function HeroSection() {
             <div className="flex items-center gap-2 mt-2 text-xs text-text-4">
               <TrendingUp size={12} />
               <span>Trending:</span>
-              {["iPhone 16", "Wireless Earbuds", "Summer Fashion"].map((trend) => (
-                <button key={trend} className="text-text-3 hover:text-orange transition-colors">
-                  {trend}
-                </button>
+              {[{ label: "iPhone 16", href: "/search?q=iphone+16" }, { label: "Wireless Earbuds", href: "/search?q=wireless+earbuds" }, { label: "Summer Fashion", href: "/category/fashion" }].map((trend) => (
+                <Link key={trend.label} href={trend.href} className="text-text-3 hover:text-orange transition-colors">
+                  {trend.label}
+                </Link>
               ))}
             </div>
           </div>
@@ -130,11 +129,11 @@ export default function HeroSection() {
           <div className="bg-white rounded-xl border border-border/60 shadow-card p-4 flex flex-col flex-1">
             <div className="flex items-center justify-between mb-3 pb-3 border-b border-border/60">
               <p className="font-display font-bold text-sm text-text-1">Today&apos;s Deals</p>
-              <span className="text-[10px] text-orange font-semibold">View All</span>
+              <Link href="/deals" className="text-[10px] text-orange font-semibold hover:underline">View All</Link>
             </div>
             <div className="flex flex-col gap-3 flex-1">
               {todaysDeals.map((p) => (
-                <a key={p.id} href="#" className="flex gap-3 group">
+                <Link key={p.id} href="/deals" className="flex gap-3 group">
                   <div className="relative w-16 h-16 rounded-lg overflow-hidden bg-gray-50 shrink-0">
                     <Image src={p.image} alt={p.title} fill className="object-cover group-hover:scale-110 transition-transform duration-500" />
                   </div>
@@ -151,7 +150,7 @@ export default function HeroSection() {
                       <span className="text-[9px] text-text-4">{p.rating}</span>
                     </div>
                   </div>
-                </a>
+                </Link>
               ))}
             </div>
           </div>

@@ -41,9 +41,9 @@ export default function DealOfDay() {
               <span className="text-orange font-bold text-2xl font-display">${hero.price.toFixed(2)}</span>
               {hero.oldPrice && <span className="text-text-4 text-sm line-through">${hero.oldPrice.toFixed(2)}</span>}
             </div>
-            <button className="mt-4 w-full h-11 bg-orange hover:bg-orange/90 text-white text-sm font-bold rounded-xl transition-all shadow-lg shadow-orange/20">
+            <Link href="/deals" className="mt-4 w-full h-11 bg-orange hover:bg-orange/90 text-white text-sm font-bold rounded-xl transition-all shadow-lg shadow-orange/20 flex items-center justify-center">
               Grab the Deal
-            </button>
+            </Link>
           </div>
         </div>
 

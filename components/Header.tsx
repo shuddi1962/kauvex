@@ -5,11 +5,18 @@ import Link from "next/link";
 import { Search, Phone, Heart, ShoppingCart, User, Menu, X, Plus, Minus, Trash2, ChevronDown } from "lucide-react";
 
 const quickCartItems = [
-  { id: "c1", title: "Wireless Earbuds Pro", price: 59, qty: 1, image: "https://source.unsplash.com/100x100/?earbuds&sig=200" },
-  { id: "c2", title: "Classic Leather Sneakers", price: 74, qty: 2, image: "https://source.unsplash.com/100x100/?sneakers&sig=201" },
+  { id: "c1", title: "Wireless Earbuds Pro", price: 59, qty: 1, image: "https://images.unsplash.com/photo-1606220942620?w=100&h=100&fit=crop&q=80" },
+  { id: "c2", title: "Classic Leather Sneakers", price: 74, qty: 2, image: "https://images.unsplash.com/photo-1549298911170?w=100&h=100&fit=crop&q=80" },
 ];
 
-const navLinks = ["Home", "Shop", "Categories", "Deals", "Brands", "Blog", "Contact"];
+const navLinks = [
+  { label: "Home", href: "/" },
+  { label: "Shop", href: "/shop" },
+  { label: "Deals", href: "/deals" },
+  { label: "Brands", href: "/brands" },
+  { label: "Blog", href: "/blog" },
+  { label: "Contact", href: "/contact" },
+];
 
 export default function Header() {
   const [isSticky, setIsSticky] = useState(false);
@@ -67,10 +74,10 @@ export default function Header() {
               </span>
             </a>
 
-            <button aria-label="Wishlist" className="relative p-2 hover:bg-gray-50 rounded-lg transition-colors">
+            <Link href="/account/wishlist" aria-label="Wishlist" className="relative p-2 hover:bg-gray-50 rounded-lg transition-colors">
               <Heart size={20} className="text-text-3 hover:text-orange transition-colors" />
               <span className="absolute top-0.5 right-0.5 bg-orange text-white text-[9px] font-bold w-4 h-4 rounded-full flex items-center justify-center">3</span>
-            </button>
+            </Link>
 
             <div className="relative">
               <button
@@ -110,9 +117,9 @@ export default function Header() {
                     <span className="text-sm font-medium text-text-1">Subtotal</span>
                     <span className="font-display font-bold text-lg text-orange">${total.toFixed(2)}</span>
                   </div>
-                  <button className="w-full mt-3 bg-orange hover:bg-orange/90 text-white text-sm font-bold rounded-xl py-3 transition-all shadow-lg shadow-orange/20">
+                  <Link href="/checkout" className="block w-full mt-3 bg-orange hover:bg-orange/90 text-white text-sm font-bold rounded-xl py-3 text-center transition-all shadow-lg shadow-orange/20">
                     Checkout
-                  </button>
+                  </Link>
                 </div>
               )}
             </div>
@@ -131,8 +138,8 @@ export default function Header() {
             <button onClick={() => setMobileOpen(false)} className="mb-4 p-1 hover:bg-gray-100 rounded-lg"><X size={20} /></button>
             <nav className="flex flex-col gap-1">
               {navLinks.map((l) => (
-                <Link key={l} href="#" className="px-3 py-2.5 text-sm font-medium text-text-2 hover:bg-orange-50 hover:text-orange rounded-lg transition-colors">
-                  {l}
+                <Link key={l.label} href={l.href} className="px-3 py-2.5 text-sm font-medium text-text-2 hover:bg-orange-50 hover:text-orange rounded-lg transition-colors">
+                  {l.label}
                 </Link>
               ))}
             </nav>

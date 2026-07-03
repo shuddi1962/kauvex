@@ -7,56 +7,102 @@ import { Menu, ChevronDown, ChevronRight } from "lucide-react";
 
 const categories = [
   {
-    label: "Electronics",
+    label: "Electronics & Technology",
     icon: "💻",
     href: "/category/electronics",
     children: [
-      { label: "Phones & Tablets", href: "/category/phones" },
-      { label: "Laptops & Computers", href: "/category/computers" },
-      { label: "Audio & Headphones", href: "/category/audio" },
-      { label: "Smart Home", href: "/category/smart-home" },
-      { label: "Accessories", href: "/category/accessories" },
-      { label: "Cameras", href: "/category/cameras" },
-      { label: "Gaming", href: "/category/gaming" },
-      { label: "Wearables", href: "/category/wearables" },
+      { label: "Smartphones & Accessories", href: "/category/electronics/smartphones" },
+      { label: "Laptops & Computers", href: "/category/electronics/laptops" },
+      { label: "Tablets & E-Readers", href: "/category/electronics/tablets" },
+      { label: "Smart Home & IoT", href: "/category/electronics/smart-home" },
+      { label: "Audio & Headphones", href: "/category/electronics/audio" },
+      { label: "Cameras & Photography", href: "/category/electronics/cameras" },
+      { label: "Gaming & Consoles", href: "/category/electronics/gaming" },
+      { label: "Wearables & Smartwatches", href: "/category/electronics/wearables" },
+      { label: "TV & Home Entertainment", href: "/category/electronics/tv-entertainment" },
+      { label: "Computer Components", href: "/category/electronics/computer-components" },
+      { label: "Networking Equipment", href: "/category/electronics/networking" },
+      { label: "Power Banks & Chargers", href: "/category/electronics/power-banks" },
+      { label: "Cables & Adapters", href: "/category/electronics/cables-adapters" },
     ],
   },
   {
-    label: "Marine",
-    icon: "⛵",
-    href: "/category/marine",
-    children: [
-      { label: "Boat Engines", href: "/category/boat-engines" },
-      { label: "GPS & Navigation", href: "/category/gps-navigation" },
-      { label: "Fishing Equipment", href: "/category/fishing" },
-      { label: "Safety Gear", href: "/category/marine-safety" },
-      { label: "Boat Parts", href: "/category/boat-parts" },
-      { label: "Marine Electronics", href: "/category/marine-electronics" },
-    ],
-  },
-  {
-    label: "Fashion",
+    label: "Fashion & Apparel",
     icon: "👕",
     href: "/category/fashion",
     children: [
-      { label: "Men's Clothing", href: "/category/men-clothing" },
-      { label: "Women's Clothing", href: "/category/women-clothing" },
-      { label: "Kids & Baby", href: "/category/kids" },
-      { label: "Shoes", href: "/category/shoes" },
-      { label: "Accessories", href: "/category/fashion-accessories" },
-      { label: "Luxury", href: "/category/luxury" },
+      { label: "Men's Clothing", href: "/category/fashion/mens-clothing" },
+      { label: "Women's Clothing", href: "/category/fashion/womens-clothing" },
+      { label: "Children's Clothing", href: "/category/fashion/kids-clothing" },
+      { label: "Shoes & Footwear", href: "/category/fashion/shoes" },
+      { label: "Bags & Luggage", href: "/category/fashion/bags-luggage" },
+      { label: "Watches & Jewellery", href: "/category/fashion/watches-jewellery" },
+      { label: "Sunglasses & Eyewear", href: "/category/fashion/eyewear" },
+      { label: "Sportswear & Activewear", href: "/category/fashion/sportswear" },
+      { label: "Underwear & Loungewear", href: "/category/fashion/underwear" },
+      { label: "Traditional & Cultural Wear", href: "/category/fashion/traditional-wear" },
     ],
   },
   {
-    label: "Industrial",
-    icon: "🏭",
-    href: "/category/industrial",
+    label: "Home & Living",
+    icon: "🏠",
+    href: "/category/home-living",
     children: [
-      { label: "Machinery", href: "/category/machinery" },
-      { label: "Construction", href: "/category/construction" },
-      { label: "Safety Equipment", href: "/category/safety-equipment" },
-      { label: "Tools", href: "/category/tools" },
-      { label: "Raw Materials", href: "/category/raw-materials" },
+      { label: "Furniture", href: "/category/home-living/furniture" },
+      { label: "Kitchen & Dining", href: "/category/home-living/kitchen-dining" },
+      { label: "Bedding & Bath", href: "/category/home-living/bedding-bath" },
+      { label: "Home Decor", href: "/category/home-living/home-decor" },
+      { label: "Lighting", href: "/category/home-living/lighting" },
+      { label: "Storage & Organisation", href: "/category/home-living/storage-org" },
+      { label: "Garden & Outdoor", href: "/category/home-living/garden-outdoor" },
+      { label: "Cleaning & Laundry", href: "/category/home-living/cleaning-laundry" },
+      { label: "DIY & Tools", href: "/category/home-living/diy-tools" },
+      { label: "Home Security", href: "/category/home-living/home-security" },
+    ],
+  },
+  {
+    label: "Health & Beauty",
+    icon: "✨",
+    href: "/category/health-beauty",
+    children: [
+      { label: "Skincare", href: "/category/health-beauty/skincare" },
+      { label: "Hair Care", href: "/category/health-beauty/hair-care" },
+      { label: "Makeup & Cosmetics", href: "/category/health-beauty/makeup" },
+      { label: "Men's Grooming", href: "/category/health-beauty/mens-grooming" },
+      { label: "Vitamins & Supplements", href: "/category/health-beauty/supplements" },
+      { label: "Medical Devices", href: "/category/health-beauty/medical-devices" },
+      { label: "Dental Care", href: "/category/health-beauty/dental-care" },
+      { label: "Fragrances", href: "/category/health-beauty/fragrances" },
+      { label: "Fitness Equipment", href: "/category/health-beauty/fitness-equipment" },
+      { label: "Wellness", href: "/category/health-beauty/wellness" },
+    ],
+  },
+  {
+    label: "Mother & Baby",
+    icon: "👶",
+    href: "/category/mother-baby",
+    children: [
+      { label: "Baby Clothing", href: "/category/mother-baby/baby-clothing" },
+      { label: "Toys & Games", href: "/category/mother-baby/toys-games" },
+      { label: "Pushchairs & Car Seats", href: "/category/mother-baby/pushchairs-car-seats" },
+      { label: "Baby Food & Formula", href: "/category/mother-baby/baby-food" },
+      { label: "Nursery Furniture", href: "/category/mother-baby/nursery-furniture" },
+      { label: "Educational Toys", href: "/category/mother-baby/educational-toys" },
+      { label: "Board Games", href: "/category/mother-baby/board-games" },
+    ],
+  },
+  {
+    label: "Sports & Outdoors",
+    icon: "⚽",
+    href: "/category/sports-outdoors",
+    children: [
+      { label: "Football & Team Sports", href: "/category/sports-outdoors/football" },
+      { label: "Swimming & Water Sports", href: "/category/sports-outdoors/swimming" },
+      { label: "Cycling", href: "/category/sports-outdoors/cycling" },
+      { label: "Camping & Hiking", href: "/category/sports-outdoors/camping-hiking" },
+      { label: "Fishing", href: "/category/sports-outdoors/fishing" },
+      { label: "Boxing & Martial Arts", href: "/category/sports-outdoors/boxing-martial-arts" },
+      { label: "Running & Athletics", href: "/category/sports-outdoors/running-athletics" },
     ],
   },
   {
@@ -64,23 +110,47 @@ const categories = [
     icon: "🚗",
     href: "/category/automotive",
     children: [
-      { label: "Tires & Wheels", href: "/category/tires" },
-      { label: "Batteries", href: "/category/batteries" },
-      { label: "Spare Parts", href: "/category/spare-parts" },
-      { label: "Car Accessories", href: "/category/car-accessories" },
-      { label: "Motorcycle Parts", href: "/category/motorcycle-parts" },
+      { label: "Car Accessories", href: "/category/automotive/car-accessories" },
+      { label: "Motorcycle Parts", href: "/category/automotive/motorcycle-parts" },
+      { label: "Car Electronics", href: "/category/automotive/car-electronics" },
+      { label: "Tyres & Wheels", href: "/category/automotive/tyres-wheels" },
+      { label: "Car Care & Cleaning", href: "/category/automotive/car-care" },
+      { label: "Commercial Vehicle Parts", href: "/category/automotive/commercial-parts" },
     ],
   },
   {
-    label: "ICT",
-    icon: "🖥️",
-    href: "/category/ict",
+    label: "Office & Stationery",
+    icon: "💼",
+    href: "/category/office-stationery",
     children: [
-      { label: "Laptops", href: "/category/laptops" },
-      { label: "Servers & Networking", href: "/category/servers" },
-      { label: "Software", href: "/category/software" },
-      { label: "IT Accessories", href: "/category/it-accessories" },
-      { label: "Office Equipment", href: "/category/office-equipment" },
+      { label: "Office Furniture", href: "/category/office-stationery/office-furniture" },
+      { label: "Printers & Scanners", href: "/category/office-stationery/printers-scanners" },
+      { label: "Stationery & Supplies", href: "/category/office-stationery/stationery" },
+      { label: "Whiteboards & Display", href: "/category/office-stationery/whiteboards-display" },
+      { label: "Business Machines", href: "/category/office-stationery/business-machines" },
+    ],
+  },
+  {
+    label: "Digital Products",
+    icon: "📦",
+    href: "/category/digital-products",
+    children: [
+      { label: "Software & Licenses", href: "/category/digital-products/software-licenses" },
+      { label: "Gift Cards & Vouchers", href: "/category/digital-products/gift-cards" },
+      { label: "Online Courses", href: "/category/digital-products/online-courses" },
+      { label: "E-Books", href: "/category/digital-products/ebooks" },
+    ],
+  },
+  {
+    label: "Industrial & B2B",
+    icon: "🏭",
+    href: "/category/industrial-b2b",
+    children: [
+      { label: "Safety Equipment & PPE", href: "/category/industrial-b2b/safety-ppe" },
+      { label: "Electrical & Industrial", href: "/category/industrial-b2b/electrical-industrial" },
+      { label: "Construction Materials", href: "/category/industrial-b2b/construction" },
+      { label: "Packaging & Shipping", href: "/category/industrial-b2b/packaging" },
+      { label: "Agricultural Equipment", href: "/category/industrial-b2b/agricultural" },
     ],
   },
 ];
@@ -96,7 +166,14 @@ const exploreLinks = [
   { label: "FBK Fulfillment", icon: "📦", href: "/vendor/fbk", desc: "We pick, pack & ship" },
 ];
 
-const navLinks = ["Home", "Shop", "Deals", "Brands", "Blog", "Contact"];
+const navLinks = [
+  { label: "Home", href: "/" },
+  { label: "Shop", href: "/shop" },
+  { label: "Deals", href: "/deals" },
+  { label: "Brands", href: "/brands" },
+  { label: "Blog", href: "/blog" },
+  { label: "Contact", href: "/contact" },
+];
 
 export default function MegaMenu() {
   const [openMenu, setOpenMenu] = useState<string | null>(null);
@@ -162,11 +239,11 @@ export default function MegaMenu() {
         <div className="flex items-center gap-1 ml-6 overflow-x-auto">
           {navLinks.map((link) => (
             <Link
-              key={link}
-              href={link === "Home" ? "/" : `/${link.toLowerCase()}`}
+              key={link.label}
+              href={link.href}
               className="whitespace-nowrap text-text-2 hover:text-orange text-sm font-medium px-3 py-1.5 rounded-lg hover:bg-orange-50 transition-colors"
             >
-              {link}
+              {link.label}
             </Link>
           ))}
 

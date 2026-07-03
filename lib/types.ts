@@ -16,6 +16,7 @@ export interface CategoryIcon {
   id: string;
   label: string;
   icon: string;
+  href: string;
 }
 
 export interface Brand {
@@ -31,6 +32,7 @@ export interface HeroSlide {
   image: string;
   cta: string;
   gradient: string;
+  href: string;
 }
 
 export interface Vendor {

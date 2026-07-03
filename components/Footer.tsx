@@ -2,13 +2,12 @@ import Link from "next/link";
 import { Mail, Globe, ArrowRight } from "lucide-react";
 
 const sellLinks = [
-  { label: "Start Selling", url: "/sell" },
-  { label: "Vendor Dashboard", url: "/vendor/dashboard" },
-  { label: "Supplier Portal", url: "/supplier/register" },
+  { label: "Start Selling", url: "/vendor/register" },
+  { label: "Vendor Dashboard", url: "/vendor" },
+  { label: "Supplier Portal", url: "/supplier" },
   { label: "B2B/Wholesale", url: "/wholesale" },
   { label: "Manufacturer Portal", url: "/manufacturers" },
-  { label: "Find Manufacturers", url: "/manufacturers/search" },
-  { label: "Advertising", url: "/advertise" },
+  { label: "Find Manufacturers", url: "/manufacturers" },
   { label: "FBK Fulfillment", url: "/vendor/fbk" },
 ];
 

@@ -2,8 +2,10 @@
 
 import { Truck, Shield, Headphones, CreditCard } from "lucide-react";
 import HeroPremium from "@/components/home/hero-premium";
-import CategoryGrid from "@/components/home/category-grid";
-import FeaturedProducts from "@/components/home/featured-products";
+import TrendingShowcase from "@/components/home/trending-showcase";
+import DealsOfDay from "@/components/home/deals-of-day";
+import PromoBanners from "@/components/home/promo-banners";
+import BrandCarousel from "@/components/home/brand-carousel";
 import V3FeaturesSection from "@/components/home/v3-features";
 import SellBanner from "@/components/home/sell-banner";
 import HomepageSectionRenderer from "@/components/home/HomepageSectionRenderer";
@@ -44,17 +46,23 @@ export default function HomePage() {
       {/* Hero Banner — Premium */}
       <HeroPremium />
 
-      {/* Shop by Category */}
-      <CategoryGrid />
+      {/* Promo Category Banners */}
+      <PromoBanners />
 
-      {/* Today's Picks */}
-      <FeaturedProducts />
+      {/* Trending Showcase — Top 100 Tabbed Products */}
+      <TrendingShowcase />
+
+      {/* Deal of the Day */}
+      <DealsOfDay />
 
       {/* V3 Feature Highlights */}
       <V3FeaturesSection />
 
       {/* Kauvex Express Banner */}
       <ExpressBanner />
+
+      {/* Brand & Vendor Showcase */}
+      <BrandCarousel />
 
       {/* Modular Homepage Sections (from DB or defaults) */}
       <HomepageSectionRenderer />

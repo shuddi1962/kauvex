@@ -10,3 +10,7 @@ export { default as NewArrivalsSection } from "./NewArrivalsSection";
 export { default as FeaturedBrandsSection } from "./FeaturedBrandsSection";
 export { default as TestimonialsSection } from "./TestimonialsSection";
 export { default as HeroPremium } from "./hero-premium";
+export { default as TrendingShowcase } from "./trending-showcase";
+export { default as DealsOfDay } from "./deals-of-day";
+export { default as PromoBanners } from "./promo-banners";
+export { default as BrandCarousel } from "./brand-carousel";

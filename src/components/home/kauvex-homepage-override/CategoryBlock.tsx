@@ -1,6 +1,6 @@
 import Image from "next/image";
 import ProductCard from "./ProductCard";
-import { Product } from "@/lib/types";
+import { Product } from "@/lib/homepage-types";
 import Link from "next/link";
 import { ArrowRight } from "lucide-react";
 

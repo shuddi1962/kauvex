@@ -1,13 +1,51 @@
+"use client";
+
 import Image from "next/image";
 import { dealOfDayProducts } from "@/lib/homepage-data";
-import ProductCard from "./ProductCard";
 import CountdownTimer from "./CountdownTimer";
 import Link from "next/link";
-import { Clock, ArrowRight } from "lucide-react";
+import { Clock, ShoppingCart, Check } from "lucide-react";
+import { useState } from "react";
+import { useCartStore } from "@/store/cart-store";
+
+const addToCartStore = (product: typeof dealOfDayProducts[0], setAdded: (v: boolean) => void) => {
+  useCartStore.getState().addItem(
+    {
+      id: `deal-${product.id}`,
+      name: product.title,
+      slug: product.title.toLowerCase().replace(/\s+/g, "-"),
+      type: "simple",
+      sku: product.id,
+      shortDescription: product.title,
+      longDescription: product.title,
+      brand: { id: "", name: "", slug: "", logo: "", productCount: 0 },
+      category: { id: "", name: product.category, slug: product.category?.toLowerCase().replace(/\s+/g, "-") || "", productCount: 0 },
+      regularPrice: product.oldPrice || product.price,
+      salePrice: product.price,
+      images: [{ id: "1", url: product.image, alt: product.title, position: 0, watermark: false }],
+      badges: [],
+      inventory: [{ locationId: "main", locationName: "Main", quantity: 10, lowStockThreshold: 2, backorderEnabled: false }],
+      seo: { metaTitle: product.title, metaDescription: product.title, focusKeyword: "", altTexts: [] },
+      tags: [product.category],
+      rating: product.rating,
+      reviewCount: product.reviews,
+      featured: false,
+      status: "published",
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+    } as any,
+    1,
+    undefined,
+    "phc-main"
+  );
+  setAdded(true);
+  setTimeout(() => setAdded(false), 2000);
+};
 
 export default function DealOfDay() {
   const hero = dealOfDayProducts[0];
   const side = dealOfDayProducts.slice(1);
+  const [addedStates, setAddedStates] = useState<Record<string, boolean>>({});
 
   return (
     <section className="container-kauvex py-8">
@@ -41,15 +79,15 @@ export default function DealOfDay() {
               <span className="text-orange font-bold text-2xl font-display">${hero.price.toFixed(2)}</span>
               {hero.oldPrice && <span className="text-text-4 text-sm line-through">${hero.oldPrice.toFixed(2)}</span>}
             </div>
-            <Link href="/deals" className="mt-4 w-full h-11 bg-orange hover:bg-orange/90 text-white text-sm font-bold rounded-xl transition-all shadow-lg shadow-orange/20 flex items-center justify-center">
-              Grab the Deal
-            </Link>
+              <Link href={hero.title ? `/search?q=${encodeURIComponent(hero.title.split(" ").slice(0, 3).join(" "))}` : "/deals"} className="mt-4 w-full h-11 bg-orange hover:bg-orange/90 text-white text-sm font-bold rounded-xl transition-all shadow-lg shadow-orange/20 flex items-center justify-center">
+                Grab the Deal
+              </Link>
           </div>
         </div>
 
         {/* Side deals */}
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-          {side.map((p, i) => (
+          {side.map((p) => (
             <div key={p.id} className="group bg-white rounded-xl border border-border shadow-card hover:shadow-card-hover transition-all overflow-hidden">
               <div className="relative aspect-square overflow-hidden">
                 <Image src={p.image} alt={p.title} fill className="object-cover group-hover:scale-110 transition-transform duration-500" unoptimized />
@@ -63,8 +101,20 @@ export default function DealOfDay() {
                   <span className="text-orange font-bold text-sm font-display">${p.price.toFixed(2)}</span>
                   {p.oldPrice && <span className="text-text-4 text-[10px] line-through">${p.oldPrice.toFixed(2)}</span>}
                 </div>
-                <button className="mt-2 w-full h-8 bg-navy hover:bg-navy/90 text-white text-[10px] font-semibold rounded-lg transition-all">
-                  Add to Cart
+                <button
+                  onClick={(e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    const key = p.id;
+                    setAddedStates((prev) => ({ ...prev, [key]: true }));
+                    addToCartStore(p, (v) => setAddedStates((prev) => ({ ...prev, [key]: v })));
+                  }}
+                  className={`mt-2 w-full h-8 text-[10px] font-semibold rounded-lg transition-all flex items-center justify-center gap-1 ${
+                    addedStates[p.id] ? "bg-emerald-500 text-white" : "bg-navy hover:bg-navy/90 text-white"
+                  }`}
+                >
+                  {addedStates[p.id] ? <Check size={11} /> : <ShoppingCart size={11} />}
+                  {addedStates[p.id] ? "Added" : "Add to Cart"}
                 </button>
               </div>
             </div>

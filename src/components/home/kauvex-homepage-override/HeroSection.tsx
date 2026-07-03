@@ -1,19 +1,30 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import Image from "next/image";
 import Link from "next/link";
-import { ChevronLeft, ChevronRight, Search, Zap, Star, TrendingUp } from "lucide-react";
+import { useRouter } from "next/navigation";
+import { ChevronLeft, ChevronRight, Search, Star, TrendingUp } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { heroSlides, todaysDeals } from "@/lib/homepage-data";
 
 export default function HeroSection() {
   const [index, setIndex] = useState(0);
+  const [searchQuery, setSearchQuery] = useState("");
+  const router = useRouter();
+  const searchRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     const t = setInterval(() => setIndex((i) => (i + 1) % heroSlides.length), 6000);
     return () => clearInterval(t);
   }, []);
+
+  const handleSearch = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (searchQuery.trim()) {
+      router.push(`/search?q=${encodeURIComponent(searchQuery.trim())}`);
+    }
+  };
 
   const slide = heroSlides[index];
 
@@ -102,27 +113,30 @@ export default function HeroSection() {
         {/* Sidebar: Search + Today's Deals */}
         <div className="flex flex-col gap-4">
           {/* Search Bar */}
-          <div className="relative">
+          <form onSubmit={handleSearch}>
             <div className="flex items-center bg-white border border-border rounded-xl overflow-hidden focus-within:border-orange/50 focus-within:shadow-glow transition-all duration-300">
               <Search size={18} className="absolute left-4 text-text-4" />
               <input
+                ref={searchRef}
                 type="text"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
                 placeholder="Search millions of products..."
                 className="w-full bg-transparent text-text-1 placeholder:text-text-4 pl-11 pr-4 py-3.5 text-sm outline-none"
               />
-              <button className="mr-1.5 bg-orange hover:bg-orange/90 text-white text-xs font-semibold px-5 py-2 rounded-lg transition-all">
+              <button type="submit" className="mr-1.5 bg-orange hover:bg-orange/90 text-white text-xs font-semibold px-5 py-2 rounded-lg transition-all">
                 Search
               </button>
             </div>
-            <div className="flex items-center gap-2 mt-2 text-xs text-text-4">
-              <TrendingUp size={12} />
-              <span>Trending:</span>
-              {[{ label: "iPhone 16", href: "/search?q=iphone+16" }, { label: "Wireless Earbuds", href: "/search?q=wireless+earbuds" }, { label: "Summer Fashion", href: "/category/fashion" }].map((trend) => (
-                <Link key={trend.label} href={trend.href} className="text-text-3 hover:text-orange transition-colors">
-                  {trend.label}
-                </Link>
-              ))}
-            </div>
+          </form>
+          <div className="flex items-center gap-2 text-xs text-text-4">
+            <TrendingUp size={12} />
+            <span>Trending:</span>
+            {[{ label: "iPhone 16", href: "/search?q=iphone+16" }, { label: "Wireless Earbuds", href: "/search?q=wireless+earbuds" }, { label: "Summer Fashion", href: "/category/fashion" }].map((trend) => (
+              <Link key={trend.label} href={trend.href} className="text-text-3 hover:text-orange transition-colors">
+                {trend.label}
+              </Link>
+            ))}
           </div>
 
           {/* Today's Deals Widget */}

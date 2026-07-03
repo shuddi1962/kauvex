@@ -2,12 +2,9 @@
 
 import { useState, useEffect } from "react";
 import Link from "next/link";
-import { Search, Phone, Heart, ShoppingCart, User, Menu, X, Plus, Minus, Trash2, ChevronDown } from "lucide-react";
-
-const quickCartItems = [
-  { id: "c1", title: "Wireless Earbuds Pro", price: 59, qty: 1, image: "https://images.unsplash.com/photo-1606220942620?w=100&h=100&fit=crop&q=80" },
-  { id: "c2", title: "Classic Leather Sneakers", price: 74, qty: 2, image: "https://images.unsplash.com/photo-1549298911170?w=100&h=100&fit=crop&q=80" },
-];
+import Image from "next/image";
+import { Search, Phone, Heart, ShoppingCart, User, Menu, X, ChevronDown, ShoppingBag } from "lucide-react";
+import { useCartStore } from "@/store/cart-store";
 
 const navLinks = [
   { label: "Home", href: "/" },
@@ -22,6 +19,8 @@ export default function Header() {
   const [isSticky, setIsSticky] = useState(false);
   const [cartOpen, setCartOpen] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
+  const { items } = useCartStore();
+  const cartItems = items;
 
   useEffect(() => {
     const onScroll = () => setIsSticky(window.scrollY > 120);
@@ -29,7 +28,10 @@ export default function Header() {
     return () => window.removeEventListener("scroll", onScroll);
   }, []);
 
-  const total = quickCartItems.reduce((s, i) => s + i.price * i.qty, 0);
+  const total = cartItems.reduce((s, i) => {
+    const price = i.variant?.salePrice || i.variant?.price || i.product.salePrice || i.product.regularPrice;
+    return s + price * i.quantity;
+  }, 0);
 
   return (
     <div>
@@ -86,40 +88,50 @@ export default function Header() {
                 className="relative p-2 hover:bg-gray-50 rounded-lg transition-colors"
               >
                 <ShoppingCart size={20} className="text-text-3 hover:text-orange transition-colors" />
-                <span className="absolute top-0.5 right-0.5 bg-orange text-white text-[9px] font-bold w-4 h-4 rounded-full flex items-center justify-center">
-                  {quickCartItems.length}
-                </span>
+                {cartItems.length > 0 && <span className="absolute top-0.5 right-0.5 bg-orange text-white text-[9px] font-bold w-4 h-4 rounded-full flex items-center justify-center">
+                  {cartItems.reduce((sum, i) => sum + i.quantity, 0)}
+                </span>}
               </button>
 
               {cartOpen && (
                 <div className="absolute right-0 mt-2 w-80 bg-white rounded-xl shadow-modal border border-border z-50 p-4 animate-in">
                   <p className="font-display font-bold text-sm mb-3">Your Cart</p>
-                  <div className="space-y-3 max-h-64 overflow-y-auto">
-                    {quickCartItems.map((item) => (
-                      <div key={item.id} className="flex gap-3">
-                        <img src={item.image} alt={item.title} className="w-14 h-14 rounded-lg object-cover bg-gray-50" />
-                        <div className="flex-1">
-                          <p className="text-xs font-medium text-text-1 leading-tight">{item.title}</p>
-                          <div className="flex items-center justify-between mt-1">
-                            <div className="flex items-center gap-2 text-xs text-text-4">
-                              <button className="hover:text-orange"><Minus size={12} /></button>
-                              <span className="font-medium text-text-1">{item.qty}</span>
-                              <button className="hover:text-orange"><Plus size={12} /></button>
+                  {cartItems.length === 0 ? (
+                    <div className="py-8 text-center">
+                      <ShoppingBag size={32} className="mx-auto text-text-4 mb-2" />
+                      <p className="text-xs text-text-4">Your cart is empty</p>
+                    </div>
+                  ) : (
+                    <>
+                      <div className="space-y-3 max-h-64 overflow-y-auto">
+                        {cartItems.map((item) => {
+                          const itemImage = item.variant?.image || item.product.images?.[0]?.url || "";
+                          const itemPrice = item.variant?.salePrice || item.variant?.price || item.product.salePrice || item.product.regularPrice;
+                          return (
+                            <div key={`${item.product.id}-${item.variant?.id || ""}`} className="flex gap-3">
+                              <div className="w-14 h-14 rounded-lg overflow-hidden bg-gray-50 shrink-0 relative">
+                                {itemImage && <Image src={itemImage} alt={item.product.name} fill className="object-cover" unoptimized />}
+                              </div>
+                              <div className="flex-1 min-w-0">
+                                <p className="text-xs font-medium text-text-1 leading-tight line-clamp-1">{item.product.name}</p>
+                                <div className="flex items-center justify-between mt-1">
+                                  <span className="text-xs text-text-4">Qty: {item.quantity}</span>
+                                  <span className="text-orange font-bold text-xs font-display">${itemPrice.toFixed(2)}</span>
+                                </div>
+                              </div>
                             </div>
-                            <span className="text-orange font-bold text-xs font-display">${(item.price * item.qty).toFixed(2)}</span>
-                          </div>
-                        </div>
-                        <button className="text-text-4 hover:text-error self-start"><Trash2 size={14} /></button>
+                          );
+                        })}
                       </div>
-                    ))}
-                  </div>
-                  <div className="flex items-center justify-between border-t border-border mt-4 pt-3">
-                    <span className="text-sm font-medium text-text-1">Subtotal</span>
-                    <span className="font-display font-bold text-lg text-orange">${total.toFixed(2)}</span>
-                  </div>
-                  <Link href="/checkout" className="block w-full mt-3 bg-orange hover:bg-orange/90 text-white text-sm font-bold rounded-xl py-3 text-center transition-all shadow-lg shadow-orange/20">
-                    Checkout
-                  </Link>
+                      <div className="flex items-center justify-between border-t border-border mt-4 pt-3">
+                        <span className="text-sm font-medium text-text-1">Subtotal</span>
+                        <span className="font-display font-bold text-lg text-orange">${total.toFixed(2)}</span>
+                      </div>
+                      <Link href="/checkout" className="block w-full mt-3 bg-orange hover:bg-orange/90 text-white text-sm font-bold rounded-xl py-3 text-center transition-all shadow-lg shadow-orange/20">
+                        Checkout
+                      </Link>
+                    </>
+                  )}
                 </div>
               )}
             </div>

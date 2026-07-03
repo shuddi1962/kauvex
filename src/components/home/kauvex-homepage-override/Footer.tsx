@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { Mail, Globe, ArrowRight } from "lucide-react";
+import { Mail, Globe } from "lucide-react";
 
 const sellLinks = [
   { label: "Start Selling", url: "/vendor/register" },
@@ -46,7 +46,14 @@ const expressLinks = [
   { label: "Coverage Areas", url: "/express/coverage" },
 ];
 
-const socialLinks = ["Instagram", "Twitter/X", "Facebook", "TikTok", "YouTube", "LinkedIn"];
+const socialLinks = [
+  { name: "Instagram", url: "https://instagram.com/kauvex" },
+  { name: "Twitter/X", url: "https://twitter.com/kauvex" },
+  { name: "Facebook", url: "https://facebook.com/kauvex" },
+  { name: "TikTok", url: "https://tiktok.com/@kauvex" },
+  { name: "YouTube", url: "https://youtube.com/@kauvex" },
+  { name: "LinkedIn", url: "https://linkedin.com/company/kauvex" },
+];
 
 const paymentIcons = ["Visa", "Mastercard", "PayPal", "Apple Pay", "Google Pay", "Stripe", "Paystack", "Flutterwave"];
 
@@ -78,9 +85,9 @@ export default function Footer() {
             </div>
             <div className="flex items-center gap-2">
               {socialLinks.map((s) => (
-                <span key={s} className="w-8 h-8 rounded-lg bg-white/5 hover:bg-orange flex items-center justify-center text-xs font-bold text-white/50 hover:text-white cursor-pointer transition-all">
-                  {s.charAt(0)}
-                </span>
+                <a key={s.name} href={s.url} target="_blank" rel="noopener noreferrer" title={s.name} className="w-8 h-8 rounded-lg bg-white/5 hover:bg-orange flex items-center justify-center text-xs font-bold text-white/50 hover:text-white transition-all">
+                  {s.name.charAt(0)}
+                </a>
               ))}
             </div>
           </div>

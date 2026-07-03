@@ -36,7 +36,7 @@ export async function GET(request: NextRequest) {
 
       const price = product.sale_price ?? product.regular_price
       const link = `${siteUrl}/product/${product.slug}`
-      const imageLink = images[0] ?? `${siteUrl}/placeholder.png`
+      const imageLink = images[0] ?? `${siteUrl}/placeholder-product.svg`
       const availability = product.type === 'digital' ? 'in stock' : 'in stock'
       const brand = product.brand?.name ?? 'KAUVEX'
       const categoryPath = product.category?.slug ?? ''

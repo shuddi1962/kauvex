@@ -84,6 +84,7 @@ export default function ProductCard({ product, index = 0 }: { product: Product; 
             loading="lazy"
             sizes="(max-width: 768px) 50vw, 220px"
             className="object-cover transition-all duration-700 group-hover:scale-110"
+            unoptimized
           />
 
           <div className="absolute inset-0 bg-black/0 group-hover:bg-black/5 transition-colors duration-300" />

@@ -42,7 +42,7 @@ export default function FrequentlyBoughtTogether({ productId }: { productId: str
               name: p.name,
               slug: p.slug,
               price: Number(p.price),
-              image: p.images?.[0] || "/placeholder.png",
+              image: p.images?.[0] || "/placeholder-product.svg",
             })));
             setSelected(new Set(allIds));
           }

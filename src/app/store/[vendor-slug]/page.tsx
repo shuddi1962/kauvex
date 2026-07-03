@@ -218,7 +218,7 @@ export default function VendorStorePage({ params }: { params: { "vendor-slug": s
         className="relative h-48 md:h-64 overflow-hidden"
       >
         {vendor.banner ? (
-          <Image src={vendor.banner} alt="" fill className="object-cover" />
+          <Image src={vendor.banner} alt="" fill className="object-cover" unoptimized />
         ) : (
           <div className="w-full h-full bg-gradient-to-r from-[#0A1628] via-[#162240] to-[#0A1628]">
             <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,rgba(255,107,0,0.15),transparent_50%)]" />

@@ -29,7 +29,7 @@ export default function CategoryBlock({
 
       <div className="grid lg:grid-cols-[260px_1fr] gap-5">
         <Link href={href} className="relative rounded-2xl overflow-hidden h-full min-h-[260px] group block">
-          <Image src={bannerImage} alt={title} fill className="object-cover group-hover:scale-105 transition-transform duration-700" />
+          <Image src={bannerImage} alt={title} fill className="object-cover group-hover:scale-105 transition-transform duration-700" unoptimized />
           <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/10 to-transparent" />
           <div className="absolute bottom-5 left-5 right-5">
             <span className="inline-block bg-orange/90 text-white text-[11px] font-bold uppercase tracking-widest px-3 py-1.5 rounded-full mb-2">

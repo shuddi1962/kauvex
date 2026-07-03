@@ -42,7 +42,7 @@ export default function HeroSection() {
               transition={{ duration: 0.7, ease: [0.16, 1, 0.3, 1] }}
               className="absolute inset-0"
             >
-              <Image src={slide.image} alt={slide.title} fill className="object-cover" priority />
+              <Image src={slide.image} alt={slide.title} fill className="object-cover" priority unoptimized />
               <div className={`absolute inset-0 bg-gradient-to-r ${slide.gradient}`} />
               
               <div className="absolute inset-0 bg-grid-white opacity-30" />
@@ -149,7 +149,7 @@ export default function HeroSection() {
               {todaysDeals.map((p) => (
                 <Link key={p.id} href="/deals" className="flex gap-3 group">
                   <div className="relative w-16 h-16 rounded-lg overflow-hidden bg-gray-50 shrink-0">
-                    <Image src={p.image} alt={p.title} fill className="object-cover group-hover:scale-110 transition-transform duration-500" />
+                    <Image src={p.image} alt={p.title} fill className="object-cover group-hover:scale-110 transition-transform duration-500" unoptimized />
                   </div>
                   <div className="min-w-0 flex-1">
                     <p className="text-xs font-medium text-text-1 leading-snug line-clamp-2 group-hover:text-orange transition-colors">

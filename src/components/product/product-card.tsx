@@ -44,7 +44,7 @@ export default function ProductCard({ product, style = "classic", isSponsored = 
   const displayPrice = isOnSale ? product.salePrice! : product.regularPrice;
   const inStock = product.inventory.reduce((sum, loc) => sum + loc.quantity, 0) > 0;
 
-  const productImage = product.images?.[0]?.url || categoryImages[product.category.slug] || "https://images.unsplash.com/photo-1558618666-fcd25c85f82e?w=400&h=400&fit=crop";
+  const productImage = product.images?.[0]?.url || categoryImages[product.category.slug] || "/placeholder-product.svg";
 
   // ─── HORIZONTAL ──────────────────────────────────────────────────
   if (style === "horizontal") {

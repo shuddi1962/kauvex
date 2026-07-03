@@ -72,7 +72,7 @@ export default function ShopPage() {
           slug: String(p.slug || "product"),
           regularPrice: Number(p.regular_price || p.price || 0),
           salePrice: p.sale_price ? Number(p.sale_price) : undefined,
-          image: String(p.image || p.images?.[0] || "/images/placeholder.png"),
+          image: String(p.image || p.images?.[0] || "/images/placeholder.svg"),
           rating: Number(p.rating || 4.5),
           reviewCount: Number(p.review_count || 0),
           category: { name: String(p.category_name || "Category"), slug: String(p.category_slug || "category") },

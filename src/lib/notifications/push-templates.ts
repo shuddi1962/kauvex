@@ -90,4 +90,49 @@ export const pushTemplates = {
           : "/logistics/earnings",
     },
   }),
+
+  streakMilestone: (data: { streakDay: number; points: number }): PushNotificationPayload => ({
+    title: `${data.streakDay} day streak! 🔥`,
+    body: data.streakDay % 7 === 0
+      ? `Bonus day! You earned ${data.points} points. Keep it up!`
+      : `You earned ${data.points} points for checking in today.`,
+    icon: "/icons/icon-192x192.png",
+    data: { url: "/account/gamification" },
+  }),
+
+  achievementUnlocked: (data: { name: string; points: number }): PushNotificationPayload => ({
+    title: `Achievement Unlocked! 🏆`,
+    body: `"${data.name}" — You earned ${data.points} points!`,
+    icon: "/icons/icon-192x192.png",
+    data: { url: "/account/gamification" },
+  }),
+
+  spinWin: (data: { prize: string; points: number }): PushNotificationPayload => ({
+    title: `You won! 🎉`,
+    body: `${data.prize} — ${data.points} points added to your account.`,
+    icon: "/icons/icon-192x192.png",
+    data: { url: "/account/gamification" },
+  }),
+
+  referralMilestone: (data: { referrals: number; reward: string }): PushNotificationPayload => ({
+    title: `Referral Milestone Reached! 🎯`,
+    body: `You've referred ${data.referrals} friends! You earned ${data.reward}.`,
+    icon: "/icons/icon-192x192.png",
+    data: { url: "/account/referrals" },
+  }),
+
+  marketingCampaign: (data: { title: string; body: string; deepLink?: string }): PushNotificationPayload => ({
+    title: data.title,
+    body: data.body,
+    icon: "/icons/icon-192x192.png",
+    image: "/og-image.png",
+    data: { url: data.deepLink || "/" },
+  }),
+
+  pointsReward: (data: { reason: string; points: number }): PushNotificationPayload => ({
+    title: `Points earned! ⭐`,
+    body: `${data.reason} — +${data.points} points`,
+    icon: "/icons/icon-192x192.png",
+    data: { url: "/account/gamification" },
+  }),
 };

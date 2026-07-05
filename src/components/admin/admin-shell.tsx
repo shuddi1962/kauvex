@@ -106,6 +106,7 @@ const topNavSections: { key: SectionKey; label: string; icon: React.ElementType;
       { title: "Campaigns", items: [
         { label: "Marketing", href: "/admin/marketing" },
         { label: "Email Marketing", href: "/admin/email-marketing" },
+        { label: "Push Campaigns", href: "/admin/marketing/campaigns" },
         { label: "Advertising", href: "/admin/advertising" },
         { label: "Affiliates", href: "/admin/affiliates" },
         { label: "Banners", href: "/admin/banners" },

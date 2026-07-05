@@ -19,6 +19,7 @@ import {
   ShieldCheck,
   ExternalLink,
   CreditCard,
+  Zap,
 } from "lucide-react";
 import { useAuthStore } from "@/store/auth-store";
 
@@ -30,6 +31,7 @@ const sidebarLinks = [
   { label: "Wallet", href: "/account/wallet", icon: Wallet },
   { label: "Pay Later (BNPL)", href: "/account/pay-later", icon: CreditCard },
   { label: "Loyalty & Rewards", href: "/account/loyalty", icon: Trophy },
+  { label: "Rewards Hub", href: "/account/gamification", icon: Zap },
   { label: "Referrals", href: "/account/referrals", icon: Users },
   { label: "Addresses", href: "/account/addresses", icon: MapPin },
   { label: "Virtual Addresses", href: "/account/virtual-address", icon: MapPin },

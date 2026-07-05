@@ -1148,7 +1148,210 @@ model LoyaltyTransaction {
 }
 
 // ============================================================
-// SECTION 1.12: ANALYTICS & BUSINESS INTELLIGENCE
+// SECTION 1.12: GAMIFICATION & ENGAGEMENT
+// ============================================================
+
+model DailyCheckIn {
+  id         String   @id @default(cuid())
+  customerId String
+  checkInDate DateTime @default(now())
+  streakDay  Int      @default(1)
+  pointsEarned Int    @default(0)
+  bonusEarned Boolean @default(false)
+  createdAt  DateTime @default(now())
+
+  @@unique([customerId, checkInDate])
+  @@index([customerId])
+  @@map("daily_check_ins")
+}
+
+model SpinWheelConfig {
+  id            String   @id @default(cuid())
+  name          String
+  spinsPerDay   Int      @default(1)
+  costInPoints  Int      @default(0)
+  isActive      Boolean  @default(true)
+  createdAt     DateTime @default(now())
+
+  prizes SpinWheelPrize[]
+  spins  SpinWheelSpin[]
+
+  @@map("spin_wheel_configs")
+}
+
+model SpinWheelPrize {
+  id         String   @id @default(cuid())
+  configId   String
+  label      String
+  type       String   // points | discount | free_shipping | product | bad_luck
+  value      String?
+  points     Int      @default(0)
+  discountPercent Decimal? @db.Decimal(5, 2)
+  weight     Int      @default(1)
+  color      String   @default("#FF6B00")
+  isActive   Boolean  @default(true)
+  createdAt  DateTime @default(now())
+
+  config SpinWheelConfig @relation(fields: [configId], references: [id])
+  spins  SpinWheelSpin[]
+
+  @@map("spin_wheel_prizes")
+}
+
+model SpinWheelSpin {
+  id        String   @id @default(cuid())
+  configId  String
+  customerId String
+  prizeId   String?
+  pointsWon Int      @default(0)
+  isFree     Boolean @default(false)
+  spunAt    DateTime @default(now())
+
+  config SpinWheelConfig @relation(fields: [configId], references: [id])
+  prize  SpinWheelPrize? @relation(fields: [prizeId], references: [id])
+
+  @@index([customerId, spunAt])
+  @@map("spin_wheel_spins")
+}
+
+model Achievement {
+  id          String   @id @default(cuid())
+  code        String   @unique
+  name        String
+  description String
+  icon        String   @default("trophy")
+  category    String   // orders | referrals | reviews | social | streak | spending
+  threshold   Int      @default(1)
+  pointsReward Int     @default(0)
+  badgeColor  String   @default("#FF6B00")
+  isHidden    Boolean  @default(false)
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+
+  userAchievements UserAchievement[]
+
+  @@map("achievements")
+}
+
+model UserAchievement {
+  id            String   @id @default(cuid())
+  customerId    String
+  achievementId String
+  progress      Int      @default(0)
+  unlockedAt    DateTime?
+  notified      Boolean  @default(false)
+  createdAt     DateTime @default(now())
+
+  achievement Achievement @relation(fields: [achievementId], references: [id])
+
+  @@unique([customerId, achievementId])
+  @@index([customerId])
+  @@map("user_achievements")
+}
+
+model SocialShare {
+  id         String   @id @default(cuid())
+  customerId String
+  shareType  String   // product | referral | order | achievement | wishlist
+  referenceId String?
+  platform   String   // whatsapp | twitter | facebook | email | instagram | tiktok
+  pointsEarned Int    @default(0)
+  createdAt  DateTime @default(now())
+
+  @@index([customerId])
+  @@index([shareType, referenceId])
+  @@map("social_shares")
+}
+
+model ReferralMilestone {
+  id            String   @id @default(cuid())
+  referralsRequired Int
+  label         String
+  rewardType    String   // points | wallet | discount | free_shipping
+  rewardValue   Decimal  @db.Decimal(12, 2)
+  rewardLabel   String
+  isActive      Boolean  @default(true)
+  createdAt     DateTime @default(now())
+
+  userMilestones UserReferralMilestone[]
+
+  @@map("referral_milestones")
+}
+
+model UserReferralMilestone {
+  id          String   @id @default(cuid())
+  customerId  String
+  milestoneId String
+  unlockedAt  DateTime @default(now())
+  claimed     Boolean  @default(false)
+  claimedAt   DateTime?
+  createdAt   DateTime @default(now())
+
+  milestone ReferralMilestone @relation(fields: [milestoneId], references: [id])
+
+  @@unique([customerId, milestoneId])
+  @@map("user_referral_milestones")
+}
+
+// ============================================================
+// SECTION 1.13: MARKETING NOTIFICATION ENGINE
+// ============================================================
+
+model MarketingCampaign {
+  id            String    @id @default(cuid())
+  name          String
+  description   String?
+  channel       String    // push | email | in_app | sms | all
+  trigger       String?   // manual | scheduled | event_based
+  triggerEvent  String?   // order_delivered | points_milestone | streak_achieved | etc
+  targetSegment String?   // all | active | lapsed | high_value | new
+  title         String
+  body          String
+  imageUrl      String?
+  deepLink      String?
+  pointsReward  Int       @default(0)
+  scheduledAt   DateTime?
+  sentAt        DateTime?
+  status        String    @default("draft") // draft | scheduled | sending | sent | cancelled
+  sentCount     Int       @default(0)
+  openedCount   Int       @default(0)
+  clickedCount  Int       @default(0)
+  convertedCount Int      @default(0)
+  createdBy     String?
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @default(now())
+
+  notifications MarketingNotification[]
+
+  @@map("marketing_campaigns")
+}
+
+model MarketingNotification {
+  id          String   @id @default(cuid())
+  campaignId  String
+  customerId  String
+  channel     String   // push | email | in_app | sms
+  title       String
+  body        String
+  imageUrl    String?
+  deepLink    String?
+  readAt      DateTime?
+  clickedAt   DateTime?
+  convertedAt DateTime?
+  status      String   @default("pending") // pending | sent | delivered | read | clicked | converted | failed
+  errorMsg    String?
+  sentAt      DateTime?
+  createdAt   DateTime @default(now())
+
+  campaign MarketingCampaign @relation(fields: [campaignId], references: [id])
+
+  @@index([customerId, status])
+  @@index([campaignId])
+  @@map("marketing_notifications")
+}
+
+// ============================================================
+// SECTION 1.14: ANALYTICS & BUSINESS INTELLIGENCE
 // ============================================================
 
 model AnalyticsEvent {

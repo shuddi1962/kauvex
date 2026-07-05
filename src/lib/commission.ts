@@ -28,8 +28,22 @@ export async function getCategoryCommissionRate(categoryId: string): Promise<num
 export async function resolveCommissionRate(params: {
   productId?: string;
   categoryId?: string;
+  subcategoryId?: string;
   vendorCommission?: number | null;
 }): Promise<number> {
+  if (params.subcategoryId) {
+    const sub = await prisma.subcategory.findUnique({
+      where: { id: params.subcategoryId },
+      select: { commissionRate: true, categoryId: true },
+    });
+    if (sub?.commissionRate !== null && sub?.commissionRate !== undefined) {
+      return Number(sub.commissionRate);
+    }
+    if (sub?.categoryId) {
+      return getCategoryCommissionRate(sub.categoryId);
+    }
+  }
+
   let categoryId = params.categoryId;
 
   if (!categoryId && params.productId) {

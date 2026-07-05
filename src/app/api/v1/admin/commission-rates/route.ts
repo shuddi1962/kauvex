@@ -12,20 +12,49 @@ export async function GET() {
         parentId: true,
         parent: { select: { name: true } },
         _count: { select: { products: true } },
+        subcategories: {
+          select: {
+            id: true,
+            name: true,
+            slug: true,
+            commissionRate: true,
+            _count: { select: { category: true } },
+          },
+          orderBy: { name: "asc" },
+        },
       },
       orderBy: { name: "asc" },
     });
 
-    return NextResponse.json({
-      categories: categories.map((cat) => ({
+    const flatList: any[] = [];
+
+    for (const cat of categories) {
+      flatList.push({
         id: cat.id,
         name: cat.name,
         slug: cat.slug,
+        type: "category",
         commissionRate: cat.commissionRate ? Number(cat.commissionRate) : null,
+        parentId: cat.parentId,
         parentName: cat.parent?.name ?? null,
         productCount: cat._count.products,
-      })),
-    });
+      });
+
+      for (const sub of cat.subcategories) {
+        flatList.push({
+          id: sub.id,
+          name: sub.name,
+          slug: sub.slug,
+          type: "subcategory",
+          commissionRate: sub.commissionRate ? Number(sub.commissionRate) : null,
+          parentId: cat.id,
+          parentName: cat.name,
+          productCount: 0,
+        });
+      }
+    }
+
+    return NextResponse.json({ items: flatList });
   } catch (error) {
     return NextResponse.json(
       { error: "Failed to fetch categories" },
@@ -37,11 +66,11 @@ export async function GET() {
 export async function PATCH(request: Request) {
   try {
     const body = await request.json();
-    const { categoryId, commissionRate } = body;
+    const { id, type, commissionRate } = body;
 
-    if (!categoryId) {
+    if (!id || !type) {
       return NextResponse.json(
-        { error: "categoryId is required" },
+        { error: "id and type are required" },
         { status: 400 }
       );
     }
@@ -53,20 +82,31 @@ export async function PATCH(request: Request) {
       );
     }
 
-    const updated = await prisma.category.update({
-      where: { id: categoryId },
-      data: { commissionRate },
-      select: { id: true, name: true, commissionRate: true },
-    });
+    if (type === "category") {
+      const updated = await prisma.category.update({
+        where: { id },
+        data: { commissionRate },
+        select: { id: true, name: true, commissionRate: true },
+      });
+      return NextResponse.json({
+        success: true,
+        item: { id: updated.id, name: updated.name, type: "category", commissionRate: Number(updated.commissionRate) },
+      });
+    }
 
-    return NextResponse.json({
-      success: true,
-      category: {
-        id: updated.id,
-        name: updated.name,
-        commissionRate: Number(updated.commissionRate),
-      },
-    });
+    if (type === "subcategory") {
+      const updated = await prisma.subcategory.update({
+        where: { id },
+        data: { commissionRate },
+        select: { id: true, name: true, commissionRate: true },
+      });
+      return NextResponse.json({
+        success: true,
+        item: { id: updated.id, name: updated.name, type: "subcategory", commissionRate: Number(updated.commissionRate) },
+      });
+    }
+
+    return NextResponse.json({ error: "Invalid type" }, { status: 400 });
   } catch (error) {
     return NextResponse.json(
       { error: "Failed to update commission rate" },

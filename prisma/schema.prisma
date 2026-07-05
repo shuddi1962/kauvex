@@ -56,12 +56,13 @@ model Category {
 }
 
 model Subcategory {
-  id          String  @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
-  categoryId  String  @map("category_id") @db.Uuid
-  name        String
-  slug        String
-  description String?
-  sortOrder   Int?    @default(0) @map("sort_order")
+  id             String   @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
+  categoryId     String   @map("category_id") @db.Uuid
+  name           String
+  slug           String
+  description    String?
+  commissionRate Decimal? @default(12) @map("commission_rate") @db.Decimal(5, 2)
+  sortOrder      Int?     @default(0) @map("sort_order")
 
   category Category @relation(fields: [categoryId], references: [id], onDelete: Cascade)
 

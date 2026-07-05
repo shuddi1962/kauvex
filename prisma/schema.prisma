@@ -2505,6 +2505,9 @@ model LiveStream {
   createdAt    DateTime            @default(now()) @map("created_at")
   updatedAt    DateTime            @default(now()) @map("updated_at")
   products     LiveStreamProduct[]
+  comments     LiveComment[]
+  gifts        LiveGift[]
+  analytics    LiveAnalytics[]
 
   @@map("live_streams")
 }
@@ -3646,36 +3649,39 @@ model AliexpressOrder {
 // ============================================================
 
 model LiveComment {
-  id                String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  streamId          String?  @map("stream_id")
-  userId            String?  @map("user_id")
+  id                String     @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  streamId          String     @map("stream_id") @db.Uuid
+  stream            LiveStream @relation(fields: [streamId], references: [id], onDelete: Cascade)
+  userId            String?    @map("user_id")
   message           String?
-  createdAt         DateTime @default(now()) @map("created_at")
+  createdAt         DateTime   @default(now()) @map("created_at")
 
   @@map("live_comments")
 }
 
 model LiveGift {
-  id                String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  streamId          String?  @map("stream_id")
-  senderId          String?  @map("sender_id")
-  giftType          String?  @map("gift_type")
-  giftValue         Decimal? @map("gift_value") @db.Decimal(10, 2)
-  createdAt         DateTime @default(now()) @map("created_at")
+  id                String     @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  streamId          String     @map("stream_id") @db.Uuid
+  stream            LiveStream @relation(fields: [streamId], references: [id], onDelete: Cascade)
+  senderId          String?    @map("sender_id")
+  giftType          String?    @map("gift_type")
+  giftValue         Decimal?   @map("gift_value") @db.Decimal(10, 2)
+  createdAt         DateTime   @default(now()) @map("created_at")
 
   @@map("live_gifts")
 }
 
 model LiveAnalytics {
-  id                String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  streamId          String?  @map("stream_id")
-  peakViewers       Int?     @default(0) @map("peak_viewers")
-  totalViewers      Int?     @default(0) @map("total_viewers")
-  totalOrders       Int?     @default(0) @map("total_orders")
-  totalRevenue      Decimal? @map("total_revenue") @db.Decimal(12, 2)
-  startedAt         DateTime? @map("started_at")
-  endedAt           DateTime? @map("ended_at")
-  createdAt         DateTime @default(now()) @map("created_at")
+  id                String     @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  streamId          String     @map("stream_id") @db.Uuid
+  stream            LiveStream @relation(fields: [streamId], references: [id], onDelete: Cascade)
+  peakViewers       Int?       @default(0) @map("peak_viewers")
+  totalViewers      Int?       @default(0) @map("total_viewers")
+  totalOrders       Int?       @default(0) @map("total_orders")
+  totalRevenue      Decimal?   @map("total_revenue") @db.Decimal(12, 2)
+  startedAt         DateTime?  @map("started_at")
+  endedAt           DateTime?  @map("ended_at")
+  createdAt         DateTime   @default(now()) @map("created_at")
 
   @@map("live_analytics")
 }

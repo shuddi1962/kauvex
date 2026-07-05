@@ -127,6 +127,9 @@ const topNav: { key: SectionKey; label: string; icon: React.ElementType; groups:
       { title: "Brand", items: [
         { label: "A+ Content", href: "/vendor/a-plus-content", badge: "New" },
       ]},
+      { title: "Live", items: [
+        { label: "Live Commerce", href: "/vendor/live", badge: "New" },
+      ]},
     ],
   },
   {
@@ -213,7 +216,7 @@ function detectSection(pathname: string): SectionKey {
   if (pathname.startsWith("/vendor/orders")) return "orders";
   if (pathname.startsWith("/vendor/inventory")) return "inventory";
   if (pathname.startsWith("/vendor/store-builder") || pathname.startsWith("/vendor/shop")) return "store";
-  if (pathname.startsWith("/vendor/advertising") || pathname.startsWith("/vendor/promotions") || pathname.startsWith("/vendor/a-plus-content")) return "marketing";
+  if (pathname.startsWith("/vendor/advertising") || pathname.startsWith("/vendor/promotions") || pathname.startsWith("/vendor/a-plus-content") || pathname.startsWith("/vendor/live")) return "marketing";
   if (pathname.startsWith("/vendor/b2b")) return "b2b";
   if (pathname.startsWith("/vendor/brand-registry")) return "brand";
   if (pathname.startsWith("/vendor/university")) return "learning";

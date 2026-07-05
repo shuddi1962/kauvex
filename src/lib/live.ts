@@ -21,10 +21,17 @@ export async function createLiveStream(data: {
   })
 }
 
+export async function getAllLiveStreams() {
+  return prisma.liveStream.findMany({
+    include: { products: true, comments: { orderBy: { createdAt: 'desc' }, take: 10 } },
+    orderBy: { createdAt: 'desc' }
+  })
+}
+
 export async function getActiveLiveStreams() {
   return prisma.liveStream.findMany({
     where: { status: 'live' },
-    include: { products: true },
+    include: { products: true, comments: { orderBy: { createdAt: 'desc' }, take: 50 } },
     orderBy: { startedAt: 'desc' }
   })
 }
@@ -32,6 +39,7 @@ export async function getActiveLiveStreams() {
 export async function getUpcomingLiveStreams() {
   return prisma.liveStream.findMany({
     where: { status: 'scheduled', scheduledAt: { gte: new Date() } },
+    include: { products: true },
     orderBy: { scheduledAt: 'asc' }
   })
 }
@@ -39,7 +47,7 @@ export async function getUpcomingLiveStreams() {
 export async function getVendorLiveStreams(vendorId: string) {
   return prisma.liveStream.findMany({
     where: { vendorId },
-    include: { products: true },
+    include: { products: true, comments: { orderBy: { createdAt: 'desc' }, take: 20 } },
     orderBy: { createdAt: 'desc' }
   })
 }
@@ -47,7 +55,10 @@ export async function getVendorLiveStreams(vendorId: string) {
 export async function getLiveStreamById(id: string) {
   return prisma.liveStream.findUnique({
     where: { id },
-    include: { products: true }
+    include: {
+      products: true,
+      comments: { orderBy: { createdAt: 'desc' }, take: 100 },
+    }
   })
 }
 

@@ -2,6 +2,7 @@ import { NextRequest } from "next/server";
 import { successResponse, errorResponse } from "@/lib/api-helpers";
 import {
   createLiveStream,
+  getAllLiveStreams,
   getActiveLiveStreams,
   getUpcomingLiveStreams,
   getVendorLiveStreams,
@@ -41,6 +42,11 @@ export async function GET(request: NextRequest) {
 
     if (filter === "upcoming") {
       const streams = await getUpcomingLiveStreams();
+      return successResponse(streams);
+    }
+
+    if (filter === "all") {
+      const streams = await getAllLiveStreams();
       return successResponse(streams);
     }
 

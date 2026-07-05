@@ -1189,6 +1189,8 @@ model SpinWheelPrize {
   discountPercent Decimal? @db.Decimal(5, 2)
   weight     Int      @default(1)
   color      String   @default("#FF6B00")
+  productId  String?  // Product ID for 'product' type prizes
+  productName String? // Product name display for 'product' type prizes
   isActive   Boolean  @default(true)
   createdAt  DateTime @default(now())
 

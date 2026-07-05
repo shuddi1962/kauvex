@@ -1,4 +1,5 @@
 import prisma from '@/lib/db'
+import { resolveCommissionRate } from '@/lib/commission'
 
 export type PayoutMethod = 'bank_transfer' | 'paystack' | 'flutterwave'
 
@@ -119,12 +120,13 @@ export async function schedulePayout(
   vendorId: string,
   amount: number,
   method: PayoutMethod,
-  accountDetails: AccountDetails
+  accountDetails: AccountDetails,
+  commissionRateOverride?: number
 ) {
   const vendor = await prisma.vendor.findUnique({ where: { id: vendorId } })
   if (!vendor) throw new Error(`Vendor ${vendorId} not found`)
 
-  const commissionRate = Number(vendor.commission ?? 10)
+  const commissionRate = commissionRateOverride ?? Number(vendor.commission ?? 12)
   const commission = amount * (commissionRate / 100)
   const netAmount = amount - commission
 

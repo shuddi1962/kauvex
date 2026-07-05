@@ -35,16 +35,17 @@ model Profile {
 }
 
 model Category {
-  id          String   @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
-  name        String
-  slug        String   @unique
-  description String?
-  icon        String?
-  image       String?
-  parentId    String?  @map("parent_id") @db.Uuid
-  sortOrder   Int?     @default(0) @map("sort_order")
-  status      String?  @default("active")
-  createdAt   DateTime @default(now()) @map("created_at")
+  id             String    @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
+  name           String
+  slug           String    @unique
+  description    String?
+  icon           String?
+  image          String?
+  parentId       String?   @map("parent_id") @db.Uuid
+  commissionRate Decimal?  @default(12) @map("commission_rate") @db.Decimal(5, 2)
+  sortOrder      Int?      @default(0) @map("sort_order")
+  status         String?   @default("active")
+  createdAt      DateTime  @default(now()) @map("created_at")
 
   parent        Category?     @relation("CategoryHierarchy", fields: [parentId], references: [id])
   children      Category[]    @relation("CategoryHierarchy")

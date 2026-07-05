@@ -2,6 +2,7 @@ import prisma from "@/lib/db";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { creditVendorWallet, debitVendorWallet, getVendorBalance } from "@/lib/payments/wallet";
 import { calculateInterest, getDebtEscalationLevel } from "@/lib/logistics/fbk-debt";
+import { resolveCommissionRate } from "@/lib/commission";
 
 export interface BillingResult {
   success: boolean;
@@ -21,7 +22,16 @@ export async function creditOrderEarnings(orderId: string): Promise<BillingResul
   try {
     const order = await prisma.order.findUnique({
       where: { id: orderId },
-      include: { items: true, vendor: true },
+      include: {
+        items: {
+          include: {
+            product: {
+              select: { categoryId: true },
+            },
+          },
+        },
+        vendor: true,
+      },
     });
 
     if (!order) {
@@ -46,9 +56,31 @@ export async function creditOrderEarnings(orderId: string): Promise<BillingResul
     result.vendorId = vendorId;
 
     const vendor = order.vendor;
-    const commissionRate = Number(vendor?.commission ?? 10) / 100;
-    const orderTotal = Number(order.total);
-    const commissionAmount = +(orderTotal * commissionRate).toFixed(2);
+    const vendorDefaultRate = Number(vendor?.commission ?? 12);
+
+    let totalCommissionAmount = 0;
+    let orderTotal = 0;
+
+    for (const item of order.items) {
+      const itemTotal = Number(item.total);
+      orderTotal += itemTotal;
+
+      const catId = item.product?.categoryId;
+      const itemRate = await resolveCommissionRate({
+        categoryId: catId ?? undefined,
+        vendorCommission: vendorDefaultRate,
+      });
+
+      totalCommissionAmount += +(itemTotal * (itemRate / 100)).toFixed(2);
+    }
+
+    if (orderTotal === 0) orderTotal = Number(order.total);
+    if (totalCommissionAmount === 0) {
+      const defaultRate = await resolveCommissionRate({ vendorCommission: vendorDefaultRate });
+      totalCommissionAmount = +(orderTotal * (defaultRate / 100)).toFixed(2);
+    }
+
+    const commissionAmount = totalCommissionAmount;
     const earningsAmount = orderTotal - commissionAmount;
 
     if (earningsAmount <= 0) {

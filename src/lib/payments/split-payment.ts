@@ -1,4 +1,5 @@
 import prisma from '@/lib/db'
+import { resolveCommissionRate } from '@/lib/commission'
 
 export interface SplitDetails {
   orderTotal: number
@@ -22,6 +23,53 @@ export interface SplitSummary {
   totalCommission: number
   totalPayout: number
   totalShipping: number
+}
+
+export async function calculateOrderSplit(
+  orderId: string,
+  vendorDefaultRate: number
+): Promise<{ commissionRate: number; commission: number; netAmount: number }> {
+  const order = await prisma.order.findUnique({
+    where: { id: orderId },
+    include: {
+      items: {
+        include: {
+          product: { select: { categoryId: true } },
+        },
+      },
+    },
+  });
+
+  if (!order) throw new Error(`Order ${orderId} not found`);
+
+  let totalAmount = 0;
+  let totalCommission = 0;
+
+  for (const item of order.items) {
+    const itemTotal = Number(item.total);
+    totalAmount += itemTotal;
+
+    const itemRate = await resolveCommissionRate({
+      categoryId: item.product?.categoryId ?? undefined,
+      vendorCommission: vendorDefaultRate,
+    });
+
+    totalCommission += +(itemTotal * (itemRate / 100)).toFixed(2);
+  }
+
+  if (totalAmount === 0) totalAmount = Number(order.total);
+  if (totalCommission === 0) {
+    const rate = await resolveCommissionRate({ vendorCommission: vendorDefaultRate });
+    totalCommission = +(totalAmount * (rate / 100)).toFixed(2);
+  }
+
+  const avgRate = totalAmount > 0 ? (totalCommission / totalAmount) * 100 : vendorDefaultRate;
+
+  return {
+    commissionRate: +avgRate.toFixed(2),
+    commission: totalCommission,
+    netAmount: totalAmount - totalCommission,
+  };
 }
 
 export function calculateSplit(

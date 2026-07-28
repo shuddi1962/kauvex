@@ -1,9 +1,8 @@
 "use client";
+export const dynamic = "force-dynamic";
 
 import { useState, useEffect, useRef } from "react";
 import Link from "next/link";
-import L from "leaflet";
-import "leaflet/dist/leaflet.css";
 import {
   ArrowLeft,
   ArrowRight,
@@ -110,8 +109,8 @@ export default function CheckoutPage() {
   const [proxyPhone, setProxyPhone] = useState("");
   const [proxyRelation, setProxyRelation] = useState("");
   const mapRef = useRef<HTMLDivElement>(null);
-  const leafletMapRef = useRef<L.Map | null>(null);
-  const markerRef = useRef<L.Marker | null>(null);
+  const leafletMapRef = useRef<any>(null);
+  const markerRef = useRef<any>(null);
 
   const timeSlots = [
     "08:00 - 10:00", "10:00 - 12:00", "12:00 - 14:00",
@@ -247,56 +246,65 @@ export default function CheckoutPage() {
     fetchLockers();
   }, [delivery.city]);
 
-  // Initialize Leaflet map for GPS pin-drop
+  // Initialize Leaflet map for GPS pin-drop (client-side only)
   useEffect(() => {
     if (currentStep !== 2 || !mapRef.current || leafletMapRef.current) return;
 
-    const defaultPos: [number, number] = gpsLat && gpsLng
-      ? [gpsLat, gpsLng]
-      : [6.5244, 3.3792]; // Lagos
+    const initMap = async () => {
+      const L = await import("leaflet");
+      await import("leaflet/dist/leaflet.css");
 
-    const map = L.map(mapRef.current, {
-      center: defaultPos,
-      zoom: 13,
-      zoomControl: true,
-    });
+      const defaultPos: [number, number] = gpsLat && gpsLng
+        ? [gpsLat, gpsLng]
+        : [6.5244, 3.3792]; // Lagos
 
-    L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
-      attribution: "&copy; OpenStreetMap contributors",
-      maxZoom: 19,
-    }).addTo(map);
+      const map = L.map(mapRef.current!, {
+        center: defaultPos,
+        zoom: 13,
+        zoomControl: true,
+      });
 
-    const marker = L.marker(defaultPos, {
-      draggable: true,
-      icon: L.divIcon({
-        className: "custom-marker",
-        html: `<div style="background:#FF6B00;color:#fff;border-radius:50%;width:32px;height:32px;display:flex;align-items:center;justify-content:center;font-size:18px;box-shadow:0 2px 8px rgba(0,0,0,0.3);border:3px solid #fff;">📍</div>`,
-        iconSize: [32, 32],
-        iconAnchor: [16, 16],
-      }),
-    }).addTo(map);
+      L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+        attribution: "&copy; OpenStreetMap contributors",
+        maxZoom: 19,
+      }).addTo(map);
 
-    marker.on("dragend", () => {
-      const pos = marker.getLatLng();
-      setGpsLat(pos.lat);
-      setGpsLng(pos.lng);
-    });
+      const marker = L.marker(defaultPos, {
+        draggable: true,
+        icon: L.divIcon({
+          className: "custom-marker",
+          html: `<div style="background:#FF6B00;color:#fff;border-radius:50%;width:32px;height:32px;display:flex;align-items:center;justify-content:center;font-size:18px;box-shadow:0 2px 8px rgba(0,0,0,0.3);border:3px solid #fff;">📍</div>`,
+          iconSize: [32, 32],
+          iconAnchor: [16, 16],
+        }),
+      }).addTo(map);
 
-    map.on("click", (e: L.LeafletMouseEvent) => {
-      marker.setLatLng(e.latlng);
-      setGpsLat(e.latlng.lat);
-      setGpsLng(e.latlng.lng);
-    });
+      marker.on("dragend", () => {
+        const pos = marker.getLatLng();
+        setGpsLat(pos.lat);
+        setGpsLng(pos.lng);
+      });
 
-    setTimeout(() => map.invalidateSize(), 100);
+      map.on("click", (e: any) => {
+        marker.setLatLng(e.latlng);
+        setGpsLat(e.latlng.lat);
+        setGpsLng(e.latlng.lng);
+      });
 
-    leafletMapRef.current = map;
-    markerRef.current = marker;
+      setTimeout(() => map.invalidateSize(), 100);
+
+      leafletMapRef.current = map;
+      markerRef.current = marker;
+    };
+
+    initMap();
 
     return () => {
-      map.remove();
-      leafletMapRef.current = null;
-      markerRef.current = null;
+      if (leafletMapRef.current) {
+        leafletMapRef.current.remove();
+        leafletMapRef.current = null;
+        markerRef.current = null;
+      }
     };
   }, [currentStep, gpsLat, gpsLng]);
 

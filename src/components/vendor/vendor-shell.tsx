@@ -85,6 +85,8 @@ const topNav: { key: SectionKey; label: string; icon: React.ElementType; groups:
         { label: "Manage Orders", href: "/vendor/orders" },
         { label: "Order Reports", href: "/vendor/orders/reports" },
         { label: "Manage Returns", href: "/vendor/orders" },
+        { label: "Messaging", href: "/vendor/messaging", badge: "New" },
+        { label: "Disputes", href: "/vendor/disputes", badge: "New" },
       ]},
     ],
   },

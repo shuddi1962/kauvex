@@ -70,6 +70,7 @@ const defaultApiKeys: ApiProvider[] = [
   { name: "Google Analytics", category: "Analytics", connected: true, fields: { measurement_id: "G-XXXXXXXXXX", stream_id: "" }, fieldConfig: [{ key: "measurement_id", label: "Measurement ID", placeholder: "G-XXXXXXXXXX" }, { key: "stream_id", label: "Data Stream ID", placeholder: "Stream ID (optional)" }] },
   { name: "Google Indexing API", category: "SEO", connected: true, fields: { service_account_json: "Service Account configured" }, fieldConfig: [{ key: "service_account_json", label: "Service Account JSON", placeholder: "Paste service account JSON", type: "textarea" }] },
   { name: "Bing Webmaster", category: "SEO", connected: false, fields: { api_key: "", site_url: "" }, fieldConfig: [{ key: "api_key", label: "API Key", placeholder: "Bing Webmaster API key" }, { key: "site_url", label: "Site URL", placeholder: "https://kauvex.com" }] },
+  { name: "What3Words", category: "Maps", connected: false, fields: { api_key: "" }, fieldConfig: [{ key: "api_key", label: "API Key", placeholder: "w3w_..." }] },
 ];
 
 const defaultPaymentMethods = [

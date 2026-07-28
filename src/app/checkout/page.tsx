@@ -1,7 +1,9 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import Link from "next/link";
+import L from "leaflet";
+import "leaflet/dist/leaflet.css";
 import {
   ArrowLeft,
   ArrowRight,
@@ -21,6 +23,11 @@ import {
   Smartphone,
   Globe,
   Gift,
+  Hash,
+  MapPin,
+  Clock,
+  Box,
+  Navigation,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useCartStore } from "@/store/cart-store";
@@ -91,6 +98,26 @@ export default function CheckoutPage() {
     fullName: "", email: "", phone: "", address: "", city: "", state: "Rivers", lga: "", country: "Nigeria", postalCode: "",
   });
 
+  const [what3words, setWhat3words] = useState("");
+  const [gpsLat, setGpsLat] = useState<number | null>(null);
+  const [gpsLng, setGpsLng] = useState<number | null>(null);
+  const [useLocker, setUseLocker] = useState(false);
+  const [selectedLocker, setSelectedLocker] = useState<any>(null);
+  const [lockers, setLockers] = useState<any[]>([]);
+  const [deliveryTimeSlot, setDeliveryTimeSlot] = useState("");
+  const [proxyDelivery, setProxyDelivery] = useState(false);
+  const [proxyName, setProxyName] = useState("");
+  const [proxyPhone, setProxyPhone] = useState("");
+  const [proxyRelation, setProxyRelation] = useState("");
+  const mapRef = useRef<HTMLDivElement>(null);
+  const leafletMapRef = useRef<L.Map | null>(null);
+  const markerRef = useRef<L.Marker | null>(null);
+
+  const timeSlots = [
+    "08:00 - 10:00", "10:00 - 12:00", "12:00 - 14:00",
+    "14:00 - 16:00", "16:00 - 18:00", "18:00 - 20:00",
+  ];
+
   const subtotal = getTotal();
   const shippingCost = shippingMethods.find((m) => m.id === selectedShipping)?.cost || 0;
   const total = subtotal + shippingCost;
@@ -133,22 +160,34 @@ export default function CheckoutPage() {
     setOrderLoading(true);
     setOrderError("");
     try {
+      const shippingAddress: Record<string, unknown> = {
+        full_name: delivery.fullName,
+        email: delivery.email,
+        phone: delivery.phone,
+        address_line1: delivery.address,
+        city: delivery.city,
+        state: delivery.state,
+        country: delivery.country,
+        postal_code: delivery.postalCode,
+        what3words: what3words || undefined,
+        gps_lat: gpsLat || undefined,
+        gps_lng: gpsLng || undefined,
+        delivery_time_slot: deliveryTimeSlot || undefined,
+        proxy_delivery: proxyDelivery || undefined,
+        proxy_name: proxyName || undefined,
+        proxy_phone: proxyPhone || undefined,
+        proxy_relation: proxyRelation || undefined,
+      };
+
       const orderPayload: Record<string, unknown> = {
         items: items.map((item) => ({
           product_id: item.product.id,
           quantity: item.quantity,
           variant_info: item.variant ? JSON.stringify(item.variant) : undefined,
         })),
-        shipping_address: {
-          full_name: delivery.fullName,
-          email: delivery.email,
-          phone: delivery.phone,
-          address_line1: delivery.address,
-          city: delivery.city,
-          state: delivery.state,
-          country: delivery.country,
-          postal_code: delivery.postalCode,
-        },
+        shipping_address: shippingAddress,
+        delivery_method: useLocker ? "locker" : "address",
+        locker_id: useLocker ? selectedLocker?.id : undefined,
         notes: giftCode.trim() || undefined,
       };
 
@@ -190,6 +229,76 @@ export default function CheckoutPage() {
       setOrderLoading(false);
     }
   };
+
+  // Fetch nearby lockers when city/state changes
+  useEffect(() => {
+    if (!delivery.city) return;
+    const fetchLockers = async () => {
+      try {
+        const res = await fetch(
+          `/api/v1/express/lockers?city=${encodeURIComponent(delivery.city)}&country=NG`
+        );
+        const json = await res.json();
+        if (json.data) setLockers(json.data);
+      } catch {
+        // silent
+      }
+    };
+    fetchLockers();
+  }, [delivery.city]);
+
+  // Initialize Leaflet map for GPS pin-drop
+  useEffect(() => {
+    if (currentStep !== 2 || !mapRef.current || leafletMapRef.current) return;
+
+    const defaultPos: [number, number] = gpsLat && gpsLng
+      ? [gpsLat, gpsLng]
+      : [6.5244, 3.3792]; // Lagos
+
+    const map = L.map(mapRef.current, {
+      center: defaultPos,
+      zoom: 13,
+      zoomControl: true,
+    });
+
+    L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+      attribution: "&copy; OpenStreetMap contributors",
+      maxZoom: 19,
+    }).addTo(map);
+
+    const marker = L.marker(defaultPos, {
+      draggable: true,
+      icon: L.divIcon({
+        className: "custom-marker",
+        html: `<div style="background:#FF6B00;color:#fff;border-radius:50%;width:32px;height:32px;display:flex;align-items:center;justify-content:center;font-size:18px;box-shadow:0 2px 8px rgba(0,0,0,0.3);border:3px solid #fff;">📍</div>`,
+        iconSize: [32, 32],
+        iconAnchor: [16, 16],
+      }),
+    }).addTo(map);
+
+    marker.on("dragend", () => {
+      const pos = marker.getLatLng();
+      setGpsLat(pos.lat);
+      setGpsLng(pos.lng);
+    });
+
+    map.on("click", (e: L.LeafletMouseEvent) => {
+      marker.setLatLng(e.latlng);
+      setGpsLat(e.latlng.lat);
+      setGpsLng(e.latlng.lng);
+    });
+
+    setTimeout(() => map.invalidateSize(), 100);
+
+    leafletMapRef.current = map;
+    markerRef.current = marker;
+
+    return () => {
+      map.remove();
+      leafletMapRef.current = null;
+      markerRef.current = null;
+    };
+  }, [currentStep, gpsLat, gpsLng]);
 
   if (!mounted) {
     return (
@@ -341,24 +450,93 @@ export default function CheckoutPage() {
                       placeholder="500211"
                     />
                   </div>
+                  {/* What3Words */}
+                  <div className="md:col-span-2 border-t border-border pt-4 mt-2">
+                    <div className="flex items-center gap-2 mb-2">
+                      <Hash size={14} className="text-purple-600" />
+                      <span className="text-xs font-bold text-purple-800">What3Words (precise location)</span>
+                    </div>
+                    <input
+                      value={what3words}
+                      onChange={(e) => setWhat3words(e.target.value)}
+                      className="w-full h-10 px-3 text-sm rounded-lg border border-border focus:outline-none focus:border-purple-500"
+                      placeholder="e.g. ///filled.count.soap"
+                    />
+                    <p className="text-[10px] text-text-4 mt-1">3-word address for pin-point delivery — no calls needed</p>
+                  </div>
+                  {/* Proxy Delivery */}
+                  <div className="md:col-span-2 border-t border-border pt-4">
+                    <label className="flex items-center gap-2 cursor-pointer">
+                      <input
+                        type="checkbox"
+                        checked={proxyDelivery}
+                        onChange={(e) => setProxyDelivery(e.target.checked)}
+                        className="accent-orange"
+                      />
+                      <span className="text-xs font-bold text-text-1">Allow delivery to neighbor / proxy</span>
+                    </label>
+                    <p className="text-[10px] text-text-4 ml-6 mb-3">If you&apos;re not home, rider can deliver to an alternate person</p>
+                    {proxyDelivery && (
+                      <div className="grid grid-cols-3 gap-3 ml-6">
+                        <input
+                          value={proxyName}
+                          onChange={(e) => setProxyName(e.target.value)}
+                          placeholder="Proxy name"
+                          className="w-full h-9 px-3 text-sm rounded-lg border border-border focus:outline-none focus:border-orange"
+                        />
+                        <input
+                          value={proxyPhone}
+                          onChange={(e) => setProxyPhone(e.target.value)}
+                          placeholder="Proxy phone"
+                          className="w-full h-9 px-3 text-sm rounded-lg border border-border focus:outline-none focus:border-orange"
+                        />
+                        <select
+                          value={proxyRelation}
+                          onChange={(e) => setProxyRelation(e.target.value)}
+                          className="w-full h-9 px-3 text-sm rounded-lg border border-border focus:outline-none focus:border-orange"
+                        >
+                          <option value="">Relation</option>
+                          <option>Neighbor</option>
+                          <option>Security Guard</option>
+                          <option>Family Member</option>
+                          <option>Colleague</option>
+                          <option>Landlord</option>
+                        </select>
+                      </div>
+                    )}
+                  </div>
                 </div>
               </div>
             )}
 
-            {/* Step 2: Map / Address Confirmation */}
+            {/* Step 2: Map / GPS Pin-Drop */}
             {currentStep === 2 && (
               <div className="bg-white rounded-xl border border-border p-6">
                 <h2 className="font-syne font-bold text-lg mb-5 flex items-center gap-2">
-                  <Map size={20} className="text-blue" /> Confirm Location
+                  <Map size={20} className="text-blue" /> Pin Your Location
                 </h2>
-                <div className="aspect-video bg-off-white rounded-xl border border-border flex items-center justify-center mb-4">
-                  <div className="text-center">
-                    <Globe size={48} className="mx-auto text-text-4 mb-2" />
-                    <p className="text-sm text-text-3">Map will load here</p>
-                    <p className="text-xs text-text-4">Pin your exact delivery location for precise delivery</p>
-                  </div>
+                <div className="text-xs text-text-4 mb-3 flex items-center gap-2">
+                  <Navigation size={12} /> Drag the marker or click the map to set your exact delivery point
                 </div>
-                <div className="bg-blue-50 rounded-xl p-4">
+                <div
+                  ref={mapRef}
+                  className="w-full h-[350px] rounded-xl border border-border z-0"
+                />
+                {gpsLat && gpsLng && (
+                  <div className="mt-3 flex items-center gap-4 bg-green-50 rounded-xl p-3">
+                    <MapPin size={16} className="text-green-600 shrink-0" />
+                    <div className="text-xs text-green-800">
+                      <span className="font-semibold">Location locked:</span> {gpsLat.toFixed(6)}, {gpsLng.toFixed(6)}
+                      {what3words && <span className="ml-2 opacity-70">· What3Words: {what3words}</span>}
+                    </div>
+                  </div>
+                )}
+                {!gpsLat && !gpsLng && (
+                  <div className="mt-3 bg-blue-50 rounded-xl p-3 text-xs text-blue-700 flex items-center gap-2">
+                    <Globe size={14} /> Click the map or drag the marker to confirm your location
+                  </div>
+                )}
+                <div className="bg-off-white rounded-xl p-4 mt-3 border border-border">
                   <h4 className="font-syne font-bold text-xs mb-2">Delivery Address</h4>
                   <p className="text-sm text-text-2">
                     {delivery.fullName && `${delivery.fullName}, `}
@@ -388,9 +566,9 @@ export default function CheckoutPage() {
                             ? "border-blue bg-blue-50"
                             : "border-border hover:border-blue/30"
                         }`}
-                        onClick={() => setSelectedShipping(method.id)}
+                        onClick={() => { setSelectedShipping(method.id); if (method.id !== "pickup") setUseLocker(false); }}
                       >
-                        <input type="radio" name="shipping" checked={selectedShipping === method.id} onChange={() => setSelectedShipping(method.id)} className="accent-blue" />
+                        <input type="radio" name="shipping" checked={selectedShipping === method.id} onChange={() => { setSelectedShipping(method.id); if (method.id !== "pickup") setUseLocker(false); }} className="accent-blue" />
                         <Icon size={20} className={selectedShipping === method.id ? "text-blue" : "text-text-4"} />
                         <div className="flex-1">
                           <p className="text-sm font-bold text-text-1">{method.name}</p>
@@ -402,6 +580,70 @@ export default function CheckoutPage() {
                       </label>
                     );
                   })}
+                  {/* Locker Delivery Option */}
+                  <div className="border-t border-border pt-4 mt-4">
+                    <label className="flex items-center gap-2 cursor-pointer mb-3">
+                      <input
+                        type="checkbox"
+                        checked={useLocker}
+                        onChange={(e) => { setUseLocker(e.target.checked); if (e.target.checked) setSelectedShipping("pickup"); }}
+                        className="accent-orange"
+                      />
+                      <Box size={16} className="text-orange" />
+                      <span className="text-sm font-bold text-text-1">Deliver to Smart Locker</span>
+                    </label>
+                    <p className="text-xs text-text-4 mb-3 ml-7">Collect from a nearby locker at your convenience — no waiting at home</p>
+                    {useLocker && (
+                      <div className="ml-7 space-y-2">
+                        {lockers.length === 0 ? (
+                          <p className="text-xs text-text-4 italic">No lockers found for your area. Enter a city above.</p>
+                        ) : (
+                          lockers.slice(0, 5).map((locker: any) => (
+                            <label
+                              key={locker.id}
+                              className={`flex items-center gap-3 p-3 rounded-xl border cursor-pointer transition-all ${
+                                selectedLocker?.id === locker.id
+                                  ? "border-orange bg-orange-50"
+                                  : "border-border hover:border-orange/30"
+                              }`}
+                              onClick={() => setSelectedLocker(locker)}
+                            >
+                              <input type="radio" name="locker" checked={selectedLocker?.id === locker.id} onChange={() => setSelectedLocker(locker)} className="accent-orange" />
+                              <MapPin size={16} className="text-orange shrink-0" />
+                              <div className="flex-1 min-w-0">
+                                <p className="text-xs font-semibold text-text-1 truncate">{locker.name}</p>
+                                <p className="text-[10px] text-text-4 truncate">{locker.address}</p>
+                              </div>
+                              <span className="text-[10px] text-text-4 shrink-0">{locker.distance || "Nearby"}</span>
+                            </label>
+                          ))
+                        )}
+                      </div>
+                    )}
+                  </div>
+                </div>
+                {/* Delivery Time Slot */}
+                <div className="border-t border-border pt-4 mt-4">
+                  <div className="flex items-center gap-2 mb-3">
+                    <Clock size={16} className="text-blue" />
+                    <span className="text-sm font-bold text-text-1">Preferred Delivery Time</span>
+                  </div>
+                  <div className="flex flex-wrap gap-2">
+                    {timeSlots.map((slot) => (
+                      <button
+                        key={slot}
+                        onClick={() => setDeliveryTimeSlot(deliveryTimeSlot === slot ? "" : slot)}
+                        className={`px-4 py-2 rounded-lg border text-xs font-medium transition-all ${
+                          deliveryTimeSlot === slot
+                            ? "border-blue bg-blue-50 text-blue"
+                            : "border-border text-text-3 hover:border-blue/30"
+                        }`}
+                      >
+                        {slot}
+                      </button>
+                    ))}
+                  </div>
+                  <p className="text-[10px] text-text-4 mt-2">Select a window and we&apos;ll schedule your delivery within it</p>
                 </div>
               </div>
             )}
@@ -545,6 +787,9 @@ export default function CheckoutPage() {
                   </div>
                   <p className="text-sm text-text-2">{delivery.fullName || "—"}</p>
                   <p className="text-xs text-text-4">{delivery.address || "—"}, {delivery.city || "—"}, {delivery.state}</p>
+                  {what3words && <p className="text-[10px] text-purple-700 mt-0.5">What3Words: {what3words}</p>}
+                  {gpsLat && gpsLng && <p className="text-[10px] text-green-700">GPS: {gpsLat.toFixed(6)}, {gpsLng.toFixed(6)}</p>}
+                  {proxyDelivery && proxyName && <p className="text-[10px] text-orange-600">Proxy: {proxyName} ({proxyRelation}) — {proxyPhone}</p>}
                 </div>
 
                 {/* Shipping */}
@@ -553,8 +798,13 @@ export default function CheckoutPage() {
                     <h4 className="font-syne font-bold text-xs">Shipping</h4>
                     <button onClick={() => setCurrentStep(3)} className="text-[10px] text-blue hover:underline">Edit</button>
                   </div>
-                  <p className="text-sm text-text-2">{shippingMethods.find((m) => m.id === selectedShipping)?.name}</p>
-                  <p className="text-xs text-text-4">{shippingMethods.find((m) => m.id === selectedShipping)?.time}</p>
+                  <p className="text-sm text-text-2">
+                    {useLocker ? "Locker Delivery" : shippingMethods.find((m) => m.id === selectedShipping)?.name}
+                  </p>
+                  <p className="text-xs text-text-4">
+                    {useLocker && selectedLocker ? `${selectedLocker.name}` : shippingMethods.find((m) => m.id === selectedShipping)?.time}
+                  </p>
+                  {deliveryTimeSlot && <p className="text-[10px] text-blue-600 mt-0.5">Time slot: {deliveryTimeSlot}</p>}
                 </div>
 
                 {/* Payment */}

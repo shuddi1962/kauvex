@@ -192,6 +192,12 @@ function LoginForm() {
               Join as an Influencer
             </Link>
           </div>
+
+          <div className="mt-6 text-center">
+            <Link href="/creators" className="text-xs text-gray-400 hover:text-orange transition-colors">
+              Learn about the Creator Program &rarr;
+            </Link>
+          </div>
         </div>
 
         <p className="text-center text-sm text-gray-500 mt-6">

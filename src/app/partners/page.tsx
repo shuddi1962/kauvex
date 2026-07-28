@@ -232,6 +232,23 @@ export default function PartnersLandingPage() {
         </div>
       </section>
 
+      <section className="py-16 bg-white">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="bg-gradient-to-r from-orange/5 via-orange/10 to-orange/5 rounded-2xl border border-orange/20 p-8 text-center">
+            <h3 className="font-syne font-700 text-xl text-navy mb-2">Want higher commissions & exclusive perks?</h3>
+            <p className="text-gray-500 text-sm mb-4 max-w-xl mx-auto">
+              Our <strong>Creator Program</strong> offers up to 12% commission, early product access, co-branded content opportunities, and dedicated support for content creators with an audience.
+            </p>
+            <Link
+              href="/creators"
+              className="inline-flex items-center justify-center gap-2 bg-orange hover:bg-orange/90 text-white font-semibold px-6 py-2.5 rounded-lg transition-all"
+            >
+              Explore the Creator Program <ArrowRight className="w-4 h-4" />
+            </Link>
+          </div>
+        </div>
+      </section>
+
       <section className="py-16 lg:py-24 bg-navy">
         <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
           <h2 className="font-syne font-700 text-3xl text-white mb-4">

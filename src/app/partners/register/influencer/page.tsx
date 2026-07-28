@@ -351,6 +351,9 @@ export default function InfluencerRegisterPage() {
             <p className="text-gray-500 text-sm mt-1">
               Monetize your audience with exclusive brand deals and higher commissions.
             </p>
+            <Link href="/creators" className="text-xs text-orange hover:underline mt-1 inline-block">
+              Learn about Creator Program tiers &rarr;
+            </Link>
           </div>
 
           <div className="flex items-center justify-center mb-8">

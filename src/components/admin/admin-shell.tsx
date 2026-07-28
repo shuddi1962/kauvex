@@ -20,7 +20,7 @@ import {
 import { AdminStorefrontFilter } from "@/components/admin/storefront-filter";
 import { useAuthStore } from "@/store/auth-store";
 
-type SectionKey = "dashboard" | "commerce" | "sales" | "marketing" | "content" | "marketplace" | "operations" | "system";
+type SectionKey = "dashboard" | "commerce" | "sales" | "marketing" | "content" | "marketplace" | "operations" | "kpn" | "system";
 
 interface NavItem {
   label: string;
@@ -260,6 +260,21 @@ const topNavSections: { key: SectionKey; label: string; icon: React.ElementType;
     ],
   },
   {
+    key: "kpn", label: "Industry OS", icon: Building2,
+    groups: [
+      { title: "Management", items: [
+        { label: "KPN Dashboard", href: "/admin/kpn", badge: "P26" },
+        { label: "Professionals", href: "/admin/kpn/professionals", badge: "P26" },
+        { label: "Credentials", href: "/admin/kpn/credentials", badge: "P26" },
+        { label: "Bookings", href: "/admin/kpn/bookings", badge: "P26" },
+        { label: "Projects", href: "/admin/kpn/projects", badge: "P26" },
+        { label: "Configurators", href: "/admin/kpn/configurators", badge: "P26" },
+        { label: "Industry Hubs", href: "/admin/kpn/hubs", badge: "P26" },
+        { label: "Digital Twins", href: "/admin/kpn/digital-twins", badge: "P26" },
+      ]},
+    ],
+  },
+  {
     key: "system", label: "System", icon: Settings,
     groups: [
       { title: "Configuration", items: [
@@ -309,6 +324,7 @@ function detectSection(pathname: string): SectionKey {
   if (pathname.startsWith("/admin/storefronts") || pathname.startsWith("/admin/vendors") || pathname.startsWith("/admin/commission-rates") || pathname.startsWith("/admin/vendor-ads") || pathname.startsWith("/admin/fbk") || pathname.startsWith("/admin/boat-configurator") || pathname.startsWith("/admin/reputation") || pathname.startsWith("/admin/authenticity") || pathname.startsWith("/admin/suppliers") || pathname.startsWith("/admin/manufacturers") || pathname.startsWith("/admin/wholesale") || pathname.startsWith("/admin/franchise") || pathname.startsWith("/admin/auctions") || pathname.startsWith("/admin/sourcing") || pathname.startsWith("/admin/pod") || pathname.startsWith("/admin/art-marketplace") || pathname.startsWith("/admin/group-buy") || pathname.startsWith("/admin/nft") || pathname.startsWith("/admin/catalog") || pathname.startsWith("/admin/brand-registry") || pathname.startsWith("/admin/university")) return "marketplace";
   if (pathname.startsWith("/admin/delivery") || pathname.startsWith("/admin/drivers") || pathname.startsWith("/admin/returns") || pathname.startsWith("/admin/shipping") || pathname.startsWith("/admin/shipping-carriers") || pathname.startsWith("/admin/shipping/hs-codes") || pathname.startsWith("/admin/shipping/customs-documents") || pathname.startsWith("/admin/shipping/restrictions") || pathname.startsWith("/admin/shipping/surge-pricing") || pathname.startsWith("/admin/shipping/business-accounts") || pathname.startsWith("/admin/logistics") || pathname.startsWith("/admin/logistics/global") || pathname.startsWith("/admin/logistics/countries") || pathname.startsWith("/admin/logistics/carriers") || pathname.startsWith("/admin/logistics/ioss") || pathname.startsWith("/admin/logistics/ddp") || pathname.startsWith("/admin/logistics/compliance") || pathname.startsWith("/admin/logistics/live") || pathname.startsWith("/admin/logistics/fuel") || pathname.startsWith("/admin/logistics/virtual-addresses") || pathname.startsWith("/admin/fuel") || pathname.startsWith("/admin/packaging") || pathname.startsWith("/admin/locations") || pathname.startsWith("/admin/warehouses") || pathname.startsWith("/admin/pickup-points") || pathname.startsWith("/admin/dropoff-zones") || pathname.startsWith("/admin/warranty") || pathname.startsWith("/admin/field-team") || pathname.startsWith("/admin/cj-dropshipping") || pathname.startsWith("/admin/forecasting") || pathname.startsWith("/admin/fraud") || pathname.startsWith("/admin/command-center") || pathname.startsWith("/admin/express") || pathname.startsWith("/admin/lockers")) return "operations";
   if (pathname.startsWith("/admin/analytics/intelligence")) return "operations";
+  if (pathname.startsWith("/admin/kpn")) return "kpn";
   if (pathname.startsWith("/admin/settings") || pathname.startsWith("/admin/staff") || pathname.startsWith("/admin/roles") || pathname.startsWith("/admin/features") || pathname.startsWith("/admin/mobile") || pathname.startsWith("/admin/site-doctor") || pathname.startsWith("/admin/audit-log") || pathname.startsWith("/admin/ai") || pathname.startsWith("/admin/api-keys") || pathname.startsWith("/admin/webhooks") || pathname.startsWith("/admin/white-label") || pathname.startsWith("/admin/languages") || pathname.startsWith("/admin/ai-assistant") || pathname.startsWith("/admin/chat") || pathname.startsWith("/admin/domains") || pathname.startsWith("/admin/security") || pathname.startsWith("/admin/sustainability") || pathname.startsWith("/admin/ussd") || pathname.startsWith("/api/docs")) return "system";
   return "dashboard";
 }

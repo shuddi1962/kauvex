@@ -145,6 +145,7 @@ alwaysApply: true
 - /supabase/migrations/00023_kcc_phase23_logistics_upgrade.sql — Phase 23 logistics upgrade (14 new tables, 15 carrier seeds)
 - /supabase/migrations/00024_kcc_phase24_manufacturers.sql — Phase 24 manufacturer portal (kv_mfg_* tables)
 - /supabase/migrations/00026_kcc_phase25_security.sql — Phase 25 security tables (kv_sec_*: blocked_requests, identity_verifications, fraud_scores, blacklist, file_scans, backups, credential_audit, otp_rate_limits)
+- /supabase/migrations/00038_kcc_phase26_kpn_kps.sql — Phase 26 migration (9 new tables, 15 hub seeds)
 - /lib/manufacturers/ — Manufacturer portal engine (registration.ts, verification.ts, categories.ts, inquiries.ts, production.ts, escrow.ts, disputes.ts, samples.ts, hubs.ts)
 - /app/manufacturers/ — Manufacturer portal (landing, register, search, dashboard, quotes, request-quote, landed-cost, [slug] profile)
 - /app/manufacturers/dashboard/ — Dashboard pages (overview, storefront, inquiries, quotes, orders, samples, production, escrow, reviews, analytics, settings)
@@ -158,6 +159,21 @@ alwaysApply: true
 - /app/api/v1/cron/independent-backup/ — Backup API endpoint
 - /scripts/setup-demo-accounts.js — Demo account seeding script
 - /app/api/setup/demo-accounts/ — Demo accounts setup API route
+- /app/pro/ — KPN Professional portal (register, search, profiles, dashboard)
+- /app/projects/ — Project Hub (project creation, management, Digital Project Room)
+- /app/configure/ — AI Design Studio configurators (boat, solar, CCTV, house, kitchen, dredging)
+- /app/assets/ — Digital Twin and Asset Registry
+- /app/marketplace/used-equipment/ — Certified Pre-Owned Equipment
+- /app/marketplace/rentals/ — Equipment Rental Exchange
+- /app/marketplace/auctions/ — Industrial Auction Platform
+- /app/marketplace/procurement/ — Procurement Marketplace
+- /app/workforce/ — Workforce Marketplace
+- /app/industries/ — Industry Hubs (all 15 industries)
+- /app/financing/ — Financing Marketplace
+- /app/insurance/ — Insurance Marketplace
+- /app/sustainability/ — Sustainability Dashboard
+- /app/admin/kpn/ — Admin KPN/KPS management
+- /lib/kpn/ — KPN/KPS engine (professionals, bookings, projects, configurators, digital twins, matching, financing, insurance)
 
 Brand Quick Reference:
   Primary color: #0A1628 (navy) — kauvex-navy
@@ -254,6 +270,7 @@ Key V2 Enterprise+ tables: erp_accounts, journal_entries, cost_centers, budgets,
 - [x] Phase 23 (Shipping & Logistics Platform Upgrade): Complete
 - [x] Phase 24 (Global Manufacturer Portal): Complete
 - [x] Phase 25 (Security & External Services): Complete
+- [x] Phase 26 (Professional Services and Industry OS): Complete
 
 ## Recent Enhancements (August 2026)
 - **V3 Database**: 40+ new Prisma models (local suppliers, sourcing, POD, dropshipping, art/NFT, group buy, price alerts, live commerce, mentorship, carbon offsets, competition intel, Kauvex Originals, subscription boxes)
@@ -467,6 +484,41 @@ Key V2 Enterprise+ tables: erp_accounts, journal_entries, cost_centers, budgets,
 - **Admin Pages**: `/admin/logistics/global`, `/admin/logistics/countries`, `/admin/logistics/countries/[code]`, `/admin/logistics/carriers`, `/admin/logistics/ioss`, `/admin/logistics/ddp`, `/admin/logistics/compliance`
 - **Footer**: Manufacturer Portal, Find Manufacturers added to "Sell" column
 - **Admin Sidebar**: Marketplace > Partner Network: Manufacturers, Manufacturer Hubs, Manufacturer Disputes (Phase 24)
+- **Admin Sidebar**: Industry OS section: KPN Dashboard, Professionals, Credentials, Bookings, Projects, Configurators, Industry Hubs, Digital Twins (Phase 26)
+- **Footer**: Services & Solutions column with links to 12 new pages (Phase 26)
+- **Header Nav**: Marketplace dropdown (Used Equipment, Rentals, Auctions, Procurement) and Explore dropdown (Industries, KPN Professionals, Project Hub, AI Design Studio, Asset Registry, Workforce, Financing, Insurance, Sustainability)
+- **Sitemap**: 24 new entries added for Phase 26 pages
+
+## Phase 26 KPN/KPS & Industry OS Knowledge Base
+
+**Key Directories:**
+  `/app/pro/` — KPN Professional portal (register, search, profiles, dashboard)
+  `/app/projects/` — Project Hub (project creation, management, Digital Project Room)
+  `/app/configure/` — AI Design Studio configurators (boat, solar, CCTV, house, kitchen, dredging)
+  `/app/assets/` — Digital Twin and Asset Registry
+  `/app/marketplace/used-equipment/` — Certified Pre-Owned Equipment
+  `/app/marketplace/rentals/` — Equipment Rental Exchange
+  `/app/marketplace/auctions/` — Industrial Auction Platform
+  `/app/marketplace/procurement/` — Procurement Marketplace
+  `/app/workforce/` — Workforce Marketplace
+  `/app/industries/` — Industry Hubs (all 15 industries)
+  `/app/financing/` — Financing Marketplace
+  `/app/insurance/` — Insurance Marketplace
+  `/app/sustainability/` — Sustainability Dashboard
+  `/app/admin/kpn/` — Admin KPN/KPS management
+  `/lib/kpn/` — KPN/KPS engine (professionals, bookings, projects, configurators, digital twins, matching, financing, insurance)
+  `/supabase/migrations/00038_kcc_phase26_kpn_kps.sql` — Phase 26 migration (9 new tables, 15 hub seeds)
+
+**Database Tables (kv_kpn_ prefix):**
+  kv_kpn_professionals — Professional registry (individual + company)
+  kv_kpn_credentials — Professional certifications, licenses, verifications
+  kv_kps_service_bookings — Service bookings at checkout and standalone
+  kv_kpn_projects — Project Hub (complex multi-contractor projects)
+  kv_kpn_project_bids — Project bid submissions
+  kv_kpn_digital_twins — Asset lifecycle records
+  kv_kpn_configurator_sessions — AI Design Studio sessions
+  kv_kpn_maintenance_schedules — Recurring maintenance reminders
+  kv_kpn_industry_hubs — Industry hub registry (15 seeded)
 
 ## Phase 15 Affiliate & Influencer Network Knowledge Base
 

@@ -204,6 +204,31 @@ const mainNav = [
       { label: "Become a Partner", href: "/sell/partners" },
     ],
   },
+  {
+    label: "Marketplace",
+    href: "#",
+    children: [
+      { label: "Used Equipment", href: "/marketplace/used-equipment" },
+      { label: "Equipment Rental", href: "/marketplace/rentals" },
+      { label: "Auctions", href: "/marketplace/auctions" },
+      { label: "Procurement", href: "/marketplace/procurement" },
+    ],
+  },
+  {
+    label: "Explore",
+    href: "#",
+    children: [
+      { label: "Industries", href: "/industries" },
+      { label: "KPN Professionals", href: "/pro" },
+      { label: "Project Hub", href: "/projects" },
+      { label: "AI Design Studio", href: "/configure" },
+      { label: "Asset Registry", href: "/assets" },
+      { label: "Workforce", href: "/workforce" },
+      { label: "Financing", href: "/financing" },
+      { label: "Insurance", href: "/insurance" },
+      { label: "Sustainability", href: "/sustainability" },
+    ],
+  },
   { label: "Blog", href: "/blog" },
   { label: "Contact", href: "/contact" },
 ];

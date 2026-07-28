@@ -53,6 +53,21 @@ const aboutLinks = [
   { label: "Cookie Policy", url: "/privacy" },
 ];
 
+const servicesLinks = [
+  { label: "KPN Professionals", url: "/pro" },
+  { label: "Project Hub", url: "/projects" },
+  { label: "Asset Registry", url: "/assets" },
+  { label: "AI Design Studio", url: "/configure" },
+  { label: "Used Equipment", url: "/marketplace/used-equipment" },
+  { label: "Equipment Rental", url: "/marketplace/rentals" },
+  { label: "Auctions", url: "/marketplace/auctions" },
+  { label: "Procurement", url: "/marketplace/procurement" },
+  { label: "Industry Hubs", url: "/industries" },
+  { label: "Financing", url: "/financing" },
+  { label: "Insurance", url: "/insurance" },
+  { label: "Sustainability", url: "/sustainability" },
+];
+
 const regionalStores = [
   { label: "KAUVEX Nigeria", url: "#" },
   { label: "KAUVEX UK", url: "#" },
@@ -202,6 +217,23 @@ export default function Footer() {
             <h4 className="font-bold text-sm text-white mb-4">About KAUVEX</h4>
             <ul className="space-y-2.5">
               {aboutLinks.map((link) => (
+                <li key={link.label}>
+                  <Link
+                    href={link.url}
+                    className="text-sm text-white/40 hover:text-white transition-colors"
+                  >
+                    {link.label}
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          </div>
+
+          {/* Services & Solutions */}
+          <div>
+            <h4 className="font-bold text-sm text-white mb-4">Services &amp; Solutions</h4>
+            <ul className="space-y-2.5">
+              {servicesLinks.map((link) => (
                 <li key={link.label}>
                   <Link
                     href={link.url}

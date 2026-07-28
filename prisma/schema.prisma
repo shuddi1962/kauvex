@@ -6910,3 +6910,265 @@ model UssdTransaction {
   @@index([status], map: "idx_kv_ussd_status")
   @@map("kv_ussd_transactions")
 }
+
+// PHASE 26: KAUVEX PRO NETWORK (KPN) & PROFESSIONAL SERVICES (KPS)
+// Industry Operating System — Full Ecosystem
+
+model KpnProfessional {
+  id                  String   @id @default(uuid()) @db.Uuid
+  accountType         String   @map("account_type") @db.VarChar(20) // individual | company
+  userId              String?  @map("user_id") @db.Uuid
+  companyName         String?  @map("company_name") @db.VarChar(200)
+  cacNumber           String?  @map("cac_number") @db.VarChar(100)
+  primaryCategory     String   @map("primary_category") @db.VarChar(100)
+  secondaryCategories String[] @map("secondary_categories") @db.Text
+  yearsExperience     Int?     @map("years_experience")
+  coverageArea        Json?    @map("coverage_area") // cities, regions, radius
+  hourlyRate          Decimal? @map("hourly_rate") @db.Decimal(14, 2)
+  currencyCode        String   @default("NGN") @map("currency_code") @db.VarChar(10)
+  emergencyAvailable  Boolean  @default(false) @map("emergency_available")
+  emergencySurcharge  Decimal? @map("emergency_surcharge_percent") @db.Decimal(5, 2)
+  verificationTier    String   @default("basic") @map("verification_tier") @db.VarChar(20) // basic | certified | gold | platinum
+  ratingAverage       Decimal? @map("rating_average") @db.Decimal(3, 2)
+  totalJobsCompleted  Int      @default(0) @map("total_jobs_completed")
+  totalReviews        Int      @default(0) @map("total_reviews")
+  isAcceptingJobs     Boolean  @default(true) @map("is_accepting_jobs")
+  status              String   @default("pending") @db.VarChar(20)
+  bio                 String?  @db.Text
+  profilePhoto        String?  @map("profile_photo") @db.Text
+  phone               String?  @db.VarChar(30)
+  address             Json?    @map("address")
+  createdAt           DateTime @default(now()) @map("created_at")
+  updatedAt           DateTime @updatedAt @map("updated_at")
+
+  credentials     KpnCredential[]
+  serviceBookings KpsServiceBooking[]
+  projectBids     KpnProjectBid[]
+  digitalTwins    KpnDigitalTwin[]
+  maintenanceSched KpnMaintenanceSchedule[]
+
+  @@index([userId], map: "idx_kpn_professional_user")
+  @@index([primaryCategory], map: "idx_kpn_professional_category")
+  @@index([verificationTier], map: "idx_kpn_professional_tier")
+  @@index([status], map: "idx_kpn_professional_status")
+  @@map("kv_kpn_professionals")
+}
+
+model KpnCredential {
+  id                String   @id @default(uuid()) @db.Uuid
+  professionalId    String   @map("professional_id") @db.Uuid
+  credentialType    String   @map("credential_type") @db.VarChar(50) // certification | license | trade_test | oem_cert | background_check | insurance | nin | bvn | cac
+  issuingBody       String?  @map("issuing_body") @db.VarChar(200)
+  certificateNumber String?  @map("certificate_number") @db.VarChar(100)
+  documentUrl       String?  @map("document_url") @db.Text
+  issueDate         DateTime? @map("issue_date")
+  expiryDate        DateTime? @map("expiry_date")
+  status            String   @default("pending") @db.VarChar(20) // pending | verified | expired | rejected
+  verifiedBy        String?  @map("verified_by") @db.Uuid
+  verifiedAt        DateTime? @map("verified_at")
+  createdAt         DateTime @default(now()) @map("created_at")
+
+  professional KpnProfessional @relation(fields: [professionalId], references: [id])
+
+  @@index([professionalId], map: "idx_kpn_credential_professional")
+  @@index([credentialType], map: "idx_kpn_credential_type")
+  @@index([status], map: "idx_kpn_credential_status")
+  @@map("kv_kpn_credentials")
+}
+
+model KpsServiceBooking {
+  id                      String   @id @default(uuid()) @db.Uuid
+  orderId                 String?  @map("order_id") @db.Uuid
+  customerId              String   @map("customer_id") @db.Uuid
+  professionalId          String?  @map("professional_id") @db.Uuid
+  serviceType             String   @map("service_type") @db.VarChar(50)
+  productId               String?  @map("product_id") @db.Uuid
+  serviceAddress          Json?    @map("service_address")
+  scheduledDate           DateTime? @map("scheduled_date")
+  scheduledTimeWindow     String?  @map("scheduled_time_window") @db.VarChar(20)
+  estimatedDurationHours  Decimal? @map("estimated_duration_hours") @db.Decimal(5, 2)
+  serviceFee              Decimal  @map("service_fee") @db.Decimal(14, 2)
+  currencyCode            String   @default("NGN") @map("currency_code") @db.VarChar(10)
+  kauvexCommission        Decimal? @map("kauvex_commission") @db.Decimal(14, 2)
+  professionalPayout      Decimal? @map("professional_payout") @db.Decimal(14, 2)
+  vendorReferralBonus     Decimal? @map("vendor_referral_bonus") @db.Decimal(14, 2)
+  status                  String   @default("scheduled") @db.VarChar(30) // scheduled | professional_assigned | professional_en_route | checked_in | in_progress | completed | disputed | cancelled
+  checkinTime             DateTime? @map("checkin_time")
+  checkinGps              Json?    @map("checkin_gps")
+  completionTime          DateTime? @map("completion_time")
+  customerSignatureUrl    String?  @map("customer_signature_url") @db.Text
+  completionReportUrl     String?  @map("completion_report_url") @db.Text
+  installationCertificateUrl String? @map("installation_certificate_url") @db.Text
+  notes                   String?  @db.Text
+  createdAt               DateTime @default(now()) @map("created_at")
+  updatedAt               DateTime @updatedAt @map("updated_at")
+
+  professional KpnProfessional? @relation(fields: [professionalId], references: [id])
+
+  @@index([orderId], map: "idx_kps_booking_order")
+  @@index([customerId], map: "idx_kps_booking_customer")
+  @@index([professionalId], map: "idx_kps_booking_professional")
+  @@index([status], map: "idx_kps_booking_status")
+  @@map("kv_kps_service_bookings")
+}
+
+model KpnProject {
+  id                  String   @id @default(uuid()) @db.Uuid
+  customerId          String   @map("customer_id") @db.Uuid
+  projectName         String   @map("project_name") @db.VarChar(200)
+  projectType         String   @map("project_type") @db.VarChar(50)
+  description         String?  @db.Text
+  location            Json?    @map("location")
+  budgetMin           Decimal? @map("budget_min") @db.Decimal(14, 2)
+  budgetMax           Decimal? @map("budget_max") @db.Decimal(14, 2)
+  currencyCode        String   @default("NGN") @map("currency_code") @db.VarChar(10)
+  timelineStart       DateTime? @map("timeline_start")
+  timelineEnd         DateTime? @map("timeline_end")
+  status              String   @default("posted") @db.VarChar(30) // posted | receiving_bids | contractor_selected | in_progress | completed | cancelled | disputed
+  totalMilestones     Int      @default(0) @map("total_milestones")
+  completedMilestones Int      @default(0) @map("completed_milestones")
+  escrowAmount        Decimal? @map("escrow_amount") @db.Decimal(14, 2)
+  documents           Json?    @map("documents")
+  rfis                Json?    @map("rfis")
+  siteDiary           Json?    @map("site_diary")
+  variationOrders     Json?    @map("variation_orders")
+  materialList        Json?    @map("material_list")
+  createdAt           DateTime @default(now()) @map("created_at")
+  updatedAt           DateTime @updatedAt @map("updated_at")
+
+  bids KpnProjectBid[]
+
+  @@index([customerId], map: "idx_kpn_project_customer")
+  @@index([projectType], map: "idx_kpn_project_type")
+  @@index([status], map: "idx_kpn_project_status")
+  @@map("kv_kpn_projects")
+}
+
+model KpnProjectBid {
+  id                String   @id @default(uuid()) @db.Uuid
+  projectId         String   @map("project_id") @db.Uuid
+  professionalId    String   @map("professional_id") @db.Uuid
+  bidAmount         Decimal  @map("bid_amount") @db.Decimal(14, 2)
+  currencyCode      String   @default("NGN") @map("currency_code") @db.VarChar(10)
+  proposedStart     DateTime? @map("proposed_start")
+  proposedEnd       DateTime? @map("proposed_end")
+  methodology       String?  @db.Text
+  teamComposition   Json?    @map("team_composition")
+  equipmentList     Json?    @map("equipment_list")
+  paymentSchedule   Json?    @map("payment_schedule")
+  status            String   @default("submitted") @db.VarChar(20) // submitted | shortlisted | awarded | rejected | withdrawn
+  createdAt         DateTime @default(now()) @map("created_at")
+
+  project     KpnProject     @relation(fields: [projectId], references: [id])
+  professional KpnProfessional @relation(fields: [professionalId], references: [id])
+
+  @@index([projectId], map: "idx_kpn_bid_project")
+  @@index([professionalId], map: "idx_kpn_bid_professional")
+  @@index([status], map: "idx_kpn_bid_status")
+  @@map("kv_kpn_project_bids")
+}
+
+model KpnDigitalTwin {
+  id                      String   @id @default(uuid()) @db.Uuid
+  ownerId                 String   @map("owner_id") @db.Uuid
+  assetName               String   @map("asset_name") @db.VarChar(200)
+  assetType               String   @map("asset_type") @db.VarChar(100)
+  orderId                 String?  @map("order_id") @db.Uuid
+  manufacturer            String?  @db.VarChar(200)
+  model                   String?  @db.VarChar(200)
+  serialNumber            String?  @map("serial_number") @db.VarChar(100)
+  purchaseDate            DateTime? @map("purchase_date")
+  purchasePrice           Decimal? @map("purchase_price") @db.Decimal(14, 2)
+  currencyCode            String   @default("NGN") @map("currency_code") @db.VarChar(10)
+  installationDate        DateTime? @map("installation_date")
+  installerId             String?  @map("installer_id") @db.Uuid
+  warrantyStart           DateTime? @map("warranty_start")
+  warrantyEnd             DateTime? @map("warranty_end")
+  nextMaintenanceDue      DateTime? @map("next_maintenance_due")
+  maintenanceIntervalDays Int?     @map("maintenance_interval_days")
+  documents               Json?    @map("documents")
+  maintenanceHistory      Json?    @map("maintenance_history")
+  currentCondition        String   @default("good") @map("current_condition") @db.VarChar(20) // excellent | good | fair | poor
+  insurancePolicyId       String?  @map("insurance_policy_id") @db.Uuid
+  ownershipHistory        Json?    @map("ownership_history")
+  isForSale               Boolean  @default(false) @map("is_for_sale")
+  askingPrice             Decimal? @map("asking_price") @db.Decimal(14, 2)
+  metadata                Json?    @default("{}")
+  createdAt               DateTime @default(now()) @map("created_at")
+  updatedAt               DateTime @updatedAt @map("updated_at")
+
+  installer        KpnProfessional?      @relation(fields: [installerId], references: [id])
+  maintenanceSched KpnMaintenanceSchedule[]
+
+  @@index([ownerId], map: "idx_kpn_twin_owner")
+  @@index([assetType], map: "idx_kpn_twin_type")
+  @@index([isForSale], map: "idx_kpn_twin_onsale")
+  @@map("kv_kpn_digital_twins")
+}
+
+model KpnConfiguratorSession {
+  id                  String   @id @default(uuid()) @db.Uuid
+  userId              String?  @map("user_id") @db.Uuid
+  configuratorType    String   @map("configurator_type") @db.VarChar(30) // boat | solar | cctv | house | kitchen | dredging | security | farm | factory
+  configuration       Json?    @map("configuration")
+  aiRenderUrl         String?  @map("ai_render_url") @db.Text
+  billOfMaterials     Json?    @map("bill_of_materials")
+  costEstimateMin     Decimal? @map("cost_estimate_min") @db.Decimal(14, 2)
+  costEstimateMax     Decimal? @map("cost_estimate_max") @db.Decimal(14, 2)
+  currencyCode        String   @default("NGN") @map("currency_code") @db.VarChar(10)
+  status              String   @default("draft") @db.VarChar(20) // draft | quoted | ordered | in_production
+  quotesReceived      Int      @default(0) @map("quotes_received")
+  selectedBuilderId   String?  @map("selected_builder_id") @db.Uuid
+  createdAt           DateTime @default(now()) @map("created_at")
+  updatedAt           DateTime @updatedAt @map("updated_at")
+
+  @@index([userId], map: "idx_kpn_config_user")
+  @@index([configuratorType], map: "idx_kpn_config_type")
+  @@index([status], map: "idx_kpn_config_status")
+  @@map("kv_kpn_configurator_sessions")
+}
+
+model KpnMaintenanceSchedule {
+  id                     String   @id @default(uuid()) @db.Uuid
+  digitalTwinId          String   @map("digital_twin_id") @db.Uuid
+  maintenanceType        String   @map("maintenance_type") @db.VarChar(100)
+  frequencyDays          Int      @map("frequency_days")
+  lastCompleted          DateTime? @map("last_completed")
+  nextDue                DateTime? @map("next_due")
+  reminderDaysBefore     Int      @default(30) @map("reminder_days_before")
+  reminderSent           Boolean  @default(false) @map("reminder_sent")
+  preferredProfessionalId String? @map("preferred_professional_id") @db.Uuid
+  autoBook               Boolean  @default(false) @map("auto_book")
+  status                 String   @default("active") @db.VarChar(20)
+  createdAt              DateTime @default(now()) @map("created_at")
+
+  digitalTwin KpnDigitalTwin @relation(fields: [digitalTwinId], references: [id])
+  professional KpnProfessional? @relation(fields: [preferredProfessionalId], references: [id])
+
+  @@index([digitalTwinId], map: "idx_kpn_maint_twin")
+  @@index([nextDue], map: "idx_kpn_maint_due")
+  @@index([status], map: "idx_kpn_maint_status")
+  @@map("kv_kpn_maintenance_schedules")
+}
+
+model KpnIndustryHub {
+  id                    String   @id @default(uuid()) @db.Uuid
+  hubName               String   @map("hub_name") @db.VarChar(100)
+  hubSlug               String   @unique @map("hub_slug") @db.VarChar(100)
+  subdomain             String?  @map("subdomain") @db.VarChar(100)
+  description           String?  @db.Text
+  iconUrl               String?  @map("icon_url") @db.Text
+  heroImageUrl          String?  @map("hero_image_url") @db.Text
+  isActive              Boolean  @default(true) @map("is_active")
+  productCategories     String[] @map("product_categories") @db.Text
+  professionalCategories String[] @map("professional_categories") @db.Text
+  configuratorsAvailable String[] @map("configurators_available") @db.Text
+  pillarsAvailable      String[] @map("pillars_available") @db.Text // which of the 16 pillars are active
+  sortOrder             Int      @default(0) @map("sort_order")
+  createdAt             DateTime @default(now()) @map("created_at")
+  updatedAt             DateTime @updatedAt @map("updated_at")
+
+  @@index([hubSlug], map: "idx_kpn_hub_slug")
+  @@index([isActive], map: "idx_kpn_hub_active")
+  @@map("kv_kpn_industry_hubs")
+}

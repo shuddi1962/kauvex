@@ -468,7 +468,7 @@ export default function IndustryHubPage() {
                 </Link>
               </div>
             ) : (
-              <p className="text-gray-500">Compliance information coming soon for this hub.</p>
+              <p className="text-gray-500">No compliance data currently available for this hub. Check back as we expand our regulatory coverage.</p>
             )}
           </div>
         );

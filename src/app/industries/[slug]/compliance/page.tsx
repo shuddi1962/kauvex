@@ -463,7 +463,7 @@ export default function HubCompliancePage() {
           <div className="text-center py-20">
             <ClipboardCheck size={48} className="mx-auto text-gray-300 mb-4" />
             <p className="text-lg font-semibold text-gray-500 mb-1">Compliance center not available</p>
-            <p className="text-sm text-gray-400 mb-6">Compliance information for this hub coming soon.</p>
+            <p className="text-sm text-gray-400 mb-6">Compliance information is being compiled for this hub. Check back soon.</p>
             {hub && (
               <Link href={`/industries/${slug}`} className="text-kauvex-orange hover:underline text-sm">
                 Back to {hub.hubName}

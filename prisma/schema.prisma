@@ -116,8 +116,27 @@ model Product {
   reviews    Review[]
   orderItems OrderItem[]
   cjProduct  CjProduct?
+  media      ProductMedia[]
 
   @@map("products")
+}
+
+model ProductMedia {
+  id        String   @id @default(uuid()) @db.Uuid
+  productId String   @map("product_id") @db.Uuid
+  product   Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+  type      String   @default("image") @db.VarChar(20)
+  url       String   @db.VarChar(1000)
+  alt       String?  @db.VarChar(500)
+  width     Int?
+  height    Int?
+  size      Int?
+  sortOrder Int      @default(0) @map("sort_order")
+  isPrimary Boolean  @default(false) @map("is_primary")
+  createdAt DateTime @default(now()) @map("created_at")
+
+  @@index([productId], map: "idx_kv_product_media_product")
+  @@map("product_media")
 }
 
 model ProductInventory {

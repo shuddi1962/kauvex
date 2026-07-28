@@ -64,6 +64,154 @@ const HARDCODED_COMPLIANCE: Record<string, { name: string; items: string[] }[]> 
     { name: "NIMASA Permit", items: ["Dredging license", "Vessel clearance", "Navigational safety"] },
     { name: "NEMA Approval", items: ["Waste management plan", "Spill contingency", "Ecosystem monitoring"] },
   ],
+  agriculture: [
+    { name: "NAFDAC Registration", items: ["Product registration certificate", "Good Manufacturing Practice certification", "Annual renewal compliance"] },
+    { name: "SONCAP Compliance", items: ["Product standards certification", "Quality management system", "Inspection report"] },
+    { name: "Quarantine Service Permit", items: ["Phytosanitary certificate", "Import/export permit", "Pest risk assessment"] },
+  ],
+  automotive: [
+    { name: "SON Standards", items: ["Vehicle type approval", "Component quality certification", "Emissions compliance"] },
+    { name: "FRSC Registration", items: ["Vehicle registration", "Road worthiness certificate", "Speed limiter compliance"] },
+    { name: "NESREA Approval", items: ["Emission control compliance", "Waste management plan", "Environmental audit"] },
+  ],
+  aviation: [
+    { name: "NCAA Certification", items: ["Air operator certificate", "Maintenance organization approval", "Flight operations compliance"] },
+    { name: "FAAN Clearance", items: ["Aerodrome safety compliance", "Security clearance", "Ground handling permit"] },
+    { name: "NAMA Compliance", items: ["Air navigation compliance", "Communication equipment certification", "Radar tracking standards"] },
+  ],
+  healthcare: [
+    { name: "FMOH Accreditation", items: ["Hospital accreditation", "Medical waste management", "Patient safety protocols"] },
+    { name: "NAFDAC Clearance", items: ["Drug and device registration", "Pharmacy inspection", "Product recall plan"] },
+    { name: "MDCN Registration", items: ["Medical practitioner license", "Specialty certification", "CPD compliance"] },
+  ],
+  hospitality: [
+    { name: "NAFDAC Compliance", items: ["Food handling permit", "Water quality testing", "Kitchen hygiene inspection"] },
+    { name: "SON Standards", items: ["Facility classification", "Fire safety compliance", "Equipment quality certification"] },
+    { name: "Local Govt Permit", items: ["Business premises registration", "Noise control compliance", "Sanitation clearance"] },
+  ],
+  manufacturing: [
+    { name: "NAFDAC Registration", items: ["Product registration", "GMP certification", "Quality control compliance"] },
+    { name: "SON Approval", items: ["Industrial standards certification", "Process quality audit", "Product batch testing"] },
+    { name: "NESREA Permit", items: ["EIA compliance", "Effluent treatment report", "Air quality monitoring"] },
+  ],
+  mining: [
+    { name: "MMDS License", items: ["Mineral title registration", "Exploration permit", "Mining lease compliance"] },
+    { name: "NESREA Approval", items: ["Environmental impact assessment", "Reclamation plan", "Water use permit"] },
+    { name: "Ministry of Mines", items: ["Community development agreement", "Royalty payment compliance", "Health and safety inspection"] },
+  ],
+  oil_gas: [
+    { name: "NUPRC License", items: ["Oil prospecting license", "Oil mining lease", "Production quota compliance"] },
+    { name: "NOSDRA Compliance", items: ["Oil spill contingency plan", "Environmental remediation", "Gas flaring compliance"] },
+    { name: "DPR Approval", items: ["Refinery license", "LPG facility permit", "Product quality certification"] },
+  ],
+  pharmaceutical: [
+    { name: "NAFDAC Certification", items: ["Drug registration", "GMP audit", "Pharmacovigilance compliance"] },
+    { name: "PCN License", items: ["Premises registration", "Superintendent pharmacist", "Controlled substances permit"] },
+    { name: "SON Standards", items: ["Good distribution practice", "Cold chain compliance", "Quality assurance audit"] },
+  ],
+  real_estate: [
+    { name: "REDAN Registration", items: ["Realtor accreditation", "Property agent license", "Professional certification"] },
+    { name: "LASBCA Permit", items: ["Building plan approval", "Structural integrity certificate", "Occupancy permit"] },
+    { name: "Local Govt Clearance", items: ["Property registration", "Land use compliance", "Tax clearance"] },
+  ],
+  technology: [
+    { name: "NITDA Compliance", items: ["Data protection registration", "ICT standards compliance", "Cybersecurity audit"] },
+    { name: "NCC License", items: ["Telecom service license", "Spectrum allocation", "Consumer protection code"] },
+    { name: "SON Certification", items: ["Hardware quality standards", "Software testing verification", "Interoperability compliance"] },
+  ],
+};
+
+const HARDCODED_INTELLIGENCE: Record<string, { label: string; value: string; suffix: string }[]> = {
+  agriculture: [
+    { label: "Market Size", value: "$4.2B", suffix: "Nigeria 2026" },
+    { label: "Growth Rate", value: "6.8%", suffix: "CAGR 2025-2030" },
+    { label: "Active Companies", value: "12,400+", suffix: "Registered firms" },
+    { label: "Employment", value: "35%", suffix: "Of national workforce" },
+  ],
+  automotive: [
+    { label: "Market Size", value: "$8.1B", suffix: "Nigeria 2026" },
+    { label: "Growth Rate", value: "4.2%", suffix: "CAGR 2025-2030" },
+    { label: "Active Companies", value: "3,200+", suffix: "Dealers & manufacturers" },
+    { label: "Employment", value: "240K+", suffix: "Direct jobs" },
+  ],
+  aviation: [
+    { label: "Market Size", value: "$1.5B", suffix: "Nigeria 2026" },
+    { label: "Growth Rate", value: "5.1%", suffix: "CAGR 2025-2030" },
+    { label: "Active Companies", value: "180+", suffix: "Licensed operators" },
+    { label: "Employment", value: "65K+", suffix: "Aviation jobs" },
+  ],
+  construction: [
+    { label: "Market Size", value: "$28.6B", suffix: "Nigeria 2026" },
+    { label: "Growth Rate", value: "3.5%", suffix: "CAGR 2025-2030" },
+    { label: "Active Companies", value: "45,000+", suffix: "Registered contractors" },
+    { label: "Employment", value: "2.1M+", suffix: "Direct & indirect" },
+  ],
+  energy: [
+    { label: "Market Size", value: "$64B", suffix: "Nigeria 2026" },
+    { label: "Growth Rate", value: "2.9%", suffix: "CAGR 2025-2030" },
+    { label: "Active Companies", value: "560+", suffix: "Licensed operators" },
+    { label: "Employment", value: "350K+", suffix: "Energy sector jobs" },
+  ],
+  dredging: [
+    { label: "Market Size", value: "$980M", suffix: "West Africa 2026" },
+    { label: "Growth Rate", value: "7.2%", suffix: "CAGR 2025-2030" },
+    { label: "Active Companies", value: "120+", suffix: "Licensed dredgers" },
+    { label: "Employment", value: "28K+", suffix: "Marine jobs" },
+  ],
+  healthcare: [
+    { label: "Market Size", value: "$9.8B", suffix: "Nigeria 2026" },
+    { label: "Growth Rate", value: "8.4%", suffix: "CAGR 2025-2030" },
+    { label: "Active Companies", value: "8,700+", suffix: "Hospitals & clinics" },
+    { label: "Employment", value: "460K+", suffix: "Healthcare workers" },
+  ],
+  hospitality: [
+    { label: "Market Size", value: "$2.6B", suffix: "Nigeria 2026" },
+    { label: "Growth Rate", value: "5.9%", suffix: "CAGR 2025-2030" },
+    { label: "Active Companies", value: "15,000+", suffix: "Hotels & restaurants" },
+    { label: "Employment", value: "1.2M+", suffix: "Hospitality jobs" },
+  ],
+  manufacturing: [
+    { label: "Market Size", value: "$48B", suffix: "Nigeria 2026" },
+    { label: "Growth Rate", value: "3.8%", suffix: "CAGR 2025-2030" },
+    { label: "Active Companies", value: "52,000+", suffix: "SMEs & large firms" },
+    { label: "Employment", value: "3.5M+", suffix: "Manufacturing jobs" },
+  ],
+  mining: [
+    { label: "Market Size", value: "$2.8B", suffix: "Nigeria 2026" },
+    { label: "Growth Rate", value: "9.5%", suffix: "CAGR 2025-2030" },
+    { label: "Active Companies", value: "3,800+", suffix: "Licensed miners" },
+    { label: "Employment", value: "450K+", suffix: "Artisanal & industrial" },
+  ],
+  oil_gas: [
+    { label: "Market Size", value: "$68B", suffix: "Nigeria 2026" },
+    { label: "Growth Rate", value: "1.8%", suffix: "CAGR 2025-2030" },
+    { label: "Active Companies", value: "420+", suffix: "IOC & indigenous" },
+    { label: "Employment", value: "200K+", suffix: "Oil & gas jobs" },
+  ],
+  pharmaceutical: [
+    { label: "Market Size", value: "$2.3B", suffix: "Nigeria 2026" },
+    { label: "Growth Rate", value: "11.2%", suffix: "CAGR 2025-2030" },
+    { label: "Active Companies", value: "340+", suffix: "Manufacturers & importers" },
+    { label: "Employment", value: "85K+", suffix: "Pharma jobs" },
+  ],
+  real_estate: [
+    { label: "Market Size", value: "$18.5B", suffix: "Nigeria 2026" },
+    { label: "Growth Rate", value: "6.1%", suffix: "CAGR 2025-2030" },
+    { label: "Active Companies", value: "32,000+", suffix: "Registered agents" },
+    { label: "Employment", value: "1.8M+", suffix: "Real estate jobs" },
+  ],
+  marine: [
+    { label: "Market Size", value: "$1.2B", suffix: "Nigeria 2026" },
+    { label: "Growth Rate", value: "4.6%", suffix: "CAGR 2025-2030" },
+    { label: "Active Companies", value: "280+", suffix: "Marine operators" },
+    { label: "Employment", value: "75K+", suffix: "Maritime jobs" },
+  ],
+  technology: [
+    { label: "Market Size", value: "$7.5B", suffix: "Nigeria 2026" },
+    { label: "Growth Rate", value: "13.4%", suffix: "CAGR 2025-2030" },
+    { label: "Active Companies", value: "6,500+", suffix: "Tech startups & firms" },
+    { label: "Employment", value: "290K+", suffix: "Tech professionals" },
+  ],
 };
 
 export default function IndustryHubPage() {
@@ -114,6 +262,7 @@ export default function IndustryHubPage() {
 
   const pillars = hub.pillarsAvailable || [];
   const complianceData = HARDCODED_COMPLIANCE[hub.hubSlug];
+  const intelligenceData = HARDCODED_INTELLIGENCE[hub.hubSlug];
 
   const renderPillarContent = () => {
     switch (activePillar) {
@@ -184,7 +333,47 @@ export default function IndustryHubPage() {
         return (
           <div className="bg-white rounded-xl border border-gray-200 p-8">
             <h2 className="text-2xl font-bold text-kauvex-navy mb-2">Procurement</h2>
-            <p className="text-gray-500">Procurement tools and supplier management coming soon.</p>
+            <p className="text-gray-500 mb-6">
+              Source products, request quotes, and manage suppliers for {hub.hubName}.
+            </p>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+              <div className="border border-gray-100 rounded-lg p-4">
+                <h4 className="font-semibold text-kauvex-navy text-sm mb-1">Supplier Discovery</h4>
+                <p className="text-xs text-gray-500 mb-3">Find verified suppliers and manufacturers in every category.</p>
+                <Link
+                  href="/manufacturers"
+                  className="inline-flex items-center gap-1 text-kauvex-orange text-xs font-semibold hover:underline"
+                >
+                  Browse Suppliers <ArrowRight size={12} />
+                </Link>
+              </div>
+              <div className="border border-gray-100 rounded-lg p-4">
+                <h4 className="font-semibold text-kauvex-navy text-sm mb-1">Request for Quote</h4>
+                <p className="text-xs text-gray-500 mb-3">Post RFQs and receive competitive bids from multiple vendors.</p>
+                <Link
+                  href={`/industries/${hub.hubSlug}/procurement/rfq`}
+                  className="inline-flex items-center gap-1 text-kauvex-orange text-xs font-semibold hover:underline"
+                >
+                  Post RFQ <ArrowRight size={12} />
+                </Link>
+              </div>
+              <div className="border border-gray-100 rounded-lg p-4">
+                <h4 className="font-semibold text-kauvex-navy text-sm mb-1">Procurement Marketplace</h4>
+                <p className="text-xs text-gray-500 mb-3">Buy bulk quantities at wholesale prices from trusted sellers.</p>
+                <Link
+                  href="/marketplace/procurement"
+                  className="inline-flex items-center gap-1 text-kauvex-orange text-xs font-semibold hover:underline"
+                >
+                  Start Sourcing <ArrowRight size={12} />
+                </Link>
+              </div>
+            </div>
+            <Link
+              href="/marketplace/procurement"
+              className="inline-flex items-center gap-2 bg-kauvex-orange text-white font-semibold px-6 py-2.5 rounded-lg hover:bg-kauvex-orange/90 transition-colors text-sm"
+            >
+              Open Procurement Hub <ArrowRight size={16} />
+            </Link>
           </div>
         );
       case "rental":
@@ -299,49 +488,132 @@ export default function IndustryHubPage() {
       case "training":
         return (
           <div className="bg-white rounded-xl border border-gray-200 p-8">
-            <h2 className="text-2xl font-bold text-kauvex-navy mb-2">Training</h2>
-            <p className="text-gray-500">Training courses for {hub.hubName} coming soon.</p>
+            <h2 className="text-2xl font-bold text-kauvex-navy mb-2">Training Catalog</h2>
+            <p className="text-gray-500 mb-6">
+              Upskill your team with {hub.hubName}-focused courses, certifications, and workshops.
+            </p>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+              <div className="border border-gray-100 rounded-lg p-4">
+                <h4 className="font-semibold text-kauvex-navy text-sm mb-1">Industry Fundamentals</h4>
+                <p className="text-xs text-gray-500">Introductory courses covering {hub.hubName} basics, safety, and regulations.</p>
+              </div>
+              <div className="border border-gray-100 rounded-lg p-4">
+                <h4 className="font-semibold text-kauvex-navy text-sm mb-1">Advanced Certification</h4>
+                <p className="text-xs text-gray-500">Professional certifications for experienced {hub.hubName} practitioners.</p>
+              </div>
+              <div className="border border-gray-100 rounded-lg p-4">
+                <h4 className="font-semibold text-kauvex-navy text-sm mb-1">Compliance Training</h4>
+                <p className="text-xs text-gray-500">Stay compliant with regulatory updates and mandatory training modules.</p>
+              </div>
+            </div>
+            <Link
+              href="/vendor/university"
+              className="inline-flex items-center gap-2 bg-kauvex-orange text-white font-semibold px-6 py-2.5 rounded-lg hover:bg-kauvex-orange/90 transition-colors text-sm"
+            >
+              Browse All Courses <ArrowRight size={16} />
+            </Link>
           </div>
         );
       case "knowledge":
         return (
           <div className="bg-white rounded-xl border border-gray-200 p-8">
             <h2 className="text-2xl font-bold text-kauvex-navy mb-2">Knowledge Center</h2>
-            <p className="text-gray-500 mb-4">Knowledge center for {hub.hubName} coming soon. Topics will include:</p>
-            <div className="flex flex-wrap gap-2">
-              {["Best practices", "Industry standards", "Case studies", "Whitepapers", "Regulations", "Technology trends"].map((t) => (
-                <span key={t} className="px-3 py-1 bg-gray-50 rounded-full text-xs font-medium text-gray-600 border border-gray-200">
-                  {t}
-                </span>
-              ))}
+            <p className="text-gray-500 mb-6">
+              Access articles, guides, whitepapers, and regulatory updates for {hub.hubName}.
+            </p>
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+              <Link href={`/industries/${hub.hubSlug}/knowledge?topic=best-practices`} className="border border-gray-100 rounded-lg p-4 hover:border-kauvex-orange transition-colors group">
+                <h4 className="font-semibold text-kauvex-navy text-sm group-hover:text-kauvex-orange transition-colors">Best Practices</h4>
+                <p className="text-xs text-gray-500 mt-1">Operational guides & standards</p>
+              </Link>
+              <Link href={`/industries/${hub.hubSlug}/knowledge?topic=regulations`} className="border border-gray-100 rounded-lg p-4 hover:border-kauvex-orange transition-colors group">
+                <h4 className="font-semibold text-kauvex-navy text-sm group-hover:text-kauvex-orange transition-colors">Regulations</h4>
+                <p className="text-xs text-gray-500 mt-1">Compliance & legal updates</p>
+              </Link>
+              <Link href={`/industries/${hub.hubSlug}/knowledge?topic=case-studies`} className="border border-gray-100 rounded-lg p-4 hover:border-kauvex-orange transition-colors group">
+                <h4 className="font-semibold text-kauvex-navy text-sm group-hover:text-kauvex-orange transition-colors">Case Studies</h4>
+                <p className="text-xs text-gray-500 mt-1">Real-world success stories</p>
+              </Link>
+              <Link href={`/industries/${hub.hubSlug}/knowledge?topic=whitepapers`} className="border border-gray-100 rounded-lg p-4 hover:border-kauvex-orange transition-colors group">
+                <h4 className="font-semibold text-kauvex-navy text-sm group-hover:text-kauvex-orange transition-colors">Whitepapers</h4>
+                <p className="text-xs text-gray-500 mt-1">In-depth industry reports</p>
+              </Link>
             </div>
+            <Link
+              href={`/industries/${hub.hubSlug}/knowledge`}
+              className="inline-flex items-center gap-2 text-kauvex-orange font-semibold text-sm hover:underline"
+            >
+              Explore Knowledge Center <ArrowRight size={14} />
+            </Link>
           </div>
         );
       case "community":
         return (
           <div className="bg-white rounded-xl border border-gray-200 p-8">
             <h2 className="text-2xl font-bold text-kauvex-navy mb-2">Community</h2>
-            <p className="text-gray-500">Community forum for {hub.hubName} professionals coming soon.</p>
+            <p className="text-gray-500 mb-6">
+              Connect with {hub.hubName} professionals, join discussions, and attend industry events.
+            </p>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+              <div className="border border-gray-100 rounded-lg p-4">
+                <h4 className="font-semibold text-kauvex-navy text-sm mb-1">Industry Forums</h4>
+                <p className="text-xs text-gray-500 mb-3">Topic-based discussion boards moderated by industry experts.</p>
+                <Link
+                  href={`/industries/${hub.hubSlug}/community/forums`}
+                  className="inline-flex items-center gap-1 text-kauvex-orange text-xs font-semibold hover:underline"
+                >
+                  Join Discussions <ArrowRight size={12} />
+                </Link>
+              </div>
+              <div className="border border-gray-100 rounded-lg p-4">
+                <h4 className="font-semibold text-kauvex-navy text-sm mb-1">Professional Groups</h4>
+                <p className="text-xs text-gray-500 mb-3">Connect with peers in specialized {hub.hubName} groups.</p>
+                <Link
+                  href={`/industries/${hub.hubSlug}/community/groups`}
+                  className="inline-flex items-center gap-1 text-kauvex-orange text-xs font-semibold hover:underline"
+                >
+                  Browse Groups <ArrowRight size={12} />
+                </Link>
+              </div>
+              <div className="border border-gray-100 rounded-lg p-4">
+                <h4 className="font-semibold text-kauvex-navy text-sm mb-1">Events & Webinars</h4>
+                <p className="text-xs text-gray-500 mb-3">Upcoming conferences, workshops, and networking sessions.</p>
+                <Link
+                  href={`/industries/${hub.hubSlug}/community/events`}
+                  className="inline-flex items-center gap-1 text-kauvex-orange text-xs font-semibold hover:underline"
+                >
+                  View Events <ArrowRight size={12} />
+                </Link>
+              </div>
+            </div>
+            <Link
+              href={`/industries/${hub.hubSlug}/community`}
+              className="inline-flex items-center gap-2 bg-kauvex-orange text-white font-semibold px-6 py-2.5 rounded-lg hover:bg-kauvex-orange/90 transition-colors text-sm"
+            >
+              Enter Community Hub <ArrowRight size={16} />
+            </Link>
           </div>
         );
       case "intelligence":
         return (
           <div className="bg-white rounded-xl border border-gray-200 p-8">
             <h2 className="text-2xl font-bold text-kauvex-navy mb-2">Industry Intelligence</h2>
-            <p className="text-gray-500 mb-6">Industry intelligence and analytics for {hub.hubName} coming soon.</p>
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-              {[
-                { label: "Market Size", value: "—" },
-                { label: "Growth Rate", value: "—" },
-                { label: "Active Companies", value: "—" },
-                { label: "Employment", value: "—" },
-              ].map((m) => (
-                <div key={m.label} className="bg-gray-50 rounded-lg p-4 text-center">
-                  <p className="text-xl font-bold text-kauvex-navy">{m.value}</p>
-                  <p className="text-xs text-gray-500">{m.label}</p>
-                </div>
-              ))}
-            </div>
+            <p className="text-gray-500 mb-6">
+              Key market metrics and analytics for the {hub.hubName} industry.
+            </p>
+            {intelligenceData ? (
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                {intelligenceData.map((m) => (
+                  <div key={m.label} className="bg-gray-50 rounded-lg p-5 text-center">
+                    <p className="text-2xl font-bold text-kauvex-orange">{m.value}</p>
+                    <p className="text-sm font-medium text-kauvex-navy mt-1">{m.label}</p>
+                    <p className="text-xs text-gray-400 mt-0.5">{m.suffix}</p>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <p className="text-gray-500">Intelligence data loading for this hub. Check back soon.</p>
+            )}
           </div>
         );
       default:

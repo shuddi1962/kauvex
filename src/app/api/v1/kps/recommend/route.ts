@@ -1,33 +1,49 @@
 import { NextRequest } from "next/server";
-import { successResponse, errorResponse, getAuthUser, validateBody } from "@/lib/api-helpers";
-import { aiRecommendService, aiCrossSell } from "@/lib/kpn";
+import { successResponse, errorResponse, validateBody } from "@/lib/api-helpers";
+import { aiRecommendService } from "@/lib/kpn";
 import { z } from "zod";
 
 export const dynamic = "force-dynamic";
 
-const recommendSchema = z.object({
+const productSchema = z.object({
   title: z.string().min(1).max(500),
-  category: z.string().min(1).max(200),
+  category: z.string().optional().default(""),
   weight: z.number().optional(),
-  voltage: z.string().optional(),
+});
+
+const recommendSchema = z.object({
+  products: z.array(productSchema).min(1).max(50),
+  location: z.string().optional(),
 });
 
 export async function POST(request: NextRequest) {
-  const { user, error: authErr } = await getAuthUser(request);
-  if (authErr) return authErr;
-
   const { data: body, error: valErr } = await validateBody(request, recommendSchema);
   if (valErr) return valErr;
 
   try {
-    const services = aiRecommendService(body!);
-    const crossSell = aiCrossSell(body!.category.toLowerCase());
+    const services: any[] = [];
+    const seenTypes = new Set<string>();
 
-    return successResponse({
-      product: { title: body!.title, category: body!.category },
-      recommendedServices: services,
-      crossSellProducts: crossSell,
-    });
+    for (const product of body!.products) {
+      const result = aiRecommendService({
+        title: product.title,
+        category: product.category || "General",
+        weight: product.weight,
+      });
+
+      for (const svc of result) {
+        const key = `${svc.serviceType}-${svc.productCategory}`;
+        if (!seenTypes.has(key)) {
+          seenTypes.add(key);
+          services.push({
+            ...svc,
+            productCategory: svc.productCategory || product.category || "General",
+          });
+        }
+      }
+    }
+
+    return successResponse({ services, location: body?.location });
   } catch (err) {
     return errorResponse((err as Error).message, 400);
   }

@@ -1,7 +1,7 @@
 "use client";
 export const dynamic = "force-dynamic";
 
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import Link from "next/link";
 import {
   ArrowLeft,
@@ -27,6 +27,10 @@ import {
   Clock,
   Box,
   Navigation,
+  Wrench,
+  CalendarDays,
+  Star,
+  AlertCircle,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useCartStore } from "@/store/cart-store";
@@ -105,6 +109,12 @@ export default function CheckoutPage() {
   const [lockers, setLockers] = useState<any[]>([]);
   const [deliveryTimeSlot, setDeliveryTimeSlot] = useState("");
   const [proxyDelivery, setProxyDelivery] = useState(false);
+  const [services, setServices] = useState<any[]>([]);
+  const [servicesLoading, setServicesLoading] = useState(false);
+  const [selectedService, setSelectedService] = useState<any>(null);
+  const [serviceDate, setServiceDate] = useState("");
+  const [serviceTimeSlot, setServiceTimeSlot] = useState("");
+  const [serviceAddress, setServiceAddress] = useState("");
   const [proxyName, setProxyName] = useState("");
   const [proxyPhone, setProxyPhone] = useState("");
   const [proxyRelation, setProxyRelation] = useState("");
@@ -119,7 +129,8 @@ export default function CheckoutPage() {
 
   const subtotal = getTotal();
   const shippingCost = shippingMethods.find((m) => m.id === selectedShipping)?.cost || 0;
-  const total = subtotal + shippingCost;
+  const serviceFee = selectedService?.estimatedCost || 0;
+  const total = subtotal + shippingCost + serviceFee;
 
   const goNext = () => setCurrentStep(Math.min(7, currentStep + 1));
   const goBack = () => setCurrentStep(Math.max(1, currentStep - 1));
@@ -155,6 +166,35 @@ export default function CheckoutPage() {
     setGiftError("");
   };
 
+  const fetchServiceRecommendations = useCallback(async () => {
+    if (items.length === 0) return;
+    setServicesLoading(true);
+    try {
+      const productSummaries = items.map((item) => ({
+        title: item.product.name,
+        category: item.product.category || "",
+        weight: (item.product as any).weight,
+      }));
+      const res = await fetch("/api/v1/kps/recommend", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ products: productSummaries, location: delivery.city }),
+      });
+      if (res.ok) {
+        const json = await res.json();
+        setServices(json.services || json.data || []);
+        if (json.services?.length > 0) setSelectedService(json.services[0]);
+      }
+    } catch { /* silent */ }
+    finally { setServicesLoading(false); }
+  }, [items, delivery.city]);
+
+  useEffect(() => {
+    if (currentStep === 5 && services.length === 0 && !servicesLoading) {
+      fetchServiceRecommendations();
+    }
+  }, [currentStep, fetchServiceRecommendations, services.length, servicesLoading]);
+
   const placeOrder = async () => {
     setOrderLoading(true);
     setOrderError("");
@@ -188,6 +228,14 @@ export default function CheckoutPage() {
         delivery_method: useLocker ? "locker" : "address",
         locker_id: useLocker ? selectedLocker?.id : undefined,
         notes: giftCode.trim() || undefined,
+        service_booking: selectedService ? {
+          service_type: selectedService.serviceType,
+          estimated_cost: selectedService.estimatedCost,
+          scheduled_date: serviceDate || undefined,
+          scheduled_time_window: serviceTimeSlot || undefined,
+          service_address: serviceAddress || delivery.address,
+          product_category: selectedService.productCategory,
+        } : undefined,
       };
 
       const res = await fetch("/api/v1/orders", {
@@ -750,6 +798,65 @@ export default function CheckoutPage() {
                   )}
                 </div>
 
+                {/* Professional Services (KPS) */}
+                {servicesLoading ? (
+                  <div className="mt-5 p-4 bg-amber-50 border border-amber-200 rounded-xl flex items-center gap-2">
+                    <div className="w-4 h-4 border-2 border-amber-500 border-t-transparent rounded-full animate-spin" />
+                    <span className="text-xs text-amber-700">Checking if your items need professional installation...</span>
+                  </div>
+                ) : services.length > 0 && (
+                  <div className="mt-5 bg-gradient-to-r from-orange-50 to-amber-50 border border-orange-200 rounded-xl p-5">
+                    <div className="flex items-center gap-2 mb-3">
+                      <Wrench size={16} className="text-orange" />
+                      <h4 className="text-xs font-bold text-orange-800">Professional Installation Available</h4>
+                    </div>
+                    <p className="text-[10px] text-text-4 mb-3">Some items in your cart may require professional setup. Add installation services for a complete experience.</p>
+                    <div className="space-y-2">
+                      {services.map((svc: any, idx: number) => (
+                        <label key={idx} className={`flex items-center gap-3 p-3 rounded-xl border cursor-pointer transition-all ${
+                          selectedService === svc ? "border-orange bg-white" : "border-border bg-white/60 hover:border-orange/30"
+                        }`} onClick={() => setSelectedService(svc)}>
+                          <input type="radio" name="service" checked={selectedService === svc} onChange={() => setSelectedService(svc)} className="accent-orange" />
+                          <div className="flex-1 min-w-0">
+                            <p className="text-xs font-semibold text-text-1">{svc.serviceType} — {svc.productCategory}</p>
+                            <p className="text-[10px] text-text-4">{svc.description || `Professional ${svc.serviceType.toLowerCase()} service`}</p>
+                            {svc.durationHours && <p className="text-[10px] text-text-4">Est. {svc.durationHours} hour{svc.durationHours > 1 ? "s" : ""}</p>}
+                          </div>
+                          <span className="text-xs font-bold text-orange">{formatPrice(svc.estimatedCost)}</span>
+                        </label>
+                      ))}
+                    </div>
+                    {selectedService && (
+                      <div className="mt-3 grid sm:grid-cols-3 gap-2">
+                        <div>
+                          <label className="text-[10px] font-semibold text-text-2 block mb-0.5">Preferred Date</label>
+                          <input type="date" value={serviceDate} onChange={(e) => setServiceDate(e.target.value)}
+                            className="w-full h-8 px-2 text-xs rounded-lg border border-border" />
+                        </div>
+                        <div>
+                          <label className="text-[10px] font-semibold text-text-2 block mb-0.5">Time</label>
+                          <select value={serviceTimeSlot} onChange={(e) => setServiceTimeSlot(e.target.value)}
+                            className="w-full h-8 px-2 text-xs rounded-lg border border-border bg-white">
+                            <option value="">Select time</option>
+                            <option value="morning">Morning (8am-12pm)</option>
+                            <option value="afternoon">Afternoon (12pm-5pm)</option>
+                            <option value="evening">Evening (5pm-8pm)</option>
+                          </select>
+                        </div>
+                        <div>
+                          <label className="text-[10px] font-semibold text-text-2 block mb-0.5">Service Address</label>
+                          <input type="text" value={serviceAddress} onChange={(e) => setServiceAddress(e.target.value)}
+                            placeholder={delivery.address || "Installation address"}
+                            className="w-full h-8 px-2 text-xs rounded-lg border border-border" />
+                        </div>
+                      </div>
+                    )}
+                    <div className="mt-2 flex items-center gap-1 text-[10px] text-orange-700">
+                      <AlertCircle size={10} /> Installation warranty protected · Verified technicians
+                    </div>
+                  </div>
+                )}
+
                 {selectedPayment === "card" && (
                   <div className="mt-5 p-4 border border-border rounded-xl space-y-3">
                     <div>
@@ -829,6 +936,19 @@ export default function CheckoutPage() {
                     </div>
                   )}
                 </div>
+
+                {selectedService && (
+                  <div className="p-4 bg-orange-50 border border-orange-200 rounded-xl mb-4">
+                    <div className="flex items-center justify-between mb-2">
+                      <h4 className="font-syne font-bold text-xs text-orange-800">Professional Service</h4>
+                      <button onClick={() => setCurrentStep(5)} className="text-[10px] text-orange hover:underline">Edit</button>
+                    </div>
+                    <p className="text-sm text-text-2 font-semibold">{selectedService.serviceType}</p>
+                    <p className="text-xs text-text-4">{selectedService.productCategory}</p>
+                    {serviceDate && <p className="text-xs text-text-4">Scheduled: {serviceDate} {serviceTimeSlot && `(${serviceTimeSlot})`}</p>}
+                    <p className="text-xs font-bold text-orange mt-1">{formatPrice(selectedService.estimatedCost)}</p>
+                  </div>
+                )}
 
                 {/* Items */}
                 <div className="mt-4">

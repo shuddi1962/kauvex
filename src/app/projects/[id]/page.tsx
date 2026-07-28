@@ -6,7 +6,8 @@ import Link from "next/link";
 import {
   Loader2, AlertTriangle, CheckCircle2, Building2, Clock, DollarSign,
   Users, FileText, MessageSquare, Calendar, ClipboardList, PenSquare,
-  Send, Eye, Plus, Download, ChevronRight, MapPin, Shield,
+  Send, Eye, Plus, Download, ChevronRight, MapPin, Shield, Sun, Cloud,
+  CloudRain, HelpCircle, Target, UserCheck, FileCheck, FileX, Edit3,
 } from "lucide-react";
 
 interface Project {
@@ -28,6 +29,112 @@ export default function ProjectDetailPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [activeTab, setActiveTab] = useState(0);
+
+  // RFIs
+  const [rfis, setRfis] = useState([
+    { id: "rfi1", question: "Confirm soil bearing capacity for foundation design", scope: "Foundation", priority: "high", status: "answered", submittedBy: "Eng. Adebayo", date: "2026-09-10", answer: "Soil test report shows 180 kN/m² capacity. Design accordingly." },
+    { id: "rfi2", question: "Provide structural steel specification for mezzanine floor", scope: "Superstructure", priority: "medium", status: "open", submittedBy: "Site Engineer", date: "2026-09-15", answer: "" },
+    { id: "rfi3", question: "Clarify MEP routing for ground floor HVAC ducts", scope: "MEP Installation", priority: "low", status: "closed", submittedBy: "MEP Contractor", date: "2026-09-08", answer: "Ducts to run through ceiling void as per drawing MEP-03 rev B." },
+  ]);
+  const [rfiQuestion, setRfiQuestion] = useState("");
+  const [rfiScope, setRfiScope] = useState("General");
+  const [rfiPriority, setRfiPriority] = useState("medium");
+
+  // Site Diary
+  const [diaryEntries, setDiaryEntries] = useState([
+    { id: "de1", date: "2026-09-12", weather: "sunny", workDescription: "Site clearing and excavation for foundation footings", workforceCount: 18, equipment: "1 excavator, 2 dump trucks", issues: "Delayed cement delivery by 2 hours" },
+    { id: "de2", date: "2026-09-13", weather: "cloudy", workDescription: "Foundation trench excavation and reinforcement placement", workforceCount: 22, equipment: "1 excavator, 1 concrete mixer", issues: "Minor water ingress in trench" },
+    { id: "de3", date: "2026-09-14", weather: "rainy", workDescription: "Limited work - site drainage improvement", workforceCount: 8, equipment: "Hand tools only", issues: "Heavy rainfall, work suspended from 2pm" },
+  ]);
+  const [diaryForm, setDiaryForm] = useState({ date: new Date().toISOString().split('T')[0], weather: "sunny", workDescription: "", workforceCount: "", equipment: "", issues: "" });
+
+  // Variation Orders
+  const [vos, setVos] = useState([
+    { id: "vo1", voNumber: "VO-001", description: "Additional bathroom window (en-suite)", costImpact: "₦180,000", scheduleImpact: "+3 days", status: "approved", submittedBy: "Client", date: "2026-09-11", approvalDate: "2026-09-13" },
+    { id: "vo2", voNumber: "VO-002", description: "Upgrade kitchen countertop to granite", costImpact: "₦450,000", scheduleImpact: "+5 days", status: "draft", submittedBy: "Architect", date: "2026-09-14", approvalDate: "" },
+    { id: "vo3", voNumber: "VO-003", description: "Relocate electrical panel to utility room", costImpact: "₦95,000", scheduleImpact: "+1 day", status: "rejected", submittedBy: "Contractor", date: "2026-09-10", approvalDate: "" },
+  ]);
+  const [voDescription, setVoDescription] = useState("");
+  const [voCostImpact, setVoCostImpact] = useState("");
+  const [voScheduleImpact, setVoScheduleImpact] = useState("");
+
+  // Milestone Tracker
+  const [detailedMilestones, setDetailedMilestones] = useState([
+    { id: "ms1", name: "Foundation", plannedDate: "2026-09-30", actualDate: "", status: "in_progress", completion: 45, assignedContractor: "BuildRight Construction Ltd", notes: "Excavation completed. Reinforcement in progress." },
+    { id: "ms2", name: "Superstructure", plannedDate: "2026-12-15", actualDate: "", status: "not_started", completion: 0, assignedContractor: "", notes: "" },
+    { id: "ms3", name: "Roofing", plannedDate: "2027-02-28", actualDate: "", status: "not_started", completion: 0, assignedContractor: "", notes: "" },
+    { id: "ms4", name: "MEP Installation", plannedDate: "2027-04-15", actualDate: "", status: "not_started", completion: 0, assignedContractor: "", notes: "" },
+    { id: "ms5", name: "Finishing", plannedDate: "2027-05-30", actualDate: "", status: "not_started", completion: 0, assignedContractor: "", notes: "" },
+    { id: "ms6", name: "Handover", plannedDate: "2027-06-30", actualDate: "", status: "not_started", completion: 0, assignedContractor: "", notes: "" },
+  ]);
+  const [msForm, setMsForm] = useState({ name: "", plannedDate: "", assignedContractor: "", notes: "" });
+
+  // Handlers
+  const addRfi = () => {
+    if (!rfiQuestion.trim()) return;
+    const newRfi = { id: `rfi${Date.now()}`, question: rfiQuestion, scope: rfiScope, priority: rfiPriority, status: "open", submittedBy: "You", date: new Date().toISOString().split('T')[0], answer: "" };
+    setRfis([newRfi, ...rfis]);
+    setRfiQuestion("");
+  };
+
+  const addDiaryEntry = () => {
+    const { date, weather, workDescription, workforceCount, equipment, issues } = diaryForm;
+    if (!workDescription.trim()) return;
+    const entry = { id: `de${Date.now()}`, date, weather, workDescription, workforceCount: parseInt(workforceCount) || 0, equipment, issues };
+    setDiaryEntries([entry, ...diaryEntries]);
+    setDiaryForm({ date: new Date().toISOString().split('T')[0], weather: "sunny", workDescription: "", workforceCount: "", equipment: "", issues: "" });
+  };
+
+  const addVo = () => {
+    if (!voDescription.trim()) return;
+    const voNumber = `VO-${String(vos.length + 1).padStart(3, "0")}`;
+    const newVo = { id: `vo${Date.now()}`, voNumber, description: voDescription, costImpact: voCostImpact, scheduleImpact: voScheduleImpact, status: "draft", submittedBy: "You", date: new Date().toISOString().split('T')[0], approvalDate: "" };
+    setVos([newVo, ...vos]);
+    setVoDescription(""); setVoCostImpact(""); setVoScheduleImpact("");
+  };
+
+  const addMilestone = () => {
+    if (!msForm.name.trim() || !msForm.plannedDate) return;
+    const newMs = { id: `ms${Date.now()}`, name: msForm.name, plannedDate: msForm.plannedDate, actualDate: "", status: "not_started", completion: 0, assignedContractor: msForm.assignedContractor, notes: msForm.notes };
+    setDetailedMilestones([...detailedMilestones, newMs]);
+    setMsForm({ name: "", plannedDate: "", assignedContractor: "", notes: "" });
+  };
+
+  const finalizeMilestone = (id: string) => {
+    setDetailedMilestones(prev => prev.map(m => m.id === id ? { ...m, status: "completed", completion: 100, actualDate: new Date().toISOString().split('T')[0] } : m));
+  };
+
+  const weatherIcon = (w: string) => {
+    if (w === "sunny") return <Sun className="w-4 h-4 text-amber-500" />;
+    if (w === "cloudy") return <Cloud className="w-4 h-4 text-gray-400" />;
+    if (w === "rainy") return <CloudRain className="w-4 h-4 text-blue-500" />;
+    return <Sun className="w-4 h-4 text-amber-500" />;
+  };
+
+  const priorityColor = (p: string) => {
+    if (p === "high") return "text-red-600 bg-red-50";
+    if (p === "medium") return "text-amber-600 bg-amber-50";
+    return "text-green-600 bg-green-50";
+  };
+
+  const rfiStatusColor = (s: string) => {
+    if (s === "open") return "bg-amber-50 text-amber-700";
+    if (s === "answered") return "bg-blue-50 text-blue-700";
+    return "bg-gray-50 text-gray-500";
+  };
+
+  const voStatusColor = (s: string) => {
+    if (s === "approved") return "bg-green-50 text-green-700";
+    if (s === "rejected") return "bg-red-50 text-red-700";
+    return "bg-gray-50 text-gray-500";
+  };
+
+  const msStatusColor = (s: string) => {
+    if (s === "in_progress") return "bg-blue-50 text-blue-700";
+    if (s === "completed") return "bg-green-50 text-green-700";
+    if (s === "delayed") return "bg-red-50 text-red-700";
+    return "bg-gray-50 text-gray-500";
+  };
 
   useEffect(() => {
     fetchProject();
@@ -318,46 +425,244 @@ export default function ProjectDetailPage() {
                   </button>
                 </div>
               )}
+
+              {/* RFIs */}
               {activeTab === 1 && (
-                <div className="text-center py-8">
-                  <MessageSquare className="w-10 h-10 text-gray-300 mx-auto mb-3" />
-                  <p className="text-gray-500 text-sm">No RFIs yet. Submit a request for information.</p>
-                  <button className="mt-3 text-sm font-semibold text-[#FF6B00] hover:underline flex items-center gap-1 justify-center">
-                    <Plus className="w-4 h-4" /> New RFI
-                  </button>
-                </div>
-              )}
-              {activeTab === 2 && (
-                <div className="text-center py-8">
-                  <ClipboardList className="w-10 h-10 text-gray-300 mx-auto mb-3" />
-                  <p className="text-gray-500 text-sm">Site diary entries will appear once construction begins.</p>
-                </div>
-              )}
-              {activeTab === 3 && (
-                <div className="text-center py-8">
-                  <PenSquare className="w-10 h-10 text-gray-300 mx-auto mb-3" />
-                  <p className="text-gray-500 text-sm">No variation orders yet.</p>
-                  <button className="mt-3 text-sm font-semibold text-[#FF6B00] hover:underline flex items-center gap-1 justify-center">
-                    <Plus className="w-4 h-4" /> Create Variation Order
-                  </button>
-                </div>
-              )}
-              {activeTab === 4 && (
-                <div>
-                  <div className="space-y-2">
-                    {project.milestones.map((m, i) => (
-                      <div key={i} className="flex items-center justify-between p-3 rounded-lg bg-gray-50">
-                        <div className="flex items-center gap-2">
-                          {m.completed ? (
-                            <CheckCircle2 className="w-5 h-5 text-green-600" />
-                          ) : (
-                            <Clock className="w-5 h-5 text-amber-500" />
-                          )}
-                          <span className="font-medium text-sm text-[#0A1628]">{m.name}</span>
+                <div className="space-y-6">
+                  <div>
+                    <h3 className="font-semibold text-[#0A1628] mb-3 flex items-center gap-2">
+                      <HelpCircle className="w-4 h-4 text-[#FF6B00]" /> Submit New RFI
+                    </h3>
+                    <div className="bg-gray-50 rounded-xl p-4 space-y-3">
+                      <textarea value={rfiQuestion} onChange={(e) => setRfiQuestion(e.target.value)} placeholder="Describe the information you need..." rows={3} className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#FF6B00]/20 focus:border-[#FF6B00] resize-none" />
+                      <div className="grid grid-cols-2 gap-3">
+                        <select value={rfiScope} onChange={(e) => setRfiScope(e.target.value)} className="border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#FF6B00]/20 focus:border-[#FF6B00]">
+                          {["General", "Foundation", "Superstructure", "Roofing", "MEP Installation", "Finishing"].map(s => <option key={s} value={s}>{s}</option>)}
+                        </select>
+                        <select value={rfiPriority} onChange={(e) => setRfiPriority(e.target.value)} className="border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#FF6B00]/20 focus:border-[#FF6B00]">
+                          <option value="low">Low Priority</option>
+                          <option value="medium">Medium Priority</option>
+                          <option value="high">High Priority</option>
+                        </select>
+                      </div>
+                      <button onClick={addRfi} className="flex items-center gap-1.5 bg-[#FF6B00] hover:bg-[#E55A00] text-white font-semibold px-4 py-2 rounded-lg transition-all text-sm">
+                        <Send className="w-3.5 h-3.5" /> Submit RFI
+                      </button>
+                    </div>
+                  </div>
+                  <div className="space-y-3">
+                    {rfis.map((rfi) => (
+                      <div key={rfi.id} className="border border-gray-200 rounded-xl p-4 hover:border-gray-300 transition-colors">
+                        <div className="flex items-start justify-between gap-3 mb-2">
+                          <div className="flex-1 min-w-0">
+                            <p className="font-semibold text-[#0A1628] text-sm">{rfi.question}</p>
+                            <div className="flex items-center gap-2 mt-1.5 flex-wrap">
+                              <span className="text-xs text-gray-500">{rfi.scope}</span>
+                              <span className={`text-xs font-bold px-2 py-0.5 rounded-full ${priorityColor(rfi.priority)}`}>{rfi.priority}</span>
+                              <span className={`text-xs font-bold px-2 py-0.5 rounded-full ${rfiStatusColor(rfi.status)}`}>{rfi.status}</span>
+                              <span className="text-xs text-gray-400">{rfi.date}</span>
+                            </div>
+                          </div>
+                          <MessageSquare className="w-4 h-4 text-gray-300 shrink-0" />
                         </div>
-                        <span className={`text-xs font-bold px-2 py-0.5 rounded-full ${m.completed ? "bg-green-50 text-green-700" : "bg-amber-50 text-amber-700"}`}>
-                          {m.completed ? "Completed" : "Pending"}
-                        </span>
+                        {rfi.answer && (
+                          <div className="mt-2 pt-2 border-t border-gray-100">
+                            <p className="text-xs text-gray-500 mb-0.5">Response:</p>
+                            <p className="text-sm text-gray-700">{rfi.answer}</p>
+                          </div>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* Site Diary */}
+              {activeTab === 2 && (
+                <div className="space-y-6">
+                  <div>
+                    <h3 className="font-semibold text-[#0A1628] mb-3 flex items-center gap-2">
+                      <ClipboardList className="w-4 h-4 text-[#FF6B00]" /> Add Daily Entry
+                    </h3>
+                    <div className="bg-gray-50 rounded-xl p-4 space-y-3">
+                      <div className="grid grid-cols-3 gap-3">
+                        <div>
+                          <label className="block text-xs text-gray-500 mb-1">Date</label>
+                          <input type="date" value={diaryForm.date} onChange={(e) => setDiaryForm({ ...diaryForm, date: e.target.value })} className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#FF6B00]/20 focus:border-[#FF6B00]" />
+                        </div>
+                        <div>
+                          <label className="block text-xs text-gray-500 mb-1">Weather</label>
+                          <select value={diaryForm.weather} onChange={(e) => setDiaryForm({ ...diaryForm, weather: e.target.value })} className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#FF6B00]/20 focus:border-[#FF6B00]">
+                            <option value="sunny">Sunny</option>
+                            <option value="cloudy">Cloudy</option>
+                            <option value="rainy">Rainy</option>
+                          </select>
+                        </div>
+                        <div>
+                          <label className="block text-xs text-gray-500 mb-1">Workforce Count</label>
+                          <input type="number" value={diaryForm.workforceCount} onChange={(e) => setDiaryForm({ ...diaryForm, workforceCount: e.target.value })} placeholder="e.g. 15" className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#FF6B00]/20 focus:border-[#FF6B00]" />
+                        </div>
+                      </div>
+                      <div>
+                        <label className="block text-xs text-gray-500 mb-1">Work Description</label>
+                        <textarea value={diaryForm.workDescription} onChange={(e) => setDiaryForm({ ...diaryForm, workDescription: e.target.value })} rows={2} placeholder="Describe today's work..." className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#FF6B00]/20 focus:border-[#FF6B00] resize-none" />
+                      </div>
+                      <div className="grid grid-cols-2 gap-3">
+                        <div>
+                          <label className="block text-xs text-gray-500 mb-1">Equipment Used</label>
+                          <input type="text" value={diaryForm.equipment} onChange={(e) => setDiaryForm({ ...diaryForm, equipment: e.target.value })} placeholder="e.g. excavator, mixer" className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#FF6B00]/20 focus:border-[#FF6B00]" />
+                        </div>
+                        <div>
+                          <label className="block text-xs text-gray-500 mb-1">Issues Encountered</label>
+                          <input type="text" value={diaryForm.issues} onChange={(e) => setDiaryForm({ ...diaryForm, issues: e.target.value })} placeholder="e.g. delayed materials" className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#FF6B00]/20 focus:border-[#FF6B00]" />
+                        </div>
+                      </div>
+                      <button onClick={addDiaryEntry} className="flex items-center gap-1.5 bg-[#FF6B00] hover:bg-[#E55A00] text-white font-semibold px-4 py-2 rounded-lg transition-all text-sm">
+                        <Plus className="w-3.5 h-3.5" /> Add Entry
+                      </button>
+                    </div>
+                  </div>
+                  <div className="space-y-3">
+                    {diaryEntries.map((entry) => (
+                      <div key={entry.id} className="border border-gray-200 rounded-xl p-4 hover:border-gray-300 transition-colors">
+                        <div className="flex items-center justify-between mb-2">
+                          <div className="flex items-center gap-2">
+                            {weatherIcon(entry.weather)}
+                            <span className="font-semibold text-[#0A1628] text-sm">{entry.date}</span>
+                            <span className="text-xs text-gray-400 capitalize">{entry.weather}</span>
+                          </div>
+                          <span className="text-xs text-gray-500 flex items-center gap-1"><Users className="w-3 h-3" /> {entry.workforceCount} workers</span>
+                        </div>
+                        <p className="text-sm text-gray-700 mb-2">{entry.workDescription}</p>
+                        <div className="flex flex-wrap gap-x-4 gap-y-1 text-xs text-gray-500">
+                          {entry.equipment && <span><span className="font-medium">Equipment:</span> {entry.equipment}</span>}
+                          {entry.issues && <span className="text-red-500"><span className="font-medium">Issues:</span> {entry.issues}</span>}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* Variation Orders */}
+              {activeTab === 3 && (
+                <div className="space-y-6">
+                  <div>
+                    <h3 className="font-semibold text-[#0A1628] mb-3 flex items-center gap-2">
+                      <PenSquare className="w-4 h-4 text-[#FF6B00]" /> Create Variation Order
+                    </h3>
+                    <div className="bg-gray-50 rounded-xl p-4 space-y-3">
+                      <textarea value={voDescription} onChange={(e) => setVoDescription(e.target.value)} placeholder="Describe the variation..." rows={2} className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#FF6B00]/20 focus:border-[#FF6B00] resize-none" />
+                      <div className="grid grid-cols-2 gap-3">
+                        <div>
+                          <label className="block text-xs text-gray-500 mb-1">Cost Impact</label>
+                          <input type="text" value={voCostImpact} onChange={(e) => setVoCostImpact(e.target.value)} placeholder="e.g. ₦250,000" className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#FF6B00]/20 focus:border-[#FF6B00]" />
+                        </div>
+                        <div>
+                          <label className="block text-xs text-gray-500 mb-1">Schedule Impact</label>
+                          <input type="text" value={voScheduleImpact} onChange={(e) => setVoScheduleImpact(e.target.value)} placeholder="e.g. +5 days" className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#FF6B00]/20 focus:border-[#FF6B00]" />
+                        </div>
+                      </div>
+                      <button onClick={addVo} className="flex items-center gap-1.5 bg-[#FF6B00] hover:bg-[#E55A00] text-white font-semibold px-4 py-2 rounded-lg transition-all text-sm">
+                        <Plus className="w-3.5 h-3.5" /> Create VO
+                      </button>
+                    </div>
+                  </div>
+                  <div className="space-y-3">
+                    {vos.map((vo) => (
+                      <div key={vo.id} className="border border-gray-200 rounded-xl p-4 hover:border-gray-300 transition-colors">
+                        <div className="flex items-start justify-between gap-3 mb-2">
+                          <div>
+                            <div className="flex items-center gap-2">
+                              <span className="text-xs font-bold text-gray-400 bg-gray-100 px-2 py-0.5 rounded">{vo.voNumber}</span>
+                              <span className={`text-xs font-bold px-2 py-0.5 rounded-full ${voStatusColor(vo.status)}`}>{vo.status}</span>
+                            </div>
+                            <p className="font-semibold text-[#0A1628] text-sm mt-1">{vo.description}</p>
+                          </div>
+                          {vo.status === "draft" && <Edit3 className="w-4 h-4 text-gray-300 shrink-0" />}
+                          {vo.status === "approved" && <FileCheck className="w-4 h-4 text-green-500 shrink-0" />}
+                          {vo.status === "rejected" && <FileX className="w-4 h-4 text-red-500 shrink-0" />}
+                        </div>
+                        <div className="flex flex-wrap gap-x-4 gap-y-1 text-xs text-gray-500 mt-2">
+                          <span><span className="font-medium">Cost:</span> {vo.costImpact}</span>
+                          <span><span className="font-medium">Schedule:</span> {vo.scheduleImpact}</span>
+                          <span><span className="font-medium">Submitted:</span> {vo.date}</span>
+                          {vo.approvalDate && <span className="text-green-600"><span className="font-medium">Approved:</span> {vo.approvalDate}</span>}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* Milestone Tracker */}
+              {activeTab === 4 && (
+                <div className="space-y-6">
+                  <div>
+                    <h3 className="font-semibold text-[#0A1628] mb-3 flex items-center gap-2">
+                      <Target className="w-4 h-4 text-[#FF6B00]" /> Add Milestone
+                    </h3>
+                    <div className="bg-gray-50 rounded-xl p-4 space-y-3">
+                      <div className="grid grid-cols-2 gap-3">
+                        <div>
+                          <label className="block text-xs text-gray-500 mb-1">Milestone Name</label>
+                          <input type="text" value={msForm.name} onChange={(e) => setMsForm({ ...msForm, name: e.target.value })} placeholder="e.g. Floor Tiling" className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#FF6B00]/20 focus:border-[#FF6B00]" />
+                        </div>
+                        <div>
+                          <label className="block text-xs text-gray-500 mb-1">Planned Date</label>
+                          <input type="date" value={msForm.plannedDate} onChange={(e) => setMsForm({ ...msForm, plannedDate: e.target.value })} className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#FF6B00]/20 focus:border-[#FF6B00]" />
+                        </div>
+                      </div>
+                      <div className="grid grid-cols-2 gap-3">
+                        <div>
+                          <label className="block text-xs text-gray-500 mb-1">Assigned Contractor</label>
+                          <input type="text" value={msForm.assignedContractor} onChange={(e) => setMsForm({ ...msForm, assignedContractor: e.target.value })} placeholder="Contractor name" className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#FF6B00]/20 focus:border-[#FF6B00]" />
+                        </div>
+                        <div>
+                          <label className="block text-xs text-gray-500 mb-1">Notes</label>
+                          <input type="text" value={msForm.notes} onChange={(e) => setMsForm({ ...msForm, notes: e.target.value })} placeholder="Optional notes" className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#FF6B00]/20 focus:border-[#FF6B00]" />
+                        </div>
+                      </div>
+                      <button onClick={addMilestone} className="flex items-center gap-1.5 bg-[#FF6B00] hover:bg-[#E55A00] text-white font-semibold px-4 py-2 rounded-lg transition-all text-sm">
+                        <Plus className="w-3.5 h-3.5" /> Add Milestone
+                      </button>
+                    </div>
+                  </div>
+                  <div className="space-y-3">
+                    {detailedMilestones.map((ms) => (
+                      <div key={ms.id} className="border border-gray-200 rounded-xl p-4 hover:border-gray-300 transition-colors">
+                        <div className="flex items-start justify-between gap-3 mb-2">
+                          <div className="flex-1 min-w-0">
+                            <div className="flex items-center gap-2">
+                              <span className="font-semibold text-[#0A1628] text-sm">{ms.name}</span>
+                              <span className={`text-xs font-bold px-2 py-0.5 rounded-full ${msStatusColor(ms.status)}`}>
+                                {ms.status.replace("_", " ")}
+                              </span>
+                            </div>
+                            <div className="flex items-center gap-3 mt-1.5 text-xs text-gray-500">
+                              <span className="flex items-center gap-1"><Calendar className="w-3 h-3" /> Planned: {ms.plannedDate}</span>
+                              {ms.actualDate && <span className="flex items-center gap-1"><CheckCircle2 className="w-3 h-3 text-green-500" /> Actual: {ms.actualDate}</span>}
+                            </div>
+                          </div>
+                          {ms.status === "in_progress" && (
+                            <button onClick={() => finalizeMilestone(ms.id)} className="text-xs bg-green-600 hover:bg-green-700 text-white font-semibold px-3 py-1.5 rounded-lg transition-all shrink-0">
+                              Mark Complete
+                            </button>
+                          )}
+                        </div>
+                        <div className="mt-3">
+                          <div className="flex items-center justify-between text-xs mb-1">
+                            <span className="text-gray-500">Progress</span>
+                            <span className="font-semibold text-[#0A1628]">{ms.completion}%</span>
+                          </div>
+                          <div className="w-full h-2 bg-gray-100 rounded-full overflow-hidden">
+                            <div className="h-full rounded-full transition-all duration-500" style={{ width: `${ms.completion}%`, backgroundColor: ms.completion === 100 ? "#059669" : ms.completion > 0 ? "#FF6B00" : "#E5E7EB" }} />
+                          </div>
+                        </div>
+                        <div className="flex flex-wrap gap-x-4 gap-y-1 text-xs text-gray-500 mt-2">
+                          {ms.assignedContractor && <span className="flex items-center gap-1"><UserCheck className="w-3 h-3" /> {ms.assignedContractor}</span>}
+                          {ms.notes && <span><span className="font-medium">Notes:</span> {ms.notes}</span>}
+                        </div>
                       </div>
                     ))}
                   </div>

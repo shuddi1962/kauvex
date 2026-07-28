@@ -783,6 +783,33 @@ export async function createIndustryHub(data: {
 // ─── AI Smart Recommendation (KPS1.4) ───
 
 export function aiRecommendService(product: { title: string; category: string; weight?: number; voltage?: string }) {
+  const servicePrices: Record<string, { min: number; max: number; currency: string }> = {
+    installation: { min: 15000, max: 50000, currency: "NGN" },
+    assembly: { min: 8000, max: 30000, currency: "NGN" },
+    configuration: { min: 10000, max: 35000, currency: "NGN" },
+    site_survey: { min: 5000, max: 15000, currency: "NGN" },
+    calibration: { min: 8000, max: 25000, currency: "NGN" },
+    testing: { min: 5000, max: 20000, currency: "NGN" },
+    training: { min: 10000, max: 30000, currency: "NGN" },
+    consultation: { min: 10000, max: 50000, currency: "NGN" },
+  };
+
+  const serviceDurations: Record<string, number> = {
+    installation: 4, assembly: 2, configuration: 2, site_survey: 1,
+    calibration: 1.5, testing: 1, training: 3, consultation: 2,
+  };
+
+  const serviceDescriptions: Record<string, string> = {
+    installation: "Professional installation with full setup and testing",
+    assembly: "Expert assembly and fitting of your product",
+    configuration: "System configuration and programming",
+    site_survey: "Pre-installation site assessment and planning",
+    calibration: "Precision calibration for optimal performance",
+    testing: "Comprehensive testing and commissioning",
+    training: "Hands-on training and user orientation",
+    consultation: "Expert consultation and technical advice",
+  };
+
   const serviceTriggers: Record<string, { serviceType: string; confidence: number }[]> = {
     cctv: [
       { serviceType: "installation", confidence: 0.95 },
@@ -814,15 +841,56 @@ export function aiRecommendService(product: { title: string; category: string; w
       { serviceType: "configuration", confidence: 0.85 },
       { serviceType: "training", confidence: 0.7 },
     ],
+    "home theatre": [{ serviceType: "installation", confidence: 0.9 }, { serviceType: "configuration", confidence: 0.85 }],
+    "tv mount": [{ serviceType: "installation", confidence: 0.95 }],
+    network: [{ serviceType: "installation", confidence: 0.85 }, { serviceType: "configuration", confidence: 0.9 }],
+    router: [{ serviceType: "configuration", confidence: 0.8 }],
+    "smart lock": [{ serviceType: "installation", confidence: 0.9 }, { serviceType: "configuration", confidence: 0.8 }],
+    intercom: [{ serviceType: "installation", confidence: 0.9 }],
+    "fire alarm": [{ serviceType: "installation", confidence: 0.9 }, { serviceType: "testing", confidence: 0.85 }],
+    ups: [{ serviceType: "installation", confidence: 0.85 }, { serviceType: "testing", confidence: 0.7 }],
+    "electric fence": [{ serviceType: "installation", confidence: 0.9 }],
+    generator: [{ serviceType: "installation", confidence: 0.85 }, { serviceType: "testing", confidence: 0.7 }],
+    "ev charger": [{ serviceType: "installation", confidence: 0.9 }, { serviceType: "consultation", confidence: 0.7 }],
+    kitchen: [{ serviceType: "installation", confidence: 0.9 }, { serviceType: "assembly", confidence: 0.85 }],
+    cabinet: [{ serviceType: "installation", confidence: 0.9 }, { serviceType: "assembly", confidence: 0.85 }],
+    wardrobe: [{ serviceType: "assembly", confidence: 0.9 }],
+    bathroom: [{ serviceType: "installation", confidence: 0.85 }],
+    "water tank": [{ serviceType: "installation", confidence: 0.85 }],
+    borehole: [{ serviceType: "installation", confidence: 0.9 }, { serviceType: "testing", confidence: 0.8 }],
+    plumbing: [{ serviceType: "installation", confidence: 0.85 }],
+    "vehicle tracker": [{ serviceType: "installation", confidence: 0.9 }, { serviceType: "configuration", confidence: 0.8 }],
+    "dash cam": [{ serviceType: "installation", confidence: 0.85 }],
+    "boat engine": [{ serviceType: "installation", confidence: 0.9 }, { serviceType: "testing", confidence: 0.85 }],
+    marine: [{ serviceType: "installation", confidence: 0.85 }, { serviceType: "testing", confidence: 0.8 }],
+    "industrial generator": [{ serviceType: "installation", confidence: 0.9 }, { serviceType: "testing", confidence: 0.85 }],
+    "server rack": [{ serviceType: "installation", confidence: 0.9 }, { serviceType: "configuration", confidence: 0.85 }],
+    "data center": [{ serviceType: "installation", confidence: 0.9 }, { serviceType: "configuration", confidence: 0.9 }],
+    greenhouse: [{ serviceType: "installation", confidence: 0.85 }, { serviceType: "consultation", confidence: 0.7 }],
+    irrigation: [{ serviceType: "installation", confidence: 0.9 }, { serviceType: "consultation", confidence: 0.7 }],
   };
   const cat = product.category?.toLowerCase() || "";
+  const title = product.title?.toLowerCase() || "";
+  const searchText = cat + " " + title;
+  let matched: { serviceType: string; confidence: number }[] = [];
   for (const [key, services] of Object.entries(serviceTriggers)) {
-    if (cat.includes(key)) return services;
+    if (searchText.includes(key)) {
+      matched = services;
+      break;
+    }
   }
-  if (product.weight && product.weight > 50) {
-    return [{ serviceType: "installation", confidence: 0.6 }];
+  if (matched.length === 0 && product.weight && product.weight > 50) {
+    matched = [{ serviceType: "installation", confidence: 0.6 }];
   }
-  return [];
+  if (matched.length === 0) return [];
+  return matched.map((s) => ({
+    serviceType: s.serviceType.charAt(0).toUpperCase() + s.serviceType.slice(1).replace(/_/g, " "),
+    productCategory: product.category || "General",
+    estimatedCost: Math.floor((servicePrices[s.serviceType]?.min || 15000) + (servicePrices[s.serviceType]?.max || 50000) * s.confidence * 0.5),
+    durationHours: serviceDurations[s.serviceType] || 2,
+    description: serviceDescriptions[s.serviceType] || "Professional service",
+    confidence: s.confidence,
+  }));
 }
 
 export function aiCrossSell(category: string) {

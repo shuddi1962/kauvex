@@ -7,7 +7,7 @@ import { insforge } from "@/lib/insforge";
 import {
   Save, X, Loader2, Package, Image as ImageIcon, Upload, Star, Trash2,
   Edit, Eye, Plus, Info, Tag, Sliders, Shield, FileText, List, Grid3X3,
-  ChevronDown, Sparkles, Globe, Check, AlertCircle, ArrowLeft,
+  ChevronDown, Sparkles, Globe, Check, AlertCircle, ArrowLeft, Wrench,
 } from "lucide-react";
 
 const tabs = [
@@ -19,6 +19,7 @@ const tabs = [
   { key: "description", label: "Description", icon: FileText },
   { key: "keywords", label: "Keywords", icon: List },
   { key: "details", label: "More Details", icon: Sliders },
+  { key: "services", label: "Professional Services", icon: Wrench },
 ];
 
 const listingLanguages = [
@@ -632,6 +633,98 @@ export default function EditProductPage() {
                   <p className="text-xs text-text-4">No dimensions set</p>
                 )}
               </div>
+            </div>
+          )}
+
+          {activeTab === "services" && (
+            <div className="space-y-5">
+              <div>
+                <h3 className="font-bold text-sm text-text-1 flex items-center gap-2 mb-1">
+                  <Wrench size={16} className="text-orange" /> Professional Services
+                </h3>
+                <p className="text-xs text-text-4 mb-4">Configure professional installation and setup services for this product.</p>
+              </div>
+
+              <div className="flex items-center gap-3">
+                <label className="flex items-center gap-2 cursor-pointer">
+                  <input type="checkbox" checked={form.requiresInstallation || false}
+                    onChange={(e) => setForm(prev => ({ ...prev, requiresInstallation: e.target.checked }))}
+                    className="accent-orange w-4 h-4" />
+                  <span className="text-sm font-medium text-text-1">This product requires professional installation</span>
+                </label>
+              </div>
+
+              {form.requiresInstallation && (
+                <div className="space-y-4 pl-6 border-l-2 border-orange/30">
+                  <div>
+                    <label className="text-xs font-semibold text-text-2 block mb-2">Service types applicable</label>
+                    <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
+                      {["Installation", "Assembly", "Configuration", "Site Survey", "Calibration", "Testing", "Training", "Consultation"].map((type) => {
+                        const key = type.toLowerCase().replace(" ", "_");
+                        const selected = form.serviceTypes || [];
+                        return (
+                          <label key={key} className="flex items-center gap-2 cursor-pointer p-2 rounded-lg border border-border hover:border-orange/30">
+                            <input type="checkbox" checked={selected.includes(key)}
+                              onChange={() => {
+                                const updated = selected.includes(key)
+                                  ? selected.filter((t: string) => t !== key)
+                                  : [...selected, key];
+                                setForm(prev => ({ ...prev, serviceTypes: updated }));
+                              }}
+                              className="accent-orange w-3.5 h-3.5" />
+                            <span className="text-xs text-text-1">{type}</span>
+                          </label>
+                        );
+                      })}
+                    </div>
+                  </div>
+
+                  <div>
+                    <label className="text-xs font-semibold text-text-2 block mb-1">Estimated service duration</label>
+                    <select value={form.serviceDuration || "2"} onChange={(e) => setForm(prev => ({ ...prev, serviceDuration: e.target.value }))}
+                      className="w-full h-10 px-3 border border-border rounded-lg text-sm bg-white max-w-xs">
+                      <option value="1">1 hour</option>
+                      <option value="2">2 hours</option>
+                      <option value="3">3 hours</option>
+                      <option value="4">4-6 hours</option>
+                      <option value="8">6-8 hours</option>
+                      <option value="16">1-2 days</option>
+                      <option value="40">1 week</option>
+                    </select>
+                  </div>
+
+                  <div>
+                    <label className="text-xs font-semibold text-text-2 block mb-1">Service provision model</label>
+                    <div className="space-y-2">
+                      {[
+                        { value: "vendor", label: "I provide my own technicians" },
+                        { value: "kpn", label: "Use Kauvex Pro Network" },
+                        { value: "both", label: "Both (vendor first, KPN as backup)" },
+                      ].map((opt) => (
+                        <label key={opt.value} className="flex items-center gap-2 cursor-pointer p-2 rounded-lg border border-border hover:border-orange/30">
+                          <input type="radio" name="serviceModel" checked={(form.serviceModel || "kpn") === opt.value}
+                            onChange={() => setForm(prev => ({ ...prev, serviceModel: opt.value }))}
+                            className="accent-orange" />
+                          <span className="text-xs text-text-1">{opt.label}</span>
+                        </label>
+                      ))}
+                    </div>
+                  </div>
+
+                  <div>
+                    <label className="text-xs font-semibold text-text-2 block mb-1">Installation fee (₦)</label>
+                    <input type="number" value={form.installationFee || ""} onChange={(e) => setForm(prev => ({ ...prev, installationFee: Number(e.target.value) || null }))}
+                      placeholder="e.g., 25000"
+                      className="w-full h-10 px-3 border border-border rounded-lg text-sm max-w-xs" />
+                  </div>
+
+                  <div className="bg-amber-50 border border-amber-200 rounded-xl p-3">
+                    <p className="text-xs text-amber-800 flex items-center gap-1">
+                      <AlertCircle size={12} /> All installation services are backed by Kauvex warranty and verified professionals.
+                    </p>
+                  </div>
+                </div>
+              )}
             </div>
           )}
         </div>

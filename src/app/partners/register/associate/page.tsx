@@ -194,7 +194,7 @@ export default function AssociateRegisterPage() {
         throw new Error(data.error || "Registration failed");
       }
 
-      router.push("/partners/login?registered=true");
+      router.push("/associate?registered=true");
     } catch (err: unknown) {
       const message = err instanceof Error ? err.message : "Something went wrong";
       setErrors({ submit: message });

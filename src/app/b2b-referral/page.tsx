@@ -1,7 +1,23 @@
 "use client";
 
 import Link from "next/link";
-import { Building2, TrendingUp, DollarSign, Users, Shield, Globe, BarChart3, Gift, ArrowRight, Check, Briefcase, Handshake } from "lucide-react";
+import { Suspense } from "react";
+import { useSearchParams } from "next/navigation";
+import { Building2, TrendingUp, DollarSign, Users, Shield, Globe, BarChart3, Gift, ArrowRight, Check, Briefcase, Handshake, CheckCircle } from "lucide-react";
+
+function RegisteredBanner() {
+  const searchParams = useSearchParams();
+  if (searchParams.get("registered") !== "true") return null;
+  return (
+    <div className="bg-green-500/20 border border-green-400/30 rounded-lg px-4 py-3 mb-6 flex items-start gap-3">
+      <CheckCircle className="w-5 h-5 text-green-300 shrink-0 mt-0.5" />
+      <div>
+        <p className="text-green-200 font-semibold text-sm">Registration Successful!</p>
+        <p className="text-green-300 text-sm">Your account has been created. <Link href="/partners/login" className="underline font-semibold hover:text-white">Sign in to your dashboard</Link></p>
+      </div>
+    </div>
+  );
+}
 
 const benefits = [
   { icon: DollarSign, title: "5% Recurring Commission", desc: "Earn for 12 months on every referred business account's net revenue" },
@@ -46,11 +62,20 @@ const steps = [
 
 export default function B2BReferralLandingPage() {
   return (
+    <Suspense fallback={null}>
+      <B2BPage />
+    </Suspense>
+  );
+}
+
+function B2BPage() {
+  return (
     <div className="min-h-screen bg-white">
       {/* Hero */}
       <section className="bg-gradient-to-br from-navy via-blue-900 to-navy text-white">
         <div className="max-w-7xl mx-auto px-4 py-20">
           <div className="max-w-3xl">
+            <RegisteredBanner />
             <div className="inline-flex items-center gap-2 bg-white/10 backdrop-blur-sm px-3 py-1 rounded-full text-sm mb-6">
               <Building2 className="w-4 h-4 text-orange" />
               <span>Kauvex Partners — B2B Referral Program</span>

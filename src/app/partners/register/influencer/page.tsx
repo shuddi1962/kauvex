@@ -298,7 +298,7 @@ export default function InfluencerRegisterPage() {
         throw new Error(data.error || "Registration failed");
       }
 
-      router.push("/partners/login?registered=true");
+      router.push("/creators?registered=true");
     } catch (err: unknown) {
       const message = err instanceof Error ? err.message : "Something went wrong";
       setErrors({ submit: message });

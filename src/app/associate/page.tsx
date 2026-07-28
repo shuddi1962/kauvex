@@ -1,7 +1,23 @@
 "use client";
 
 import Link from "next/link";
-import { Gift, TrendingUp, DollarSign, Users, BarChart3, Link2, Globe, ArrowRight, Check, ShoppingCart, Target } from "lucide-react";
+import { Suspense } from "react";
+import { useSearchParams } from "next/navigation";
+import { Gift, TrendingUp, DollarSign, Users, BarChart3, Link2, Globe, ArrowRight, Check, ShoppingCart, Target, CheckCircle } from "lucide-react";
+
+function RegisteredBanner() {
+  const searchParams = useSearchParams();
+  if (searchParams.get("registered") !== "true") return null;
+  return (
+    <div className="bg-green-500/20 border border-green-400/30 rounded-lg px-4 py-3 mb-6 flex items-start gap-3">
+      <CheckCircle className="w-5 h-5 text-green-300 shrink-0 mt-0.5" />
+      <div>
+        <p className="text-green-200 font-semibold text-sm">Registration Successful!</p>
+        <p className="text-green-300 text-sm">Your account has been created. <Link href="/partners/login" className="underline font-semibold hover:text-white">Sign in to your dashboard</Link></p>
+      </div>
+    </div>
+  );
+}
 
 const benefits = [
   { icon: DollarSign, title: "Up to 15% Commission", desc: "Earn competitive commissions on every sale you refer — no cap on earnings" },
@@ -46,11 +62,20 @@ const steps = [
 
 export default function AssociateLandingPage() {
   return (
+    <Suspense fallback={null}>
+      <AssociatePage />
+    </Suspense>
+  );
+}
+
+function AssociatePage() {
+  return (
     <div className="min-h-screen bg-white">
       {/* Hero */}
       <section className="bg-gradient-to-br from-navy via-blue-900 to-navy text-white">
         <div className="max-w-7xl mx-auto px-4 py-20">
           <div className="max-w-3xl">
+            <RegisteredBanner />
             <div className="inline-flex items-center gap-2 bg-white/10 backdrop-blur-sm px-3 py-1 rounded-full text-sm mb-6">
               <Gift className="w-4 h-4 text-orange" />
               <span>Kauvex Partners — Associate Program</span>

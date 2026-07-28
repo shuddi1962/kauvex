@@ -104,7 +104,7 @@ export default function B2bRegisterPage() {
         throw new Error(data.error || "Registration failed");
       }
 
-      router.push("/partners/login?registered=true");
+      router.push("/b2b-referral?registered=true");
     } catch (err: unknown) {
       setError(err instanceof Error ? err.message : "Something went wrong");
     } finally {

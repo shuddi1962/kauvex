@@ -191,11 +191,23 @@ function LoginForm() {
             >
               Join as an Influencer
             </Link>
+            <Link
+              href="/b2b-referral"
+              className="flex items-center justify-center gap-2 w-full px-6 py-2.5 border-2 border-gray-400 text-gray-600 rounded-lg text-sm font-semibold hover:bg-gray-800 hover:text-white hover:border-gray-800 transition-colors"
+            >
+              Join as a B2B Partner
+            </Link>
           </div>
 
-          <div className="mt-6 text-center">
-            <Link href="/creators" className="text-xs text-gray-400 hover:text-orange transition-colors">
-              Learn about the Creator Program &rarr;
+          <div className="mt-6 text-center space-y-1">
+            <Link href="/associate" className="text-xs text-gray-400 hover:text-navy transition-colors block">
+              Learn about the Associate Program &rarr;
+            </Link>
+            <Link href="/creators" className="text-xs text-gray-400 hover:text-orange transition-colors block">
+              Learn about the Influencer Program &rarr;
+            </Link>
+            <Link href="/b2b-referral" className="text-xs text-gray-400 hover:text-gray-600 transition-colors block">
+              Learn about the B2B Referral Program &rarr;
             </Link>
           </div>
         </div>

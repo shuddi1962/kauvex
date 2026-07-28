@@ -30,8 +30,8 @@ export default function PartnersLandingPage() {
         "Monthly payouts via Bank/PayPal/Payoneer",
         "Promotional banners & creatives",
       ],
-      cta: "Join as an Associate",
-      href: "/partners/register/associate",
+      cta: "Explore Associate Program",
+      href: "/associate",
       highlight: true,
     },
     {
@@ -46,8 +46,8 @@ export default function PartnersLandingPage() {
         "Early access to new products",
         "Performance bonuses & bounties",
       ],
-      cta: "Join as an Influencer",
-      href: "/partners/register/influencer",
+      cta: "Explore Influencer Program",
+      href: "/creators",
       highlight: false,
     },
     {
@@ -62,8 +62,8 @@ export default function PartnersLandingPage() {
         "White-label reporting",
         "Priority support",
       ],
-      cta: "Join as B2B Partner",
-      href: "/partners/register/b2b",
+      cta: "Explore B2B Program",
+      href: "/b2b-referral",
       highlight: false,
     },
   ];

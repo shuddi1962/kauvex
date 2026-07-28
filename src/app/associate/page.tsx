@@ -1,50 +1,50 @@
 "use client";
 
 import Link from "next/link";
-import { Camera, TrendingUp, DollarSign, Star, Users, Share2, BarChart3, Gift, ArrowRight, Check } from "lucide-react";
+import { Gift, TrendingUp, DollarSign, Users, BarChart3, Link2, Globe, ArrowRight, Check, ShoppingCart, Target } from "lucide-react";
 
 const benefits = [
-  { icon: DollarSign, title: "Up to 12% Commission", desc: "Earn more than standard affiliates with our creator commission tiers" },
-  { icon: Gift, title: "Early Product Access", desc: "Get free samples and early access to launch new products before anyone else" },
-  { icon: BarChart3, title: "Content Analytics", desc: "See exactly which content drives sales and optimize your strategy" },
-  { icon: Star, title: "Exclusive Deals", desc: "Partner with top brands for exclusive discount codes your audience will love" },
-  { icon: Users, title: "Dedicated Support", desc: "Priority support and a dedicated creator success manager" },
-  { icon: Share2, title: "Co-Branded Content", desc: "Get featured on Kauvex channels — blog, social media, and email" },
+  { icon: DollarSign, title: "Up to 15% Commission", desc: "Earn competitive commissions on every sale you refer — no cap on earnings" },
+  { icon: Gift, title: "30-Day Cookie Window", desc: "Earn commission on any purchase made within 30 days of a referral click" },
+  { icon: BarChart3, title: "Real-Time Dashboard", desc: "Track clicks, conversions, and commissions in real-time from your dashboard" },
+  { icon: Link2, title: "Unique Tracking IDs", desc: "Get dedicated affiliate links and tracking IDs for every campaign you run" },
+  { icon: Globe, title: "Global Products", desc: "Promote millions of products across 15 countries with localized storefronts" },
+  { icon: Users, title: "Dedicated Support", desc: "Access promotional creatives, banners, and a dedicated affiliate success team" },
 ];
 
 const tiers = [
   {
-    name: "Creator",
-    commission: "8%",
-    requirements: "0-5K followers",
+    name: "Starter",
+    commission: "Up to 10%",
+    requirements: "0-20 sales/month",
     color: "from-gray-500 to-gray-600",
-    features: ["Standard commission rates", "Basic analytics", "Product catalog access", "Standard support"],
+    features: ["Standard commission rates", "Real-time dashboard", "Affiliate tracking links", "Email support"],
   },
   {
-    name: "Premium Creator",
-    commission: "10%",
-    requirements: "5K-50K followers",
+    name: "Professional",
+    commission: "Up to 12%",
+    requirements: "21-100 sales/month",
     color: "from-orange to-orange-600",
     popular: true,
-    features: ["Higher commission rates", "Advanced analytics", "Early product access", "Dedicated support", "Co-branded opportunities"],
+    features: ["Increased commission rates", "Advanced analytics", "Promotional banners", "Priority support", "Monthly bonus opportunities"],
   },
   {
-    name: "Elite Creator",
-    commission: "12%+",
-    requirements: "50K+ followers",
+    name: "Elite",
+    commission: "Up to 15%",
+    requirements: "100+ sales/month",
     color: "from-navy to-blue-800",
-    features: ["Highest commission rates", "Full analytics suite", "Custom partnership deals", "Priority support", "Featured placement in Kauvex Live", "Annual creator summit invite"],
+    features: ["Highest commission rates", "Full analytics suite", "Custom creatives", "Dedicated account manager", "Exclusive early access"],
   },
 ];
 
 const steps = [
-  { number: "01", title: "Apply", desc: "Fill out our quick application form with your social profiles and niche" },
-  { number: "02", title: "Get Approved", desc: "Our team reviews your application within 48 hours" },
-  { number: "03", title: "Start Creating", desc: "Access your dashboard, pick products, and start sharing your affiliate links" },
-  { number: "04", title: "Earn & Grow", desc: "Track your earnings, unlock higher tiers, and build your creator business" },
+  { number: "01", title: "Sign Up Free", desc: "Create your account in under 2 minutes — no fees, no minimums" },
+  { number: "02", title: "Grab Your Links", desc: "Get unique affiliate links for any product on Kauvex" },
+  { number: "03", title: "Share & Earn", desc: "Share your links on social media, blogs, or anywhere your audience is" },
+  { number: "04", title: "Get Paid", desc: "Receive monthly payouts via bank transfer, PayPal, or Payoneer" },
 ];
 
-export default function InfluencerLandingPage() {
+export default function AssociateLandingPage() {
   return (
     <div className="min-h-screen bg-white">
       {/* Hero */}
@@ -52,31 +52,32 @@ export default function InfluencerLandingPage() {
         <div className="max-w-7xl mx-auto px-4 py-20">
           <div className="max-w-3xl">
             <div className="inline-flex items-center gap-2 bg-white/10 backdrop-blur-sm px-3 py-1 rounded-full text-sm mb-6">
-              <Camera className="w-4 h-4 text-orange" />
-              <span>Kauvex Partners — Influencer Program</span>
+              <Gift className="w-4 h-4 text-orange" />
+              <span>Kauvex Partners — Associate Program</span>
             </div>
             <h1 className="text-4xl md:text-5xl font-800 leading-tight mb-4">
-              Turn Your Content<br />
-              Into <span className="text-orange">Revenue</span>
+              Earn Commissions<br />
+              on Every <span className="text-orange">Sale You Refer</span>
             </h1>
             <p className="text-lg text-blue-200 mb-8 max-w-2xl">
-              Join the Kauvex Influencer Program and earn up to 12% commission on every sale you drive.
-              Get early product access, exclusive deals, and tools to grow your creator business.
+              Join the Kauvex Associate Program and earn up to 15% commission on every sale you refer.
+              No inventory, no customer service — just share links and earn.
             </p>
             <div className="flex items-center gap-4">
               <Link
-                href="/partners/register/influencer"
+                href="/partners/register/associate"
                 className="bg-orange hover:bg-orange-600 text-white px-6 py-3 rounded-lg font-semibold text-sm transition-colors inline-flex items-center gap-2"
               >
-                Apply Now <ArrowRight className="w-4 h-4" />
+                Join for Free <ArrowRight className="w-4 h-4" />
               </Link>
               <Link
                 href="/partners/login"
                 className="border border-white/30 hover:bg-white/10 text-white px-6 py-3 rounded-lg font-medium text-sm transition-colors"
               >
-                Creator Login
+                Associate Login
               </Link>
             </div>
+            <p className="text-blue-300 text-sm mt-4">Also explore our <Link href="/creators" className="underline hover:text-white">Influencer Program</Link> or <Link href="/b2b-referral" className="underline hover:text-white">B2B Referral Program</Link></p>
           </div>
         </div>
         <div className="h-2 bg-gradient-to-r from-orange via-yellow-500 to-orange" />
@@ -87,10 +88,10 @@ export default function InfluencerLandingPage() {
         <div className="max-w-7xl mx-auto px-4 py-12">
           <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
             {[
-              { value: "12%", label: "Max Commission" },
-              { value: "10,000+", label: "Active Creators" },
-              { value: "48hrs", label: "Approval Time" },
-              { value: "₦500M+", label: "Paid to Creators" },
+              { value: "15%", label: "Max Commission" },
+              { value: "5,000+", label: "Active Associates" },
+              { value: "500K+", label: "Products to Promote" },
+              { value: "₦125M+", label: "Commissions Paid" },
             ].map((stat) => (
               <div key={stat.label} className="text-center">
                 <div className="text-2xl md:text-3xl font-800 text-navy">{stat.value}</div>
@@ -122,8 +123,8 @@ export default function InfluencerLandingPage() {
       {/* Benefits */}
       <section className="py-16 bg-gray-50 border-y border-border">
         <div className="max-w-7xl mx-auto px-4">
-          <h2 className="text-2xl font-800 text-navy text-center mb-4">Why Join the Influencer Program?</h2>
-          <p className="text-text-3 text-center mb-12 max-w-xl mx-auto">More than just commissions — tools, support, and opportunities to grow your brand</p>
+          <h2 className="text-2xl font-800 text-navy text-center mb-4">Why Join the Associate Program?</h2>
+          <p className="text-text-3 text-center mb-12 max-w-xl mx-auto">Everything you need to start earning — no upfront costs, no inventory, no hassle</p>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {benefits.map((b) => {
               const Icon = b.icon;
@@ -144,8 +145,8 @@ export default function InfluencerLandingPage() {
       {/* Tiers */}
       <section className="py-16">
         <div className="max-w-7xl mx-auto px-4">
-          <h2 className="text-2xl font-800 text-navy text-center mb-4">Creator Tiers</h2>
-          <p className="text-text-3 text-center mb-12 max-w-xl mx-auto">The more you grow, the more you earn. Unlock higher tiers as your audience expands</p>
+          <h2 className="text-2xl font-800 text-navy text-center mb-4">Commission Tiers</h2>
+          <p className="text-text-3 text-center mb-12 max-w-xl mx-auto">The more you sell, the more you earn. Unlock higher rates as your volume grows</p>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-5xl mx-auto">
             {tiers.map((tier) => (
               <div key={tier.name} className={`relative bg-white rounded-xl border ${tier.popular ? "border-orange ring-2 ring-orange/20" : "border-border"} p-6 hover:shadow-lg transition-shadow`}>
@@ -178,11 +179,12 @@ export default function InfluencerLandingPage() {
           <h2 className="text-2xl font-800 text-navy text-center mb-8">Frequently Asked Questions</h2>
           <div className="space-y-3">
             {[
-              { q: "Who can join the Creator Program?", a: "Anyone with a social media following, blog, or content platform. We accept creators across all niches — tech, fashion, beauty, food, lifestyle, and more." },
-              { q: "How do I get paid?", a: "You can receive payments via bank transfer, PayPal, Payoneer, or your Kauvex Wallet. Payouts are processed monthly for confirmed commissions." },
-              { q: "How are commissions tracked?", a: "When your followers click your unique affiliate link and make a purchase within 30 days, you earn commission. Our tracking system records every click and conversion." },
-              { q: "Can I upgrade my tier?", a: "Yes! Tiers are automatically reviewed monthly based on your follower growth and sales performance. Higher tiers unlock better rates and benefits." },
-              { q: "Is there a cost to join?", a: "No. The Kauvex Creator Program is completely free to join. You only earn money — there are no fees or subscription costs." },
+              { q: "How do I become an Associate?", a: "Sign up for free in under 2 minutes. Once approved, you get access to your dashboard and can start generating affiliate links immediately." },
+              { q: "How much can I earn?", a: "Commission rates start at up to 10% and go up to 15% based on your monthly sales volume. There is no cap on how much you can earn." },
+              { q: "How do I get paid?", a: "Payouts are processed monthly via bank transfer, PayPal, or Payoneer. Minimum payout threshold is ₦5,000 or equivalent." },
+              { q: "What can I promote?", a: "Any of the 500,000+ products on Kauvex across electronics, fashion, home, beauty, and more. You get unique tracking links for each product." },
+              { q: "How long does the cookie last?", a: "Our cookie window is 30 days. Any qualifying purchase made within 30 days of a customer clicking your link is credited to you." },
+              { q: "Is there a cost to join?", a: "No. The Associate Program is completely free to join. No membership fees, no minimum sales requirements." },
             ].map((faq) => (
               <details key={faq.q} className="bg-white rounded-xl border border-border group">
                 <summary className="px-5 py-4 font-medium text-sm text-navy cursor-pointer list-none flex items-center justify-between">
@@ -200,16 +202,14 @@ export default function InfluencerLandingPage() {
       <section className="py-16 bg-gradient-to-r from-navy to-blue-900 text-white text-center">
         <div className="max-w-2xl mx-auto px-4">
           <h2 className="text-3xl font-800 mb-3">Ready to Start Earning?</h2>
-          <p className="text-lg text-blue-200 mb-8 max-w-2xl">
-                Join thousands of influencers already earning on Kauvex
-              </p>
-<Link
-                href="/partners/register/associate"
-                className="bg-orange hover:bg-orange-600 text-white px-8 py-3 rounded-lg font-semibold text-sm transition-colors inline-flex items-center gap-2"
-              >
-                Join Kauvex Partners <ArrowRight className="w-4 h-4" />
-              </Link>
-              <p className="text-blue-200 text-sm">Not an influencer? Explore the <Link href="/b2b-referral" className="underline hover:text-white">B2B Referral Program</Link></p>
+          <p className="text-blue-200 mb-8">Join thousands of associates already earning on Kauvex. It's free to join.</p>
+          <Link
+            href="/partners/register/associate"
+            className="bg-orange hover:bg-orange-600 text-white px-8 py-3 rounded-lg font-semibold text-sm transition-colors inline-flex items-center gap-2"
+          >
+            Join Kauvex Associates Free <ArrowRight className="w-4 h-4" />
+          </Link>
+          <p className="text-blue-300 text-sm mt-4">Check out our <Link href="/creators" className="underline hover:text-white">Influencer Program</Link> or <Link href="/b2b-referral" className="underline hover:text-white">B2B Referral Program</Link></p>
         </div>
       </section>
     </div>

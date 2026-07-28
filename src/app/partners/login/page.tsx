@@ -180,13 +180,13 @@ function LoginForm() {
 
           <div className="space-y-3">
             <Link
-              href="/partners/register/associate"
+              href="/associate"
               className="flex items-center justify-center gap-2 w-full px-6 py-2.5 border-2 border-navy text-navy rounded-lg text-sm font-semibold hover:bg-navy hover:text-white transition-colors"
             >
               Join as an Associate
             </Link>
             <Link
-              href="/partners/register/influencer"
+              href="/creators"
               className="flex items-center justify-center gap-2 w-full px-6 py-2.5 border-2 border-orange text-orange rounded-lg text-sm font-semibold hover:bg-orange hover:text-white transition-colors"
             >
               Join as an Influencer

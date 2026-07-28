@@ -27,9 +27,9 @@ const sellLinks = [
 
 const partnerLinks = [
   { label: "Affiliate Program", url: "/partners" },
-  { label: "Become an Associate", url: "/partners/register/associate" },
-  { label: "Become an Influencer", url: "/partners/register/influencer" },
-  { label: "B2B Referral Partner", url: "/partners/register/b2b" },
+  { label: "Become an Associate", url: "/associate" },
+  { label: "Become an Influencer", url: "/creators" },
+  { label: "B2B Referral Partner", url: "/b2b-referral" },
   { label: "Partner Login", url: "/partners/login" },
 ];
 

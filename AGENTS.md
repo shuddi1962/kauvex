@@ -760,3 +760,43 @@ Key V2 Enterprise+ tables: erp_accounts, journal_entries, cost_centers, budgets,
   GET /api/v1/fuel/profitability — Partner profitability
   GET /api/v1/fuel/partner-profile — Partner fuel profile
   POST /api/v1/cron/fuel-fetch — Cron: fetch latest fuel prices
+
+## International Expansion Playbook
+
+### PHASE 1 — RESEARCH (2 months before entry)
+- Market sizing, competitor analysis, payment methods, language, logistics infra
+- Regulatory requirements, entity setup, tax implications
+
+### PHASE 2 — SOFT ENTRY (Month 1-3)
+- Enable country storefront, set local currency, configure payment methods
+- Onboard 20-50 anchor vendors
+- Low spend test ($500-$1k ads)
+
+### PHASE 3 — COMMIT OR WITHDRAW (Month 4)
+- Evaluate metrics: organic demand, conversion rates, customer service patterns
+- Do NOT throw money at unresponsive markets
+
+### PHASE 4 — FULL LAUNCH (Month 5-12)
+- Country-specific campaigns, local influencers, PR, vendor acquisition
+
+### Country Priority Order
+- TIER 1 (2027): Nigeria, UK, UAE
+- TIER 2 (Year 2): US, Ghana, Kenya, India
+- TIER 3 (Year 3+): Canada, Australia, Germany, South Africa, Egypt, Saudi Arabia, Brazil, Singapore
+
+## Core Team Requirements
+
+### Founder/CEO
+Vision, strategy, fundraising, key partnerships. Full-time.
+
+### Technical Lead
+Next.js, Supabase, TypeScript. Remote-capable. Equity + salary.
+
+### Head of Operations
+Vendor/logistics management. Nigeria-based. People person.
+
+### Head of Marketing
+Digital marketing, content, influencers, data-driven.
+
+### Customer Support Lead
+Processes, training, escalation. Builds platform trust.

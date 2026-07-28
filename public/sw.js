@@ -1,5 +1,7 @@
-const CACHE_NAME = "kauvex-v1";
+const CACHE_NAME = "kauvex-v2";
 const OFFLINE_URL = "/offline";
+const STATIC_CACHE = "kauvex-static-v2";
+const RUNTIME_CACHE = "kauvex-runtime-v2";
 
 const PRECACHE_URLS = [
   "/",
@@ -7,7 +9,6 @@ const PRECACHE_URLS = [
   "/manifest.json",
 ];
 
-// Install
 self.addEventListener("install", (event) => {
   event.waitUntil(
     caches.open(CACHE_NAME).then((cache) => cache.addAll(PRECACHE_URLS))
@@ -15,36 +16,54 @@ self.addEventListener("install", (event) => {
   self.skipWaiting();
 });
 
-// Activate
 self.addEventListener("activate", (event) => {
   event.waitUntil(
     caches.keys().then((keys) =>
-      Promise.all(keys.filter((key) => key !== CACHE_NAME).map((key) => caches.delete(key)))
+      Promise.all(
+        keys
+          .filter(
+            (key) =>
+              key !== CACHE_NAME &&
+              key !== STATIC_CACHE &&
+              key !== RUNTIME_CACHE
+          )
+          .map((key) => caches.delete(key))
+      )
     )
   );
   self.clients.claim();
 });
 
-// Fetch — Network first, fallback to cache
 self.addEventListener("fetch", (event) => {
-  if (event.request.mode === "navigate") {
+  const { request } = event;
+  const url = new URL(request.url);
+
+  if (request.mode === "navigate") {
     event.respondWith(
-      fetch(event.request).catch(() =>
-        caches.match(OFFLINE_URL).then((response) => response || caches.match("/"))
-      )
+      fetch(request)
+        .then((response) => {
+          const clone = response.clone();
+          caches.open(RUNTIME_CACHE).then((cache) => cache.put(request, clone));
+          return response;
+        })
+        .catch(() =>
+          caches.match(request).then((cached) => {
+            if (cached) return cached;
+            return caches.match(OFFLINE_URL).then((offline) => offline || caches.match("/"));
+          })
+        )
     );
     return;
   }
 
-  // For assets, try cache first then network
-  if (event.request.destination === "image" || event.request.destination === "style" || event.request.destination === "script") {
+  if (request.destination === "image" || request.destination === "style" || request.destination === "script" || request.destination === "font") {
     event.respondWith(
-      caches.match(event.request).then((cached) => {
+      caches.match(request).then((cached) => {
         if (cached) return cached;
-        return fetch(event.request).then((response) => {
+        return fetch(request).then((response) => {
           if (response.ok) {
             const clone = response.clone();
-            caches.open(CACHE_NAME).then((cache) => cache.put(event.request, clone));
+            caches.open(STATIC_CACHE).then((cache) => cache.put(request, clone));
           }
           return response;
         });
@@ -53,5 +72,21 @@ self.addEventListener("fetch", (event) => {
     return;
   }
 
-  event.respondWith(fetch(event.request));
+  if (url.pathname.startsWith("/_next/")) {
+    event.respondWith(
+      caches.match(request).then((cached) => {
+        if (cached) return cached;
+        return fetch(request).then((response) => {
+          if (response.ok) {
+            const clone = response.clone();
+            caches.open(STATIC_CACHE).then((cache) => cache.put(request, clone));
+          }
+          return response;
+        });
+      })
+    );
+    return;
+  }
+
+  event.respondWith(fetch(request));
 });

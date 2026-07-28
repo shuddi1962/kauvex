@@ -1,53 +1,65 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import {
-  RotateCcw,
-  ChevronRight,
-  AlertCircle,
-  CheckCircle,
-  Clock,
-  Truck,
-  Plus,
-  Loader2,
-} from "lucide-react";
+import Link from "next/link";
+import { RotateCcw, Plus, ChevronRight, Clock, CheckCircle, AlertCircle, Truck, XCircle, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { useCurrencyStore } from "@/store/currency-store";
+import ReturnForm from "@/components/returns/ReturnForm";
 
-interface Return {
+interface ReturnItem {
   id: string;
   orderId: string;
-  product: string;
-  reason: string;
-  status: "pending" | "approved" | "in-transit" | "completed" | "rejected";
-  requestDate: string;
-  resolvedDate: string | null;
-  refundAmount: number;
-  refundMethod: string;
+  type: string;
+  status: string;
+  description: string;
+  openedAt: string;
+  resolvedAt: string | null;
+  order: { orderNumber: string };
+}
+
+interface OrderSummary {
+  id: string;
+  orderNumber: string;
+  createdAt: string;
+  items: { id: string; productId: string; productName: string; productImage: string | null; quantity: number }[];
+  status: string;
 }
 
 const statusConfig: Record<string, { label: string; color: string; icon: typeof Clock }> = {
   pending: { label: "Pending Review", color: "bg-yellow-50 text-yellow-700", icon: Clock },
-  approved: { label: "Approved", color: "bg-green-50 text-green-700", icon: CheckCircle },
-  "in-transit": { label: "Return In Transit", color: "bg-blue-50 text-blue", icon: Truck },
+  open: { label: "Under Review", color: "bg-blue-50 text-blue-600", icon: Clock },
+  investigating: { label: "Investigating", color: "bg-purple-50 text-purple-600", icon: Truck },
+  resolved: { label: "Resolved", color: "bg-green-50 text-green-700", icon: CheckCircle },
+  closed: { label: "Closed", color: "bg-gray-50 text-gray-500", icon: CheckCircle },
   completed: { label: "Completed", color: "bg-green-50 text-green-700", icon: CheckCircle },
-  rejected: { label: "Rejected", color: "bg-red-50 text-red", icon: AlertCircle },
+  cancelled: { label: "Cancelled", color: "bg-red-50 text-red-600", icon: XCircle },
+  rejected: { label: "Rejected", color: "bg-red-50 text-red-600", icon: AlertCircle },
 };
 
 export default function ReturnsPage() {
+  const [returns, setReturns] = useState<ReturnItem[]>([]);
+  const [orders, setOrders] = useState<OrderSummary[]>([]);
   const [showForm, setShowForm] = useState(false);
-  const { formatNGN } = useCurrencyStore();
   const [loading, setLoading] = useState(true);
-  const [returns, setReturns] = useState<Return[]>([]);
+  const [total, setTotal] = useState(0);
 
   useEffect(() => {
     async function load() {
       try {
-        const res = await fetch("/api/v1/account/returns");
-        if (res.ok) {
-          const d = await res.json();
-          if (Array.isArray(d)) setReturns(d);
-          else if (d.returns) setReturns(d.returns);
+        const [retRes, ordRes] = await Promise.all([
+          fetch("/api/v1/returns?limit=50"),
+          fetch("/api/v1/orders?limit=50"),
+        ]);
+        if (retRes.ok) {
+          const retData = await retRes.json();
+          setReturns(retData.data || []);
+          setTotal(retData.total || 0);
+        }
+        if (ordRes.ok) {
+          const ordData = await ordRes.json();
+          setOrders((ordData.data || []).filter((o: OrderSummary) =>
+            ["pending", "processing", "confirmed", "delivered", "completed"].includes(o.status)
+          ));
         }
       } catch {
         // keep empty
@@ -58,10 +70,29 @@ export default function ReturnsPage() {
     load();
   }, []);
 
+  const handleSubmitReturn = async (data: { orderId: string; productId: string; reason: string; description: string; photos: string[] }) => {
+    const res = await fetch("/api/v1/returns", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        orderId: data.orderId,
+        productId: data.productId,
+        reason: data.reason,
+        description: data.description,
+        photos: data.photos.length > 0 ? data.photos : undefined,
+      }),
+    });
+    const json = await res.json();
+    if (!res.ok) throw new Error(json.error || "Failed to submit return");
+    setReturns((prev) => [json.data, ...prev]);
+    setTotal((prev) => prev + 1);
+    setShowForm(false);
+  };
+
   if (loading) {
     return (
       <div className="flex items-center justify-center py-20">
-        <Loader2 size={24} className="animate-spin text-blue" />
+        <Loader2 size={24} className="animate-spin text-[#FF6B00]" />
       </div>
     );
   }
@@ -69,119 +100,68 @@ export default function ReturnsPage() {
   return (
     <div>
       <div className="flex items-center justify-between mb-6">
-        <h1 className="font-bold text-2xl text-text-1">Returns & RMA</h1>
-        <Button onClick={() => setShowForm(!showForm)} className="gap-2">
+        <div>
+          <h1 className="font-bold text-2xl text-[#0A1628]">Returns & RMA</h1>
+          <p className="text-sm text-gray-500 mt-1">{total} return request{total !== 1 ? "s" : ""}</p>
+        </div>
+        <Button onClick={() => setShowForm(!showForm)} className="bg-[#FF6B00] hover:bg-[#e06000] text-white gap-2">
           <Plus size={16} /> Request Return
         </Button>
       </div>
 
-      {/* New Return Form */}
       {showForm && (
-        <div className="bg-white rounded-xl border border-border p-6 mb-6">
-          <h3 className="font-semibold text-lg text-text-1 mb-4">New Return Request</h3>
-          <div className="grid md:grid-cols-2 gap-4">
-            <div>
-              <label className="text-sm font-medium text-text-2 mb-1.5 block">Order Number</label>
-              <input placeholder="e.g. ORD-8842" className="w-full h-11 px-3 rounded-lg border border-border text-sm focus:outline-none focus:ring-2 focus:ring-blue/20 focus:border-blue" />
-            </div>
-            <div>
-              <label className="text-sm font-medium text-text-2 mb-1.5 block">Product</label>
-              <select className="w-full h-11 px-3 rounded-lg border border-border text-sm">
-                <option value="">Select product...</option>
-                <option>Hikvision 4MP IP Dome Camera</option>
-                <option>Dahua 8-Channel NVR</option>
-              </select>
-            </div>
-            <div>
-              <label className="text-sm font-medium text-text-2 mb-1.5 block">Reason for Return</label>
-              <select className="w-full h-11 px-3 rounded-lg border border-border text-sm">
-                <option value="">Select reason...</option>
-                <option>Defective product</option>
-                <option>Wrong item received</option>
-                <option>Damaged in transit</option>
-                <option>Not as described</option>
-                <option>Changed mind</option>
-                <option>Better price found</option>
-              </select>
-            </div>
-            <div>
-              <label className="text-sm font-medium text-text-2 mb-1.5 block">Preferred Refund</label>
-              <select className="w-full h-11 px-3 rounded-lg border border-border text-sm">
-                <option>Store Credit (faster)</option>
-                <option>Original Payment Method</option>
-                <option>Replacement</option>
-              </select>
-            </div>
-            <div className="md:col-span-2">
-              <label className="text-sm font-medium text-text-2 mb-1.5 block">Description</label>
-              <textarea rows={3} className="w-full px-3 py-2 rounded-lg border border-border text-sm resize-none focus:outline-none focus:ring-2 focus:ring-blue/20 focus:border-blue" placeholder="Describe the issue..." />
-            </div>
-            <div className="md:col-span-2">
-              <label className="text-sm font-medium text-text-2 mb-1.5 block">Upload Photos (optional)</label>
-              <div className="border-2 border-dashed border-border rounded-lg p-6 text-center">
-                <p className="text-sm text-text-4">Drag & drop photos or click to browse</p>
-              </div>
-            </div>
-          </div>
-          <div className="flex gap-3 mt-5">
-            <Button variant="cta">Submit Return Request</Button>
-            <Button variant="outline" onClick={() => setShowForm(false)}>Cancel</Button>
-          </div>
+        <div className="mb-6">
+          <ReturnForm orders={orders} onSubmit={handleSubmitReturn} onCancel={() => setShowForm(false)} />
         </div>
       )}
 
-      {/* Returns List */}
-      <div className="space-y-4">
-        {returns.map((ret) => {
-          const config = statusConfig[ret.status] || statusConfig.pending;
-          const StatusIcon = config.icon;
-          return (
-            <div key={ret.id} className="bg-white rounded-xl border border-border p-5 hover:shadow-soft transition-shadow">
-              <div className="flex items-start justify-between mb-3">
-                <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-xl bg-off-white flex items-center justify-center">
-                    <RotateCcw size={18} className="text-text-3" />
+      {returns.length === 0 ? (
+        <div className="bg-white rounded-xl border border-border p-12 text-center">
+          <div className="w-16 h-16 rounded-full bg-orange-50 flex items-center justify-center mx-auto mb-4">
+            <RotateCcw size={28} className="text-[#FF6B00]" />
+          </div>
+          <h3 className="text-lg font-semibold text-[#0A1628] mb-2">No return requests yet</h3>
+          <p className="text-sm text-gray-500 mb-4">You haven&apos;t requested any returns. Click the button above to start one.</p>
+        </div>
+      ) : (
+        <div className="space-y-4">
+          {returns.map((ret) => {
+            const config = statusConfig[ret.status] || statusConfig.pending;
+            const StatusIcon = config.icon;
+            return (
+              <Link
+                key={ret.id}
+                href={`/account/returns/${ret.id}`}
+                className="block bg-white rounded-xl border border-border p-5 hover:shadow-soft transition-shadow"
+              >
+                <div className="flex items-start justify-between mb-3">
+                  <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 rounded-xl bg-orange-50 flex items-center justify-center">
+                      <RotateCcw size={18} className="text-[#FF6B00]" />
+                    </div>
+                    <div>
+                      <p className="text-sm font-semibold text-[#0A1628]">Return #{ret.id.slice(0, 8)}</p>
+                      <p className="text-xs text-gray-500">Order {ret.order?.orderNumber || ret.orderId.slice(0, 8)}</p>
+                    </div>
                   </div>
-                  <div>
-                    <p className="text-sm font-semibold text-text-1">{ret.id}</p>
-                    <p className="text-xs text-text-4">Order {ret.orderId}</p>
-                  </div>
+                  <span className={`inline-flex items-center gap-1.5 text-xs font-medium px-2.5 py-1 rounded-full ${config.color}`}>
+                    <StatusIcon size={12} /> {config.label}
+                  </span>
                 </div>
-                <span className={`inline-flex items-center gap-1.5 text-xs font-medium px-2.5 py-1 rounded-full ${config.color}`}>
-                  <StatusIcon size={12} /> {config.label}
-                </span>
-              </div>
-              <div className="grid md:grid-cols-4 gap-4 text-sm">
-                <div>
-                  <p className="text-text-4 text-xs">Product</p>
-                  <p className="text-text-1 font-medium">{ret.product}</p>
+                <div className="flex items-center justify-between">
+                  <p className="text-sm text-gray-600 line-clamp-1">{ret.description?.split("\n")[0] || "No description"}</p>
+                  <ChevronRight size={16} className="text-gray-400 shrink-0" />
                 </div>
-                <div>
-                  <p className="text-text-4 text-xs">Reason</p>
-                  <p className="text-text-2">{ret.reason}</p>
+                <div className="mt-3 pt-3 border-t border-border flex items-center justify-between">
+                  <p className="text-xs text-gray-500">
+                    Opened: {new Date(ret.openedAt).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })}
+                  </p>
                 </div>
-                <div>
-                  <p className="text-text-4 text-xs">Refund Amount</p>
-                  <p className="text-text-1 font-semibold">{formatNGN(ret.refundAmount)}</p>
-                </div>
-                <div>
-                  <p className="text-text-4 text-xs">Refund Method</p>
-                  <p className="text-text-2">{ret.refundMethod}</p>
-                </div>
-              </div>
-              <div className="flex items-center justify-between mt-4 pt-3 border-t border-border">
-                <p className="text-xs text-text-4">
-                  Requested: {ret.requestDate}
-                  {ret.resolvedDate && ` · Resolved: ${ret.resolvedDate}`}
-                </p>
-                <button className="text-xs text-blue font-medium flex items-center gap-1 hover:gap-1.5 transition-all">
-                  View Details <ChevronRight size={12} />
-                </button>
-              </div>
-            </div>
-          );
-        })}
-      </div>
+              </Link>
+            );
+          })}
+        </div>
+      )}
     </div>
   );
 }

@@ -11,6 +11,7 @@ import CategoryIcons from "@/components/home/kauvex-homepage-override/CategoryIc
 import BrandSlider from "@/components/home/kauvex-homepage-override/BrandSlider";
 import VendorShowcase from "@/components/home/kauvex-homepage-override/VendorShowcase";
 import Newsletter from "@/components/home/kauvex-homepage-override/Newsletter";
+import RecommendedSection from "@/components/personalization/RecommendedSection";
 import { categoryBlocks } from "@/lib/homepage-data";
 
 const trustFeatures = [
@@ -56,6 +57,9 @@ export default function HomePage() {
 
       {/* Top Products */}
       <TopProducts />
+
+      {/* Recommended / Trending */}
+      <RecommendedSection />
 
       {/* Category Blocks */}
       {categoryBlocks.map((block) => (

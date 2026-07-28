@@ -20,6 +20,7 @@ import {
   ExternalLink,
   CreditCard,
   Zap,
+  LifeBuoy,
 } from "lucide-react";
 import { useAuthStore } from "@/store/auth-store";
 
@@ -36,6 +37,7 @@ const sidebarLinks = [
   { label: "Addresses", href: "/account/addresses", icon: MapPin },
   { label: "Virtual Addresses", href: "/account/virtual-address", icon: MapPin },
   { label: "Returns & RMA", href: "/account/returns", icon: RotateCcw },
+  { label: "Support", href: "/account/support", icon: LifeBuoy },
   { label: "Notifications", href: "/account/notifications", icon: Bell },
   { label: "Security", href: "/account/security", icon: ShieldCheck },
   { label: "Settings", href: "/account/settings", icon: Settings },

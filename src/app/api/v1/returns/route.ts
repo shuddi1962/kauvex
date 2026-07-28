@@ -1,66 +1,63 @@
 import { NextRequest } from "next/server";
-import { successResponse, errorResponse, paginatedResponse, getAuthUser, validateBody } from "@/lib/api-helpers";
-import { createAdminClient } from "@/lib/supabase/admin";
+import { prisma } from "@/lib/prisma";
+import { successResponse, errorResponse, paginatedResponse, getAuthUser } from "@/lib/api-helpers";
 import { z } from "zod";
 
-const returnTypeEnum = z.enum(["not_received", "not_as_described", "damaged", "wrong_item"]);
-
 const createReturnSchema = z.object({
-  order_id: z.string().uuid(),
-  order_item_id: z.string().uuid().optional(),
-  reason: z.string().min(1).max(1000),
-  type: returnTypeEnum.default("not_as_described"),
-  quantity: z.number().int().positive().optional(),
+  orderId: z.string().uuid(),
+  productId: z.string().uuid(),
+  reason: z.string().min(1).max(500),
+  description: z.string().max(2000).optional(),
+  photos: z.array(z.string().url()).max(10).optional(),
 });
 
 export async function POST(request: NextRequest) {
-  const { user, profile, error: authErr } = await getAuthUser(request);
+  const { user, error: authErr } = await getAuthUser(request);
   if (authErr) return authErr;
 
-  const { data: body, error: valErr } = await validateBody(request, createReturnSchema);
-  if (valErr) return valErr;
+  let body;
+  try {
+    body = createReturnSchema.parse(await request.json());
+  } catch (err: unknown) {
+    if (err instanceof z.ZodError) return errorResponse("Validation failed", 422, err.issues);
+    return errorResponse("Invalid JSON body", 400);
+  }
 
   try {
-    const adminDb = createAdminClient();
+    const order = await (prisma as any).order.findUnique({
+      where: { id: body.orderId },
+      select: { id: true, customerId: true, vendorId: true, orderNumber: true },
+    });
 
-    const { data: order } = await adminDb
-      .from("orders")
-      .select("id, customer_id, vendor_id, status")
-      .eq("id", body!.order_id)
-      .single();
     if (!order) return errorResponse("Order not found", 404);
+    if (order.customerId !== user!.id) return errorResponse("Not authorized to create return for this order", 403);
 
-    const isOwner = order.customer_id === user!.id;
-    const isVendor = profile?.role === "vendor" && order.vendor_id === profile.vendor_id;
-    const isAdmin = profile?.role && ["super-admin", "admin", "support-admin"].includes(profile.role);
+    const existingReturn = await (prisma as any).dispute.findFirst({
+      where: { orderId: body.orderId, customerId: user!.id, status: { in: ["pending", "open", "investigating"] } },
+    });
+    if (existingReturn) return errorResponse("An active return request already exists for this order", 409);
 
-    if (!isOwner && !isVendor && !isAdmin) {
-      return errorResponse("Not authorized to create return for this order", 403);
-    }
+    const ret = await (prisma as any).dispute.create({
+      data: {
+        orderId: body.orderId,
+        customerId: user!.id,
+        vendorId: order.vendorId,
+        type: "return",
+        status: "pending",
+        description: `Product: ${body.productId}\nReason: ${body.reason}${body.description ? `\nDetails: ${body.description}` : ""}`,
+        customerEvidence: body.photos ? JSON.stringify(body.photos) : null,
+      },
+    });
 
-    const { data: dispute, error: dErr } = await adminDb
-      .from("disputes")
-      .insert({
-        order_id: body!.order_id,
-        customer_id: user!.id,
-        vendor_id: order.vendor_id,
-        type: body!.type,
-        status: "open",
-        description: body!.reason,
-      })
-      .select("*")
-      .single();
-
-    if (dErr) return errorResponse("Failed to create return: " + dErr.message, 400);
-
-    return successResponse(dispute, 201);
-  } catch {
+    return successResponse(ret, 201);
+  } catch (err) {
+    console.error("Create return error:", err);
     return errorResponse("Internal server error", 500);
   }
 }
 
 export async function GET(request: NextRequest) {
-  const { user, profile, error: authErr } = await getAuthUser(request);
+  const { user, error: authErr } = await getAuthUser(request);
   if (authErr) return authErr;
 
   try {
@@ -68,31 +65,22 @@ export async function GET(request: NextRequest) {
     const page = Math.max(1, parseInt(searchParams.get("page") || "1"));
     const limit = Math.min(50, Math.max(1, parseInt(searchParams.get("limit") || "10")));
     const offset = (page - 1) * limit;
-    const adminDb = createAdminClient();
 
-    let query = adminDb
-      .from("disputes")
-      .select("*, order:orders(order_number, status)", { count: "exact" })
-      .order("opened_at", { ascending: false });
+    const [returns, total] = await Promise.all([
+      (prisma as any).dispute.findMany({
+        where: { customerId: user!.id, type: "return" },
+        orderBy: { openedAt: "desc" },
+        skip: offset,
+        take: limit,
+      }),
+      (prisma as any).dispute.count({
+        where: { customerId: user!.id, type: "return" },
+      }),
+    ]);
 
-    const isAdmin = profile?.role && ["super-admin", "admin", "support-admin"].includes(profile.role);
-
-    if (isAdmin) {
-      // admin sees all
-    } else if (profile?.role === "vendor") {
-      query = query.eq("vendor_id", profile.vendor_id);
-    } else {
-      query = query.eq("customer_id", user!.id);
-    }
-
-    query = query.range(offset, offset + limit - 1);
-
-    const { data: returns, error, count } = await query;
-
-    if (error) return errorResponse(error.message, 400);
-
-    return paginatedResponse(returns || [], count || 0, page, limit);
-  } catch {
+    return paginatedResponse(returns || [], total, page, limit);
+  } catch (err) {
+    console.error("List returns error:", err);
     return errorResponse("Internal server error", 500);
   }
 }

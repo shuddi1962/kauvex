@@ -95,31 +95,34 @@ export default function AdminNetworkMapPage() {
                 <rect width="100%" height="100%" fill="url(#grid)" />
               </svg>
 
-              {/* Center placeholder */}
-              <div className="absolute inset-0 flex items-center justify-center">
-                <div className="text-center">
-                  <MapPin size={48} className="mx-auto text-text-4 mb-3 opacity-30" />
-                  <p className="text-lg font-semibold text-text-4">Interactive Map Coming Soon</p>
-                  <p className="text-sm text-text-4 mt-1">Mapbox integration will render partner locations here</p>
-                  <div className="mt-4 flex items-center justify-center gap-2">
-                    <span className="w-2 h-2 rounded-full bg-green-500" />
-                    <span className="text-xs text-text-4">{onlinePartners.length} online partners in view</span>
-                  </div>
-                </div>
-              </div>
+              {/* SVG Map with partner pins */}
+              <svg className="absolute inset-0 w-full h-full" viewBox="2 3 10 10" preserveAspectRatio="xMidYMid meet">
+                {/* Simplified Nigeria outline */}
+                <path d="M3.5 4 L8 3.5 L10 5 L9.5 8 L7 10 L4 9.5 L3 7 Z" fill="none" stroke="#d1d5db" strokeWidth="0.1" />
+                {/* Grid */}
+                <defs>
+                  <pattern id="grid2" width="40" height="40" patternUnits="userSpaceOnUse">
+                    <path d="M 40 0 L 0 0 0 40" fill="none" stroke="#e5e7eb" strokeWidth="0.5" />
+                  </pattern>
+                </defs>
+                <rect width="100%" height="100%" fill="url(#grid2)" />
+                {/* Partner pins */}
+                {filtered.map((p) => (
+                  <g key={p.id}>
+                    <circle cx={((p.lng + 10) / 20) * 10} cy={((p.lat - 2) / 10) * 10} r="0.3" fill={p.is_online ? "#22c55e" : "#9ca3af"}>
+                      <title>{p.name} ({p.lat.toFixed(2)}, {p.lng.toFixed(2)})</title>
+                    </circle>
+                    <text x={((p.lng + 10) / 20) * 10 + 0.4} y={((p.lat - 2) / 10) * 10 + 0.1} fontSize="0.25" fill="#374151">{p.name}</text>
+                  </g>
+                ))}
+              </svg>
 
-              {/* Dots overlay */}
-              <div className="relative z-10 w-full h-full p-6">
-                <div className="grid grid-cols-5 gap-3">
-                  {filtered.slice(0, 10).map((p, i) => (
-                    <div
-                      key={p.id}
-                      className={`w-3 h-3 rounded-full ${p.is_online ? "bg-green-500" : "bg-gray-300"} animate-pulse`}
-                      style={{ animationDelay: `${i * 0.3}s`, marginTop: `${(i % 5) * 30}px`, marginLeft: `${(i * 7) % 20}px` }}
-                      title={`${p.name} (${p.lat.toFixed(4)}, ${p.lng.toFixed(4)})`}
-                    />
-                  ))}
-                </div>
+              {/* Info overlay */}
+              <div className="absolute top-3 left-3 z-20 bg-white/90 backdrop-blur-sm rounded-lg px-3 py-2 shadow-sm">
+                <p className="text-xs font-semibold text-text-1 flex items-center gap-1.5">
+                  <span className="w-2 h-2 rounded-full bg-green-500" />
+                  {onlinePartners.length} online &middot; {filtered.length - onlinePartners.length} offline
+                </p>
               </div>
             </div>
           </div>

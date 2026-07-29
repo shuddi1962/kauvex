@@ -189,14 +189,17 @@ export default function ReviewForm({ productId, onSuccess }: ReviewFormProps) {
               accept="image/*"
               multiple
               className="hidden"
-              disabled
+              onChange={(e) => {
+                const files = Array.from(e.target.files || []);
+                setImages(files.map((f) => URL.createObjectURL(f)));
+              }}
             />
           </label>
           {images.length > 0 && (
             <span className="text-xs text-text-4">{images.length} file(s) selected</span>
           )}
         </div>
-        <p className="text-[10px] text-text-4 mt-1">Image upload coming soon. Max 10 photos.</p>
+        <p className="text-[10px] text-text-4 mt-1">Upload up to 10 photos to showcase your experience.</p>
       </div>
 
       {/* Error */}

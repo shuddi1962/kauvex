@@ -139,7 +139,7 @@ export default function BrandPage() {
           <div className="flex flex-col items-center justify-center py-20">
             <Package className="w-16 h-16 text-gray-300 mb-4" />
             <h3 className="text-lg font-semibold text-[#0A1628] mb-2">No products available yet</h3>
-            <p className="text-sm text-gray-500 mb-4">{brand?.name} products are coming soon.</p>
+            <p className="text-sm text-gray-500 mb-4">New products from {brand?.name} are added regularly. Check back soon or browse all products.</p>
             <Link
               href="/shop"
               className="px-4 py-2 bg-[#FF6B00] text-white rounded-lg text-sm font-medium hover:bg-[#e65c00] transition-colors"

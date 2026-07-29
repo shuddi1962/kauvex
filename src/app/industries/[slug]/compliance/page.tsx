@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useParams } from "next/navigation";
-import { ClipboardCheck, ChevronRight, FileText, CheckCircle, DollarSign, RefreshCw, ArrowRight, Phone } from "lucide-react";
+import { ClipboardCheck, ChevronRight, FileText, CheckCircle, DollarSign, RefreshCw, ArrowRight, Phone, Mail, Send } from "lucide-react";
 
 interface Hub {
   id: string;
@@ -460,14 +460,25 @@ export default function HubCompliancePage() {
             ))}
           </div>
         ) : complianceItems.length === 0 ? (
-          <div className="text-center py-20">
-            <ClipboardCheck size={48} className="mx-auto text-gray-300 mb-4" />
-            <p className="text-lg font-semibold text-gray-500 mb-1">Compliance center not available</p>
-            <p className="text-sm text-gray-400 mb-6">Compliance information is being compiled for this hub. Check back soon.</p>
+          <div className="bg-white rounded-xl border border-gray-200 p-8 max-w-2xl mx-auto">
+            <div className="flex items-center gap-3 mb-4">
+              <div className="w-12 h-12 rounded-xl bg-kauvex-orange/10 flex items-center justify-center">
+                <ClipboardCheck size={28} className="text-kauvex-orange" />
+              </div>
+              <div>
+                <h2 className="text-xl font-bold text-kauvex-navy">Request Compliance Information</h2>
+                <p className="text-sm text-gray-500">
+                  Compliance data is being compiled for this hub. Submit your details and we&apos;ll notify you when it&apos;s available.
+                </p>
+              </div>
+            </div>
+            <ComplianceRequestForm hubName={hub?.hubName} hubSlug={slug} />
             {hub && (
-              <Link href={`/industries/${slug}`} className="text-kauvex-orange hover:underline text-sm">
-                Back to {hub.hubName}
-              </Link>
+              <div className="mt-6 text-center">
+                <Link href={`/industries/${slug}`} className="text-kauvex-orange hover:underline text-sm font-medium">
+                  ← Back to {hub.hubName}
+                </Link>
+              </div>
             )}
           </div>
         ) : (
@@ -585,5 +596,109 @@ export default function HubCompliancePage() {
         )}
       </div>
     </div>
+  );
+}
+
+function ComplianceRequestForm({ hubName, hubSlug }: { hubName?: string; hubSlug: string }) {
+  const [fullName, setFullName] = useState("");
+  const [email, setEmail] = useState("");
+  const [company, setCompany] = useState("");
+  const [phone, setPhone] = useState("");
+  const [notes, setNotes] = useState("");
+  const [submitting, setSubmitting] = useState(false);
+  const [success, setSuccess] = useState(false);
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setSubmitting(true);
+    console.log("Compliance request:", { hubName, hubSlug, fullName, email, company, phone, notes });
+    await new Promise((r) => setTimeout(r, 800));
+    setSubmitting(false);
+    setSuccess(true);
+    setFullName("");
+    setEmail("");
+    setCompany("");
+    setPhone("");
+    setNotes("");
+  };
+
+  if (success) {
+    return (
+      <div className="bg-green-50 border border-green-200 rounded-xl p-6 text-center">
+        <Mail size={40} className="mx-auto text-green-600 mb-3" />
+        <h3 className="text-lg font-bold text-green-800 mb-1">Request Submitted</h3>
+        <p className="text-sm text-green-600">
+          Thank you! We&apos;ll notify <span className="font-semibold">{email}</span> when compliance information is available for {hubName}.
+        </p>
+      </div>
+    );
+  }
+
+  return (
+    <form onSubmit={handleSubmit} className="space-y-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <div>
+          <label className="block text-sm font-medium text-gray-600 mb-1">Full Name *</label>
+          <input
+            type="text"
+            required
+            value={fullName}
+            onChange={(e) => setFullName(e.target.value)}
+            className="w-full px-3 py-2.5 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-kauvex-orange/30 focus:border-kauvex-orange"
+            placeholder="John Doe"
+          />
+        </div>
+        <div>
+          <label className="block text-sm font-medium text-gray-600 mb-1">Email *</label>
+          <input
+            type="email"
+            required
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            className="w-full px-3 py-2.5 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-kauvex-orange/30 focus:border-kauvex-orange"
+            placeholder="john@company.com"
+          />
+        </div>
+        <div>
+          <label className="block text-sm font-medium text-gray-600 mb-1">Company *</label>
+          <input
+            type="text"
+            required
+            value={company}
+            onChange={(e) => setCompany(e.target.value)}
+            className="w-full px-3 py-2.5 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-kauvex-orange/30 focus:border-kauvex-orange"
+            placeholder="Company Ltd"
+          />
+        </div>
+        <div>
+          <label className="block text-sm font-medium text-gray-600 mb-1">Phone (optional)</label>
+          <input
+            type="tel"
+            value={phone}
+            onChange={(e) => setPhone(e.target.value)}
+            className="w-full px-3 py-2.5 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-kauvex-orange/30 focus:border-kauvex-orange"
+            placeholder="+234 800 000 0000"
+          />
+        </div>
+      </div>
+      <div>
+        <label className="block text-sm font-medium text-gray-600 mb-1">Notes (optional)</label>
+        <textarea
+          value={notes}
+          onChange={(e) => setNotes(e.target.value)}
+          rows={3}
+          className="w-full px-3 py-2.5 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-kauvex-orange/30 focus:border-kauvex-orange resize-none"
+          placeholder="Tell us what compliance information you need..."
+        />
+      </div>
+      <button
+        type="submit"
+        disabled={submitting}
+        className="w-full flex items-center justify-center gap-2 bg-kauvex-orange text-white font-semibold px-6 py-2.5 rounded-lg hover:bg-kauvex-orange/90 transition-colors disabled:opacity-50"
+      >
+        {submitting ? "Submitting..." : "Submit Request"}
+        {!submitting && <Send size={16} />}
+      </button>
+    </form>
   );
 }

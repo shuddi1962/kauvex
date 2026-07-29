@@ -249,7 +249,25 @@ export default function VendorSettingsPage() {
                 className="w-full h-10 px-3 text-sm border border-gray-200 rounded-lg focus:ring-2 focus:ring-purple-400 focus:border-purple-400 outline-none" />
             </div>
           </div>
-          <Button variant="outline" size="sm" onClick={() => alert("Password update feature coming soon")}>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={async () => {
+              const currentPw = (document.querySelector<HTMLInputElement>('input[placeholder="Enter current password"]'))?.value;
+              const newPw = (document.querySelector<HTMLInputElement>('input[placeholder="Enter new password"]'))?.value;
+              if (!currentPw || !newPw) { alert("Please enter both current and new passwords."); return; }
+              if (newPw.length < 8) { alert("New password must be at least 8 characters."); return; }
+              try {
+                const { error } = await (await import("@/lib/insforge")).insforge.auth.updateUser({ password: newPw });
+                if (error) throw error;
+                alert("Password updated successfully.");
+                (document.querySelector<HTMLInputElement>('input[placeholder="Enter current password"]'))!.value = "";
+                (document.querySelector<HTMLInputElement>('input[placeholder="Enter new password"]'))!.value = "";
+              } catch {
+                alert("Failed to update password. Please verify your current password.");
+              }
+            }}
+          >
             Update Password
           </Button>
         </div>

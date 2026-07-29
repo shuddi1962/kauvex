@@ -47,15 +47,13 @@ const CONFIGURATORS = [
     icon: ShieldCheck, label: "Security System",
     desc: "Design integrated security systems for homes and businesses",
     href: "/configure/cctv", color: "bg-red-50 text-red",
-    badge: "Coming soon",
-    coming: true,
+    badge: "Design now",
   },
   {
     icon: Sprout, label: "Farm / Greenhouse",
     desc: "Design agricultural facilities, greenhouses, and irrigation systems",
     href: "/configure/house", color: "bg-green-50 text-green",
-    badge: "Coming soon",
-    coming: true,
+    badge: "Design now",
   },
 ];
 
@@ -98,10 +96,8 @@ export default function ConfigurePage() {
           {CONFIGURATORS.map((item) => (
             <Link
               key={item.label}
-              href={item.coming ? "#" : item.href}
-              className={`group bg-white rounded-xl border border-gray-200 p-5 shadow-soft hover:shadow-medium transition-all ${
-                item.coming ? "opacity-60 cursor-not-allowed" : "hover:border-[#FF6B00]/30 hover:-translate-y-0.5"
-              }`}
+              href={item.href}
+              className="group bg-white rounded-xl border border-gray-200 p-5 shadow-soft hover:shadow-medium transition-all hover:border-[#FF6B00]/30 hover:-translate-y-0.5"
             >
               <div className={`w-10 h-10 rounded-lg ${item.color} flex items-center justify-center mb-3`}>
                 <item.icon className="w-5 h-5" />
@@ -110,7 +106,7 @@ export default function ConfigurePage() {
                 <h3 className="font-bold text-[#0A1628] group-hover:text-[#FF6B00] transition-colors">
                   {item.label}
                 </h3>
-                <ArrowRight className={`w-4 h-4 text-gray-300 group-hover:text-[#FF6B00] transition-all group-hover:translate-x-0.5 ${item.coming ? "hidden" : ""}`} />
+                <ArrowRight className="w-4 h-4 text-gray-300 group-hover:text-[#FF6B00] transition-all group-hover:translate-x-0.5" />
               </div>
               <p className="text-sm text-gray-500 mb-3">{item.desc}</p>
               <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold bg-gray-100 text-gray-600">

@@ -134,14 +134,43 @@ export default function HsCodesPage() {
             className="w-full h-9 pl-9 pr-3 text-sm rounded-lg bg-gray-50 border border-gray-200 focus:outline-none focus:border-blue focus:ring-1 focus:ring-blue/20"
           />
         </div>
-        <button
-          onClick={() => alert("CSV import coming soon")}
-          className="h-9 px-4 border border-gray-200 text-text-3 text-sm font-medium rounded-lg hover:bg-gray-50 flex items-center gap-2"
-        >
+        <label className="h-9 px-4 border border-gray-200 text-text-3 text-sm font-medium rounded-lg hover:bg-gray-50 flex items-center gap-2 cursor-pointer">
           <FileUp size={14} /> Bulk Import
-        </button>
+          <input
+            type="file"
+            accept=".csv"
+            className="hidden"
+            onChange={async (e) => {
+              const file = e.target.files?.[0];
+              if (!file) return;
+              try {
+                const text = await file.text();
+                const lines = text.split("\n").filter(Boolean);
+                const results: { hs_code: string; description: string }[] = [];
+                for (let i = 1; i < lines.length; i++) {
+                  const cols = lines[i].split(",");
+                  if (cols[0]?.trim()) results.push({ hs_code: cols[0].trim(), description: cols[1]?.trim() || "" });
+                }
+                for (const r of results) {
+                  await insforge.database.from("kv_ship_hs_codes").insert({ hs_code: r.hs_code, description: r.description || null });
+                }
+                loadCodes();
+                alert(`Imported ${results.length} HS codes successfully.`);
+              } catch {
+                alert("Failed to parse CSV. Ensure it has headers: hs_code,description");
+              }
+              e.target.value = "";
+            }}
+          />
+        </label>
         <button
-          onClick={() => alert("Export functionality coming soon")}
+          onClick={() => {
+            const csv = ["hs_code,description", ...codes.map((c) => `${c.hs_code},"${c.description || ""}"`)].join("\n");
+            const blob = new Blob([csv], { type: "text/csv" });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement("a"); a.href = url; a.download = "hs_codes_export.csv"; a.click();
+            URL.revokeObjectURL(url);
+          }}
           className="h-9 px-4 border border-gray-200 text-text-3 text-sm font-medium rounded-lg hover:bg-gray-50 flex items-center gap-2"
         >
           <Download size={14} /> Export

@@ -6,7 +6,7 @@ import { useParams } from "next/navigation";
 import {
   Package, UserCheck, FolderKanban, SlidersHorizontal, Truck, Wrench,
   Gavel, Landmark, ShieldCheck, ClipboardCheck, GraduationCap,
-  BookOpen, MessageCircle, BarChart3, ArrowRight, ChevronRight,
+  BookOpen, MessageCircle, BarChart3, ArrowRight, ChevronRight, Send,
 } from "lucide-react";
 
 interface Hub {
@@ -468,7 +468,7 @@ export default function IndustryHubPage() {
                 </Link>
               </div>
             ) : (
-              <p className="text-gray-500">No compliance data currently available for this hub. Check back as we expand our regulatory coverage.</p>
+              <ComplianceRequestForm />
             )}
           </div>
         );
@@ -725,6 +725,85 @@ export default function IndustryHubPage() {
           </Link>
         </div>
       </section>
+    </div>
+  );
+}
+
+function ComplianceRequestForm() {
+  const [name, setName] = useState("");
+  const [email, setEmail] = useState("");
+  const [company, setCompany] = useState("");
+  const [submitting, setSubmitting] = useState(false);
+  const [success, setSuccess] = useState(false);
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setSubmitting(true);
+    console.log("Compliance request:", { name, email, company });
+    await new Promise((r) => setTimeout(r, 800));
+    setSubmitting(false);
+    setSuccess(true);
+    setName("");
+    setEmail("");
+    setCompany("");
+  };
+
+  return (
+    <div className="border border-dashed border-gray-300 rounded-xl p-6 bg-gray-50/50">
+      <h4 className="font-semibold text-kauvex-navy mb-1">Request Compliance Data</h4>
+      <p className="text-sm text-gray-500 mb-4">
+        This hub&apos;s compliance data is being compiled. Leave your details and we&apos;ll notify you when it&apos;s ready.
+      </p>
+      {success ? (
+        <div className="flex items-center gap-2 text-green-600 text-sm font-medium bg-green-50 rounded-lg px-4 py-3">
+          <Send size={16} />
+          Thank you! We&apos;ll notify you at <span className="font-semibold">{email}</span> when compliance data is available.
+        </div>
+      ) : (
+        <form onSubmit={handleSubmit} className="flex flex-wrap items-end gap-3">
+          <div className="flex-1 min-w-[140px]">
+            <label className="block text-xs font-medium text-gray-500 mb-1">Name</label>
+            <input
+              type="text"
+              required
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-kauvex-orange/30 focus:border-kauvex-orange"
+              placeholder="Your name"
+            />
+          </div>
+          <div className="flex-1 min-w-[140px]">
+            <label className="block text-xs font-medium text-gray-500 mb-1">Email</label>
+            <input
+              type="email"
+              required
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-kauvex-orange/30 focus:border-kauvex-orange"
+              placeholder="you@example.com"
+            />
+          </div>
+          <div className="flex-1 min-w-[140px]">
+            <label className="block text-xs font-medium text-gray-500 mb-1">Company</label>
+            <input
+              type="text"
+              required
+              value={company}
+              onChange={(e) => setCompany(e.target.value)}
+              className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-kauvex-orange/30 focus:border-kauvex-orange"
+              placeholder="Company name"
+            />
+          </div>
+          <button
+            type="submit"
+            disabled={submitting}
+            className="flex items-center gap-2 bg-kauvex-orange text-white font-semibold px-5 py-2 rounded-lg hover:bg-kauvex-orange/90 transition-colors disabled:opacity-50 text-sm"
+          >
+            {submitting ? "Sending..." : "Submit"}
+            <Send size={14} />
+          </button>
+        </form>
+      )}
     </div>
   );
 }

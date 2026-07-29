@@ -258,10 +258,82 @@ export default function AdminFuelPage() {
           </div>
         )}
 
-        {activeTab !== "Overview" && (
+        {activeTab === "Live Prices" && (
+          <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
+            {prices.length === 0 ? (
+              <div className="text-center py-12">
+                <BarChart3 className="w-12 h-12 mx-auto mb-4 text-gray-300" />
+                <p className="text-gray-500">No live price data available. Data will populate once fuel tracking begins.</p>
+              </div>
+            ) : (
+              <table className="w-full text-sm">
+                <thead>
+                  <tr className="bg-gray-50 border-b border-gray-200">
+                    <th className="text-left p-3 font-semibold text-text-4">Country</th>
+                    <th className="text-left p-3 font-semibold text-text-4">City</th>
+                    <th className="text-left p-3 font-semibold text-text-4">Fuel Type</th>
+                    <th className="text-right p-3 font-semibold text-text-4">Price</th>
+                    <th className="text-right p-3 font-semibold text-text-4">Last Updated</th>
+                    <th className="text-center p-3 font-semibold text-text-4">Source</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {prices.map((p, i) => (
+                    <tr key={i} className="border-b border-gray-100 hover:bg-gray-50">
+                      <td className="p-3 font-medium text-text-1">{p.country}</td>
+                      <td className="p-3 text-text-2">{p.city}</td>
+                      <td className="p-3 text-text-2">{p.fuelType}</td>
+                      <td className="p-3 text-right font-mono">₦{p.price.toFixed(2)}</td>
+                      <td className="p-3 text-right text-text-4">{new Date(p.lastUpdated).toLocaleDateString()}</td>
+                      <td className="p-3 text-center">
+                        <span className={`inline-block w-2 h-2 rounded-full ${p.staleness === "green" ? "bg-green-500" : p.staleness === "amber" ? "bg-amber-500" : "bg-red-500"}`} />
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            )}
+          </div>
+        )}
+        {activeTab === "Surcharge Rules" && (
+          <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
+            {rules.length === 0 ? (
+              <div className="text-center py-12">
+                <BarChart3 className="w-12 h-12 mx-auto mb-4 text-gray-300" />
+                <p className="text-gray-500">No surcharge rules configured. Create rules to automate fuel surcharge calculations.</p>
+              </div>
+            ) : (
+              <table className="w-full text-sm">
+                <thead>
+                  <tr className="bg-gray-50 border-b border-gray-200">
+                    <th className="text-left p-3 font-semibold text-text-4">Name</th>
+                    <th className="text-left p-3 font-semibold text-text-4">Origin</th>
+                    <th className="text-left p-3 font-semibold text-text-4">Destination</th>
+                    <th className="text-center p-3 font-semibold text-text-4">Status</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {rules.map((r) => (
+                    <tr key={r.id} className="border-b border-gray-100 hover:bg-gray-50">
+                      <td className="p-3 font-medium text-text-1">{r.name}</td>
+                      <td className="p-3 text-text-2">{r.origin}</td>
+                      <td className="p-3 text-text-2">{r.destination}</td>
+                      <td className="p-3 text-center">
+                        <span className={`text-xs font-medium px-2 py-0.5 rounded-full ${r.active ? "bg-green-100 text-green-800" : "bg-gray-100 text-gray-500"}`}>
+                          {r.active ? "Active" : "Inactive"}
+                        </span>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            )}
+          </div>
+        )}
+        {activeTab !== "Overview" && activeTab !== "Live Prices" && activeTab !== "Surcharge Rules" && (
           <div className="bg-white rounded-xl p-12 shadow-sm border border-gray-100 text-center">
             <BarChart3 className="w-12 h-12 mx-auto mb-4 text-gray-300" />
-            <p className="text-gray-500">{activeTab} tab — coming soon</p>
+            <p className="text-gray-500">{activeTab} details will appear here once data is collected from active routes and carriers.</p>
           </div>
         )}
       </div>

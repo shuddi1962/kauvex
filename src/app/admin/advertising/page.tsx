@@ -230,7 +230,17 @@ export default function AdminAdvertisingPage() {
               </select>
             </div>
             <div className="flex items-center gap-2 ml-auto">
-              <Button variant="outline" size="sm" onClick={() => alert("Export feature coming soon")}><Download size={14} className="mr-1" /> Export</Button>
+              <Button variant="outline" size="sm" onClick={() => {
+                const csv = ["Campaign,Type,Status,Spend,Revenue,ROAS,Impressions,Clicks",
+                  ...campaigns.map((c: any) =>
+                    `"${c.name}","${c.type}",${c.status},${c.spend},${c.revenue},${c.roas},${c.impressions},${c.clicks}`
+                  ),
+                ].join("\n");
+                const blob = new Blob([csv], { type: "text/csv" });
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement("a"); a.href = url; a.download = "campaigns_export.csv"; a.click();
+                URL.revokeObjectURL(url);
+              }}><Download size={14} className="mr-1" /> Export</Button>
               <Button variant="outline" size="sm" onClick={() => { setFilterStatus("all"); setFilterType("all"); setSearch(""); }}><RefreshCw size={14} className="mr-1" /> Reset</Button>
               <Button size="sm" onClick={() => setShowSettings(!showSettings)}><Settings size={14} className="mr-1" /> Ad Settings</Button>
             </div>

@@ -486,8 +486,8 @@ export default function ProductDetailPage({ params }: { params: { slug: string }
                 <div className="w-full max-w-2xl mx-auto aspect-video bg-navy rounded-2xl flex items-center justify-center">
                   <div className="text-center">
                     <PlayCircle size={64} className="text-white/50 mx-auto mb-3" />
-                    <p className="text-white/70 text-sm">Product video coming soon</p>
-                    <p className="text-white/40 text-xs mt-1">Video reviews and demos will appear here</p>
+                    <p className="text-white/70 text-sm">No video content available</p>
+                    <p className="text-white/40 text-xs mt-1">Video reviews and demos will appear here once uploaded</p>
                   </div>
                 </div>
               </div>

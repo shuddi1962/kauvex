@@ -7233,6 +7233,7 @@ model KaiMessage {
   createdAt        DateTime @default(now()) @map("created_at")
 
   conversation KaiConversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+  feedback       KaiFeedback[]
 
   @@index([conversationId], map: "idx_kai_msg_conv")
   @@index([createdAt], map: "idx_kai_msg_created")

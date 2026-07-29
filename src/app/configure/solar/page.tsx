@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import Link from "next/link";
 import {
   ArrowLeft, ArrowRight, Check, Sun, MapPin, Zap, Calculator,
@@ -53,6 +53,13 @@ export default function SolarConfiguratorPage() {
   const [inverterBrand, setInverterBrand] = useState("standard");
   const [batteryBrand, setBatteryBrand] = useState("standard");
   const [calculated, setCalculated] = useState<{ panelCount: number; inverterKva: number; batteryKwh: number } | null>(null);
+  const [kaiRecommendations, setKaiRecommendations] = useState<string[]>([]);
+  const [kaiLoading, setKaiLoading] = useState(false);
+  const demoRecommendations = [
+    "Based on your 3-bedroom usage, a 5kVA hybrid inverter with 4.8kWh lithium battery is optimal — covers 90% of typical loads with 6h backup",
+    "Your location in Port Harcourt (Zone B — 4.5 kWh/m²/day) can generate ~20kWh/day from a 5kW array, exceeding your 12kWh daily consumption",
+    "Adding a 450W solar panel (₦165,000) would reduce grid dependency by an additional 15% and pay for itself in 18 months",
+  ];
 
   const addAppliance = (app: typeof APPLIANCES[0]) => {
     setAppliances((prev) => {
@@ -97,6 +104,18 @@ export default function SolarConfiguratorPage() {
       default: return false;
     }
   };
+
+  useEffect(() => {
+    if (step === 7) {
+      setKaiLoading(true);
+      setKaiRecommendations([]);
+      const timer = setTimeout(() => {
+        setKaiRecommendations(demoRecommendations);
+        setKaiLoading(false);
+      }, 1500);
+      return () => clearTimeout(timer);
+    }
+  }, [step]);
 
   const inputCls = "w-full h-10 rounded-lg border border-gray-200 bg-white px-3 text-sm text-[#0A1628] placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-[#FF6B00]/20 focus:border-[#FF6B00] transition-all";
   const labelCls = "block text-xs font-semibold text-gray-500 mb-1.5";
@@ -456,6 +475,30 @@ export default function SolarConfiguratorPage() {
                   <p className="text-xs font-semibold text-amber-700">Matching Installers</p>
                   <p className="text-sm text-amber-800 mt-1">3 verified solar installers available in {city || "your area"}</p>
                   <button className="mt-2 text-xs font-semibold text-[#FF6B00] hover:underline">Request installation quotes →</button>
+                </div>
+
+                <div className="rounded-xl border border-gray-200 overflow-hidden">
+                  <div className="bg-gradient-to-r from-[#FF6B00] to-[#E55A00] px-5 py-3 flex items-center justify-between">
+                    <h3 className="font-semibold text-sm text-white">🤖 KAI Recommendation</h3>
+                    <span className="text-[10px] font-bold text-white/80 bg-white/20 px-2 py-0.5 rounded-full">AI-Powered</span>
+                  </div>
+                  <div className="p-5">
+                    {kaiLoading ? (
+                      <div className="flex items-center gap-2 text-sm text-gray-500">
+                        <Loader2 className="w-4 h-4 animate-spin text-[#FF6B00]" />
+                        KAI is analyzing your configuration...
+                      </div>
+                    ) : kaiRecommendations.length > 0 ? (
+                      <ul className="space-y-3">
+                        {kaiRecommendations.map((rec, i) => (
+                          <li key={i} className="flex gap-2 text-sm text-[#0A1628]">
+                            <span className="text-[#FF6B00] font-bold shrink-0 mt-0.5">•</span>
+                            <span>{rec}</span>
+                          </li>
+                        ))}
+                      </ul>
+                    ) : null}
+                  </div>
                 </div>
               </div>
             </div>

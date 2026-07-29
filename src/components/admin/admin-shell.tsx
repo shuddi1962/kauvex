@@ -290,6 +290,7 @@ const topNavSections: { key: SectionKey; label: string; icon: React.ElementType;
         { label: "Audit Log", href: "/admin/audit-log" },
         { label: "AI Tools", href: "/admin/ai" },
         { label: "AI Assistant", href: "/admin/ai-assistant" },
+        { label: "KAI Management", href: "/admin/kai", badge: "New" },
         { label: "Chat System", href: "/admin/chat" },
         { label: "USSD Payments", href: "/admin/ussd", badge: "New" },
         { label: "Sustainability", href: "/admin/sustainability", badge: "New" },

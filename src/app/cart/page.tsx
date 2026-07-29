@@ -30,6 +30,7 @@ import { useCurrencyStore } from "@/store/currency-store";
 import { products } from "@/lib/demo-data";
 import ProductCard from "@/components/product/product-card";
 import InstallmentBadge from "@/components/bnpl/InstallmentBadge";
+import InstallationCostBreakdown from "@/components/kps/installation-cost-breakdown";
 
 const branches = [
   { id: "lagos", name: "Lagos" },
@@ -76,6 +77,23 @@ export default function CartPage() {
   { id: "training", label: "User Training", fee: 10000, duration: "1 hour", icon: CheckCircle },
   { id: "warranty", label: "Extended Warranty (1yr)", fee: 30000, duration: "12 months", icon: Shield },
 ];
+
+const demoInstallationCost = {
+  baseFee: 15000,
+  distanceSurcharge: 3500,
+  travelTimeCost: 5000,
+  fuelCost: 1200,
+  tollCost: 300,
+  consumablesCost: 2500,
+  complexitySurcharge: 0,
+  totalInstallation: 27500,
+  professionalName: "Tunde Adeyemi",
+  professionalRating: 4.9,
+  distanceFromCustomerKm: 8.3,
+  estimatedTravelMinutes: 25,
+  estimatedJobDuration: "3h 30m",
+  vehicleType: "car",
+};
 
 useEffect(() => setMounted(true), []);
 
@@ -280,6 +298,70 @@ useEffect(() => setMounted(true), []);
                 </div>
               </div>
             )}
+
+            {/* Professional Services */}
+            <div className="bg-white rounded-xl border border-border p-5">
+              <div className="flex items-center justify-between mb-4">
+                <div className="flex items-center gap-2">
+                  <Wrench size={16} className="text-blue" />
+                  <h3 className="font-syne font-bold text-sm">Professional Services</h3>
+                </div>
+                <button
+                  onClick={() => setShowServices(!showServices)}
+                  className="text-[10px] text-blue hover:underline"
+                >
+                  {showServices ? "Hide" : "Show"}
+                </button>
+              </div>
+              {showServices && (
+                <div className="space-y-3">
+                  {serviceOptions.map((service) => {
+                    const Icon = service.icon;
+                    const isSelected = !!selectedServices[service.id];
+                    return (
+                      <label
+                        key={service.id}
+                        className={`flex items-center gap-3 p-3 rounded-lg border cursor-pointer transition-colors ${
+                          isSelected
+                            ? "border-blue bg-blue-50"
+                            : "border-border hover:border-blue/50"
+                        }`}
+                      >
+                        <input
+                          type="checkbox"
+                          checked={isSelected}
+                          onChange={(e) => {
+                            if (e.target.checked) {
+                              setSelectedServices((prev) => ({
+                                ...prev,
+                                [service.id]: service,
+                              }));
+                            } else {
+                              const { [service.id]: _, ...rest } = selectedServices;
+                              setSelectedServices(rest);
+                            }
+                          }}
+                          className="accent-blue"
+                        />
+                        <Icon size={16} className="text-text-3 shrink-0" />
+                        <div className="flex-1 min-w-0">
+                          <p className="text-xs font-semibold text-text-1">{service.label}</p>
+                          <p className="text-[10px] text-text-4">{service.duration}</p>
+                        </div>
+                        <span className="text-xs font-bold text-text-1">₦{service.fee.toLocaleString()}</span>
+                      </label>
+                    );
+                  })}
+
+                  {/* Installation Cost Breakdown */}
+                  {selectedServices["installation"] && (
+                    <div className="mt-4">
+                      <InstallationCostBreakdown cost={demoInstallationCost} />
+                    </div>
+                  )}
+                </div>
+              )}
+            </div>
           </div>
 
           {/* Order Summary Sidebar */}

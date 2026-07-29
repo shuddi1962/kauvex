@@ -143,6 +143,27 @@ END;
 $$;
 
 -- ============================================================
+-- KAI5 — CONFIGURATION (API keys, settings — admin-managed)
+-- ============================================================
+CREATE TABLE kv_kai_config (
+  id         UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  config_key VARCHAR(100) UNIQUE NOT NULL,
+  config_value TEXT NOT NULL,
+  description TEXT,
+  is_secret  BOOLEAN DEFAULT true,
+  updated_at TIMESTAMPTZ DEFAULT now()
+);
+
+INSERT INTO kv_kai_config (config_key, config_value, description, is_secret) VALUES
+  ('openrouter_api_key', '', 'OpenRouter API key for AI chat completion', true),
+  ('openai_embedding_api_key', '', 'OpenAI API key for text-embedding-3-small', true),
+  ('google_maps_api_key', '', 'Google Maps API key for Distance Matrix', true),
+  ('kai_default_model', 'openai/gpt-4o-mini', 'Default LLM model for KAI responses', false),
+  ('kai_embedding_model', 'text-embedding-3-small', 'Embedding model for vector search', false),
+  ('kai_max_context_chunks', '5', 'Number of knowledge base chunks per query', false),
+  ('kai_free_radius_km', '10', 'Default free travel radius for professionals (km)', false);
+
+-- ============================================================
 -- SEED: Platform knowledge base entries
 -- ============================================================
 INSERT INTO kv_kai_knowledge_chunks (category, subcategory, title, content, metadata) VALUES

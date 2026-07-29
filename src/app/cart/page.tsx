@@ -19,6 +19,9 @@ import {
   Heart,
   X,
   Loader2,
+  Wrench,
+  CheckCircle,
+  Clock,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -64,8 +67,17 @@ export default function CartPage() {
   const [giftWrap, setGiftWrap] = useState(false);
   const [estState, setEstState] = useState("Lagos");
   const [estCity, setEstCity] = useState("");
+  const [showServices, setShowServices] = useState(true);
+  const [selectedServices, setSelectedServices] = useState<Record<string, any>>({});
 
-  useEffect(() => setMounted(true), []);
+  const serviceOptions = [
+  { id: "installation", label: "Standard Installation", fee: 25000, duration: "2 hours", icon: Wrench },
+  { id: "configuration", label: "Configuration & Setup", fee: 15000, duration: "1 hour", icon: Clock },
+  { id: "training", label: "User Training", fee: 10000, duration: "1 hour", icon: CheckCircle },
+  { id: "warranty", label: "Extended Warranty (1yr)", fee: 30000, duration: "12 months", icon: Shield },
+];
+
+useEffect(() => setMounted(true), []);
 
   const subtotal = getTotal();
   const giftWrapFee = giftWrap ? 2500 : 0;

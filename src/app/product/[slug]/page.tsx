@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, useParams } from "next/navigation";
 import Link from "next/link";
 import {
   Star,
@@ -56,8 +56,10 @@ const demoQA = [
   { id: "3", question: "Is this compatible with existing systems?", askedBy: "Customer", date: "2026-02-10", answer: "Yes, this product follows industry standards and is compatible with most existing setups. Contact our tech team for specific compatibility questions.", answeredBy: "KAUVEX Support", answerDate: "2026-02-10" },
 ];
 
-export default function ProductDetailPage({ params }: { params: { slug: string } }) {
-  const product = products.find((p) => p.slug === params.slug) || products[0];
+export default function ProductDetailPage() {
+  const params = useParams();
+  const slug = typeof params.slug === "string" ? params.slug : "";
+  const product = products.find((p) => p.slug === slug) || products[0];
   const router = useRouter();
   const { addItem } = useCartStore();
   const { toggleWishlist, wishlistItems, toggleCompare } = useUIStore();

@@ -7255,3 +7255,160 @@ model KaiFeedback {
   @@index([rating], map: "idx_kai_fb_rating")
   @@map("kv_kai_feedback")
 }
+
+// ============================================================
+// KAI PHASE 2 — Multi-Agent Workforce + Subscriptions
+// ============================================================
+
+model KaiBusiness {
+  id           String   @id @default(uuid()) @db.Uuid
+  companyName  String   @map("company_name") @db.VarChar(200)
+  industry     String?  @db.VarChar(100)
+  staffCount   Int?     @map("staff_count")
+  description  String?  @db.Text
+  products     String?  @db.Text
+  services     String?  @db.Text
+  locations    String[] @db.Text
+  website      String?  @db.Text
+  logoUrl      String?  @map("logo_url") @db.Text
+  contactEmail String?  @map("contact_email") @db.VarChar(200)
+  contactPhone String?  @map("contact_phone") @db.VarChar(50)
+  onboarded    Boolean  @default(false)
+  metadata     Json     @default("{}")
+  userId       String?  @unique @map("user_id") @db.Uuid
+  createdAt    DateTime @default(now()) @map("created_at")
+  updatedAt    DateTime @default(now()) @updatedAt @map("updated_at")
+
+  agents        KaiAgent[]
+  subscriptions KaiSubscription[]
+
+  @@index([userId], map: "idx_kai_biz_user")
+  @@index([industry], map: "idx_kai_biz_industry")
+  @@map("kv_kai_businesses")
+}
+
+model KaiPlan {
+  id           String   @id @default(uuid()) @db.Uuid
+  name         String   @db.VarChar(100)
+  slug         String   @unique @db.VarChar(100)
+  description  String?  @db.Text
+  priceMonthly Decimal  @map("price_monthly") @db.Decimal(10, 2)
+  priceYearly  Decimal? @map("price_yearly") @db.Decimal(10, 2)
+  currency     String   @default("USD") @db.VarChar(10)
+  maxAgents    Int      @default(1) @map("max_agents")
+  maxKbSizeMb  Int      @default(100) @map("max_kb_size_mb")
+  features     Json     @default("[]")
+  isActive     Boolean  @default(true) @map("is_active")
+  sortOrder    Int      @default(0) @map("sort_order")
+  createdAt    DateTime @default(now()) @map("created_at")
+
+  subscriptions KaiSubscription[]
+
+  @@map("kv_kai_plans")
+}
+
+model KaiSubscription {
+  id                String    @id @default(uuid()) @db.Uuid
+  businessId        String    @map("business_id") @db.Uuid
+  planId            String    @map("plan_id") @db.Uuid
+  status            String    @default("active") @db.VarChar(20)
+  billingCycle      String    @default("monthly") @map("billing_cycle") @db.VarChar(10)
+  currentPeriodStart DateTime? @map("current_period_start")
+  currentPeriodEnd   DateTime? @map("current_period_end")
+  cancelledAt       DateTime? @map("cancelled_at")
+  autoRenew         Boolean   @default(true) @map("auto_renew")
+  metadata          Json      @default("{}")
+  createdAt         DateTime  @default(now()) @map("created_at")
+  updatedAt         DateTime  @default(now()) @updatedAt @map("updated_at")
+
+  business KaiBusiness @relation(fields: [businessId], references: [id], onDelete: Cascade)
+  plan     KaiPlan     @relation(fields: [planId], references: [id])
+
+  @@index([businessId], map: "idx_kai_sub_biz")
+  @@index([status], map: "idx_kai_sub_status")
+  @@map("kv_kai_subscriptions")
+}
+
+model KaiAgent {
+  id             String   @id @default(uuid()) @db.Uuid
+  businessId     String   @map("business_id") @db.Uuid
+  name           String   @db.VarChar(100)
+  role           String   @db.VarChar(100)
+  avatar         String?  @db.VarChar(10)
+  color          String?  @db.VarChar(30)
+  description    String?  @db.Text
+  systemPrompt   String?  @map("system_prompt") @db.Text
+  knowledgeScope String   @default("business") @map("knowledge_scope") @db.VarChar(20)
+  model          String   @default("openai/gpt-4o-mini") @db.VarChar(100)
+  temperature    Decimal  @default(0.7) @db.Decimal(3, 2)
+  isActive       Boolean  @default(true) @map("is_active")
+  metadata       Json     @default("{}")
+  createdAt      DateTime @default(now()) @map("created_at")
+  updatedAt      DateTime @default(now()) @updatedAt @map("updated_at")
+
+  business    KaiBusiness            @relation(fields: [businessId], references: [id], onDelete: Cascade)
+  permissions KaiAgentPermission[]
+
+  @@index([businessId], map: "idx_kai_agent_biz")
+  @@index([role], map: "idx_kai_agent_role")
+  @@map("kv_kai_agents")
+}
+
+model KaiAgentPermission {
+  id           String   @id @default(uuid()) @db.Uuid
+  agentId      String   @map("agent_id") @db.Uuid
+  resourceType String   @map("resource_type") @db.VarChar(50)
+  canView      Boolean  @default(false) @map("can_view")
+  canCreate    Boolean  @default(false) @map("can_create")
+  canEdit      Boolean  @default(false) @map("can_edit")
+  canDelete    Boolean  @default(false) @map("can_delete")
+  createdAt    DateTime @default(now()) @map("created_at")
+
+  agent KaiAgent @relation(fields: [agentId], references: [id], onDelete: Cascade)
+
+  @@unique([agentId, resourceType])
+  @@map("kv_kai_agent_permissions")
+}
+
+model DigitalPassport {
+  id           String   @id @default(uuid()) @db.Uuid
+  entityType   String   @map("entity_type") @db.VarChar(50)
+  entityId     String   @map("entity_id") @db.VarChar(100)
+  title        String   @db.VarChar(500)
+  status       String   @default("active") @db.VarChar(50)
+  trustScore   Decimal? @map("trust_score") @db.Decimal(5, 2)
+  qrCode       String?  @map("qr_code") @db.Text
+  passportData Json     @default("{}") @map("passport_data")
+  documents    Json     @default("[]")
+  ownerId      String?  @map("owner_id") @db.Uuid
+  isVerified   Boolean  @default(false) @map("is_verified")
+  createdAt    DateTime @default(now()) @map("created_at")
+  updatedAt    DateTime @default(now()) @updatedAt @map("updated_at")
+
+  events DigitalPassportEvent[]
+
+  @@index([entityType], map: "idx_kai_passport_type")
+  @@index([entityType, entityId], map: "idx_kai_passport_entity")
+  @@index([ownerId], map: "idx_kai_passport_owner")
+  @@index([trustScore], map: "idx_kai_passport_score")
+  @@map("kv_digital_passports")
+}
+
+model DigitalPassportEvent {
+  id           String   @id @default(uuid()) @db.Uuid
+  passportId   String   @map("passport_id") @db.Uuid
+  eventType    String   @map("event_type") @db.VarChar(100)
+  title        String   @db.VarChar(500)
+  description  String?  @db.Text
+  eventDate    DateTime @default(now()) @map("event_date")
+  performedBy  String?  @map("performed_by") @db.VarChar(200)
+  documents    Json     @default("[]")
+  metadata     Json     @default("{}")
+  createdAt    DateTime @default(now()) @map("created_at")
+
+  passport DigitalPassport @relation(fields: [passportId], references: [id], onDelete: Cascade)
+
+  @@index([passportId], map: "idx_kai_passport_event")
+  @@index([eventDate], map: "idx_kai_passport_event_date")
+  @@map("kv_digital_passport_events")
+}

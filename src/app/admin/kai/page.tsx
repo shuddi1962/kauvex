@@ -5,6 +5,8 @@ import {
   Brain, Database, MessageSquare, Settings, RefreshCw, Search,
   Plus, Trash2, Key, Globe, CheckCircle2, XCircle, Loader2,
   BookOpen, FileText, BarChart3, Clock, Zap,
+  CreditCard, Building2, Bot, Calendar,
+  ChevronDown, ChevronRight, PencilLine, X, Save,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -37,11 +39,99 @@ interface Conversation {
   updated_at: string;
 }
 
+interface Plan {
+  id: string;
+  name: string;
+  slug: string;
+  description: string | null;
+  price_monthly: number;
+  price_yearly: number | null;
+  currency: string;
+  max_agents: number;
+  max_kb_size_mb: number;
+  features: string[];
+  is_active: boolean;
+  sort_order: number;
+  created_at: string;
+}
+
+interface Subscription {
+  id: string;
+  business_id: string;
+  plan_id: string;
+  status: string;
+  billing_cycle: string;
+  current_period_start: string | null;
+  current_period_end: string | null;
+  cancelled_at: string | null;
+  auto_renew: boolean;
+  metadata: any;
+  created_at: string;
+  updated_at: string;
+  business?: { company_name: string };
+  plan?: { name: string };
+}
+
+interface Business {
+  id: string;
+  company_name: string;
+  industry: string | null;
+  staff_count: number | null;
+  description: string | null;
+  products: string | null;
+  services: string | null;
+  locations: string[];
+  website: string | null;
+  logo_url: string | null;
+  contact_email: string | null;
+  contact_phone: string | null;
+  onboarded: boolean;
+  metadata: any;
+  user_id: string | null;
+  created_at: string;
+  updated_at: string;
+  agents?: Agent[];
+}
+
+interface AgentPermission {
+  id: string;
+  agent_id: string;
+  resource_type: string;
+  can_view: boolean;
+  can_create: boolean;
+  can_edit: boolean;
+  can_delete: boolean;
+}
+
+interface Agent {
+  id: string;
+  business_id: string;
+  name: string;
+  role: string;
+  avatar: string | null;
+  color: string | null;
+  description: string | null;
+  system_prompt: string | null;
+  knowledge_scope: string;
+  model: string;
+  temperature: number;
+  is_active: boolean;
+  metadata: any;
+  created_at: string;
+  updated_at: string;
+  business?: { company_name: string };
+  permissions?: AgentPermission[];
+}
+
 const TABS = [
   { key: "dashboard", label: "Dashboard", icon: BarChart3 },
   { key: "knowledge", label: "Knowledge Base", icon: BookOpen },
   { key: "conversations", label: "Conversations", icon: MessageSquare },
   { key: "config", label: "Configuration", icon: Settings },
+  { key: "plans", label: "Plans", icon: CreditCard },
+  { key: "subscriptions", label: "Subscriptions", icon: Calendar },
+  { key: "businesses", label: "Businesses", icon: Building2 },
+  { key: "agents", label: "Agents", icon: Bot },
 ];
 
 export default function AdminKAIPage() {
@@ -57,9 +147,39 @@ export default function AdminKAIPage() {
   const [showAddForm, setShowAddForm] = useState(false);
   const [stats, setStats] = useState({ totalChunks: 0, indexedChunks: 0, totalConversations: 0, totalMessages: 0 });
 
+  const [plans, setPlans] = useState<Plan[]>([]);
+  const [plansLoading, setPlansLoading] = useState(false);
+  const [plansError, setPlansError] = useState(false);
+  const [editingPlan, setEditingPlan] = useState<string | null>(null);
+  const [editPlanForm, setEditPlanForm] = useState({ name: "", description: "", price_monthly: 0, max_agents: 1, features: "[]", is_active: true });
+  const [showAddPlan, setShowAddPlan] = useState(false);
+  const [addPlanForm, setAddPlanForm] = useState({ name: "", slug: "", description: "", price_monthly: 0, price_yearly: 0, max_agents: 1, features: "[]", is_active: true });
+
+  const [subscriptions, setSubscriptions] = useState<Subscription[]>([]);
+  const [subsLoading, setSubsLoading] = useState(false);
+  const [subsError, setSubsError] = useState(false);
+  const [expandedSub, setExpandedSub] = useState<string | null>(null);
+
+  const [businesses, setBusinesses] = useState<Business[]>([]);
+  const [bizLoading, setBizLoading] = useState(false);
+  const [bizError, setBizError] = useState(false);
+  const [expandedBiz, setExpandedBiz] = useState<string | null>(null);
+
+  const [agents, setAgents] = useState<Agent[]>([]);
+  const [agentsLoading, setAgentsLoading] = useState(false);
+  const [agentsError, setAgentsError] = useState(false);
+  const [expandedAgent, setExpandedAgent] = useState<string | null>(null);
+
   useEffect(() => {
     loadData();
   }, []);
+
+  useEffect(() => {
+    if (activeTab === "plans") loadPlans();
+    else if (activeTab === "subscriptions") loadSubscriptions();
+    else if (activeTab === "businesses") loadBusinesses();
+    else if (activeTab === "agents") loadAgents();
+  }, [activeTab]);
 
   async function loadData() {
     setLoading(true);
@@ -141,6 +261,133 @@ export default function AdminKAIPage() {
       loadData();
     } catch (e) {
       console.error("Failed to delete chunk:", e);
+    }
+  }
+
+  async function loadPlans() {
+    setPlansLoading(true);
+    setPlansError(false);
+    try {
+      const res = await fetch("/api/v1/kai/plans");
+      if (res.ok) {
+        const d = await res.json();
+        setPlans(d.plans || []);
+      } else {
+        setPlansError(true);
+      }
+    } catch {
+      setPlansError(true);
+    } finally {
+      setPlansLoading(false);
+    }
+  }
+
+  async function savePlan(planId: string) {
+    try {
+      await fetch("/api/v1/kai/plans", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ id: planId, action: "update", ...editPlanForm }),
+      });
+      setEditingPlan(null);
+      loadPlans();
+    } catch (e) {
+      console.error("Failed to save plan:", e);
+    }
+  }
+
+  async function createPlan() {
+    try {
+      await fetch("/api/v1/kai/plans", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(addPlanForm),
+      });
+      setShowAddPlan(false);
+      setAddPlanForm({ name: "", slug: "", description: "", price_monthly: 0, price_yearly: 0, max_agents: 1, features: "[]", is_active: true });
+      loadPlans();
+    } catch (e) {
+      console.error("Failed to create plan:", e);
+    }
+  }
+
+  async function loadSubscriptions() {
+    setSubsLoading(true);
+    setSubsError(false);
+    try {
+      const res = await fetch("/api/v1/kai/subscriptions?all=true");
+      if (res.ok) {
+        const d = await res.json();
+        setSubscriptions(d.subscriptions || []);
+      } else {
+        setSubsError(true);
+      }
+    } catch {
+      setSubsError(true);
+    } finally {
+      setSubsLoading(false);
+    }
+  }
+
+  async function cancelSubscription(id: string) {
+    try {
+      await fetch("/api/v1/kai/subscriptions", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ id, action: "cancel" }),
+      });
+      loadSubscriptions();
+    } catch (e) {
+      console.error("Failed to cancel subscription:", e);
+    }
+  }
+
+  async function loadBusinesses() {
+    setBizLoading(true);
+    setBizError(false);
+    try {
+      const res = await fetch("/api/v1/kai/business?all=true");
+      if (res.ok) {
+        const d = await res.json();
+        setBusinesses(d.businesses || []);
+      } else {
+        setBizError(true);
+      }
+    } catch {
+      setBizError(true);
+    } finally {
+      setBizLoading(false);
+    }
+  }
+
+  async function loadAgents() {
+    setAgentsLoading(true);
+    setAgentsError(false);
+    try {
+      const res = await fetch("/api/v1/kai/agents?all=true");
+      if (res.ok) {
+        const d = await res.json();
+        setAgents(d.agents || []);
+      } else {
+        setAgentsError(true);
+      }
+    } catch {
+      setAgentsError(true);
+    } finally {
+      setAgentsLoading(false);
+    }
+  }
+
+  async function toggleAgentStatus(agentId: string, currentStatus: boolean) {
+    try {
+      await fetch("/api/v1/kai/agents", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ id: agentId, action: "toggle-status", is_active: !currentStatus }),
+      });
+      loadAgents();
+    } catch (e) {
+      console.error("Failed to toggle agent status:", e);
     }
   }
 
@@ -410,6 +657,601 @@ export default function AdminKAIPage() {
                 </div>
               ))}
             </div>
+          </div>
+        )}
+
+        {/* PLANS TAB */}
+        {activeTab === "plans" && (
+          <div className="space-y-4">
+            <div className="flex items-center justify-between">
+              <h3 className="font-syne font-bold text-lg">Pricing Plans</h3>
+              <Button size="sm" onClick={() => setShowAddPlan(!showAddPlan)}>
+                <Plus size={14} className="mr-1" /> Add Plan
+              </Button>
+            </div>
+
+            {showAddPlan && (
+              <div className="bg-off-white rounded-xl border border-border p-4 space-y-3">
+                <div className="grid grid-cols-2 gap-3">
+                  <input
+                    type="text"
+                    value={addPlanForm.name}
+                    onChange={(e) => setAddPlanForm({ ...addPlanForm, name: e.target.value })}
+                    placeholder="Plan name"
+                    className="h-9 px-3 text-sm border border-border rounded-lg"
+                  />
+                  <input
+                    type="text"
+                    value={addPlanForm.slug}
+                    onChange={(e) => setAddPlanForm({ ...addPlanForm, slug: e.target.value })}
+                    placeholder="Slug (e.g. pro-plan)"
+                    className="h-9 px-3 text-sm border border-border rounded-lg"
+                  />
+                </div>
+                <input
+                  type="text"
+                  value={addPlanForm.description}
+                  onChange={(e) => setAddPlanForm({ ...addPlanForm, description: e.target.value })}
+                  placeholder="Description"
+                  className="w-full h-9 px-3 text-sm border border-border rounded-lg"
+                />
+                <div className="grid grid-cols-2 gap-3">
+                  <input
+                    type="number"
+                    value={addPlanForm.price_monthly || ""}
+                    onChange={(e) => setAddPlanForm({ ...addPlanForm, price_monthly: parseFloat(e.target.value) || 0 })}
+                    placeholder="Monthly price"
+                    className="h-9 px-3 text-sm border border-border rounded-lg"
+                  />
+                  <input
+                    type="number"
+                    value={addPlanForm.price_yearly || ""}
+                    onChange={(e) => setAddPlanForm({ ...addPlanForm, price_yearly: parseFloat(e.target.value) || 0 })}
+                    placeholder="Yearly price (optional)"
+                    className="h-9 px-3 text-sm border border-border rounded-lg"
+                  />
+                </div>
+                <div className="grid grid-cols-2 gap-3">
+                  <input
+                    type="number"
+                    value={addPlanForm.max_agents || ""}
+                    onChange={(e) => setAddPlanForm({ ...addPlanForm, max_agents: parseInt(e.target.value) || 1 })}
+                    placeholder="Max agents"
+                    className="h-9 px-3 text-sm border border-border rounded-lg"
+                  />
+                </div>
+                <textarea
+                  value={addPlanForm.features}
+                  onChange={(e) => setAddPlanForm({ ...addPlanForm, features: e.target.value })}
+                  placeholder='Features as JSON array: ["Feature 1", "Feature 2"]'
+                  rows={2}
+                  className="w-full px-3 py-2 text-xs border border-border rounded-lg resize-none font-mono"
+                />
+                <div className="flex items-center gap-2">
+                  <input
+                    type="checkbox"
+                    checked={addPlanForm.is_active}
+                    onChange={(e) => setAddPlanForm({ ...addPlanForm, is_active: e.target.checked })}
+                    id="add-plan-active"
+                  />
+                  <label htmlFor="add-plan-active" className="text-sm text-text-2">Active</label>
+                </div>
+                <div className="flex gap-2">
+                  <Button size="sm" onClick={createPlan}>Create Plan</Button>
+                  <Button size="sm" variant="outline" onClick={() => setShowAddPlan(false)}>Cancel</Button>
+                </div>
+              </div>
+            )}
+
+            {plansLoading ? (
+              <div className="space-y-3">
+                {[1, 2, 3].map((i) => (
+                  <div key={i} className="h-12 bg-gray-100 rounded-lg animate-pulse" />
+                ))}
+              </div>
+            ) : plansError ? (
+              <div className="bg-red-50 border border-red-200 rounded-xl p-4 text-center">
+                <p className="text-sm text-red-600">Failed to load plans</p>
+                <Button size="sm" variant="outline" onClick={loadPlans} className="mt-2">Retry</Button>
+              </div>
+            ) : plans.length === 0 ? (
+              <div className="bg-white rounded-xl border border-border p-8 text-center">
+                <CreditCard size={32} className="mx-auto text-text-4 mb-2" />
+                <p className="font-bold text-text-2">No plans yet</p>
+                <p className="text-sm text-text-4">Create your first pricing plan</p>
+              </div>
+            ) : (
+              <div className="bg-white rounded-xl border border-border overflow-hidden">
+                <table className="w-full text-sm">
+                  <thead className="bg-off-white border-b border-border">
+                    <tr>
+                      <th className="text-left px-4 py-3 text-xs font-bold text-text-4 uppercase tracking-wider">Name</th>
+                      <th className="text-left px-4 py-3 text-xs font-bold text-text-4 uppercase tracking-wider">Price</th>
+                      <th className="text-left px-4 py-3 text-xs font-bold text-text-4 uppercase tracking-wider">Max Agents</th>
+                      <th className="text-left px-4 py-3 text-xs font-bold text-text-4 uppercase tracking-wider">Features</th>
+                      <th className="text-left px-4 py-3 text-xs font-bold text-text-4 uppercase tracking-wider">Status</th>
+                      <th className="text-left px-4 py-3 text-xs font-bold text-text-4 uppercase tracking-wider"></th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {plans.map((plan) => (
+                      editingPlan === plan.id ? (
+                        <tr key={plan.id} className="bg-off-white">
+                          <td colSpan={6} className="px-4 py-3">
+                            <div className="grid grid-cols-3 gap-3">
+                              <div>
+                                <label className="text-[10px] font-bold text-text-4 uppercase">Name</label>
+                                <input
+                                  type="text"
+                                  value={editPlanForm.name}
+                                  onChange={(e) => setEditPlanForm({ ...editPlanForm, name: e.target.value })}
+                                  className="w-full h-8 px-2 text-xs border border-border rounded mt-1"
+                                />
+                              </div>
+                              <div>
+                                <label className="text-[10px] font-bold text-text-4 uppercase">Price (monthly)</label>
+                                <input
+                                  type="number"
+                                  value={editPlanForm.price_monthly}
+                                  onChange={(e) => setEditPlanForm({ ...editPlanForm, price_monthly: parseFloat(e.target.value) || 0 })}
+                                  className="w-full h-8 px-2 text-xs border border-border rounded mt-1"
+                                />
+                              </div>
+                              <div>
+                                <label className="text-[10px] font-bold text-text-4 uppercase">Max Agents</label>
+                                <input
+                                  type="number"
+                                  value={editPlanForm.max_agents}
+                                  onChange={(e) => setEditPlanForm({ ...editPlanForm, max_agents: parseInt(e.target.value) || 1 })}
+                                  className="w-full h-8 px-2 text-xs border border-border rounded mt-1"
+                                />
+                              </div>
+                            </div>
+                            <div className="mt-2">
+                              <label className="text-[10px] font-bold text-text-4 uppercase">Description</label>
+                              <input
+                                type="text"
+                                value={editPlanForm.description}
+                                onChange={(e) => setEditPlanForm({ ...editPlanForm, description: e.target.value })}
+                                className="w-full h-8 px-2 text-xs border border-border rounded mt-1"
+                              />
+                            </div>
+                            <div className="mt-2">
+                              <label className="text-[10px] font-bold text-text-4 uppercase">Features (JSON array)</label>
+                              <textarea
+                                value={editPlanForm.features}
+                                onChange={(e) => setEditPlanForm({ ...editPlanForm, features: e.target.value })}
+                                rows={2}
+                                className="w-full px-2 py-1 text-xs border border-border rounded mt-1 resize-none font-mono"
+                              />
+                            </div>
+                            <div className="mt-2 flex items-center gap-2">
+                              <input
+                                type="checkbox"
+                                checked={editPlanForm.is_active}
+                                onChange={(e) => setEditPlanForm({ ...editPlanForm, is_active: e.target.checked })}
+                                id={`edit-active-${plan.id}`}
+                              />
+                              <label htmlFor={`edit-active-${plan.id}`} className="text-xs text-text-2">Active</label>
+                            </div>
+                            <div className="mt-2 flex gap-2">
+                              <Button size="sm" onClick={() => savePlan(plan.id)}>
+                                <Save size={12} className="mr-1" /> Save
+                              </Button>
+                              <Button size="sm" variant="outline" onClick={() => setEditingPlan(null)}>
+                                <X size={12} className="mr-1" /> Cancel
+                              </Button>
+                            </div>
+                          </td>
+                        </tr>
+                      ) : (
+                        <tr key={plan.id} className="border-b border-border last:border-0 hover:bg-off-white/50">
+                          <td className="px-4 py-3 font-semibold text-text-1">{plan.name}</td>
+                          <td className="px-4 py-3">
+                            <span className="font-bold text-text-1">${Number(plan.price_monthly).toFixed(2)}</span>
+                            <span className="text-text-4 text-xs ml-1">/{plan.currency || "USD"}</span>
+                          </td>
+                          <td className="px-4 py-3">{plan.max_agents}</td>
+                          <td className="px-4 py-3">
+                            <div className="flex flex-wrap gap-1 max-w-[300px]">
+                              {(Array.isArray(plan.features) ? plan.features : []).map((f: string, i: number) => (
+                                <Badge key={i} variant="secondary" className="text-[10px]">{f}</Badge>
+                              ))}
+                            </div>
+                          </td>
+                          <td className="px-4 py-3">
+                            <Badge className={`text-[10px] ${plan.is_active ? "bg-green-100 text-green-800" : "bg-yellow-100 text-yellow-800"}`}>
+                              {plan.is_active ? "Active" : "Inactive"}
+                            </Badge>
+                          </td>
+                          <td className="px-4 py-3">
+                            <button
+                              onClick={() => {
+                                setEditingPlan(plan.id);
+                                setEditPlanForm({
+                                  name: plan.name,
+                                  description: plan.description || "",
+                                  price_monthly: Number(plan.price_monthly),
+                                  max_agents: plan.max_agents,
+                                  features: JSON.stringify(plan.features, null, 2),
+                                  is_active: plan.is_active,
+                                });
+                              }}
+                              className="text-text-4 hover:text-orange transition-colors"
+                            >
+                              <PencilLine size={14} />
+                            </button>
+                          </td>
+                        </tr>
+                      )
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* SUBSCRIPTIONS TAB */}
+        {activeTab === "subscriptions" && (
+          <div className="space-y-4">
+            <h3 className="font-syne font-bold text-lg">Business Subscriptions</h3>
+
+            {subsLoading ? (
+              <div className="space-y-3">
+                {[1, 2, 3].map((i) => (
+                  <div key={i} className="h-12 bg-gray-100 rounded-lg animate-pulse" />
+                ))}
+              </div>
+            ) : subsError ? (
+              <div className="bg-red-50 border border-red-200 rounded-xl p-4 text-center">
+                <p className="text-sm text-red-600">Failed to load subscriptions</p>
+                <Button size="sm" variant="outline" onClick={loadSubscriptions} className="mt-2">Retry</Button>
+              </div>
+            ) : subscriptions.length === 0 ? (
+              <div className="bg-white rounded-xl border border-border p-8 text-center">
+                <Calendar size={32} className="mx-auto text-text-4 mb-2" />
+                <p className="font-bold text-text-2">No subscriptions yet</p>
+                <p className="text-sm text-text-4">Business subscriptions will appear here</p>
+              </div>
+            ) : (
+              <div className="bg-white rounded-xl border border-border overflow-hidden">
+                <table className="w-full text-sm">
+                  <thead className="bg-off-white border-b border-border">
+                    <tr>
+                      <th className="text-left px-4 py-3 text-xs font-bold text-text-4 uppercase tracking-wider">Business</th>
+                      <th className="text-left px-4 py-3 text-xs font-bold text-text-4 uppercase tracking-wider">Plan</th>
+                      <th className="text-left px-4 py-3 text-xs font-bold text-text-4 uppercase tracking-wider">Status</th>
+                      <th className="text-left px-4 py-3 text-xs font-bold text-text-4 uppercase tracking-wider">Billing</th>
+                      <th className="text-left px-4 py-3 text-xs font-bold text-text-4 uppercase tracking-wider">Period End</th>
+                      <th className="text-left px-4 py-3 text-xs font-bold text-text-4 uppercase tracking-wider"></th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {subscriptions.map((sub) => (
+                      <>
+                        <tr
+                          key={sub.id}
+                          className="border-b border-border last:border-0 hover:bg-off-white/50 cursor-pointer"
+                          onClick={() => setExpandedSub(expandedSub === sub.id ? null : sub.id)}
+                        >
+                          <td className="px-4 py-3 font-semibold text-text-1">{sub.business?.company_name || "—"}</td>
+                          <td className="px-4 py-3">{sub.plan?.name || "—"}</td>
+                          <td className="px-4 py-3">
+                            <Badge className={`text-[10px] ${
+                              sub.status === "active" ? "bg-green-100 text-green-800" :
+                              sub.status === "paused" ? "bg-yellow-100 text-yellow-800" :
+                              "bg-red-100 text-red-800"
+                            }`}>
+                              {sub.status}
+                            </Badge>
+                          </td>
+                          <td className="px-4 py-3 text-text-2 capitalize">{sub.billing_cycle}</td>
+                          <td className="px-4 py-3 text-xs text-text-4">
+                            {sub.current_period_end?.slice(0, 10) || "—"}
+                          </td>
+                          <td className="px-4 py-3">
+                            <div className="flex items-center gap-2">
+                              {expandedSub === sub.id ? <ChevronDown size={14} className="text-text-4" /> : <ChevronRight size={14} className="text-text-4" />}
+                              {sub.status === "active" && (
+                                <button
+                                  onClick={(e) => { e.stopPropagation(); cancelSubscription(sub.id); }}
+                                  className="text-[10px] text-red-500 hover:text-red-700 font-bold uppercase tracking-wider"
+                                >
+                                  Cancel
+                                </button>
+                              )}
+                            </div>
+                          </td>
+                        </tr>
+                        {expandedSub === sub.id && (
+                          <tr key={`${sub.id}-detail`} className="bg-off-white/50">
+                            <td colSpan={6} className="px-4 py-3">
+                              <div className="space-y-2">
+                                <h4 className="text-xs font-bold text-text-4 uppercase">Metadata</h4>
+                                <pre className="bg-white border border-border rounded-lg p-3 text-xs font-mono max-h-[200px] overflow-auto">
+                                  {JSON.stringify(sub.metadata, null, 2)}
+                                </pre>
+                                <div className="grid grid-cols-3 gap-4 text-xs text-text-3">
+                                  <div>
+                                    <span className="font-bold text-text-4">ID: </span>
+                                    <span className="font-mono">{sub.id}</span>
+                                  </div>
+                                  <div>
+                                    <span className="font-bold text-text-4">Auto-renew: </span>
+                                    <Badge className={`text-[10px] ${sub.auto_renew ? "bg-green-100 text-green-800" : "bg-yellow-100 text-yellow-800"}`}>
+                                      {sub.auto_renew ? "Yes" : "No"}
+                                    </Badge>
+                                  </div>
+                                  <div>
+                                    <span className="font-bold text-text-4">Created: </span>
+                                    {sub.created_at?.slice(0, 10)}
+                                  </div>
+                                </div>
+                              </div>
+                            </td>
+                          </tr>
+                        )}
+                      </>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* BUSINESSES TAB */}
+        {activeTab === "businesses" && (
+          <div className="space-y-4">
+            <h3 className="font-syne font-bold text-lg">Registered Businesses</h3>
+
+            {bizLoading ? (
+              <div className="space-y-3">
+                {[1, 2, 3].map((i) => (
+                  <div key={i} className="h-12 bg-gray-100 rounded-lg animate-pulse" />
+                ))}
+              </div>
+            ) : bizError ? (
+              <div className="bg-red-50 border border-red-200 rounded-xl p-4 text-center">
+                <p className="text-sm text-red-600">Failed to load businesses</p>
+                <Button size="sm" variant="outline" onClick={loadBusinesses} className="mt-2">Retry</Button>
+              </div>
+            ) : businesses.length === 0 ? (
+              <div className="bg-white rounded-xl border border-border p-8 text-center">
+                <Building2 size={32} className="mx-auto text-text-4 mb-2" />
+                <p className="font-bold text-text-2">No businesses yet</p>
+                <p className="text-sm text-text-4">Registered businesses will appear here</p>
+              </div>
+            ) : (
+              <div className="bg-white rounded-xl border border-border overflow-hidden">
+                <table className="w-full text-sm">
+                  <thead className="bg-off-white border-b border-border">
+                    <tr>
+                      <th className="text-left px-4 py-3 text-xs font-bold text-text-4 uppercase tracking-wider">Company</th>
+                      <th className="text-left px-4 py-3 text-xs font-bold text-text-4 uppercase tracking-wider">Industry</th>
+                      <th className="text-left px-4 py-3 text-xs font-bold text-text-4 uppercase tracking-wider">Staff</th>
+                      <th className="text-left px-4 py-3 text-xs font-bold text-text-4 uppercase tracking-wider">Onboarded</th>
+                      <th className="text-left px-4 py-3 text-xs font-bold text-text-4 uppercase tracking-wider">Agents</th>
+                      <th className="text-left px-4 py-3 text-xs font-bold text-text-4 uppercase tracking-wider">Created</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {businesses.map((biz) => (
+                      <>
+                        <tr
+                          key={biz.id}
+                          className="border-b border-border last:border-0 hover:bg-off-white/50 cursor-pointer"
+                          onClick={() => setExpandedBiz(expandedBiz === biz.id ? null : biz.id)}
+                        >
+                          <td className="px-4 py-3 font-semibold text-text-1">{biz.company_name}</td>
+                          <td className="px-4 py-3">
+                            <Badge variant="outline" className="text-[10px]">{biz.industry || "—"}</Badge>
+                          </td>
+                          <td className="px-4 py-3">{biz.staff_count ?? "—"}</td>
+                          <td className="px-4 py-3">
+                            <Badge className={`text-[10px] ${biz.onboarded ? "bg-green-100 text-green-800" : "bg-yellow-100 text-yellow-800"}`}>
+                              {biz.onboarded ? "Yes" : "No"}
+                            </Badge>
+                          </td>
+                          <td className="px-4 py-3">
+                            <Badge variant="outline" className="text-[10px]">{biz.agents?.length || 0}</Badge>
+                          </td>
+                          <td className="px-4 py-3 text-xs text-text-4">{biz.created_at?.slice(0, 10)}</td>
+                        </tr>
+                        {expandedBiz === biz.id && (
+                          <tr key={`${biz.id}-detail`} className="bg-off-white/50">
+                            <td colSpan={6} className="px-4 py-3">
+                              <div className="space-y-4">
+                                <div className="grid grid-cols-2 gap-4">
+                                  <div>
+                                    <h4 className="text-xs font-bold text-text-4 uppercase mb-2">Contact Info</h4>
+                                    <div className="space-y-1 text-xs text-text-2">
+                                      <p><span className="font-bold text-text-4">Email:</span> {biz.contact_email || "—"}</p>
+                                      <p><span className="font-bold text-text-4">Phone:</span> {biz.contact_phone || "—"}</p>
+                                      <p><span className="font-bold text-text-4">Website:</span> {biz.website || "—"}</p>
+                                    </div>
+                                  </div>
+                                  <div>
+                                    <h4 className="text-xs font-bold text-text-4 uppercase mb-2">Locations</h4>
+                                    <div className="space-y-1 text-xs text-text-2">
+                                      {biz.locations?.length > 0 ? biz.locations.map((loc: string, i: number) => (
+                                        <p key={i} className="flex items-center gap-1">
+                                          <Globe size={10} className="shrink-0" /> {loc}
+                                        </p>
+                                      )) : <p className="text-text-4">No locations</p>}
+                                    </div>
+                                  </div>
+                                </div>
+                                {biz.description && (
+                                  <div>
+                                    <h4 className="text-xs font-bold text-text-4 uppercase mb-1">Description</h4>
+                                    <p className="text-xs text-text-2 bg-white border border-border rounded-lg p-3">{biz.description}</p>
+                                  </div>
+                                )}
+                                {biz.agents && biz.agents.length > 0 && (
+                                  <div>
+                                    <h4 className="text-xs font-bold text-text-4 uppercase mb-2">Agents</h4>
+                                    <div className="flex flex-wrap gap-2">
+                                      {biz.agents.map((agent: Agent) => (
+                                        <Badge key={agent.id} className="text-[10px] bg-blue-100 text-blue-800">
+                                          {agent.name} ({agent.role})
+                                        </Badge>
+                                      ))}
+                                    </div>
+                                  </div>
+                                )}
+                              </div>
+                            </td>
+                          </tr>
+                        )}
+                      </>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* AGENTS TAB */}
+        {activeTab === "agents" && (
+          <div className="space-y-4">
+            <h3 className="font-syne font-bold text-lg">AI Agents</h3>
+
+            {agentsLoading ? (
+              <div className="space-y-3">
+                {[1, 2, 3].map((i) => (
+                  <div key={i} className="h-12 bg-gray-100 rounded-lg animate-pulse" />
+                ))}
+              </div>
+            ) : agentsError ? (
+              <div className="bg-red-50 border border-red-200 rounded-xl p-4 text-center">
+                <p className="text-sm text-red-600">Failed to load agents</p>
+                <Button size="sm" variant="outline" onClick={loadAgents} className="mt-2">Retry</Button>
+              </div>
+            ) : agents.length === 0 ? (
+              <div className="bg-white rounded-xl border border-border p-8 text-center">
+                <Bot size={32} className="mx-auto text-text-4 mb-2" />
+                <p className="font-bold text-text-2">No agents yet</p>
+                <p className="text-sm text-text-4">AI agents will appear here once businesses create them</p>
+              </div>
+            ) : (
+              <div className="bg-white rounded-xl border border-border overflow-hidden">
+                <table className="w-full text-sm">
+                  <thead className="bg-off-white border-b border-border">
+                    <tr>
+                      <th className="text-left px-4 py-3 text-xs font-bold text-text-4 uppercase tracking-wider">Name</th>
+                      <th className="text-left px-4 py-3 text-xs font-bold text-text-4 uppercase tracking-wider">Role</th>
+                      <th className="text-left px-4 py-3 text-xs font-bold text-text-4 uppercase tracking-wider">Business</th>
+                      <th className="text-left px-4 py-3 text-xs font-bold text-text-4 uppercase tracking-wider">Model</th>
+                      <th className="text-left px-4 py-3 text-xs font-bold text-text-4 uppercase tracking-wider">Status</th>
+                      <th className="text-left px-4 py-3 text-xs font-bold text-text-4 uppercase tracking-wider">Temp</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {agents.map((agent) => (
+                      <>
+                        <tr
+                          key={agent.id}
+                          className="border-b border-border last:border-0 hover:bg-off-white/50 cursor-pointer"
+                          onClick={() => setExpandedAgent(expandedAgent === agent.id ? null : agent.id)}
+                        >
+                          <td className="px-4 py-3 font-semibold text-text-1 flex items-center gap-2">
+                            {expandedAgent === agent.id ? <ChevronDown size={14} className="text-text-4 shrink-0" /> : <ChevronRight size={14} className="text-text-4 shrink-0" />}
+                            {agent.avatar && <span className="text-base">{agent.avatar}</span>}
+                            {agent.name}
+                          </td>
+                          <td className="px-4 py-3">
+                            <Badge variant="outline" className="text-[10px]">{agent.role}</Badge>
+                          </td>
+                          <td className="px-4 py-3 text-text-2">{agent.business?.company_name || "—"}</td>
+                          <td className="px-4 py-3 font-mono text-[10px] text-text-3">{agent.model}</td>
+                          <td className="px-4 py-3">
+                            <button
+                              onClick={(e) => { e.stopPropagation(); toggleAgentStatus(agent.id, agent.is_active); }}
+                              className={`text-[10px] font-bold px-2 py-1 rounded-full transition-colors ${
+                                agent.is_active ? "bg-green-100 text-green-800" : "bg-gray-100 text-gray-500"
+                              }`}
+                            >
+                              {agent.is_active ? "Active" : "Inactive"}
+                            </button>
+                          </td>
+                          <td className="px-4 py-3 text-xs text-text-3">{Number(agent.temperature).toFixed(2)}</td>
+                        </tr>
+                        {expandedAgent === agent.id && (
+                          <tr key={`${agent.id}-detail`} className="bg-off-white/50">
+                            <td colSpan={6} className="px-4 py-3">
+                              <div className="space-y-4">
+                                {agent.description && (
+                                  <div>
+                                    <h4 className="text-xs font-bold text-text-4 uppercase mb-1">Description</h4>
+                                    <p className="text-xs text-text-2 bg-white border border-border rounded-lg p-3">{agent.description}</p>
+                                  </div>
+                                )}
+                                {agent.system_prompt && (
+                                  <div>
+                                    <h4 className="text-xs font-bold text-text-4 uppercase mb-1">System Prompt</h4>
+                                    <pre className="bg-white border border-border rounded-lg p-3 text-[10px] font-mono max-h-[150px] overflow-auto whitespace-pre-wrap">{agent.system_prompt}</pre>
+                                  </div>
+                                )}
+                                {agent.permissions && agent.permissions.length > 0 && (
+                                  <div>
+                                    <h4 className="text-xs font-bold text-text-4 uppercase mb-2">Permissions</h4>
+                                    <div className="bg-white border border-border rounded-lg overflow-hidden">
+                                      <table className="w-full text-[10px]">
+                                        <thead className="bg-off-white border-b border-border">
+                                          <tr>
+                                            <th className="text-left px-3 py-2 font-bold text-text-4 uppercase">Resource</th>
+                                            <th className="text-center px-3 py-2 font-bold text-text-4 uppercase">View</th>
+                                            <th className="text-center px-3 py-2 font-bold text-text-4 uppercase">Create</th>
+                                            <th className="text-center px-3 py-2 font-bold text-text-4 uppercase">Edit</th>
+                                            <th className="text-center px-3 py-2 font-bold text-text-4 uppercase">Delete</th>
+                                          </tr>
+                                        </thead>
+                                        <tbody>
+                                          {agent.permissions.map((perm: AgentPermission) => (
+                                            <tr key={perm.id} className="border-b border-border last:border-0">
+                                              <td className="px-3 py-2 font-semibold text-text-2">{perm.resource_type}</td>
+                                              <td className="px-3 py-2 text-center">
+                                                {perm.can_view ? <CheckCircle2 size={12} className="text-success mx-auto" /> : <XCircle size={12} className="text-red mx-auto" />}
+                                              </td>
+                                              <td className="px-3 py-2 text-center">
+                                                {perm.can_create ? <CheckCircle2 size={12} className="text-success mx-auto" /> : <XCircle size={12} className="text-red mx-auto" />}
+                                              </td>
+                                              <td className="px-3 py-2 text-center">
+                                                {perm.can_edit ? <CheckCircle2 size={12} className="text-success mx-auto" /> : <XCircle size={12} className="text-red mx-auto" />}
+                                              </td>
+                                              <td className="px-3 py-2 text-center">
+                                                {perm.can_delete ? <CheckCircle2 size={12} className="text-success mx-auto" /> : <XCircle size={12} className="text-red mx-auto" />}
+                                              </td>
+                                            </tr>
+                                          ))}
+                                        </tbody>
+                                      </table>
+                                    </div>
+                                  </div>
+                                )}
+                                <div className="grid grid-cols-2 gap-4 text-xs text-text-3">
+                                  <div>
+                                    <span className="font-bold text-text-4">Knowledge Scope: </span>
+                                    <Badge variant="outline" className="text-[10px]">{agent.knowledge_scope}</Badge>
+                                  </div>
+                                  <div>
+                                    <span className="font-bold text-text-4">Agent ID: </span>
+                                    <span className="font-mono text-[10px]">{agent.id}</span>
+                                  </div>
+                                </div>
+                              </div>
+                            </td>
+                          </tr>
+                        )}
+                      </>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            )}
           </div>
         )}
       </div>

@@ -46,14 +46,14 @@ const CONFIGURATORS = [
   {
     icon: ShieldCheck, label: "Security System",
     desc: "Design integrated security systems for homes and businesses",
-    href: "/configure/cctv", color: "bg-red-50 text-red",
-    badge: "Design now",
+    href: "/configure/security", color: "bg-red-50 text-red",
+    badge: "4-step design",
   },
   {
     icon: Sprout, label: "Farm / Greenhouse",
     desc: "Design agricultural facilities, greenhouses, and irrigation systems",
-    href: "/configure/house", color: "bg-green-50 text-green",
-    badge: "Design now",
+    href: "/configure/farm", color: "bg-green-50 text-green",
+    badge: "4-step design",
   },
 ];
 

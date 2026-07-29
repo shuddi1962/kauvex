@@ -7,7 +7,7 @@ import { insforge } from "@/lib/insforge";
 import {
   Save, ArrowLeft, Image, Plus, Trash2, Loader2,
   Package, Tag, DollarSign, Layers, Info, ToggleLeft, ToggleRight,
-  Bold, Italic, List,
+  Bold, Italic, List, Wrench, AlertCircle,
 } from "lucide-react";
 
 interface Category { id: string; name: string; parent_id: string | null; }
@@ -49,6 +49,11 @@ export default function ProductCreatePage() {
   const [selectedVariations, setSelectedVariations] = useState<Record<string, string[]>>({});
   const [metaTitle, setMetaTitle] = useState("");
   const [metaDesc, setMetaDesc] = useState("");
+  const [requiresInstallation, setRequiresInstallation] = useState(false);
+  const [serviceTypes, setServiceTypes] = useState<string[]>([]);
+  const [serviceDuration, setServiceDuration] = useState("2");
+  const [serviceModel, setServiceModel] = useState("kpn");
+  const [installationFee, setInstallationFee] = useState("");
   const [activeSection, setActiveSection] = useState("general");
 
   useEffect(() => { loadLookups(); }, []);
@@ -106,6 +111,11 @@ export default function ProductCreatePage() {
       variations: JSON.stringify(selectedVariations),
       meta_title: metaTitle,
       meta_description: metaDesc,
+      requires_installation: requiresInstallation,
+      service_types: JSON.stringify(serviceTypes),
+      service_duration: serviceDuration ? parseInt(serviceDuration) : null,
+      service_model: serviceModel,
+      installation_fee: installationFee ? Number(installationFee) : null,
       rating: 0,
       review_count: 0,
     };
@@ -138,6 +148,7 @@ export default function ProductCreatePage() {
     { id: "inventory", label: "Inventory", icon: Package },
     { id: "images", label: "Images", icon: Image },
     { id: "variations", label: "Variations", icon: Layers },
+    { id: "services", label: "Professional Services", icon: Wrench },
     { id: "seo", label: "SEO", icon: Tag },
   ];
 
@@ -392,6 +403,87 @@ export default function ProductCreatePage() {
                       </div>
                     </div>
                   ))}
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* Professional Services */}
+          {(activeSection === "services" || activeSection === "all") && (
+            <div className="bg-white rounded-xl border border-gray-200 p-5">
+              <h3 className="font-semibold text-sm text-text-1 mb-4 flex items-center gap-2"><Wrench size={15} /> Professional Services</h3>
+              <p className="text-xs text-text-4 mb-4">Configure professional installation and setup services for this product. Customers will be offered these during checkout.</p>
+
+              <div className="flex items-center justify-between p-3 rounded-lg border border-gray-200 mb-4">
+                <span className="text-sm font-medium text-text-1">This product requires professional installation</span>
+                <button onClick={() => setRequiresInstallation(!requiresInstallation)}>
+                  {requiresInstallation ? <ToggleRight size={24} className="text-blue" /> : <ToggleLeft size={24} className="text-text-4" />}
+                </button>
+              </div>
+
+              {requiresInstallation && (
+                <div className="space-y-4">
+                  <div>
+                    <label className="text-sm font-medium text-text-2 block mb-1.5">Available Service Types</label>
+                    <div className="flex flex-wrap gap-2">
+                      {[
+                        { id: "installation", label: "Standard Installation" },
+                        { id: "configuration", label: "Configuration & Setup" },
+                        { id: "calibration", label: "Calibration" },
+                        { id: "training", label: "User Training" },
+                        { id: "maintenance", label: "Maintenance Plan" },
+                        { id: "wiring", label: "Electrical Wiring" },
+                        { id: "mounting", label: "Mounting & Positioning" },
+                        { id: "integration", label: "System Integration" },
+                      ].map((s) => (
+                        <button key={s.id} onClick={() => setServiceTypes(prev => prev.includes(s.id) ? prev.filter(x => x !== s.id) : [...prev, s.id])}
+                          className={`text-xs px-3 py-1.5 rounded-full border transition-colors ${serviceTypes.includes(s.id) ? "border-blue bg-blue/10 text-blue font-medium" : "border-gray-200 text-text-3 hover:border-blue"}`}>
+                          {s.label}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <label className="text-sm font-medium text-text-2 block mb-1.5">Estimated service duration</label>
+                      <select value={serviceDuration} onChange={(e) => setServiceDuration(e.target.value)} className="w-full h-10 px-3 rounded-lg border border-gray-200 text-sm">
+                        <option value="1">1 hour</option>
+                        <option value="2">2 hours</option>
+                        <option value="3">3 hours</option>
+                        <option value="4">4 hours (half day)</option>
+                        <option value="8">8 hours (full day)</option>
+                        <option value="16">2 days</option>
+                        <option value="40">1 week</option>
+                      </select>
+                    </div>
+                    <div>
+                      <label className="text-sm font-medium text-text-2 block mb-1.5">Installation Fee (₦)</label>
+                      <input value={installationFee} onChange={(e) => setInstallationFee(e.target.value)} type="number" placeholder="0" className="w-full h-10 px-3 rounded-lg border border-gray-200 text-sm" />
+                    </div>
+                  </div>
+
+                  <div>
+                    <label className="text-sm font-medium text-text-2 block mb-1.5">Service Provision Model</label>
+                    <div className="grid grid-cols-3 gap-2">
+                      {[
+                        { value: "vendor", label: "Vendor Provides", desc: "You send your own team" },
+                        { value: "kpn", label: "KPN Professional", desc: "Kauvex network pro" },
+                        { value: "both", label: "Both Options", desc: "Customer chooses" },
+                      ].map((opt) => (
+                        <button key={opt.value} onClick={() => setServiceModel(opt.value)}
+                          className={`p-3 rounded-xl border-2 text-left transition-all ${serviceModel === opt.value ? "border-blue bg-blue/5" : "border-gray-200 hover:border-gray-300"}`}>
+                          <p className="text-sm font-semibold text-text-1">{opt.label}</p>
+                          <p className="text-[10px] text-text-4">{opt.desc}</p>
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+
+                  <div className="bg-amber-50 border border-amber-200 rounded-xl p-3 flex items-start gap-2">
+                    <AlertCircle size={14} className="text-amber-600 mt-0.5 shrink-0" />
+                    <p className="text-xs text-amber-800">All installation services are backed by Kauvex warranty and verified professionals. The service fee will be added to the product price during checkout.</p>
+                  </div>
                 </div>
               )}
             </div>

@@ -66,6 +66,8 @@ const servicesLinks = [
   { label: "Financing", url: "/financing" },
   { label: "Insurance", url: "/insurance" },
   { label: "Sustainability", url: "/sustainability" },
+  { label: "Industry ERP", url: "/industry-erp" },
+  { label: "Marketplace Intelligence", url: "/marketplace/intelligence" },
 ];
 
 const regionalStores = [

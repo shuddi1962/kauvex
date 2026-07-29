@@ -7163,7 +7163,7 @@ model KpnIndustryHub {
   productCategories     String[] @map("product_categories") @db.Text
   professionalCategories String[] @map("professional_categories") @db.Text
   configuratorsAvailable String[] @map("configurators_available") @db.Text
-  pillarsAvailable      String[] @map("pillars_available") @db.Text // which of the 16 pillars are active
+  pillarsAvailable      String[] @map("pillars_available") @db.Text
   sortOrder             Int      @default(0) @map("sort_order")
   createdAt             DateTime @default(now()) @map("created_at")
   updatedAt             DateTime @updatedAt @map("updated_at")
@@ -7171,4 +7171,86 @@ model KpnIndustryHub {
   @@index([hubSlug], map: "idx_kpn_hub_slug")
   @@index([isActive], map: "idx_kpn_hub_active")
   @@map("kv_kpn_industry_hubs")
+}
+
+// ============================================================
+// PHASE 27: KAUVEX AI (KAI)
+// ============================================================
+
+model KaiKnowledgeChunk {
+  id          String   @id @default(uuid()) @db.Uuid
+  category    String   @db.VarChar(50)
+  subcategory String?  @db.VarChar(100)
+  title       String   @db.VarChar(500)
+  content     String   @db.Text
+  metadata    Json?    @default("{}")
+  sourceUrl   String?  @map("source_url") @db.Text
+  language    String   @default("en") @db.VarChar(10)
+  chunkIndex  Int      @default(0) @map("chunk_index")
+  parentId    String?  @map("parent_id") @db.Uuid
+  isActive    Boolean  @default(true) @map("is_active")
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @default(now()) @map("updated_at")
+
+  parent    KaiKnowledgeChunk?  @relation("ChunkHierarchy", fields: [parentId], references: [id], onDelete: Cascade)
+  children  KaiKnowledgeChunk[] @relation("ChunkHierarchy")
+
+  @@index([category], map: "idx_kai_kb_category")
+  @@index([subcategory], map: "idx_kai_kb_subcategory")
+  @@index([isActive], map: "idx_kai_kb_active")
+  @@map("kv_kai_knowledge_chunks")
+}
+
+model KaiConversation {
+  id           String   @id @default(uuid()) @db.Uuid
+  userId       String?  @map("user_id") @db.Uuid
+  sessionId    String   @map("session_id") @db.VarChar(100)
+  persona      String   @default("sarah") @db.VarChar(50)
+  context      Json?    @default("{}")
+  metadata     Json?    @default("{}")
+  messageCount Int      @default(0) @map("message_count")
+  isActive     Boolean  @default(true) @map("is_active")
+  createdAt    DateTime @default(now()) @map("created_at")
+  updatedAt    DateTime @default(now()) @map("updated_at")
+
+  messages KaiMessage[]
+
+  @@index([userId], map: "idx_kai_conv_user")
+  @@index([sessionId], map: "idx_kai_conv_session")
+  @@index([isActive], map: "idx_kai_conv_active")
+  @@map("kv_kai_conversations")
+}
+
+model KaiMessage {
+  id               String   @id @default(uuid()) @db.Uuid
+  conversationId   String   @map("conversation_id") @db.Uuid
+  role             String   @db.VarChar(10)
+  content          String   @db.Text
+  sources          Json?    @map("sources")
+  tokensUsed       Int      @default(0) @map("tokens_used")
+  latencyMs        Int      @default(0) @map("latency_ms")
+  metadata         Json?    @default("{}")
+  createdAt        DateTime @default(now()) @map("created_at")
+
+  conversation KaiConversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+
+  @@index([conversationId], map: "idx_kai_msg_conv")
+  @@index([createdAt], map: "idx_kai_msg_created")
+  @@map("kv_kai_messages")
+}
+
+model KaiFeedback {
+  id           String   @id @default(uuid()) @db.Uuid
+  messageId    String   @map("message_id") @db.Uuid
+  userId       String?  @map("user_id") @db.Uuid
+  rating       Int      // 1-5
+  helpful      Boolean?
+  feedbackText String?  @map("feedback_text") @db.Text
+  createdAt    DateTime @default(now()) @map("created_at")
+
+  message KaiMessage @relation(fields: [messageId], references: [id], onDelete: Cascade)
+
+  @@index([messageId], map: "idx_kai_fb_msg")
+  @@index([rating], map: "idx_kai_fb_rating")
+  @@map("kv_kai_feedback")
 }

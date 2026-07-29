@@ -7,6 +7,7 @@ import {
   BookOpen, FileText, BarChart3, Clock, Zap,
   CreditCard, Building2, Bot, Calendar,
   ChevronDown, ChevronRight, PencilLine, X, Save,
+  GitBranch, Puzzle, Fingerprint,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -123,6 +124,59 @@ interface Agent {
   permissions?: AgentPermission[];
 }
 
+interface WorkflowStep {
+  id?: string;
+  type: string;
+  config: any;
+  order: number;
+}
+
+interface Workflow {
+  id: string;
+  name: string;
+  trigger_type: string;
+  steps: WorkflowStep[];
+  is_active: boolean;
+  business_id: string;
+  business?: { company_name: string };
+  created_at: string;
+}
+
+interface Skill {
+  id: string;
+  name: string;
+  slug: string;
+  description: string | null;
+  category: string;
+  industry: string | null;
+  capabilities: string[];
+  system_prompt: string | null;
+  price_monthly: number;
+  install_count: number;
+  rating: number | null;
+  is_active: boolean;
+  is_official: boolean;
+  created_at: string;
+}
+
+interface SchemaField {
+  key: string;
+  label: string;
+  type: string;
+  required: boolean;
+}
+
+interface PassportTemplate {
+  id: string;
+  entity_type: string;
+  name: string;
+  icon: string | null;
+  color: string | null;
+  schema: SchemaField[];
+  is_active: boolean;
+  created_at: string;
+}
+
 const TABS = [
   { key: "dashboard", label: "Dashboard", icon: BarChart3 },
   { key: "knowledge", label: "Knowledge Base", icon: BookOpen },
@@ -132,6 +186,9 @@ const TABS = [
   { key: "subscriptions", label: "Subscriptions", icon: Calendar },
   { key: "businesses", label: "Businesses", icon: Building2 },
   { key: "agents", label: "Agents", icon: Bot },
+  { key: "workflows", label: "Workflows", icon: GitBranch },
+  { key: "skills", label: "Skills", icon: Puzzle },
+  { key: "passport-templates", label: "Passport Templates", icon: Fingerprint },
 ];
 
 export default function AdminKAIPage() {
@@ -170,6 +227,25 @@ export default function AdminKAIPage() {
   const [agentsError, setAgentsError] = useState(false);
   const [expandedAgent, setExpandedAgent] = useState<string | null>(null);
 
+  const [workflows, setWorkflows] = useState<Workflow[]>([]);
+  const [workflowsLoading, setWorkflowsLoading] = useState(false);
+  const [workflowsError, setWorkflowsError] = useState(false);
+  const [expandedWorkflow, setExpandedWorkflow] = useState<string | null>(null);
+
+  const [skills, setSkills] = useState<Skill[]>([]);
+  const [skillsLoading, setSkillsLoading] = useState(false);
+  const [skillsError, setSkillsError] = useState(false);
+  const [expandedSkill, setExpandedSkill] = useState<string | null>(null);
+  const [showAddSkill, setShowAddSkill] = useState(false);
+  const [addSkillForm, setAddSkillForm] = useState({ name: "", slug: "", description: "", category: "general", industry: "", systemPrompt: "", priceMonthly: 0 });
+
+  const [passportTemplates, setPassportTemplates] = useState<PassportTemplate[]>([]);
+  const [ptLoading, setPtLoading] = useState(false);
+  const [ptError, setPtError] = useState(false);
+  const [expandedPt, setExpandedPt] = useState<string | null>(null);
+  const [editingPt, setEditingPt] = useState<string | null>(null);
+  const [editPtForm, setEditPtForm] = useState({ name: "", icon: "", color: "", is_active: true });
+
   useEffect(() => {
     loadData();
   }, []);
@@ -179,6 +255,9 @@ export default function AdminKAIPage() {
     else if (activeTab === "subscriptions") loadSubscriptions();
     else if (activeTab === "businesses") loadBusinesses();
     else if (activeTab === "agents") loadAgents();
+    else if (activeTab === "workflows") loadWorkflows();
+    else if (activeTab === "skills") loadSkills();
+    else if (activeTab === "passport-templates") loadPassportTemplates();
   }, [activeTab]);
 
   async function loadData() {
@@ -388,6 +467,129 @@ export default function AdminKAIPage() {
       loadAgents();
     } catch (e) {
       console.error("Failed to toggle agent status:", e);
+    }
+  }
+
+  async function loadWorkflows() {
+    setWorkflowsLoading(true);
+    setWorkflowsError(false);
+    try {
+      const res = await fetch("/api/v1/kai/workflows?all=true");
+      if (res.ok) {
+        const d = await res.json();
+        setWorkflows(d.workflows || []);
+      } else {
+        setWorkflowsError(true);
+      }
+    } catch {
+      setWorkflowsError(true);
+    } finally {
+      setWorkflowsLoading(false);
+    }
+  }
+
+  async function loadSkills() {
+    setSkillsLoading(true);
+    setSkillsError(false);
+    try {
+      const res = await fetch("/api/v1/kai/skills?all=true");
+      if (res.ok) {
+        const d = await res.json();
+        setSkills(d.skills || []);
+      } else {
+        setSkillsError(true);
+      }
+    } catch {
+      setSkillsError(true);
+    } finally {
+      setSkillsLoading(false);
+    }
+  }
+
+  async function createSkill() {
+    if (!addSkillForm.name || !addSkillForm.slug) return;
+    try {
+      await fetch("/api/v1/kai/skills", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(addSkillForm),
+      });
+      setShowAddSkill(false);
+      setAddSkillForm({ name: "", slug: "", description: "", category: "general", industry: "", systemPrompt: "", priceMonthly: 0 });
+      loadSkills();
+    } catch (e) {
+      console.error("Failed to create skill:", e);
+    }
+  }
+
+  async function toggleSkillStatus(skillId: string, currentStatus: boolean) {
+    try {
+      await fetch(`/api/v1/kai/skills/${skillId}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ is_active: !currentStatus }),
+      });
+      loadSkills();
+    } catch (e) {
+      console.error("Failed to toggle skill status:", e);
+    }
+  }
+
+  async function loadPassportTemplates() {
+    setPtLoading(true);
+    setPtError(false);
+    try {
+      const res = await fetch("/api/v1/kai/passport-templates");
+      if (res.ok) {
+        const d = await res.json();
+        setPassportTemplates(d.templates || d.passportTemplates || []);
+      } else {
+        setPtError(true);
+      }
+    } catch {
+      setPtError(true);
+    } finally {
+      setPtLoading(false);
+    }
+  }
+
+  async function createPassportTemplate() {
+    try {
+      await fetch("/api/v1/kai/passport-templates", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ name: "New Template", entity_type: "professional", is_active: true }),
+      });
+      loadPassportTemplates();
+    } catch (e) {
+      console.error("Failed to create passport template:", e);
+    }
+  }
+
+  async function updatePassportTemplate(templateId: string) {
+    try {
+      await fetch(`/api/v1/kai/passport-templates/${templateId}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(editPtForm),
+      });
+      setEditingPt(null);
+      loadPassportTemplates();
+    } catch (e) {
+      console.error("Failed to update template:", e);
+    }
+  }
+
+  async function togglePassportTemplate(templateId: string, currentStatus: boolean) {
+    try {
+      await fetch(`/api/v1/kai/passport-templates/${templateId}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ is_active: !currentStatus }),
+      });
+      loadPassportTemplates();
+    } catch (e) {
+      console.error("Failed to toggle template:", e);
     }
   }
 
@@ -1247,6 +1449,503 @@ export default function AdminKAIPage() {
                           </tr>
                         )}
                       </>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* WORKFLOWS TAB */}
+        {activeTab === "workflows" && (
+          <div className="space-y-4">
+            <h3 className="font-syne font-bold text-lg">Workflows</h3>
+
+            {workflowsLoading ? (
+              <div className="space-y-3">
+                {[1, 2, 3].map((i) => (
+                  <div key={i} className="h-12 bg-gray-100 rounded-lg animate-pulse" />
+                ))}
+              </div>
+            ) : workflowsError ? (
+              <div className="bg-red-50 border border-red-200 rounded-xl p-4 text-center">
+                <p className="text-sm text-red-600">Failed to load workflows</p>
+                <Button size="sm" variant="outline" onClick={loadWorkflows} className="mt-2">Retry</Button>
+              </div>
+            ) : workflows.length === 0 ? (
+              <div className="bg-white rounded-xl border border-border p-8 text-center">
+                <GitBranch size={32} className="mx-auto text-text-4 mb-2" />
+                <p className="font-bold text-text-2">No workflows yet</p>
+                <p className="text-sm text-text-4">Automated workflows will appear here</p>
+              </div>
+            ) : (
+              <div className="bg-white rounded-xl border border-border overflow-hidden">
+                <table className="w-full text-sm">
+                  <thead className="bg-off-white border-b border-border">
+                    <tr>
+                      <th className="text-left px-4 py-3 text-xs font-bold text-text-4 uppercase tracking-wider">Name</th>
+                      <th className="text-left px-4 py-3 text-xs font-bold text-text-4 uppercase tracking-wider">Trigger</th>
+                      <th className="text-left px-4 py-3 text-xs font-bold text-text-4 uppercase tracking-wider">Steps</th>
+                      <th className="text-left px-4 py-3 text-xs font-bold text-text-4 uppercase tracking-wider">Active</th>
+                      <th className="text-left px-4 py-3 text-xs font-bold text-text-4 uppercase tracking-wider">Business</th>
+                      <th className="text-left px-4 py-3 text-xs font-bold text-text-4 uppercase tracking-wider">Created</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {workflows.map((wf) => (
+                      <>
+                        <tr
+                          key={wf.id}
+                          className="border-b border-border last:border-0 hover:bg-off-white/50 cursor-pointer"
+                          onClick={() => setExpandedWorkflow(expandedWorkflow === wf.id ? null : wf.id)}
+                        >
+                          <td className="px-4 py-3 font-semibold text-text-1 flex items-center gap-2">
+                            {expandedWorkflow === wf.id ? <ChevronDown size={14} className="text-text-4 shrink-0" /> : <ChevronRight size={14} className="text-text-4 shrink-0" />}
+                            {wf.name}
+                          </td>
+                          <td className="px-4 py-3">
+                            <Badge className="text-[10px] bg-blue-100 text-blue-800">{wf.trigger_type}</Badge>
+                          </td>
+                          <td className="px-4 py-3 text-text-2">{wf.steps?.length || 0}</td>
+                          <td className="px-4 py-3">
+                            <Badge className={`text-[10px] ${wf.is_active ? "bg-green-100 text-green-800" : "bg-red-100 text-red-800"}`}>
+                              {wf.is_active ? "Active" : "Inactive"}
+                            </Badge>
+                          </td>
+                          <td className="px-4 py-3 text-text-2">{wf.business?.company_name || "—"}</td>
+                          <td className="px-4 py-3 text-xs text-text-4">{wf.created_at?.slice(0, 10)}</td>
+                        </tr>
+                        {expandedWorkflow === wf.id && (
+                          <tr key={`${wf.id}-detail`} className="bg-off-white/50">
+                            <td colSpan={6} className="px-4 py-3">
+                              <div className="space-y-3">
+                                <h4 className="text-xs font-bold text-text-4 uppercase">Steps</h4>
+                                {(wf.steps || []).length === 0 ? (
+                                  <p className="text-xs text-text-4">No steps defined</p>
+                                ) : (
+                                  <div className="space-y-2">
+                                    {(wf.steps || []).sort((a: WorkflowStep, b: WorkflowStep) => a.order - b.order).map((step: WorkflowStep, i: number) => (
+                                      <div key={step.id || i} className="flex items-start gap-3 bg-white border border-border rounded-lg p-3">
+                                        <div className="w-6 h-6 rounded-full bg-orange/10 text-orange flex items-center justify-center text-xs font-bold shrink-0">
+                                          {step.order}
+                                        </div>
+                                        <div>
+                                          <Badge className="text-[10px] bg-purple-100 text-purple-800 mb-1">{step.type}</Badge>
+                                          <pre className="text-[10px] font-mono text-text-3 mt-1 whitespace-pre-wrap">{JSON.stringify(step.config, null, 2)}</pre>
+                                        </div>
+                                      </div>
+                                    ))}
+                                  </div>
+                                )}
+                              </div>
+                            </td>
+                          </tr>
+                        )}
+                      </>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* SKILLS TAB */}
+        {activeTab === "skills" && (
+          <div className="space-y-4">
+            <div className="flex items-center justify-between">
+              <h3 className="font-syne font-bold text-lg">Skills Marketplace</h3>
+              <Button size="sm" onClick={() => setShowAddSkill(!showAddSkill)}>
+                <Plus size={14} className="mr-1" /> Add Skill
+              </Button>
+            </div>
+
+            {showAddSkill && (
+              <div className="bg-off-white rounded-xl border border-border p-4 space-y-3">
+                <div className="grid grid-cols-2 gap-3">
+                  <input
+                    type="text"
+                    value={addSkillForm.name}
+                    onChange={(e) => setAddSkillForm({ ...addSkillForm, name: e.target.value })}
+                    placeholder="Skill name"
+                    className="h-9 px-3 text-sm border border-border rounded-lg"
+                  />
+                  <input
+                    type="text"
+                    value={addSkillForm.slug}
+                    onChange={(e) => setAddSkillForm({ ...addSkillForm, slug: e.target.value })}
+                    placeholder="Slug (e.g. data-analyst)"
+                    className="h-9 px-3 text-sm border border-border rounded-lg"
+                  />
+                </div>
+                <input
+                  type="text"
+                  value={addSkillForm.description}
+                  onChange={(e) => setAddSkillForm({ ...addSkillForm, description: e.target.value })}
+                  placeholder="Description"
+                  className="w-full h-9 px-3 text-sm border border-border rounded-lg"
+                />
+                <div className="grid grid-cols-3 gap-3">
+                  <select
+                    value={addSkillForm.category}
+                    onChange={(e) => setAddSkillForm({ ...addSkillForm, category: e.target.value })}
+                    className="h-9 px-3 text-sm border border-border rounded-lg"
+                  >
+                    <option value="general">General</option>
+                    <option value="analytics">Analytics</option>
+                    <option value="customer-support">Customer Support</option>
+                    <option value="marketing">Marketing</option>
+                    <option value="operations">Operations</option>
+                    <option value="finance">Finance</option>
+                    <option value="hr">HR</option>
+                  </select>
+                  <select
+                    value={addSkillForm.industry}
+                    onChange={(e) => setAddSkillForm({ ...addSkillForm, industry: e.target.value })}
+                    className="h-9 px-3 text-sm border border-border rounded-lg"
+                  >
+                    <option value="">All Industries</option>
+                    <option value="technology">Technology</option>
+                    <option value="healthcare">Healthcare</option>
+                    <option value="finance">Finance</option>
+                    <option value="retail">Retail</option>
+                    <option value="manufacturing">Manufacturing</option>
+                    <option value="education">Education</option>
+                  </select>
+                  <input
+                    type="number"
+                    value={addSkillForm.priceMonthly || ""}
+                    onChange={(e) => setAddSkillForm({ ...addSkillForm, priceMonthly: parseFloat(e.target.value) || 0 })}
+                    placeholder="Price ($/mo)"
+                    className="h-9 px-3 text-sm border border-border rounded-lg"
+                  />
+                </div>
+                <textarea
+                  value={addSkillForm.systemPrompt}
+                  onChange={(e) => setAddSkillForm({ ...addSkillForm, systemPrompt: e.target.value })}
+                  placeholder="System prompt"
+                  rows={4}
+                  className="w-full px-3 py-2 text-sm border border-border rounded-lg resize-none font-mono"
+                />
+                <div className="flex gap-2">
+                  <Button size="sm" onClick={createSkill}>Create Skill</Button>
+                  <Button size="sm" variant="outline" onClick={() => setShowAddSkill(false)}>Cancel</Button>
+                </div>
+              </div>
+            )}
+
+            {skillsLoading ? (
+              <div className="space-y-3">
+                {[1, 2, 3].map((i) => (
+                  <div key={i} className="h-12 bg-gray-100 rounded-lg animate-pulse" />
+                ))}
+              </div>
+            ) : skillsError ? (
+              <div className="bg-red-50 border border-red-200 rounded-xl p-4 text-center">
+                <p className="text-sm text-red-600">Failed to load skills</p>
+                <Button size="sm" variant="outline" onClick={loadSkills} className="mt-2">Retry</Button>
+              </div>
+            ) : skills.length === 0 ? (
+              <div className="bg-white rounded-xl border border-border p-8 text-center">
+                <Puzzle size={32} className="mx-auto text-text-4 mb-2" />
+                <p className="font-bold text-text-2">No skills yet</p>
+                <p className="text-sm text-text-4">Marketplace skills will appear here</p>
+              </div>
+            ) : (
+              <div className="bg-white rounded-xl border border-border overflow-hidden">
+                <table className="w-full text-sm">
+                  <thead className="bg-off-white border-b border-border">
+                    <tr>
+                      <th className="text-left px-4 py-3 text-xs font-bold text-text-4 uppercase tracking-wider">Name</th>
+                      <th className="text-left px-4 py-3 text-xs font-bold text-text-4 uppercase tracking-wider">Category</th>
+                      <th className="text-left px-4 py-3 text-xs font-bold text-text-4 uppercase tracking-wider">Industry</th>
+                      <th className="text-left px-4 py-3 text-xs font-bold text-text-4 uppercase tracking-wider">Price</th>
+                      <th className="text-left px-4 py-3 text-xs font-bold text-text-4 uppercase tracking-wider">Installs</th>
+                      <th className="text-left px-4 py-3 text-xs font-bold text-text-4 uppercase tracking-wider">Rating</th>
+                      <th className="text-left px-4 py-3 text-xs font-bold text-text-4 uppercase tracking-wider">Status</th>
+                      <th className="text-left px-4 py-3 text-xs font-bold text-text-4 uppercase tracking-wider">Official</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {skills.map((skill) => (
+                      <>
+                        <tr
+                          key={skill.id}
+                          className="border-b border-border last:border-0 hover:bg-off-white/50 cursor-pointer"
+                          onClick={() => setExpandedSkill(expandedSkill === skill.id ? null : skill.id)}
+                        >
+                          <td className="px-4 py-3 font-semibold text-text-1 flex items-center gap-2">
+                            {expandedSkill === skill.id ? <ChevronDown size={14} className="text-text-4 shrink-0" /> : <ChevronRight size={14} className="text-text-4 shrink-0" />}
+                            {skill.name}
+                          </td>
+                          <td className="px-4 py-3">
+                            <Badge variant="outline" className="text-[10px]">{skill.category}</Badge>
+                          </td>
+                          <td className="px-4 py-3">
+                            <Badge variant="outline" className="text-[10px]">{skill.industry || "—"}</Badge>
+                          </td>
+                          <td className="px-4 py-3 font-bold text-text-1">${Number(skill.price_monthly).toFixed(2)}</td>
+                          <td className="px-4 py-3 text-text-2">{skill.install_count}</td>
+                          <td className="px-4 py-3 text-text-2">{skill.rating ? `${Number(skill.rating).toFixed(1)}` : "—"}</td>
+                          <td className="px-4 py-3">
+                            <button
+                              onClick={(e) => { e.stopPropagation(); toggleSkillStatus(skill.id, skill.is_active); }}
+                              className={`text-[10px] font-bold px-2 py-1 rounded-full transition-colors ${
+                                skill.is_active ? "bg-green-100 text-green-800" : "bg-gray-100 text-gray-500"
+                              }`}
+                            >
+                              {skill.is_active ? "Active" : "Inactive"}
+                            </button>
+                          </td>
+                          <td className="px-4 py-3">
+                            {skill.is_official ? (
+                              <Badge className="text-[10px] bg-blue-100 text-blue-800">Official</Badge>
+                            ) : (
+                              <span className="text-text-4 text-xs">—</span>
+                            )}
+                          </td>
+                        </tr>
+                        {expandedSkill === skill.id && (
+                          <tr key={`${skill.id}-detail`} className="bg-off-white/50">
+                            <td colSpan={8} className="px-4 py-3">
+                              <div className="space-y-3">
+                                {skill.description && (
+                                  <div>
+                                    <h4 className="text-xs font-bold text-text-4 uppercase mb-1">Description</h4>
+                                    <p className="text-xs text-text-2 bg-white border border-border rounded-lg p-3">{skill.description}</p>
+                                  </div>
+                                )}
+                                {skill.capabilities && skill.capabilities.length > 0 && (
+                                  <div>
+                                    <h4 className="text-xs font-bold text-text-4 uppercase mb-2">Capabilities</h4>
+                                    <div className="flex flex-wrap gap-1">
+                                      {skill.capabilities.map((cap: string, i: number) => (
+                                        <Badge key={i} variant="secondary" className="text-[10px]">{cap}</Badge>
+                                      ))}
+                                    </div>
+                                  </div>
+                                )}
+                                {skill.system_prompt && (
+                                  <div>
+                                    <h4 className="text-xs font-bold text-text-4 uppercase mb-1">System Prompt</h4>
+                                    <pre className="bg-white border border-border rounded-lg p-3 text-[10px] font-mono max-h-[200px] overflow-auto whitespace-pre-wrap">{skill.system_prompt}</pre>
+                                  </div>
+                                )}
+                              </div>
+                            </td>
+                          </tr>
+                        )}
+                      </>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* PASSPORT TEMPLATES TAB */}
+        {activeTab === "passport-templates" && (
+          <div className="space-y-4">
+            <div className="flex items-center justify-between">
+              <h3 className="font-syne font-bold text-lg">Passport Templates</h3>
+              <Button size="sm" onClick={createPassportTemplate}>
+                <Plus size={14} className="mr-1" /> Add Template
+              </Button>
+            </div>
+
+            {ptLoading ? (
+              <div className="space-y-3">
+                {[1, 2, 3].map((i) => (
+                  <div key={i} className="h-12 bg-gray-100 rounded-lg animate-pulse" />
+                ))}
+              </div>
+            ) : ptError ? (
+              <div className="bg-red-50 border border-red-200 rounded-xl p-4 text-center">
+                <p className="text-sm text-red-600">Failed to load passport templates</p>
+                <Button size="sm" variant="outline" onClick={loadPassportTemplates} className="mt-2">Retry</Button>
+              </div>
+            ) : passportTemplates.length === 0 ? (
+              <div className="bg-white rounded-xl border border-border p-8 text-center">
+                <Fingerprint size={32} className="mx-auto text-text-4 mb-2" />
+                <p className="font-bold text-text-2">No passport templates yet</p>
+                <p className="text-sm text-text-4">Create your first passport template to define entity schemas</p>
+              </div>
+            ) : (
+              <div className="bg-white rounded-xl border border-border overflow-hidden">
+                <table className="w-full text-sm">
+                  <thead className="bg-off-white border-b border-border">
+                    <tr>
+                      <th className="text-left px-4 py-3 text-xs font-bold text-text-4 uppercase tracking-wider">Entity Type</th>
+                      <th className="text-left px-4 py-3 text-xs font-bold text-text-4 uppercase tracking-wider">Name</th>
+                      <th className="text-left px-4 py-3 text-xs font-bold text-text-4 uppercase tracking-wider">Icon</th>
+                      <th className="text-left px-4 py-3 text-xs font-bold text-text-4 uppercase tracking-wider">Color</th>
+                      <th className="text-left px-4 py-3 text-xs font-bold text-text-4 uppercase tracking-wider">Fields</th>
+                      <th className="text-left px-4 py-3 text-xs font-bold text-text-4 uppercase tracking-wider">Status</th>
+                      <th className="text-left px-4 py-3 text-xs font-bold text-text-4 uppercase tracking-wider"></th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {passportTemplates.map((pt) => (
+                      editingPt === pt.id ? (
+                        <tr key={pt.id} className="bg-off-white">
+                          <td colSpan={7} className="px-4 py-3">
+                            <div className="grid grid-cols-4 gap-3">
+                              <div>
+                                <label className="text-[10px] font-bold text-text-4 uppercase">Name</label>
+                                <input
+                                  type="text"
+                                  value={editPtForm.name}
+                                  onChange={(e) => setEditPtForm({ ...editPtForm, name: e.target.value })}
+                                  className="w-full h-8 px-2 text-xs border border-border rounded mt-1"
+                                />
+                              </div>
+                              <div>
+                                <label className="text-[10px] font-bold text-text-4 uppercase">Icon</label>
+                                <input
+                                  type="text"
+                                  value={editPtForm.icon}
+                                  onChange={(e) => setEditPtForm({ ...editPtForm, icon: e.target.value })}
+                                  placeholder="emoji or icon name"
+                                  className="w-full h-8 px-2 text-xs border border-border rounded mt-1"
+                                />
+                              </div>
+                              <div>
+                                <label className="text-[10px] font-bold text-text-4 uppercase">Color</label>
+                                <div className="flex items-center gap-2 mt-1">
+                                  <input
+                                    type="color"
+                                    value={editPtForm.color || "#0A1628"}
+                                    onChange={(e) => setEditPtForm({ ...editPtForm, color: e.target.value })}
+                                    className="w-8 h-8 border border-border rounded cursor-pointer"
+                                  />
+                                  <input
+                                    type="text"
+                                    value={editPtForm.color || ""}
+                                    onChange={(e) => setEditPtForm({ ...editPtForm, color: e.target.value })}
+                                    className="flex-1 h-8 px-2 text-xs border border-border rounded font-mono"
+                                  />
+                                </div>
+                              </div>
+                              <div>
+                                <label className="text-[10px] font-bold text-text-4 uppercase">Active</label>
+                                <div className="mt-2">
+                                  <input
+                                    type="checkbox"
+                                    checked={editPtForm.is_active}
+                                    onChange={(e) => setEditPtForm({ ...editPtForm, is_active: e.target.checked })}
+                                    id={`edit-pt-active-${pt.id}`}
+                                  />
+                                </div>
+                              </div>
+                            </div>
+                            <div className="mt-3 flex gap-2">
+                              <Button size="sm" onClick={() => updatePassportTemplate(pt.id)}>
+                                <Save size={12} className="mr-1" /> Save
+                              </Button>
+                              <Button size="sm" variant="outline" onClick={() => setEditingPt(null)}>
+                                <X size={12} className="mr-1" /> Cancel
+                              </Button>
+                            </div>
+                          </td>
+                        </tr>
+                      ) : (
+                        <>
+                          <tr
+                            key={pt.id}
+                            className="border-b border-border last:border-0 hover:bg-off-white/50 cursor-pointer"
+                            onClick={() => setExpandedPt(expandedPt === pt.id ? null : pt.id)}
+                          >
+                            <td className="px-4 py-3">
+                              <Badge className="text-[10px] bg-blue-100 text-blue-800">{pt.entity_type}</Badge>
+                            </td>
+                            <td className="px-4 py-3 font-semibold text-text-1 flex items-center gap-2">
+                              {expandedPt === pt.id ? <ChevronDown size={14} className="text-text-4 shrink-0" /> : <ChevronRight size={14} className="text-text-4 shrink-0" />}
+                              {pt.name}
+                            </td>
+                            <td className="px-4 py-3 text-lg">{pt.icon || "—"}</td>
+                            <td className="px-4 py-3">
+                              {pt.color ? (
+                                <span className="inline-block w-5 h-5 rounded-full border border-border" style={{ backgroundColor: pt.color }} />
+                              ) : (
+                                <span className="text-text-4 text-xs">—</span>
+                              )}
+                            </td>
+                            <td className="px-4 py-3 text-text-2">{(pt.schema || []).length}</td>
+                            <td className="px-4 py-3">
+                              <button
+                                onClick={(e) => { e.stopPropagation(); togglePassportTemplate(pt.id, pt.is_active); }}
+                                className={`text-[10px] font-bold px-2 py-1 rounded-full transition-colors ${
+                                  pt.is_active ? "bg-green-100 text-green-800" : "bg-gray-100 text-gray-500"
+                                }`}
+                              >
+                                {pt.is_active ? "Active" : "Inactive"}
+                              </button>
+                            </td>
+                            <td className="px-4 py-3">
+                              <button
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  setEditingPt(pt.id);
+                                  setEditPtForm({
+                                    name: pt.name,
+                                    icon: pt.icon || "",
+                                    color: pt.color || "",
+                                    is_active: pt.is_active,
+                                  });
+                                }}
+                                className="text-text-4 hover:text-orange transition-colors"
+                              >
+                                <PencilLine size={14} />
+                              </button>
+                            </td>
+                          </tr>
+                          {expandedPt === pt.id && (
+                            <tr key={`${pt.id}-detail`} className="bg-off-white/50">
+                              <td colSpan={7} className="px-4 py-3">
+                                <div className="space-y-3">
+                                  <h4 className="text-xs font-bold text-text-4 uppercase">Schema Fields</h4>
+                                  {(pt.schema || []).length === 0 ? (
+                                    <p className="text-xs text-text-4">No schema fields defined</p>
+                                  ) : (
+                                    <div className="bg-white border border-border rounded-lg overflow-hidden">
+                                      <table className="w-full text-[10px]">
+                                        <thead className="bg-off-white border-b border-border">
+                                          <tr>
+                                            <th className="text-left px-3 py-2 font-bold text-text-4 uppercase">Key</th>
+                                            <th className="text-left px-3 py-2 font-bold text-text-4 uppercase">Label</th>
+                                            <th className="text-left px-3 py-2 font-bold text-text-4 uppercase">Type</th>
+                                            <th className="text-center px-3 py-2 font-bold text-text-4 uppercase">Required</th>
+                                          </tr>
+                                        </thead>
+                                        <tbody>
+                                          {pt.schema.map((field: SchemaField, i: number) => (
+                                            <tr key={i} className="border-b border-border last:border-0">
+                                              <td className="px-3 py-2 font-mono font-semibold text-text-2">{field.key}</td>
+                                              <td className="px-3 py-2 text-text-2">{field.label}</td>
+                                              <td className="px-3 py-2">
+                                                <Badge variant="outline" className="text-[10px]">{field.type}</Badge>
+                                              </td>
+                                              <td className="px-3 py-2 text-center">
+                                                {field.required ? (
+                                                  <CheckCircle2 size={12} className="text-success mx-auto" />
+                                                ) : (
+                                                  <XCircle size={12} className="text-red mx-auto" />
+                                                )}
+                                              </td>
+                                            </tr>
+                                          ))}
+                                        </tbody>
+                                      </table>
+                                    </div>
+                                  )}
+                                </div>
+                              </td>
+                            </tr>
+                          )}
+                        </>
+                      )
                     ))}
                   </tbody>
                 </table>

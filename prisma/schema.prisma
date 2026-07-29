@@ -7177,6 +7177,18 @@ model KpnIndustryHub {
 // PHASE 27: KAUVEX AI (KAI)
 // ============================================================
 
+model KaiConfig {
+  id          String   @id @default(uuid()) @db.Uuid
+  configKey   String   @unique @map("config_key") @db.VarChar(200)
+  configValue String?  @map("config_value") @db.Text
+  description String?  @db.Text
+  isSecret    Boolean  @default(false) @map("is_secret")
+  updatedAt   DateTime @default(now()) @updatedAt @map("updated_at")
+  updatedBy   String?  @map("updated_by") @db.Uuid
+
+  @@map("kv_kai_config")
+}
+
 model KaiKnowledgeChunk {
   id          String   @id @default(uuid()) @db.Uuid
   category    String   @db.VarChar(50)
@@ -7281,6 +7293,10 @@ model KaiBusiness {
 
   agents        KaiAgent[]
   subscriptions KaiSubscription[]
+  workflows     KaiWorkflow[]
+  documents     KaiDocument[]
+  connections   KaiConnection[]
+  skillInstalls KaiSkillInstall[]
 
   @@index([userId], map: "idx_kai_biz_user")
   @@index([industry], map: "idx_kai_biz_industry")
@@ -7346,8 +7362,11 @@ model KaiAgent {
   createdAt      DateTime @default(now()) @map("created_at")
   updatedAt      DateTime @default(now()) @updatedAt @map("updated_at")
 
-  business    KaiBusiness            @relation(fields: [businessId], references: [id], onDelete: Cascade)
-  permissions KaiAgentPermission[]
+  business         KaiBusiness            @relation(fields: [businessId], references: [id], onDelete: Cascade)
+  permissions      KaiAgentPermission[]
+  sentMessages     KaiAgentMessage[]      @relation("sentMessages")
+  receivedMessages KaiAgentMessage[]      @relation("receivedMessages")
+  skillInstalls    KaiSkillInstall[]
 
   @@index([businessId], map: "idx_kai_agent_biz")
   @@index([role], map: "idx_kai_agent_role")
@@ -7385,7 +7404,9 @@ model DigitalPassport {
   createdAt    DateTime @default(now()) @map("created_at")
   updatedAt    DateTime @default(now()) @updatedAt @map("updated_at")
 
-  events DigitalPassportEvent[]
+  events    DigitalPassportEvent[]
+  transfers DigitalPassportTransfer[]
+  vaultDocs DigitalPassportDocument[]
 
   @@index([entityType], map: "idx_kai_passport_type")
   @@index([entityType, entityId], map: "idx_kai_passport_entity")
@@ -7411,4 +7432,222 @@ model DigitalPassportEvent {
   @@index([passportId], map: "idx_kai_passport_event")
   @@index([eventDate], map: "idx_kai_passport_event_date")
   @@map("kv_digital_passport_events")
+}
+
+// ============================================================
+// KAI PHASE 28 — Studio, Marketplace, Collaboration, Brain, Passport Expansion
+// ============================================================
+
+model KaiWorkflow {
+  id            String   @id @default(uuid()) @db.Uuid
+  businessId    String   @map("business_id") @db.Uuid
+  name          String   @db.VarChar(200)
+  description   String?  @db.Text
+  triggerType   String   @map("trigger_type") @db.VarChar(50)
+  triggerConfig Json     @default("{}") @map("trigger_config")
+  isActive      Boolean  @default(true) @map("is_active")
+  version       Int      @default(1)
+  metadata      Json     @default("{}")
+  createdAt     DateTime @default(now()) @map("created_at")
+  updatedAt     DateTime @default(now()) @updatedAt @map("updated_at")
+
+  steps         KaiWorkflowStep[]
+  agentMessages KaiAgentMessage[]
+
+  business KaiBusiness @relation(fields: [businessId], references: [id], onDelete: Cascade)
+
+  @@index([businessId], map: "idx_kai_wf_biz")
+  @@index([isActive], map: "idx_kai_wf_active")
+  @@map("kv_kai_workflows")
+}
+
+model KaiWorkflowStep {
+  id            String  @id @default(uuid()) @db.Uuid
+  workflowId    String  @map("workflow_id") @db.Uuid
+  stepOrder     Int     @map("step_order")
+  stepType      String  @map("step_type") @db.VarChar(50)
+  stepConfig    Json    @default("{}") @map("step_config")
+  nextOnSuccess String? @map("next_on_success") @db.Uuid
+  nextOnFailure String? @map("next_on_failure") @db.Uuid
+  createdAt     DateTime @default(now()) @map("created_at")
+
+  workflow KaiWorkflow @relation(fields: [workflowId], references: [id], onDelete: Cascade)
+
+  @@index([workflowId, stepOrder], map: "idx_kai_wf_step_order")
+  @@map("kv_kai_workflow_steps")
+}
+
+model KaiSkill {
+  id            String   @id @default(uuid()) @db.Uuid
+  name          String   @db.VarChar(200)
+  slug          String   @unique @db.VarChar(200)
+  description   String?  @db.Text
+  category      String?  @db.VarChar(100)
+  industry      String?  @db.VarChar(100)
+  priceMonthly  Decimal  @default(0) @map("price_monthly") @db.Decimal(10, 2)
+  capabilities  Json     @default("[]")
+  systemPrompt  String?  @map("system_prompt") @db.Text
+  icon          String?  @db.VarChar(50)
+  color         String?  @db.VarChar(30)
+  isActive      Boolean  @default(true) @map("is_active")
+  isOfficial    Boolean  @default(true) @map("is_official")
+  developerId   String?  @map("developer_id") @db.Uuid
+  installCount  Int      @default(0) @map("install_count")
+  rating        Decimal  @default(0) @db.Decimal(3, 2)
+  createdAt     DateTime @default(now()) @map("created_at")
+  updatedAt     DateTime @default(now()) @updatedAt @map("updated_at")
+
+  installs KaiSkillInstall[]
+
+  @@index([category], map: "idx_kai_skill_cat")
+  @@index([industry], map: "idx_kai_skill_ind")
+  @@index([isActive], map: "idx_kai_skill_active")
+  @@map("kv_kai_skills")
+}
+
+model KaiSkillInstall {
+  id          String   @id @default(uuid()) @db.Uuid
+  skillId     String   @map("skill_id") @db.Uuid
+  agentId     String   @map("agent_id") @db.Uuid
+  businessId  String   @map("business_id") @db.Uuid
+  isActive    Boolean  @default(true) @map("is_active")
+  installedAt DateTime @default(now()) @map("installed_at")
+
+  skill    KaiSkill    @relation(fields: [skillId], references: [id], onDelete: Cascade)
+  agent    KaiAgent    @relation(fields: [agentId], references: [id], onDelete: Cascade)
+  business KaiBusiness @relation(fields: [businessId], references: [id], onDelete: Cascade)
+
+  @@unique([skillId, agentId])
+  @@map("kv_kai_skill_installs")
+}
+
+model KaiIndustryPack {
+  id               String   @id @default(uuid()) @db.Uuid
+  name             String   @db.VarChar(200)
+  slug             String   @unique @db.VarChar(200)
+  industry         String   @db.VarChar(100)
+  description      String?  @db.Text
+  priceMonthly     Decimal  @default(0) @map("price_monthly") @db.Decimal(10, 2)
+  priceYearly      Decimal? @map("price_yearly") @db.Decimal(10, 2)
+  skills           Json     @default("[]")
+  knowledgeBaseDocs Json    @default("[]") @map("knowledge_base_docs")
+  icon             String?  @db.VarChar(50)
+  color            String?  @db.VarChar(30)
+  isActive         Boolean  @default(true) @map("is_active")
+  sortOrder        Int      @default(0) @map("sort_order")
+  createdAt        DateTime @default(now()) @map("created_at")
+
+  @@map("kv_kai_industry_packs")
+}
+
+model KaiAgentMessage {
+  id              String    @id @default(uuid()) @db.Uuid
+  senderAgentId   String    @map("sender_agent_id") @db.Uuid
+  receiverAgentId String    @map("receiver_agent_id") @db.Uuid
+  workflowId      String?   @map("workflow_id") @db.Uuid
+  subject         String?   @db.VarChar(500)
+  message         String    @db.Text
+  context         Json      @default("{}")
+  status          String    @default("pending") @db.VarChar(20)
+  readAt          DateTime? @map("read_at")
+  actedAt         DateTime? @map("acted_at")
+  createdAt       DateTime  @default(now()) @map("created_at")
+
+  sender   KaiAgent     @relation("sentMessages", fields: [senderAgentId], references: [id], onDelete: Cascade)
+  receiver KaiAgent     @relation("receivedMessages", fields: [receiverAgentId], references: [id], onDelete: Cascade)
+  workflow KaiWorkflow? @relation(fields: [workflowId], references: [id], onDelete: SetNull)
+
+  @@index([senderAgentId], map: "idx_kai_amsg_sender")
+  @@index([receiverAgentId], map: "idx_kai_amsg_receiver")
+  @@index([status], map: "idx_kai_amsg_status")
+  @@map("kv_kai_agent_messages")
+}
+
+model KaiDocument {
+  id         String   @id @default(uuid()) @db.Uuid
+  businessId String   @map("business_id") @db.Uuid
+  name       String   @db.VarChar(500)
+  type       String?  @db.VarChar(50)
+  fileUrl    String?  @map("file_url") @db.Text
+  fileSize   Int?     @map("file_size")
+  mimeType   String?  @map("mime_type") @db.VarChar(100)
+  source     String   @default("upload") @db.VarChar(20)
+  isIndexed  Boolean  @default(false) @map("is_indexed")
+  metadata   Json     @default("{}")
+  createdAt  DateTime @default(now()) @map("created_at")
+  updatedAt  DateTime @default(now()) @updatedAt @map("updated_at")
+
+  business KaiBusiness @relation(fields: [businessId], references: [id], onDelete: Cascade)
+
+  @@index([businessId], map: "idx_kai_doc_biz")
+  @@index([type], map: "idx_kai_doc_type")
+  @@index([isIndexed], map: "idx_kai_doc_indexed")
+  @@map("kv_kai_documents")
+}
+
+model KaiConnection {
+  id          String    @id @default(uuid()) @db.Uuid
+  businessId  String    @map("business_id") @db.Uuid
+  name        String    @db.VarChar(200)
+  provider    String    @db.VarChar(100)
+  config      Json      @default("{}")
+  isConnected Boolean   @default(false) @map("is_connected")
+  lastSyncAt  DateTime? @map("last_sync_at")
+  createdAt   DateTime  @default(now()) @map("created_at")
+  updatedAt   DateTime  @default(now()) @updatedAt @map("updated_at")
+
+  business KaiBusiness @relation(fields: [businessId], references: [id], onDelete: Cascade)
+
+  @@index([businessId], map: "idx_kai_conn_biz")
+  @@index([provider], map: "idx_kai_conn_provider")
+  @@map("kv_kai_connections")
+}
+
+model DigitalPassportTemplate {
+  id           String @id @default(uuid()) @db.Uuid
+  entityType   String @unique @map("entity_type") @db.VarChar(50)
+  name         String @db.VarChar(200)
+  icon         String? @db.VarChar(50)
+  color        String? @db.VarChar(30)
+  schemaFields Json   @default("[]") @map("schema_fields")
+  isActive     Boolean @default(true) @map("is_active")
+  createdAt    DateTime @default(now()) @map("created_at")
+
+  @@map("kv_digital_passport_templates")
+}
+
+model DigitalPassportTransfer {
+  id           String    @id @default(uuid()) @db.Uuid
+  passportId   String    @map("passport_id") @db.Uuid
+  fromOwnerId  String?   @map("from_owner_id") @db.Uuid
+  toOwnerId    String?   @map("to_owner_id") @db.Uuid
+  transferType String    @default("sale") @map("transfer_type") @db.VarChar(20)
+  status       String    @default("pending") @db.VarChar(20)
+  metadata     Json      @default("{}")
+  createdAt    DateTime  @default(now()) @map("created_at")
+  completedAt  DateTime? @map("completed_at")
+
+  passport DigitalPassport @relation(fields: [passportId], references: [id], onDelete: Cascade)
+
+  @@index([passportId], map: "idx_kai_passtrans_passport")
+  @@index([status], map: "idx_kai_passtrans_status")
+  @@map("kv_digital_passport_transfers")
+}
+
+model DigitalPassportDocument {
+  id         String   @id @default(uuid()) @db.Uuid
+  passportId String   @map("passport_id") @db.Uuid
+  name       String   @db.VarChar(500)
+  type       String?  @db.VarChar(50)
+  fileUrl    String?  @map("file_url") @db.Text
+  fileSize   Int?     @map("file_size")
+  mimeType   String?  @map("mime_type") @db.VarChar(100)
+  uploadedBy String?  @map("uploaded_by") @db.Uuid
+  metadata   Json     @default("{}")
+  createdAt  DateTime @default(now()) @map("created_at")
+
+  passport DigitalPassport @relation(fields: [passportId], references: [id], onDelete: Cascade)
+
+  @@index([passportId], map: "idx_kai_passdoc_passport")
+  @@map("kv_digital_passport_documents")
 }

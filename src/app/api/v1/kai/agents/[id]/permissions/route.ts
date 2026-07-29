@@ -4,6 +4,34 @@ import { prisma } from "@/lib/prisma";
 
 export const dynamic = "force-dynamic";
 
+export async function GET(
+  _request: NextRequest,
+  { params }: { params: Promise<{ id: string }> }
+) {
+  const { user, error: authErr } = await getAuthUser(_request);
+  if (authErr) return authErr;
+
+  try {
+    const { id } = await params;
+
+    const agent = await prisma.kaiAgent.findUnique({
+      where: { id },
+      include: { business: true },
+    });
+
+    if (!agent) return errorResponse("Agent not found", 404);
+    if (agent.business.userId !== user!.id) return errorResponse("Unauthorized", 403);
+
+    const permissions = await prisma.kaiAgentPermission.findMany({
+      where: { agentId: id },
+    });
+
+    return successResponse(permissions);
+  } catch (err) {
+    return errorResponse((err as Error).message, 500);
+  }
+}
+
 export async function PUT(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }

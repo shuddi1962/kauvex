@@ -1,5 +1,5 @@
 import { NextRequest } from "next/server";
-import { successResponse, errorResponse, getAuthUser } from "@/lib/api-helpers";
+import { successResponse, errorResponse, getAuthUser, requireAdmin } from "@/lib/api-helpers";
 import { prisma } from "@/lib/prisma";
 
 export const dynamic = "force-dynamic";
@@ -9,6 +9,20 @@ export async function GET(request: NextRequest) {
   if (authErr) return authErr;
 
   try {
+    const { searchParams } = new URL(request.url);
+    const all = searchParams.get("all") === "true";
+
+    if (all) {
+      const { user: admin, error: adminErr } = await requireAdmin(request);
+      if (adminErr) return adminErr;
+
+      const businesses = await prisma.kaiBusiness.findMany({
+        include: { _count: { select: { agents: true } } },
+        orderBy: { createdAt: "desc" },
+      });
+      return successResponse(businesses);
+    }
+
     const business = await prisma.kaiBusiness.findUnique({
       where: { userId: user!.id },
     });
@@ -71,6 +85,61 @@ export async function POST(request: NextRequest) {
     });
 
     return successResponse(business, 201);
+  } catch (err) {
+    return errorResponse((err as Error).message, 500);
+  }
+}
+
+export async function PATCH(request: NextRequest) {
+  const { user, error: authErr } = await getAuthUser(request);
+  if (authErr) return authErr;
+
+  try {
+    const business = await prisma.kaiBusiness.findUnique({
+      where: { userId: user!.id },
+    });
+    if (!business) return errorResponse("Business not found", 404);
+
+    const body = await request.json();
+    const { companyName, industry, staffCount, description, products, services, locations, website, logoUrl, contactEmail, contactPhone, onboarded, metadata } = body;
+
+    const updated = await prisma.kaiBusiness.update({
+      where: { id: business.id },
+      data: {
+        ...(companyName !== undefined && { companyName }),
+        ...(industry !== undefined && { industry }),
+        ...(staffCount !== undefined && { staffCount }),
+        ...(description !== undefined && { description }),
+        ...(products !== undefined && { products }),
+        ...(services !== undefined && { services }),
+        ...(locations !== undefined && { locations }),
+        ...(website !== undefined && { website }),
+        ...(logoUrl !== undefined && { logoUrl }),
+        ...(contactEmail !== undefined && { contactEmail }),
+        ...(contactPhone !== undefined && { contactPhone }),
+        ...(onboarded !== undefined && { onboarded }),
+        ...(metadata !== undefined && { metadata }),
+      },
+    });
+
+    return successResponse(updated);
+  } catch (err) {
+    return errorResponse((err as Error).message, 500);
+  }
+}
+
+export async function DELETE(request: NextRequest) {
+  const { user, error: authErr } = await getAuthUser(request);
+  if (authErr) return authErr;
+
+  try {
+    const business = await prisma.kaiBusiness.findUnique({
+      where: { userId: user!.id },
+    });
+    if (!business) return errorResponse("Business not found", 404);
+
+    await prisma.kaiBusiness.delete({ where: { id: business.id } });
+    return successResponse({ deleted: true });
   } catch (err) {
     return errorResponse((err as Error).message, 500);
   }

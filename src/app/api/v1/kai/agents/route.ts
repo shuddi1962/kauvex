@@ -1,5 +1,5 @@
 import { NextRequest } from "next/server";
-import { successResponse, errorResponse, getAuthUser } from "@/lib/api-helpers";
+import { successResponse, errorResponse, getAuthUser, requireAdmin } from "@/lib/api-helpers";
 import { prisma } from "@/lib/prisma";
 
 export const dynamic = "force-dynamic";
@@ -9,6 +9,20 @@ export async function GET(request: NextRequest) {
   if (authErr) return authErr;
 
   try {
+    const { searchParams } = new URL(request.url);
+    const all = searchParams.get("all") === "true";
+
+    if (all) {
+      const { user: admin, error: adminErr } = await requireAdmin(request);
+      if (adminErr) return adminErr;
+
+      const agents = await prisma.kaiAgent.findMany({
+        include: { permissions: true, business: true },
+        orderBy: { createdAt: "desc" },
+      });
+      return successResponse(agents);
+    }
+
     const business = await prisma.kaiBusiness.findUnique({
       where: { userId: user!.id },
     });

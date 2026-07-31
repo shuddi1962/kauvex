@@ -29,7 +29,7 @@
   - Pages: `src/app/business/ai/page.tsx` (Ask KAI), `src/app/admin/kai/business-intelligence/page.tsx`; nav entry added in `src/app/business/layout.tsx`.
 - **Workspace AI infra**: `scripts/workspace-index.mjs`, `.opencode/workspace-index.md` (156 lines), `.opencode/agent/workspace-context.md` (KAI subagent), `.opencode/command/kai.md`.
 - **Vision docs**: all 21 canvas docs + `system-architecture.md` saved in `docs/canvas/`.
-- **EC Blueprint**: 26 of 50 docs written in `docs/engineering/` (see Pending #3).
+- **EC Blueprint**: complete — all 50 docs written in `docs/engineering/` (EC-001..EC-050, index in README.md).
 
 ## Pending — resume points (NOT done / NOT verified)
 
@@ -39,12 +39,7 @@
 2. **Verify Phase 33/31 code compiles.** The last `npx tsc --noEmit` was interrupted
    before finishing. Run: `npx prisma validate && npx prisma generate` then
    `npx tsc --noEmit`. Fix any errors in the Phase 31/33 files.
-3. **Finish the EC Blueprint** — 26/50 written. Present:
-   - Phase A missing: EC-007 Security, EC-008 Performance, EC-009 Testing, EC-010 Documentation
-   - Phase B missing (all): EC-011 Database, EC-012 API, EC-013 Auth, EC-014 Multi-tenancy, EC-015 Events, EC-016 Workers, EC-017 Notifications, EC-018 Search, EC-019 Storage, EC-020 Caching
-   - Phase C missing: EC-027 RAG, EC-028 AI Governance
-   - Phase E missing: EC-040 Production Planning, EC-041 Machine Integrations, EC-042 Quality Control
-   - Phase F missing (all): EC-043 Marketplace, EC-044 Vendor, EC-045 Business OS, EC-046 Financial, EC-047 Analytics
+3. ~~Finish the EC Blueprint~~ — **DONE**: all 50 docs (EC-001..EC-050) written in `docs/engineering/`, indexed in `docs/engineering/README.md`.
 4. **Wire `/business/brain` training UI** to POST `/api/v1/kai-business/brain` (page exists but upload/training flow not connected to new engine).
 5. **Admin sidebar link** for `/admin/kai/business-intelligence` in the admin shell.
 6. **Restart opencode** to activate the `/kai` command and KAI subagent; regenerate

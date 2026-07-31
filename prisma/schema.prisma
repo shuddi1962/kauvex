@@ -7195,6 +7195,7 @@ model KaiKnowledgeChunk {
   subcategory String?  @db.VarChar(100)
   title       String   @db.VarChar(500)
   content     String   @db.Text
+  businessId  String?  @map("business_id") @db.Uuid
   metadata    Json?    @default("{}")
   sourceUrl   String?  @map("source_url") @db.Text
   language    String   @default("en") @db.VarChar(10)
@@ -7210,6 +7211,7 @@ model KaiKnowledgeChunk {
   @@index([category], map: "idx_kai_kb_category")
   @@index([subcategory], map: "idx_kai_kb_subcategory")
   @@index([isActive], map: "idx_kai_kb_active")
+  @@index([businessId], map: "idx_kai_kb_business")
   @@map("kv_kai_knowledge_chunks")
 }
 
@@ -7603,6 +7605,32 @@ model KaiConnection {
   @@map("kv_kai_connections")
 }
 
+// ============================================================
+// KAI PHASE 33 — Business Intelligence (Company Brain)
+// Every question a business asks KAI, with mode, live data
+// snapshot, sources, latency, and feedback.
+// ============================================================
+
+model KaiBusinessQuestion {
+  id          String   @id @default(uuid()) @db.Uuid
+  businessId  String?  @map("business_id") @db.Uuid
+  orgId       String?  @map("org_id") @db.Uuid
+  userId      String?  @map("user_id") @db.Uuid
+  question    String   @db.Text
+  answer      String   @db.Text
+  mode        String   @default("hybrid") @map("mode") @db.VarChar(20) // live | rag | hybrid | fallback
+  liveData    Json     @default("{}") @map("live_data")
+  sources     Json     @default("[]")
+  latencyMs   Int      @default(0) @map("latency_ms")
+  feedback    Int? // 1 helpful | -1 not helpful
+  createdAt   DateTime @default(now()) @map("created_at")
+
+  @@index([businessId], map: "idx_kai_bq_business")
+  @@index([orgId], map: "idx_kai_bq_org")
+  @@index([createdAt], map: "idx_kai_bq_created")
+  @@map("kv_kai_business_questions")
+}
+
 model DigitalPassportTemplate {
   id           String @id @default(uuid()) @db.Uuid
   entityType   String @unique @map("entity_type") @db.VarChar(50)
@@ -7650,4 +7678,1434 @@ model DigitalPassportDocument {
 
   @@index([passportId], map: "idx_kai_passdoc_passport")
   @@map("kv_digital_passport_documents")
+}
+
+// =====================================================================
+// PHASE 29: K BUSINESS OS (kv_bos_*)
+// =====================================================================
+
+model BosOrganization {
+  id                  String   @id @default(uuid()) @db.Uuid
+  parentId            String?  @map("parent_id") @db.Uuid
+  name                String   @db.VarChar(200)
+  legalName           String?  @map("legal_name") @db.VarChar(200)
+  orgType             String   @default("company") @map("org_type") @db.VarChar(50) // company | subsidiary | division | branch | ngo | government | educational | healthcare | sole_proprietor
+  industry            String?  @db.VarChar(100)
+  registrationNumber  String?  @map("registration_number") @db.VarChar(100)
+  taxId               String?  @map("tax_id") @db.VarChar(100)
+  vatNumber           String?  @map("vat_number") @db.VarChar(100)
+  licenses            Json?    @map("licenses")
+  certifications      Json?    @map("certifications")
+  insurance           Json?    @map("insurance")
+  banking             Json?    @map("banking")
+  address             Json?    @map("address")
+  country             String   @default("NG") @db.VarChar(10)
+  currencyCode        String   @default("NGN") @map("currency_code") @db.VarChar(10)
+  branding            Json?    @map("branding")
+  digitalSignatureUrl String?  @map("digital_signature_url") @db.Text
+  website             String?  @db.Text
+  contactEmail        String?  @map("contact_email") @db.VarChar(200)
+  contactPhone        String?  @map("contact_phone") @db.VarChar(50)
+  plan                String   @default("starter") @db.VarChar(30) // starter | grow | scale | enterprise
+  status              String   @default("active") @db.VarChar(20) // active | suspended | trial
+  metadata            Json?    @map("metadata")
+  createdAt           DateTime @default(now()) @map("created_at")
+  updatedAt           DateTime @default(now()) @updatedAt @map("updated_at")
+
+  departments BosDepartment[]
+  members     BosOrgMember[]
+  employees   BosEmployee[]
+  settings    BosOrgSetting[]
+
+  @@index([parentId], map: "idx_bos_org_parent")
+  @@index([orgType], map: "idx_bos_org_type")
+  @@index([status], map: "idx_bos_org_status")
+  @@map("kv_bos_organizations")
+}
+
+model BosOrgMember {
+  id            String   @id @default(uuid()) @db.Uuid
+  orgId         String   @map("org_id") @db.Uuid
+  userId        String   @map("user_id") @db.Uuid
+  memberRole    String   @default("member") @map("member_role") @db.VarChar(30) // owner | admin | manager | member | viewer
+  departmentId  String?  @map("department_id") @db.Uuid
+  jobTitle      String?  @map("job_title") @db.VarChar(150)
+  isDefaultOrg  Boolean  @default(false) @map("is_default_org")
+  status        String   @default("active") @db.VarChar(20) // active | invited | disabled
+  createdAt     DateTime @default(now()) @map("created_at")
+  updatedAt     DateTime @default(now()) @updatedAt @map("updated_at")
+
+  org BosOrganization @relation(fields: [orgId], references: [id], onDelete: Cascade)
+
+  @@unique([orgId, userId], map: "idx_bos_member_org_user")
+  @@index([orgId], map: "idx_bos_member_org")
+  @@index([userId], map: "idx_bos_member_user")
+  @@map("kv_bos_org_members")
+}
+
+model BosDepartment {
+  id            String   @id @default(uuid()) @db.Uuid
+  orgId         String   @map("org_id") @db.Uuid
+  parentId      String?  @map("parent_id") @db.Uuid
+  name          String   @db.VarChar(150)
+  unitType      String   @default("department") @map("unit_type") @db.VarChar(30) // department | division | branch | cost_center | business_unit | team
+  code          String?  @db.VarChar(30)
+  managerId     String?  @map("manager_id") @db.Uuid
+  budget        Decimal? @db.Decimal(14, 2)
+  headcountLimit Int?    @map("headcount_limit")
+  description   String?  @db.Text
+  status        String   @default("active") @db.VarChar(20)
+  createdAt     DateTime @default(now()) @map("created_at")
+
+  org BosOrganization @relation(fields: [orgId], references: [id], onDelete: Cascade)
+
+  @@index([orgId], map: "idx_bos_dept_org")
+  @@index([parentId], map: "idx_bos_dept_parent")
+  @@index([unitType], map: "idx_bos_dept_type")
+  @@map("kv_bos_departments")
+}
+
+model BosEmployee {
+  id               String   @id @default(uuid()) @db.Uuid
+  orgId            String   @map("org_id") @db.Uuid
+  departmentId     String?  @map("department_id") @db.Uuid
+  userId           String?  @map("user_id") @db.Uuid
+  employeeCode     String?  @map("employee_code") @db.VarChar(30)
+  firstName        String   @map("first_name") @db.VarChar(100)
+  lastName         String   @map("last_name") @db.VarChar(100)
+  email            String?  @db.VarChar(200)
+  phone            String?  @db.VarChar(30)
+  jobTitle         String?  @map("job_title") @db.VarChar(150)
+  employmentType   String   @default("full_time") @map("employment_type") @db.VarChar(30) // full_time | part_time | contract | intern | temporary
+  hireDate         DateTime? @map("hire_date")
+  terminationDate  DateTime? @map("termination_date")
+  salaryInput      Decimal? @map("salary_input") @db.Decimal(14, 2)
+  payFrequency     String   @default("monthly") @map("pay_frequency") @db.VarChar(20)
+  bankAccount      Json?    @map("bank_account")
+  emergencyContact Json?    @map("emergency_contact")
+  skills           String[] @default([]) @db.Text
+  certifications   Json?    @map("certifications")
+  attendanceSummary Json?   @map("attendance_summary")
+  status           String   @default("active") @db.VarChar(20) // active | on_leave | terminated | probation
+  createdAt        DateTime @default(now()) @map("created_at")
+  updatedAt        DateTime @default(now()) @updatedAt @map("updated_at")
+
+  org BosOrganization @relation(fields: [orgId], references: [id], onDelete: Cascade)
+
+  @@index([orgId], map: "idx_bos_emp_org")
+  @@index([departmentId], map: "idx_bos_emp_dept")
+  @@index([status], map: "idx_bos_emp_status")
+  @@map("kv_bos_employees")
+}
+
+model BosCustomer {
+  id             String   @id @default(uuid()) @db.Uuid
+  orgId          String   @map("org_id") @db.Uuid
+  customerCode   String?  @map("customer_code") @db.VarChar(30)
+  name           String   @db.VarChar(200)
+  customerType   String   @default("company") @map("customer_type") @db.VarChar(30)
+  segment        String   @default("general") @db.VarChar(50) // general | wholesale | retail | premium | vip | government | ngo | b2b
+  industry       String?  @db.VarChar(100)
+  email          String?  @db.VarChar(200)
+  phone          String?  @db.VarChar(30)
+  address        Json?    @map("address")
+  website        String?  @db.Text
+  creditLimit    Decimal? @map("credit_limit") @db.Decimal(14, 2)
+  paymentTerms   String?  @map("payment_terms") @db.VarChar(50)
+  taxId          String?  @map("tax_id") @db.VarChar(100)
+  assignedTo     String?  @map("assigned_to") @db.Uuid
+  tags           String[] @default([]) @db.Text
+  rating         Int      @default(0)
+  lifetimeValue  Decimal  @default(0) @map("lifetime_value") @db.Decimal(14, 2)
+  notes          String?  @db.Text
+  status         String   @default("active") @db.VarChar(20)
+  createdAt      DateTime @default(now()) @map("created_at")
+  updatedAt      DateTime @default(now()) @updatedAt @map("updated_at")
+
+  contacts BosContact[]
+
+  @@index([orgId], map: "idx_bos_cust_org")
+  @@index([segment], map: "idx_bos_cust_segment")
+  @@index([status], map: "idx_bos_cust_status")
+  @@map("kv_bos_customers")
+}
+
+model BosContact {
+  id         String   @id @default(uuid()) @db.Uuid
+  orgId      String   @map("org_id") @db.Uuid
+  customerId String?  @map("customer_id") @db.Uuid
+  firstName  String   @map("first_name") @db.VarChar(100)
+  lastName   String   @map("last_name") @db.VarChar(100)
+  email      String?  @db.VarChar(200)
+  phone      String?  @db.VarChar(30)
+  whatsapp   String?  @db.VarChar(30)
+  jobTitle   String?  @map("job_title") @db.VarChar(150)
+  department String?  @db.VarChar(100)
+  isPrimary  Boolean  @default(false) @map("is_primary")
+  notes      String?  @db.Text
+  createdAt  DateTime @default(now()) @map("created_at")
+
+  customer BosCustomer? @relation(fields: [customerId], references: [id], onDelete: Cascade)
+
+  @@index([orgId], map: "idx_bos_contact_org")
+  @@index([customerId], map: "idx_bos_contact_customer")
+  @@map("kv_bos_contacts")
+}
+
+model BosLead {
+  id                String   @id @default(uuid()) @db.Uuid
+  orgId             String   @map("org_id") @db.Uuid
+  companyName       String?  @map("company_name") @db.VarChar(200)
+  contactName       String   @map("contact_name") @db.VarChar(150)
+  email             String?  @db.VarChar(200)
+  phone             String?  @db.VarChar(30)
+  source            String?  @db.VarChar(50) // website | referral | walk_in | social | call | email | whatsapp | marketplace | other
+  stage             String   @default("new") @db.VarChar(30) // new | contacted | qualified | proposal | won | lost
+  score             Int      @default(0)
+  estimatedValue    Decimal? @map("estimated_value") @db.Decimal(14, 2)
+  currencyCode      String   @default("NGN") @map("currency_code") @db.VarChar(10)
+  assignedTo        String?  @map("assigned_to") @db.Uuid
+  interests         String[] @default([]) @db.Text
+  notes             String?  @db.Text
+  convertedCustomerId String? @map("converted_customer_id") @db.Uuid
+  createdAt         DateTime @default(now()) @map("created_at")
+  updatedAt         DateTime @default(now()) @updatedAt @map("updated_at")
+
+  @@index([orgId], map: "idx_bos_lead_org")
+  @@index([stage], map: "idx_bos_lead_stage")
+  @@index([score], map: "idx_bos_lead_score")
+  @@map("kv_bos_leads")
+}
+
+model BosDeal {
+  id           String    @id @default(uuid()) @db.Uuid
+  orgId        String    @map("org_id") @db.Uuid
+  customerId   String?   @map("customer_id") @db.Uuid
+  leadId       String?   @map("lead_id") @db.Uuid
+  dealName     String    @map("deal_name") @db.VarChar(200)
+  pipeline     String    @default("sales") @db.VarChar(50) // sales | b2b | projects | services
+  stage        String    @default("qualification") @db.VarChar(30) // qualification | discovery | proposal | negotiation | won | lost
+  amount       Decimal   @db.Decimal(14, 2)
+  currencyCode String    @default("NGN") @map("currency_code") @db.VarChar(10)
+  probability  Int       @default(10)
+  expectedClose DateTime? @map("expected_close")
+  ownerId      String?   @map("owner_id") @db.Uuid
+  winReason    String?   @map("win_reason") @db.Text
+  notes        String?   @db.Text
+  closedAt     DateTime? @map("closed_at")
+  createdAt    DateTime  @default(now()) @map("created_at")
+  updatedAt    DateTime  @default(now()) @updatedAt @map("updated_at")
+
+  @@index([orgId], map: "idx_bos_deal_org")
+  @@index([customerId], map: "idx_bos_deal_customer")
+  @@index([stage], map: "idx_bos_deal_stage")
+  @@index([ownerId], map: "idx_bos_deal_owner")
+  @@map("kv_bos_deals")
+}
+
+model BosQuotation {
+  id           String   @id @default(uuid()) @db.Uuid
+  orgId        String   @map("org_id") @db.Uuid
+  quoteNumber  String   @map("quote_number") @db.VarChar(30)
+  customerId   String?  @map("customer_id") @db.Uuid
+  dealId       String?  @map("deal_id") @db.Uuid
+  title        String   @db.VarChar(200)
+  items        Json     @default("[]")
+  subtotal     Decimal  @default(0) @db.Decimal(14, 2)
+  discount     Decimal  @default(0) @db.Decimal(14, 2)
+  tax          Decimal  @default(0) @db.Decimal(14, 2)
+  total        Decimal  @default(0) @db.Decimal(14, 2)
+  currencyCode String   @default("NGN") @map("currency_code") @db.VarChar(10)
+  status       String   @default("draft") @db.VarChar(30) // draft | sent | accepted | rejected | expired | revised | converted
+  validUntil   DateTime? @map("valid_until")
+  terms        String?  @db.Text
+  assignedTo   String?  @map("assigned_to") @db.Uuid
+  revision     Int      @default(1)
+  createdAt    DateTime @default(now()) @map("created_at")
+  updatedAt    DateTime @default(now()) @updatedAt @map("updated_at")
+
+  @@index([orgId], map: "idx_bos_quote_org")
+  @@index([customerId], map: "idx_bos_quote_customer")
+  @@index([status], map: "idx_bos_quote_status")
+  @@map("kv_bos_quotations")
+}
+
+model BosSalesOrder {
+  id             String   @id @default(uuid()) @db.Uuid
+  orgId          String   @map("org_id") @db.Uuid
+  orderNumber    String   @map("order_number") @db.VarChar(30)
+  customerId     String?  @map("customer_id") @db.Uuid
+  quotationId    String?  @map("quotation_id") @db.Uuid
+  items          Json     @default("[]")
+  subtotal       Decimal  @default(0) @db.Decimal(14, 2)
+  discount       Decimal  @default(0) @db.Decimal(14, 2)
+  tax            Decimal  @default(0) @db.Decimal(14, 2)
+  total          Decimal  @default(0) @db.Decimal(14, 2)
+  currencyCode   String   @default("NGN") @map("currency_code") @db.VarChar(10)
+  status         String   @default("draft") @db.VarChar(30) // draft | confirmed | fulfilled | invoiced | cancelled | completed
+  orderDate      DateTime @default(now()) @map("order_date")
+  deliveryDate   DateTime? @map("delivery_date")
+  shippingAddress Json?   @map("shipping_address")
+  paymentStatus  String   @default("unpaid") @map("payment_status") @db.VarChar(20)
+  assignedTo     String?  @map("assigned_to") @db.Uuid
+  notes          String?  @db.Text
+  createdAt      DateTime @default(now()) @map("created_at")
+  updatedAt      DateTime @default(now()) @updatedAt @map("updated_at")
+
+  @@index([orgId], map: "idx_bos_so_org")
+  @@index([customerId], map: "idx_bos_so_customer")
+  @@index([status], map: "idx_bos_so_status")
+  @@map("kv_bos_sales_orders")
+}
+
+model BosSupplier {
+  id                  String   @id @default(uuid()) @db.Uuid
+  orgId               String   @map("org_id") @db.Uuid
+  supplierCode        String?  @map("supplier_code") @db.VarChar(30)
+  name                String   @db.VarChar(200)
+  category            String?  @db.VarChar(100)
+  email               String?  @db.VarChar(200)
+  phone               String?  @db.VarChar(30)
+  address             Json?    @map("address")
+  certifications      Json?    @map("certifications")
+  productCatalog      Json?    @map("product_catalog")
+  pricingHistory      Json?    @map("pricing_history")
+  paymentTerms        String?  @map("payment_terms") @db.VarChar(50)
+  leadTimeDays        Int?     @map("lead_time_days")
+  deliveryPerformance Decimal? @map("delivery_performance") @db.Decimal(5, 2)
+  qualityScore        Decimal? @map("quality_score") @db.Decimal(5, 2)
+  rating              Int      @default(0)
+  riskLevel           String   @default("low") @db.VarChar(20) // low | medium | high | critical
+  contractStart       DateTime? @map("contract_start")
+  contractEnd         DateTime? @map("contract_end")
+  status              String   @default("active") @db.VarChar(20)
+  notes               String?  @db.Text
+  createdAt           DateTime @default(now()) @map("created_at")
+  updatedAt           DateTime @default(now()) @updatedAt @map("updated_at")
+
+  @@index([orgId], map: "idx_bos_supp_org")
+  @@index([category], map: "idx_bos_supp_category")
+  @@index([riskLevel], map: "idx_bos_supp_risk")
+  @@map("kv_bos_suppliers")
+}
+
+model BosPurchaseRequest {
+  id            String   @id @default(uuid()) @db.Uuid
+  orgId         String   @map("org_id") @db.Uuid
+  prNumber      String   @map("pr_number") @db.VarChar(30)
+  departmentId  String?  @map("department_id") @db.Uuid
+  requestedBy   String?  @map("requested_by") @db.Uuid
+  items         Json     @default("[]")
+  subtotal      Decimal  @default(0) @db.Decimal(14, 2)
+  currencyCode  String   @default("NGN") @map("currency_code") @db.VarChar(10)
+  neededBy      DateTime? @map("needed_by")
+  justification String?  @db.Text
+  status        String   @default("draft") @db.VarChar(30) // draft | submitted | approved | rejected | ordered | cancelled
+  createdAt     DateTime @default(now()) @map("created_at")
+  updatedAt     DateTime @default(now()) @updatedAt @map("updated_at")
+
+  @@index([orgId], map: "idx_bos_pr_org")
+  @@index([departmentId], map: "idx_bos_pr_dept")
+  @@index([status], map: "idx_bos_pr_status")
+  @@map("kv_bos_purchase_requests")
+}
+
+model BosPurchaseOrder {
+  id                 String   @id @default(uuid()) @db.Uuid
+  orgId              String   @map("org_id") @db.Uuid
+  poNumber           String   @map("po_number") @db.VarChar(30)
+  supplierId         String?  @map("supplier_id") @db.Uuid
+  purchaseRequestId  String?  @map("purchase_request_id") @db.Uuid
+  items              Json     @default("[]")
+  subtotal           Decimal  @default(0) @db.Decimal(14, 2)
+  tax                Decimal  @default(0) @db.Decimal(14, 2)
+  shippingFee        Decimal  @default(0) @map("shipping_fee") @db.Decimal(14, 2)
+  total              Decimal  @default(0) @db.Decimal(14, 2)
+  currencyCode       String   @default("NGN") @map("currency_code") @db.VarChar(10)
+  status             String   @default("draft") @db.VarChar(30) // draft | submitted | approved | sent | partially_received | received | cancelled
+  expectedDelivery   DateTime? @map("expected_delivery")
+  paymentTerms       String?  @map("payment_terms") @db.VarChar(50)
+  deliveryAddress    Json?    @map("delivery_address")
+  notes              String?  @db.Text
+  createdAt          DateTime @default(now()) @map("created_at")
+  updatedAt          DateTime @default(now()) @updatedAt @map("updated_at")
+
+  @@index([orgId], map: "idx_bos_po_org")
+  @@index([supplierId], map: "idx_bos_po_supplier")
+  @@index([status], map: "idx_bos_po_status")
+  @@map("kv_bos_purchase_orders")
+}
+
+model BosItem {
+  id               String   @id @default(uuid()) @db.Uuid
+  orgId            String   @map("org_id") @db.Uuid
+  sku              String?  @db.VarChar(50)
+  barcode          String?  @db.VarChar(100)
+  name             String   @db.VarChar(200)
+  itemType         String   @default("product") @map("item_type") @db.VarChar(30) // product | raw_material | component | finished_good | spare_part | rental_asset | consumable
+  category         String?  @db.VarChar(100)
+  unit             String   @default("pcs") @db.VarChar(20)
+  costPrice        Decimal  @default(0) @map("cost_price") @db.Decimal(14, 2)
+  sellingPrice     Decimal  @default(0) @map("selling_price") @db.Decimal(14, 2)
+  currencyCode     String   @default("NGN") @map("currency_code") @db.VarChar(10)
+  stockOnHand      Decimal  @default(0) @map("stock_on_hand") @db.Decimal(14, 2)
+  reservedStock    Decimal  @default(0) @map("reserved_stock") @db.Decimal(14, 2)
+  reorderPoint     Decimal  @default(0) @map("reorder_point") @db.Decimal(14, 2)
+  reorderQuantity  Decimal  @default(0) @map("reorder_quantity") @db.Decimal(14, 2)
+  warehouseId      String?  @map("warehouse_id") @db.Uuid
+  binLocation      String?  @map("bin_location") @db.VarChar(50)
+  batchTracked     Boolean  @default(false) @map("batch_tracked")
+  serialTracked    Boolean  @default(false) @map("serial_tracked")
+  supplierId       String?  @map("supplier_id") @db.Uuid
+  weightKg         Decimal? @map("weight_kg") @db.Decimal(10, 2)
+  dimensions       Json?    @map("dimensions")
+  valuationMethod  String   @default("fifo") @map("valuation_method") @db.VarChar(20)
+  notes            String?  @db.Text
+  status           String   @default("active") @db.VarChar(20)
+  createdAt        DateTime @default(now()) @map("created_at")
+  updatedAt        DateTime @default(now()) @updatedAt @map("updated_at")
+
+  @@index([orgId], map: "idx_bos_item_org")
+  @@index([itemType], map: "idx_bos_item_type")
+  @@index([category], map: "idx_bos_item_category")
+  @@index([sku], map: "idx_bos_item_sku")
+  @@map("kv_bos_items")
+}
+
+model BosWarehouse {
+  id                String   @id @default(uuid()) @db.Uuid
+  orgId             String   @map("org_id") @db.Uuid
+  name              String   @db.VarChar(150)
+  warehouseType     String   @default("standard") @map("warehouse_type") @db.VarChar(30)
+  address           Json?    @map("address")
+  managerId         String?  @map("manager_id") @db.Uuid
+  binZones          Json?    @map("bin_zones")
+  mapUrl            String?  @map("map_url") @db.Text
+  equipment         Json?    @map("equipment")
+  staff             Json?    @map("staff")
+  capacityUnits     Int?     @map("capacity_units")
+  utilizationPercent Decimal @default(0) @map("utilization_percent") @db.Decimal(5, 2)
+  status            String   @default("active") @db.VarChar(20)
+  createdAt         DateTime @default(now()) @map("created_at")
+
+  @@index([orgId], map: "idx_bos_wh_org")
+  @@map("kv_bos_warehouses")
+}
+
+model BosStockMovement {
+  id             String    @id @default(uuid()) @db.Uuid
+  orgId          String    @map("org_id") @db.Uuid
+  itemId         String    @map("item_id") @db.Uuid
+  warehouseId    String?   @map("warehouse_id") @db.Uuid
+  movementType   String    @map("movement_type") @db.VarChar(30) // receipt | issue | transfer_in | transfer_out | adjustment | cycle_count | sale | purchase | production_in | production_out | return_in | return_out
+  quantity       Decimal   @map("quantity") @db.Decimal(14, 2)
+  unitCost       Decimal?  @map("unit_cost") @db.Decimal(14, 2)
+  referenceType  String?   @map("reference_type") @db.VarChar(50)
+  referenceId    String?   @map("reference_id") @db.Uuid
+  binLocation    String?   @map("bin_location") @db.VarChar(50)
+  batchNumber    String?   @map("batch_number") @db.VarChar(50)
+  serialNumbers  String[]  @default([]) @db.Text
+  performedBy    String?   @map("performed_by") @db.Uuid
+  notes          String?   @db.Text
+  createdAt      DateTime  @default(now()) @map("created_at")
+
+  @@index([orgId], map: "idx_bos_move_org")
+  @@index([itemId], map: "idx_bos_move_item")
+  @@index([movementType], map: "idx_bos_move_type")
+  @@index([referenceType, referenceId], map: "idx_bos_move_ref")
+  @@map("kv_bos_stock_movements")
+}
+
+model BosBom {
+  id            String   @id @default(uuid()) @db.Uuid
+  orgId         String   @map("org_id") @db.Uuid
+  productId     String   @map("product_id") @db.Uuid
+  bomName       String   @map("bom_name") @db.VarChar(200)
+  components    Json     @default("[]")
+  scrapPercent  Decimal  @default(0) @map("scrap_percent") @db.Decimal(5, 2)
+  laborHours    Decimal  @default(0) @map("labor_hours") @db.Decimal(8, 2)
+  machineHours  Decimal  @default(0) @map("machine_hours") @db.Decimal(8, 2)
+  version       Int      @default(1)
+  isActive      Boolean  @default(true) @map("is_active")
+  notes         String?  @db.Text
+  createdAt     DateTime @default(now()) @map("created_at")
+  updatedAt     DateTime @default(now()) @updatedAt @map("updated_at")
+
+  @@index([orgId], map: "idx_bos_bom_org")
+  @@index([productId], map: "idx_bos_bom_product")
+  @@map("kv_bos_boms")
+}
+
+model BosProductionOrder {
+  id                 String    @id @default(uuid()) @db.Uuid
+  orgId              String    @map("org_id") @db.Uuid
+  productionNumber   String    @map("production_number") @db.VarChar(30)
+  itemId             String    @map("item_id") @db.Uuid
+  bomId              String?   @map("bom_id") @db.Uuid
+  quantity           Decimal   @map("quantity") @db.Decimal(14, 2)
+  quantityProduced   Decimal   @default(0) @map("quantity_produced") @db.Decimal(14, 2)
+  scrapQuantity      Decimal   @default(0) @map("scrap_quantity") @db.Decimal(14, 2)
+  workCenter         String?   @map("work_center") @db.VarChar(100)
+  routing            Json?     @map("routing")
+  status             String    @default("planned") @db.VarChar(30) // planned | released | in_progress | on_hold | completed | cancelled
+  plannedStart       DateTime? @map("planned_start")
+  plannedEnd         DateTime? @map("planned_end")
+  actualStart        DateTime? @map("actual_start")
+  actualEnd          DateTime? @map("actual_end")
+  materialsConsumed  Json?     @map("materials_consumed")
+  laborHours         Decimal   @default(0) @map("labor_hours") @db.Decimal(8, 2)
+  machineHours       Decimal   @default(0) @map("machine_hours") @db.Decimal(8, 2)
+  productionCost     Decimal   @default(0) @map("production_cost") @db.Decimal(14, 2)
+  qualityCheckpoints Json?     @map("quality_checkpoints")
+  assignedTo         String?   @map("assigned_to") @db.Uuid
+  notes              String?   @db.Text
+  createdAt          DateTime  @default(now()) @map("created_at")
+  updatedAt          DateTime  @default(now()) @updatedAt @map("updated_at")
+
+  @@index([orgId], map: "idx_bos_prod_org")
+  @@index([itemId], map: "idx_bos_prod_item")
+  @@index([status], map: "idx_bos_prod_status")
+  @@map("kv_bos_production_orders")
+}
+
+model BosProject {
+  id             String   @id @default(uuid()) @db.Uuid
+  orgId          String   @map("org_id") @db.Uuid
+  customerId     String?  @map("customer_id") @db.Uuid
+  projectName    String   @map("project_name") @db.VarChar(200)
+  projectType    String?  @map("project_type") @db.VarChar(50) // construction | marine | dredging | manufacturing | printing | fashion | energy | it | furniture | other
+  description    String?  @db.Text
+  status         String   @default("planning") @db.VarChar(30)
+  startDate      DateTime? @map("start_date")
+  endDate        DateTime? @map("end_date")
+  budget         Decimal? @db.Decimal(14, 2)
+  spent          Decimal  @default(0) @db.Decimal(14, 2)
+  currencyCode   String   @default("NGN") @map("currency_code") @db.VarChar(10)
+  progressPercent Decimal @default(0) @map("progress_percent") @db.Decimal(5, 2)
+  milestones     Json?    @map("milestones")
+  risks          Json?    @map("risks")
+  documents      Json?    @map("documents")
+  location       Json?    @map("location")
+  managerId      String?  @map("manager_id") @db.Uuid
+  team           Json?    @map("team")
+  createdAt      DateTime @default(now()) @map("created_at")
+  updatedAt      DateTime @default(now()) @updatedAt @map("updated_at")
+
+  tasks BosTask[]
+
+  @@index([orgId], map: "idx_bos_project_org")
+  @@index([projectType], map: "idx_bos_project_type")
+  @@index([status], map: "idx_bos_project_status")
+  @@map("kv_bos_projects")
+}
+
+model BosTask {
+  id             String    @id @default(uuid()) @db.Uuid
+  orgId          String    @map("org_id") @db.Uuid
+  projectId      String?   @map("project_id") @db.Uuid
+  workOrderId    String?   @map("work_order_id") @db.Uuid
+  parentTaskId   String?   @map("parent_task_id") @db.Uuid
+  title          String    @db.VarChar(200)
+  description    String?   @db.Text
+  phase          String?   @db.VarChar(100)
+  milestone      String?   @db.VarChar(100)
+  status         String    @default("todo") @db.VarChar(30)
+  priority       String    @default("medium") @db.VarChar(20)
+  assigneeId     String?   @map("assignee_id") @db.Uuid
+  dueDate        DateTime? @map("due_date")
+  estimatedHours Decimal?  @map("estimated_hours") @db.Decimal(6, 2)
+  loggedHours    Decimal   @default(0) @map("logged_hours") @db.Decimal(6, 2)
+  tags           String[]  @default([]) @db.Text
+  createdAt      DateTime  @default(now()) @map("created_at")
+  updatedAt      DateTime  @default(now()) @updatedAt @map("updated_at")
+
+  project BosProject? @relation(fields: [projectId], references: [id], onDelete: Cascade)
+
+  @@index([orgId], map: "idx_bos_task_org")
+  @@index([projectId], map: "idx_bos_task_project")
+  @@index([status], map: "idx_bos_task_status")
+  @@index([assigneeId], map: "idx_bos_task_assignee")
+  @@map("kv_bos_tasks")
+}
+
+model BosWorkOrder {
+  id                  String    @id @default(uuid()) @db.Uuid
+  orgId               String    @map("org_id") @db.Uuid
+  workOrderNumber     String    @map("work_order_number") @db.VarChar(30)
+  customerId          String?   @map("customer_id") @db.Uuid
+  jobType             String    @map("job_type") @db.VarChar(30) // installation | maintenance | repair | inspection | site_survey | commissioning | emergency
+  title               String    @db.VarChar(200)
+  description         String?   @db.Text
+  technicianId        String?   @map("technician_id") @db.Uuid
+  scheduledDate       DateTime? @map("scheduled_date")
+  scheduledTimeWindow String?   @map("scheduled_time_window") @db.VarChar(20)
+  routePlan           Json?     @map("route_plan")
+  gpsCoordinates      Json?     @map("gps_coordinates")
+  checklist           Json?     @map("checklist")
+  photosBefore        Json?     @map("photos_before")
+  photosAfter         Json?     @map("photos_after")
+  sparePartsUsed      Json?     @map("spare_parts_used")
+  customerSignatureUrl String?  @map("customer_signature_url") @db.Text
+  serviceReportUrl    String?   @map("service_report_url") @db.Text
+  jobCost             Decimal?  @map("job_cost") @db.Decimal(14, 2)
+  status              String    @default("scheduled") @db.VarChar(30)
+  startedAt           DateTime? @map("started_at")
+  completedAt         DateTime? @map("completed_at")
+  notes               String?   @db.Text
+  createdAt           DateTime  @default(now()) @map("created_at")
+  updatedAt           DateTime  @default(now()) @updatedAt @map("updated_at")
+
+  @@index([orgId], map: "idx_bos_wo_org")
+  @@index([technicianId], map: "idx_bos_wo_technician")
+  @@index([status], map: "idx_bos_wo_status")
+  @@index([jobType], map: "idx_bos_wo_job_type")
+  @@map("kv_bos_work_orders")
+}
+
+model BosAsset {
+  id                  String   @id @default(uuid()) @db.Uuid
+  orgId               String   @map("org_id") @db.Uuid
+  assetCode           String?  @map("asset_code") @db.VarChar(30)
+  name                String   @db.VarChar(200)
+  category            String?  @db.VarChar(100) // building | vehicle | boat | machinery | computer | tool | test_equipment | furniture | license | other
+  assetTag            String?  @map("asset_tag") @db.VarChar(50)
+  serialNumber        String?  @map("serial_number") @db.VarChar(100)
+  purchaseDate        DateTime? @map("purchase_date")
+  purchaseCost        Decimal? @map("purchase_cost") @db.Decimal(14, 2)
+  currencyCode        String   @default("NGN") @map("currency_code") @db.VarChar(10)
+  depreciationMethod  String   @default("straight_line") @map("depreciation_method") @db.VarChar(20)
+  usefulLifeYears     Int      @default(5) @map("useful_life_years")
+  salvageValue        Decimal  @default(0) @map("salvage_value") @db.Decimal(14, 2)
+  bookValue           Decimal? @map("book_value") @db.Decimal(14, 2)
+  warrantyEnd         DateTime? @map("warranty_end")
+  calibrationDue      DateTime? @map("calibration_due")
+  maintenanceSchedule Json?    @map("maintenance_schedule")
+  lastMaintenanceDate DateTime? @map("last_maintenance_date")
+  location            String?  @db.VarChar(200)
+  assignedTo          String?  @map("assigned_to") @db.VarChar(150)
+  status              String   @default("in_service") @db.VarChar(20)
+  documents           Json?    @map("documents")
+  history             Json?    @map("history")
+  notes               String?  @db.Text
+  createdAt           DateTime @default(now()) @map("created_at")
+  updatedAt           DateTime @default(now()) @updatedAt @map("updated_at")
+
+  @@index([orgId], map: "idx_bos_asset_org")
+  @@index([category], map: "idx_bos_asset_category")
+  @@index([status], map: "idx_bos_asset_status")
+  @@map("kv_bos_assets")
+}
+
+model BosDocument {
+  id                String   @id @default(uuid()) @db.Uuid
+  orgId             String   @map("org_id") @db.Uuid
+  title             String   @db.VarChar(200)
+  docType           String?  @map("doc_type") @db.VarChar(50) // contract | drawing | manual | certificate | sop | policy | invoice | purchase_order | delivery_note | technical | proposal | other
+  category          String?  @db.VarChar(100)
+  fileUrl           String?  @map("file_url") @db.Text
+  fileSizeKb        Int?     @map("file_size_kb")
+  mimeType          String?  @map("mime_type") @db.VarChar(100)
+  version           Int      @default(1)
+  status            String   @default("active") @db.VarChar(20)
+  ocrText           String?  @map("ocr_text") @db.Text
+  tags              String[] @default([]) @db.Text
+  ownerId           String?  @map("owner_id") @db.Uuid
+  approvalStatus    String   @default("none") @map("approval_status") @db.VarChar(20)
+  linkedRecordType  String?  @map("linked_record_type") @db.VarChar(50)
+  linkedRecordId    String?  @map("linked_record_id") @db.Uuid
+  createdAt         DateTime @default(now()) @map("created_at")
+  updatedAt         DateTime @default(now()) @updatedAt @map("updated_at")
+
+  @@index([orgId], map: "idx_bos_doc_org")
+  @@index([docType], map: "idx_bos_doc_type")
+  @@index([status], map: "idx_bos_doc_status")
+  @@map("kv_bos_documents")
+}
+
+model BosApproval {
+  id             String    @id @default(uuid()) @db.Uuid
+  orgId          String    @map("org_id") @db.Uuid
+  approvalNumber String    @map("approval_number") @db.VarChar(30)
+  module         String    @db.VarChar(30) // purchase | payment | discount | quotation | hiring | leave | contract | manufacturing | inventory_adjustment | design | expense | other
+  recordType     String?   @map("record_type") @db.VarChar(50)
+  recordId       String?   @map("record_id") @db.Uuid
+  title          String    @db.VarChar(200)
+  description    String?   @db.Text
+  amount         Decimal?  @db.Decimal(14, 2)
+  currencyCode   String    @default("NGN") @map("currency_code") @db.VarChar(10)
+  requestedBy    String?   @map("requested_by") @db.Uuid
+  approvers      Json      @default("[]")
+  currentLevel   Int       @default(0) @map("current_level")
+  status         String    @default("pending") @db.VarChar(20)
+  decisionChain  Json      @default("[]") @map("decision_chain")
+  decidedAt      DateTime? @map("decided_at")
+  createdAt      DateTime  @default(now()) @map("created_at")
+  updatedAt      DateTime  @default(now()) @updatedAt @map("updated_at")
+
+  @@index([orgId], map: "idx_bos_approval_org")
+  @@index([status], map: "idx_bos_approval_status")
+  @@index([module], map: "idx_bos_approval_module")
+  @@map("kv_bos_approvals")
+}
+
+model BosAutomationRule {
+  id          String    @id @default(uuid()) @db.Uuid
+  orgId       String    @map("org_id") @db.Uuid
+  name        String    @db.VarChar(200)
+  triggerType String?   @map("trigger_type") @db.VarChar(50) // stock_low | task_due | document_expiry | approval_pending | payment_due | quotation_expiry | contract_renewal | schedule
+  conditions  Json?     @map("conditions")
+  actions     Json      @default("[]")
+  active      Boolean   @default(true)
+  lastRunAt   DateTime? @map("last_run_at")
+  runCount    Int       @default(0) @map("run_count")
+  createdAt   DateTime  @default(now()) @map("created_at")
+  updatedAt   DateTime  @default(now()) @updatedAt @map("updated_at")
+
+  @@index([orgId], map: "idx_bos_auto_org")
+  @@index([triggerType], map: "idx_bos_auto_trigger")
+  @@index([active], map: "idx_bos_auto_active")
+  @@map("kv_bos_automation_rules")
+}
+
+model BosNcr {
+  id                  String    @id @default(uuid()) @db.Uuid
+  orgId               String    @map("org_id") @db.Uuid
+  ncrNumber           String    @map("ncr_number") @db.VarChar(30)
+  itemId              String?   @map("item_id") @db.Uuid
+  supplierId          String?   @map("supplier_id") @db.Uuid
+  productionOrderId   String?   @map("production_order_id") @db.Uuid
+  title               String    @db.VarChar(200)
+  description         String    @db.Text
+  severity            String    @default("minor") @db.VarChar(20)
+  category            String?   @db.VarChar(50) // product | process | supplier | documentation | safety | customer
+  status              String    @default("open") @db.VarChar(30)
+  correctiveAction    String?   @map("corrective_action") @db.Text
+  preventiveAction    String?   @map("preventive_action") @db.Text
+  rootCause           String?   @map("root_cause") @db.Text
+  deadline            DateTime? @db.Date
+  assignedTo          String?   @map("assigned_to") @db.Uuid
+  reportedBy          String?   @map("reported_by") @db.Uuid
+  closedAt            DateTime? @map("closed_at")
+  createdAt           DateTime  @default(now()) @map("created_at")
+  updatedAt           DateTime  @default(now()) @updatedAt @map("updated_at")
+
+  @@index([orgId], map: "idx_bos_ncr_org")
+  @@index([status], map: "idx_bos_ncr_status")
+  @@index([severity], map: "idx_bos_ncr_severity")
+  @@map("kv_bos_ncrs")
+}
+
+model BosIncident {
+  id              String    @id @default(uuid()) @db.Uuid
+  orgId           String    @map("org_id") @db.Uuid
+  incidentNumber  String    @map("incident_number") @db.VarChar(30)
+  title           String    @db.VarChar(200)
+  incidentType    String?   @map("incident_type") @db.VarChar(30) // incident | near_miss | safety_observation | environmental | ppe_violation
+  severity        String    @default("low") @db.VarChar(20)
+  occurredAt      DateTime  @default(now()) @map("occurred_at")
+  location        String?   @db.VarChar(200)
+  description     String    @db.Text
+  immediateAction String?   @map("immediate_action") @db.Text
+  riskAssessment  Json?     @map("risk_assessment")
+  permitToWork    Json?     @map("permit_to_work")
+  ppeInvolved     Boolean   @default(false) @map("ppe_involved")
+  reportedBy      String?   @map("reported_by") @db.Uuid
+  assignedTo      String?   @map("assigned_to") @db.Uuid
+  status          String    @default("open") @db.VarChar(30)
+  closedAt        DateTime? @map("closed_at")
+  createdAt       DateTime  @default(now()) @map("created_at")
+  updatedAt       DateTime  @default(now()) @updatedAt @map("updated_at")
+
+  @@index([orgId], map: "idx_bos_inc_org")
+  @@index([incidentType], map: "idx_bos_inc_type")
+  @@index([status], map: "idx_bos_inc_status")
+  @@map("kv_bos_incidents")
+}
+
+model BosGlAccount {
+  id             String   @id @default(uuid()) @db.Uuid
+  orgId          String   @map("org_id") @db.Uuid
+  code           String   @db.VarChar(20)
+  name           String   @db.VarChar(150)
+  accountType    String   @map("account_type") @db.VarChar(20) // asset | liability | equity | revenue | expense
+  parentId       String?  @map("parent_id") @db.Uuid
+  currencyCode   String   @default("NGN") @map("currency_code") @db.VarChar(10)
+  openingBalance Decimal  @default(0) @map("opening_balance") @db.Decimal(14, 2)
+  isActive       Boolean  @default(true) @map("is_active")
+  description    String?  @db.Text
+  createdAt      DateTime @default(now()) @map("created_at")
+
+  @@unique([orgId, code], map: "idx_bos_gl_org_code")
+  @@index([orgId], map: "idx_bos_gl_org")
+  @@index([accountType], map: "idx_bos_gl_type")
+  @@map("kv_bos_gl_accounts")
+}
+
+model BosJournalEntry {
+  id            String    @id @default(uuid()) @db.Uuid
+  orgId         String    @map("org_id") @db.Uuid
+  accountId     String    @map("account_id") @db.Uuid
+  entryDate     DateTime  @default(now()) @map("entry_date")
+  entryType     String    @map("entry_type") @db.VarChar(20) // debit | credit
+  amount        Decimal   @map("amount") @db.Decimal(14, 2)
+  currencyCode  String    @default("NGN") @map("currency_code") @db.VarChar(10)
+  referenceType String?   @map("reference_type") @db.VarChar(50)
+  referenceId   String?   @map("reference_id") @db.Uuid
+  description   String?   @db.Text
+  postedBy      String?   @map("posted_by") @db.Uuid
+  status        String    @default("posted") @db.VarChar(20)
+  createdAt     DateTime  @default(now()) @map("created_at")
+
+  @@index([orgId], map: "idx_bos_je_org")
+  @@index([accountId], map: "idx_bos_je_account")
+  @@index([entryDate], map: "idx_bos_je_date")
+  @@map("kv_bos_journal_entries")
+}
+
+model BosInvoice {
+  id              String    @id @default(uuid()) @db.Uuid
+  orgId           String    @map("org_id") @db.Uuid
+  invoiceNumber   String    @map("invoice_number") @db.VarChar(30)
+  direction       String    @db.VarChar(20) // receivable | payable
+  partyName       String    @map("party_name") @db.VarChar(200)
+  partyId         String?   @map("party_id") @db.Uuid
+  salesOrderId    String?   @map("sales_order_id") @db.Uuid
+  purchaseOrderId String?   @map("purchase_order_id") @db.Uuid
+  items           Json?     @map("items")
+  subtotal        Decimal   @default(0) @db.Decimal(14, 2)
+  tax             Decimal   @default(0) @db.Decimal(14, 2)
+  total           Decimal   @default(0) @db.Decimal(14, 2)
+  amountPaid      Decimal   @default(0) @map("amount_paid") @db.Decimal(14, 2)
+  currencyCode    String    @default("NGN") @map("currency_code") @db.VarChar(10)
+  issueDate       DateTime  @default(now()) @map("issue_date")
+  dueDate         DateTime? @map("due_date")
+  status          String    @default("draft") @db.VarChar(20)
+  notes           String?   @db.Text
+  createdAt       DateTime  @default(now()) @map("created_at")
+  updatedAt       DateTime  @default(now()) @updatedAt @map("updated_at")
+
+  @@index([orgId], map: "idx_bos_inv_org")
+  @@index([direction], map: "idx_bos_inv_direction")
+  @@index([status], map: "idx_bos_inv_status")
+  @@map("kv_bos_invoices")
+}
+
+model BosKnowledgeArticle {
+  id        String    @id @default(uuid()) @db.Uuid
+  orgId     String    @map("org_id") @db.Uuid
+  title     String    @db.VarChar(200)
+  category  String?   @db.VarChar(100) // policy | procedure | faq | training | technical | manual | standard | best_practice
+  content   String?   @db.Text
+  tags      String[]  @default([]) @db.Text
+  authorId  String?   @map("author_id") @db.Uuid
+  views     Int       @default(0)
+  status    String    @default("published") @db.VarChar(20)
+  createdAt DateTime  @default(now()) @map("created_at")
+  updatedAt DateTime  @default(now()) @updatedAt @map("updated_at")
+
+  @@index([orgId], map: "idx_bos_kb_org")
+  @@index([category], map: "idx_bos_kb_category")
+  @@index([status], map: "idx_bos_kb_status")
+  @@map("kv_bos_knowledge_articles")
+}
+
+model BosAnnouncement {
+  id             String    @id @default(uuid()) @db.Uuid
+  orgId          String    @map("org_id") @db.Uuid
+  title          String    @db.VarChar(200)
+  content        String    @db.Text
+  audience       String    @default("all") @db.VarChar(30)
+  audienceFilter Json?     @map("audience_filter")
+  pinned         Boolean   @default(false)
+  authorId       String?   @map("author_id") @db.Uuid
+  publishedAt    DateTime  @default(now()) @map("published_at")
+  createdAt      DateTime  @default(now()) @map("created_at")
+
+  @@index([orgId], map: "idx_bos_ann_org")
+  @@index([pinned], map: "idx_bos_ann_pinned")
+  @@map("kv_bos_announcements")
+}
+
+model BosIndustryModule {
+  id            String   @id @default(uuid()) @db.Uuid
+  moduleCode    String   @unique @map("module_code") @db.VarChar(50)
+  name          String   @db.VarChar(150)
+  industry      String   @db.VarChar(100)
+  description   String?  @db.Text
+  iconUrl       String?  @map("icon_url") @db.Text
+  configSchema  Json?    @map("config_schema")
+  workflows     Json?    @map("workflows")
+  installedFor  Json?    @map("installed_for")
+  isActive      Boolean  @default(true) @map("is_active")
+  sortOrder     Int      @default(0) @map("sort_order")
+  createdAt     DateTime @default(now()) @map("created_at")
+
+  @@map("kv_bos_industry_modules")
+}
+
+model BosOrgSetting {
+  id              String   @id @default(uuid()) @db.Uuid
+  orgId           String   @map("org_id") @db.Uuid
+  branding        Json?    @map("branding")
+  workflows       Json?    @map("workflows")
+  approvalChains  Json?    @map("approval_chains")
+  enabledModules  Json?    @map("enabled_modules")
+  permissions     Json?    @map("permissions")
+  integrations    Json?    @map("integrations")
+  retentionPolicy Json?    @map("retention_policy")
+  createdAt       DateTime @default(now()) @map("created_at")
+  updatedAt       DateTime @default(now()) @updatedAt @map("updated_at")
+
+  org BosOrganization @relation(fields: [orgId], references: [id], onDelete: Cascade)
+
+  @@unique([orgId], map: "idx_bos_settings_org")
+  @@map("kv_bos_org_settings")
+}
+
+// ============================================================
+// KAI ECOSYSTEM (Phase 30) — Canvas Document 12
+// Specialized AI agents coordinated by a Master Orchestrator,
+// with memory, knowledge hub, natural-language flows, decision
+// support, research engine, content factory, digital employees,
+// AI app store, and safety audit. Extends kv_kai_* (P27/27b/28).
+// ============================================================
+
+model KaiEcoAgent {
+  id            String   @id @default(uuid()) @db.Uuid
+  code          String   @unique @db.VarChar(50)
+  name          String   @db.VarChar(100)
+  category      String   @default("general") @db.VarChar(50)
+  description   String?  @db.Text
+  capabilities  Json     @default("[]")
+  icon          String?  @default("bot") @db.VarChar(50)
+  color         String?  @default("#7C3AED") @db.VarChar(30)
+  installable   Boolean  @default(true)
+  defaultPrompt String?  @map("default_prompt") @db.Text
+  sortOrder     Int      @default(0) @map("sort_order")
+  isActive      Boolean  @default(true)
+  createdAt     DateTime @default(now()) @map("created_at")
+
+  @@index([category], map: "idx_kai_eco_agents_cat")
+  @@map("kv_kai_eco_agents")
+}
+
+model KaiEcoInstall {
+  id          String   @id @default(uuid()) @db.Uuid
+  orgId       String   @map("org_id") @db.Uuid
+  agentCode   String   @map("agent_code") @db.VarChar(50)
+  config      Json     @default("{}")
+  isActive    Boolean  @default(true)
+  installedAt DateTime @default(now()) @map("installed_at")
+  installedBy String?  @map("installed_by") @db.Uuid
+
+  @@unique([orgId, agentCode])
+  @@index([orgId], map: "idx_kai_eco_installs_org")
+  @@map("kv_kai_eco_installs")
+}
+
+model KaiEcoMemory {
+  id        String   @id @default(uuid()) @db.Uuid
+  orgId     String   @map("org_id") @db.Uuid
+  scope     String   @default("general") @db.VarChar(30)
+  key       String   @db.VarChar(200)
+  value     String?  @db.Text
+  valueJson Json?    @map("value_json")
+  source    String?  @default("manual") @db.VarChar(50)
+  pinned    Boolean  @default(false)
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @default(now()) @map("updated_at")
+
+  @@unique([orgId, scope, key])
+  @@index([orgId], map: "idx_kai_eco_memory_org")
+  @@map("kv_kai_eco_memory")
+}
+
+model KaiEcoKnowledge {
+  id        String   @id @default(uuid()) @db.Uuid
+  orgId     String   @map("org_id") @db.Uuid
+  title     String   @db.VarChar(500)
+  docType   String?  @default("document") @map("doc_type") @db.VarChar(50)
+  content   String?  @db.Text
+  tags      String[] @default([])
+  fileUrl   String?  @map("file_url") @db.Text
+  fileType  String?  @map("file_type") @db.VarChar(50)
+  status    String   @default("indexed") @db.VarChar(20)
+  createdBy String?  @map("created_by") @db.Uuid
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @default(now()) @map("updated_at")
+
+  @@index([orgId], map: "idx_kai_eco_kb_org")
+  @@index([docType], map: "idx_kai_eco_kb_type")
+  @@map("kv_kai_eco_knowledge")
+}
+
+model KaiEcoFlow {
+  id          String         @id @default(uuid()) @db.Uuid
+  orgId       String         @map("org_id") @db.Uuid
+  name        String         @db.VarChar(300)
+  instruction String         @db.Text
+  parsed      Json           @default("{}")
+  triggerType String?        @map("trigger_type") @db.VarChar(50)
+  isActive    Boolean        @default(true)
+  runCount    Int            @default(0) @map("run_count")
+  lastRunAt   DateTime?      @map("last_run_at")
+  createdBy   String?        @map("created_by") @db.Uuid
+  createdAt   DateTime       @default(now()) @map("created_at")
+  updatedAt   DateTime       @default(now()) @map("updated_at")
+
+  runs KaiEcoFlowRun[]
+
+  @@index([orgId], map: "idx_kai_eco_flows_org")
+  @@map("kv_kai_eco_flows")
+}
+
+model KaiEcoFlowRun {
+  id          String      @id @default(uuid()) @db.Uuid
+  flowId      String      @map("flow_id") @db.Uuid
+  orgId       String      @map("org_id") @db.Uuid
+  status      String      @default("pending") @db.VarChar(20)
+  result      Json        @default("{}")
+  error       String?     @db.Text
+  triggeredBy String?     @default("manual") @map("triggered_by") @db.VarChar(50)
+  createdAt   DateTime    @default(now()) @map("created_at")
+
+  flow KaiEcoFlow @relation(fields: [flowId], references: [id], onDelete: Cascade)
+
+  @@index([flowId], map: "idx_kai_eco_flowruns_flow")
+  @@index([orgId], map: "idx_kai_eco_flowruns_org")
+  @@map("kv_kai_eco_flow_runs")
+}
+
+model KaiEcoDecision {
+  id          String    @id @default(uuid()) @db.Uuid
+  orgId       String    @map("org_id") @db.Uuid
+  context     String    @db.Text
+  options     Json      @default("[]")
+  recommended String?   @db.Text
+  confidence  Decimal?  @default(0) @db.Decimal(5, 2)
+  rationale   String?   @db.Text
+  status      String    @default("pending") @db.VarChar(20)
+  decidedBy   String?   @map("decided_by") @db.Uuid
+  decidedAt   DateTime? @map("decided_at")
+  createdBy   String?   @map("created_by") @db.Uuid
+  createdAt   DateTime  @default(now()) @map("created_at")
+
+  @@index([orgId], map: "idx_kai_eco_decisions_org")
+  @@index([status], map: "idx_kai_eco_decisions_status")
+  @@map("kv_kai_eco_decisions")
+}
+
+model KaiEcoResearch {
+  id        String   @id @default(uuid()) @db.Uuid
+  orgId     String   @map("org_id") @db.Uuid
+  topic     String   @db.VarChar(300)
+  summary   String?  @db.Text
+  findings  Json     @default("[]")
+  sources   Json     @default("[]")
+  status    String   @default("ready") @db.VarChar(20)
+  createdBy String?  @map("created_by") @db.Uuid
+  createdAt DateTime @default(now()) @map("created_at")
+
+  @@index([orgId], map: "idx_kai_eco_research_org")
+  @@map("kv_kai_eco_research")
+}
+
+model KaiEcoContent {
+  id          String    @id @default(uuid()) @db.Uuid
+  orgId       String    @map("org_id") @db.Uuid
+  contentType String    @map("content_type") @db.VarChar(50)
+  title       String    @db.VarChar(300)
+  content     String?   @db.Text
+  channel     String?   @default("general") @db.VarChar(30)
+  language    String?   @default("en") @db.VarChar(10)
+  status      String    @default("draft") @db.VarChar(20)
+  createdBy   String?   @map("created_by") @db.Uuid
+  reviewedBy  String?   @map("reviewed_by") @db.Uuid
+  reviewedAt  DateTime? @map("reviewed_at")
+  createdAt   DateTime  @default(now()) @map("created_at")
+  updatedAt   DateTime  @default(now()) @map("updated_at")
+
+  @@index([orgId], map: "idx_kai_eco_content_org")
+  @@index([status], map: "idx_kai_eco_content_status")
+  @@map("kv_kai_eco_content")
+}
+
+model KaiEcoEmployee {
+  id               String   @id @default(uuid()) @db.Uuid
+  orgId            String   @map("org_id") @db.Uuid
+  name             String   @db.VarChar(200)
+  role             String   @db.VarChar(100)
+  agentCode        String   @map("agent_code") @db.VarChar(50)
+  assistantContext String?  @map("assistant_context") @db.Text
+  status           String   @default("active") @db.VarChar(20)
+  shifts           Json     @default("{}")
+  metadata         Json     @default("{}")
+  createdBy        String?  @map("created_by") @db.Uuid
+  createdAt        DateTime @default(now()) @map("created_at")
+  updatedAt        DateTime @default(now()) @map("updated_at")
+
+  @@index([orgId], map: "idx_kai_eco_employees_org")
+  @@map("kv_kai_eco_employees")
+}
+
+model KaiEcoAppPack {
+  id           String   @id @default(uuid()) @db.Uuid
+  slug         String   @unique @db.VarChar(200)
+  name         String   @db.VarChar(200)
+  industry     String?  @db.VarChar(100)
+  description  String?  @db.Text
+  agents       Json     @default("[]")
+  priceMonthly Decimal  @default(0) @map("price_monthly") @db.Decimal(10, 2)
+  icon         String?  @default("package") @db.VarChar(50)
+  color        String?  @default("#0A1628") @db.VarChar(30)
+  isActive     Boolean  @default(true)
+  installCount Int      @default(0) @map("install_count")
+  sortOrder    Int      @default(0) @map("sort_order")
+  createdAt    DateTime @default(now()) @map("created_at")
+
+  @@index([industry], map: "idx_kai_eco_apps_industry")
+  @@map("kv_kai_eco_app_packs")
+}
+
+model KaiEcoAudit {
+  id        String   @id @default(uuid()) @db.Uuid
+  orgId     String   @map("org_id") @db.Uuid
+  userId    String?  @map("user_id") @db.Uuid
+  action    String   @db.VarChar(100)
+  resource  String?  @db.VarChar(100)
+  detail    Json     @default("{}")
+  ipAddress String?  @map("ip_address") @db.VarChar(50)
+  createdAt DateTime @default(now()) @map("created_at")
+
+  @@index([orgId], map: "idx_kai_eco_audit_org")
+  @@index([action], map: "idx_kai_eco_audit_action")
+  @@map("kv_kai_eco_audit")
+}
+
+model KaiEcoRun {
+  id         String   @id @default(uuid()) @db.Uuid
+  orgId      String   @map("org_id") @db.Uuid
+  request    String   @db.Text
+  delegation Json     @default("[]")
+  summary    String?  @db.Text
+  userId     String?  @map("user_id") @db.Uuid
+  status     String   @default("completed") @db.VarChar(20)
+  createdAt  DateTime @default(now()) @map("created_at")
+
+  @@index([orgId], map: "idx_kai_eco_runs_org")
+  @@index([createdAt], map: "idx_kai_eco_runs_created")
+  @@map("kv_kai_eco_runs")
+}
+
+// ============================================================
+// K PLATFORM (Phase 31) — Canvas Document 13
+// Developer platform: module registry, installs, API keys,
+// OAuth apps, webhooks, event bus, reviews, developer earnings.
+// ============================================================
+
+model KpModule {
+  id             String    @id @default(uuid()) @db.Uuid
+  slug           String    @unique @db.VarChar(200)
+  name           String    @db.VarChar(200)
+  moduleType     String    @default("app") @map("module_type") @db.VarChar(50)
+  version        String    @default("1.0.0") @db.VarChar(20)
+  description    String?   @db.Text
+  developerId    String?   @map("developer_id") @db.Uuid
+  icon           String?   @default("package") @db.VarChar(50)
+  color          String?   @default("#FF6B00") @db.VarChar(30)
+  dependencies   Json      @default("[]")
+  permissions    Json      @default("[]")
+  navigation     Json      @default("{}")
+  apiEndpoints   Json      @default("[]") @map("api_endpoints")
+  uiComponents   Json      @default("[]") @map("ui_components")
+  aiCapabilities Json      @default("[]") @map("ai_capabilities")
+  settings       Json      @default("{}")
+  status         String    @default("draft") @db.VarChar(20)
+  license        String?   @default("proprietary") @db.VarChar(50)
+  priceMonthly   Decimal   @default(0) @map("price_monthly") @db.Decimal(10, 2)
+  commissionRate Decimal   @default(15) @map("commission_rate") @db.Decimal(5, 2)
+  installCount   Int       @default(0) @map("install_count")
+  rating         Decimal   @default(0) @db.Decimal(3, 2)
+  createdAt      DateTime  @default(now()) @map("created_at")
+  updatedAt      DateTime  @default(now()) @map("updated_at")
+
+  installs KpInstall[]
+  reviews KpReview[]
+
+  @@index([moduleType], map: "idx_kp_modules_type")
+  @@index([status], map: "idx_kp_modules_status")
+  @@map("kv_kp_modules")
+}
+
+model KpInstall {
+  id           String    @id @default(uuid()) @db.Uuid
+  orgId        String    @map("org_id") @db.Uuid
+  moduleId     String    @map("module_id") @db.Uuid
+  version      String    @default("1.0.0") @db.VarChar(20)
+  config       Json      @default("{}")
+  status       String    @default("installed") @db.VarChar(20)
+  installedBy  String?   @map("installed_by") @db.Uuid
+  installedAt  DateTime  @default(now()) @map("installed_at")
+  updatedAt    DateTime  @default(now()) @map("updated_at")
+
+  module KpModule @relation(fields: [moduleId], references: [id], onDelete: Cascade)
+
+  @@unique([orgId, moduleId])
+  @@index([orgId], map: "idx_kp_installs_org")
+  @@map("kv_kp_installs")
+}
+
+model KpApiKey {
+  id         String    @id @default(uuid()) @db.Uuid
+  userId     String    @map("user_id") @db.Uuid
+  orgId      String?   @map("org_id") @db.Uuid
+  name       String    @db.VarChar(200)
+  keyPrefix  String    @map("key_prefix") @db.VarChar(16)
+  keyHash    String    @map("key_hash") @db.VarChar(128)
+  scopes     Json      @default("[]")
+  lastUsedAt DateTime? @map("last_used_at")
+  expiresAt  DateTime? @map("expires_at")
+  revoked    Boolean   @default(false)
+  createdAt  DateTime  @default(now()) @map("created_at")
+
+  @@index([userId], map: "idx_kp_keys_user")
+  @@index([keyPrefix], map: "idx_kp_keys_prefix")
+  @@map("kv_kp_api_keys")
+}
+
+model KpOauthApp {
+  id               String    @id @default(uuid()) @db.Uuid
+  developerId      String    @map("developer_id") @db.Uuid
+  name             String    @db.VarChar(200)
+  description      String?   @db.Text
+  clientId         String    @unique @map("client_id") @db.VarChar(64)
+  clientSecretHash String    @map("client_secret_hash") @db.VarChar(128)
+  redirectUris     Json      @default("[]") @map("redirect_uris")
+  scopes           Json      @default("[]")
+  status           String    @default("active") @db.VarChar(20)
+  createdAt        DateTime  @default(now()) @map("created_at")
+  updatedAt        DateTime  @default(now()) @map("updated_at")
+
+  @@map("kv_kp_oauth_apps")
+}
+
+model KpWebhook {
+  id               String    @id @default(uuid()) @db.Uuid
+  orgId            String    @map("org_id") @db.Uuid
+  name             String    @db.VarChar(200)
+  eventTypes       Json      @default("[]") @map("event_types")
+  url              String    @db.Text
+  secret           String?   @db.VarChar(128)
+  isActive         Boolean   @default(true)
+  failureCount     Int       @default(0) @map("failure_count")
+  lastDeliveredAt  DateTime? @map("last_delivered_at")
+  createdBy        String?   @map("created_by") @db.Uuid
+  createdAt        DateTime  @default(now()) @map("created_at")
+
+  @@index([orgId], map: "idx_kp_webhooks_org")
+  @@map("kv_kp_webhooks")
+}
+
+model KpEvent {
+  id          String    @id @default(uuid()) @db.Uuid
+  orgId       String?   @map("org_id") @db.Uuid
+  eventType   String    @map("event_type") @db.VarChar(100)
+  payload     Json      @default("{}")
+  source      String?   @db.VarChar(100)
+  status      String    @default("pending") @db.VarChar(20)
+  attempts    Int       @default(0)
+  deliveredAt DateTime? @map("delivered_at")
+  createdAt   DateTime  @default(now()) @map("created_at")
+
+  @@index([eventType], map: "idx_kp_events_type")
+  @@index([orgId], map: "idx_kp_events_org")
+  @@map("kv_kp_events")
+}
+
+model KpReview {
+  id        String   @id @default(uuid()) @db.Uuid
+  moduleId  String   @map("module_id") @db.Uuid
+  orgId     String   @map("org_id") @db.Uuid
+  rating    Int
+  comment   String?  @db.Text
+  createdAt DateTime @default(now()) @map("created_at")
+
+  module KpModule @relation(fields: [moduleId], references: [id], onDelete: Cascade)
+
+  @@index([moduleId], map: "idx_kp_reviews_module")
+  @@map("kv_kp_reviews")
+}
+
+model KpEarning {
+  id          String    @id @default(uuid()) @db.Uuid
+  developerId String    @map("developer_id") @db.Uuid
+  moduleId    String?   @map("module_id") @db.Uuid
+  amount      Decimal   @default(0) @db.Decimal(14, 2)
+  earningType String    @default("sale") @map("earning_type") @db.VarChar(30)
+  status      String    @default("pending") @db.VarChar(20)
+  period      String?   @db.VarChar(10)
+  createdAt   DateTime  @default(now()) @map("created_at")
+
+  @@index([developerId], map: "idx_kp_earnings_dev")
+  @@map("kv_kp_developer_earnings")
+}
+
+// ============================================================
+// K CLOUD (Phase 32) — Canvas Document 14
+// Multi-tenant cloud: workspaces, storage, backups, deployments,
+// serverless functions, scheduler, render cloud, events, usage.
+// ============================================================
+
+model KcWorkspace {
+  id            String    @id @default(uuid()) @db.Uuid
+  orgId         String    @unique @map("org_id") @db.Uuid
+  plan          String    @default("starter") @db.VarChar(30)
+  region        String    @default("us-east-1") @db.VarChar(30)
+  status        String    @default("provisioned") @db.VarChar(20)
+  storageUsedMb Int       @default(0) @map("storage_used_mb")
+  computeUnits  Int       @default(0) @map("compute_units")
+  aiCredits     Decimal   @default(0) @map("ai_credits") @db.Decimal(14, 2)
+  renderCredits Int       @default(0) @map("render_credits")
+  apiRequests   BigInt    @default(0) @map("api_requests")
+  bandwidthMb   BigInt    @default(0) @map("bandwidth_mb")
+  createdAt     DateTime  @default(now()) @map("created_at")
+  updatedAt     DateTime  @default(now()) @map("updated_at")
+
+  @@index([region], map: "idx_kc_ws_region")
+  @@map("kv_kc_workspaces")
+}
+
+model KcStorageItem {
+  id         String   @id @default(uuid()) @db.Uuid
+  orgId      String   @map("org_id") @db.Uuid
+  folder     String   @default("root") @db.VarChar(200)
+  name       String   @db.VarChar(500)
+  fileType   String?  @map("file_type") @db.VarChar(50)
+  sizeBytes  BigInt   @default(0) @map("size_bytes")
+  url        String?  @db.Text
+  version    Int      @default(1)
+  checksum   String?  @db.VarChar(128)
+  tags       String[] @default([])
+  watermark  Boolean  @default(false)
+  previewUrl String?  @map("preview_url") @db.Text
+  status     String   @default("stored") @db.VarChar(20)
+  uploadedBy String?  @map("uploaded_by") @db.Uuid
+  createdAt  DateTime @default(now()) @map("created_at")
+
+  @@index([orgId], map: "idx_kc_storage_org")
+  @@index([orgId, folder], map: "idx_kc_storage_folder")
+  @@map("kv_kc_storage")
+}
+
+model KcBackup {
+  id          String    @id @default(uuid()) @db.Uuid
+  orgId       String    @map("org_id") @db.Uuid
+  backupType  String    @default("daily") @map("backup_type") @db.VarChar(20)
+  status      String    @default("completed") @db.VarChar(20)
+  sizeMb      Int       @default(0) @map("size_mb")
+  storedUntil DateTime? @map("stored_until")
+  createdAt   DateTime  @default(now()) @map("created_at")
+
+  @@index([orgId], map: "idx_kc_backups_org")
+  @@map("kv_kc_backups")
+}
+
+model KcDeployment {
+  id              String    @id @default(uuid()) @db.Uuid
+  orgId           String    @map("org_id") @db.Uuid
+  name            String    @db.VarChar(200)
+  stage           String    @default("development") @db.VarChar(30)
+  status          String    @default("active") @db.VarChar(20)
+  lastDeployedAt  DateTime? @map("last_deployed_at")
+  createdAt       DateTime  @default(now()) @map("created_at")
+
+  @@index([orgId], map: "idx_kc_deploys_org")
+  @@map("kv_kc_deployments")
+}
+
+model KcFunction {
+  id             String    @id @default(uuid()) @db.Uuid
+  orgId          String    @map("org_id") @db.Uuid
+  name           String    @db.VarChar(200)
+  runtime        String    @default("nodejs") @db.VarChar(30)
+  trigger        String    @default("http") @db.VarChar(50)
+  codeRef        String?   @map("code_ref") @db.Text
+  config         Json      @default("{}")
+  status         String    @default("active") @db.VarChar(20)
+  invocations    BigInt    @default(0)
+  lastInvokedAt  DateTime? @map("last_invoked_at")
+  createdAt      DateTime  @default(now()) @map("created_at")
+
+  @@index([orgId], map: "idx_kc_fn_org")
+  @@map("kv_kc_functions")
+}
+
+model KcSchedule {
+  id         String    @id @default(uuid()) @db.Uuid
+  orgId      String    @map("org_id") @db.Uuid
+  name       String    @db.VarChar(200)
+  cron       String    @db.VarChar(100)
+  jobType    String    @default("report") @map("job_type") @db.VarChar(50)
+  config     Json      @default("{}")
+  status     String    @default("active") @db.VarChar(20)
+  lastRunAt  DateTime? @map("last_run_at")
+  nextRunAt  DateTime? @map("next_run_at")
+  createdAt  DateTime  @default(now()) @map("created_at")
+
+  @@index([orgId], map: "idx_kc_sched_org")
+  @@map("kv_kc_schedules")
+}
+
+model KcRenderJob {
+  id         String   @id @default(uuid()) @db.Uuid
+  orgId      String   @map("org_id") @db.Uuid
+  assetRefs  Json     @default("[]") @map("asset_refs")
+  quality    String   @default("draft") @db.VarChar(20)
+  status     String   @default("queued") @db.VarChar(20)
+  progress   Int      @default(0)
+  outputUrl  String?  @map("output_url") @db.Text
+  createdAt  DateTime @default(now()) @map("created_at")
+
+  @@index([orgId], map: "idx_kc_render_org")
+  @@map("kv_kc_render_jobs")
+}
+
+model KcCloudEvent {
+  id        String   @id @default(uuid()) @db.Uuid
+  orgId     String   @map("org_id") @db.Uuid
+  eventType String   @map("event_type") @db.VarChar(100)
+  payload   Json     @default("{}")
+  source    String?  @db.VarChar(100)
+  status    String   @default("recorded") @db.VarChar(20)
+  createdAt DateTime @default(now()) @map("created_at")
+
+  @@index([orgId], map: "idx_kc_events_org")
+  @@index([eventType], map: "idx_kc_events_type")
+  @@map("kv_kc_events")
+}
+
+model KcUsageLog {
+  id        String    @id @default(uuid()) @db.Uuid
+  orgId     String    @map("org_id") @db.Uuid
+  resource  String    @db.VarChar(30)
+  amount    Decimal   @default(0) @db.Decimal(14, 2)
+  unit      String?   @default("units") @db.VarChar(20)
+  billed    Boolean   @default(false)
+  period    String?   @db.VarChar(10)
+  createdAt DateTime  @default(now()) @map("created_at")
+
+  @@index([orgId], map: "idx_kc_usage_org")
+  @@index([resource], map: "idx_kc_usage_resource")
+  @@map("kv_kc_usage_logs")
+}
+
+model KcRegion {
+  id        String   @id @default(uuid()) @db.Uuid
+  code      String   @unique @db.VarChar(30)
+  name      String   @db.VarChar(100)
+  active    Boolean  @default(true)
+  latencyMs Int      @default(100) @map("latency_ms")
+  createdAt DateTime @default(now()) @map("created_at")
+
+  @@map("kv_kc_regions")
 }

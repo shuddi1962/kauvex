@@ -19,6 +19,16 @@ alwaysApply: true
 - Colors: Navy #0A1628 | Orange #FF6B00
 - Font: Inter
 
+## KAI — Artificial Intelligence Brand
+- Name: **KAI** (Kauvex Artificial Intelligence). The intelligence layer of the entire platform — not a chatbot, the operating system's brain.
+- Meanings: Japanese 改 (improvement) and 海 (ocean), Chinese 开 (open), Hausa (wonder), Greek kairos (the right moment).
+- Voice: "Ask KAI", "KAI says…", "Powered by KAI". Short, warm, one syllable, global.
+- Versions: KAI 1.0 Platform Intelligence (RAG + Claude API) → KAI 2.0 Industry Intelligence (fine-tuned open-source, Year 2) → KAI 3.0 Foundation Intelligence (Kauvex Foundation Model, multi-modal, Years 4-5).
+- Sub-products: KAI Chat ("Chat with KAI"), KAI Design ("Designed with KAI"), KAI Logistics ("Powered by KAI"), KAI Pro ("Matched by KAI"), KAI Guard ("Protected by KAI"), KAI Predict ("Forecast by KAI"), KAI for Business ("Built on KAI").
+- Primary tagline: "KAI knows."
+- Portal: /kai (KAI Ecosystem), /business/kai (KAI Studio). Engine: /lib/kai-ecosystem/, /lib/kai/, /lib/ai/.
+- Workspace intelligence: KAI reads .opencode/workspace-index.md (regenerate via `node scripts/workspace-index.mjs`) for fast orientation, and AGENTS.md for full project context.
+
 ## Architecture
 - Multi-storefront: path | subdomain | custom domain
 - Multi-vendor: unlimited vendors with plan tiers

@@ -1,0 +1,43 @@
+import { prisma } from "@/lib/prisma";
+import { successResponse, errorResponse, getAuthUser } from "@/lib/api-helpers";
+import { resolveOrg } from "@/lib/business-os";
+import { parseFlowInstruction } from "@/lib/kai-ecosystem";
+
+export const dynamic = "force-dynamic";
+
+export async function GET(req: Request) {
+  const { user, error: authErr } = await getAuthUser(req);
+  if (authErr) return authErr;
+  const orgId = await resolveOrg(user!.id, new URL(req.url).searchParams.get("org_id"));
+  if (!orgId) return errorResponse("No organization", 404);
+  const rows = await prisma.kaiEcoFlow.findMany({ where: { orgId }, orderBy: { updatedAt: "desc" } });
+  const runs = await prisma.kaiEcoFlowRun.findMany({ where: { orgId }, orderBy: { createdAt: "desc" }, take: 50 });
+  return successResponse({ rows, runs, orgId });
+}
+
+export async function POST(req: Request) {
+  const { user, error: authErr } = await getAuthUser(req);
+  if (authErr) return authErr;
+  let body: any;
+  try { body = await req.json(); } catch { return errorResponse("Invalid JSON body", 400); }
+  if (!body.instruction) return errorResponse("instruction is required", 400);
+  const orgId = await resolveOrg(user!.id, body.orgId);
+  if (!orgId) return errorResponse("No organization", 404);
+  try {
+    const parsed = parseFlowInstruction(body.instruction);
+    const flow = await prisma.kaiEcoFlow.create({
+      data: {
+        orgId,
+        name: body.name || `Flow ${new Date().toLocaleDateString("en-GB")}`,
+        instruction: body.instruction,
+        parsed,
+        triggerType: String(parsed.trigger.type),
+        isActive: body.isActive ?? true,
+        createdBy: user!.id,
+      },
+    });
+    return successResponse(flow, 201);
+  } catch (err) {
+    return errorResponse((err as Error).message, 500);
+  }
+}

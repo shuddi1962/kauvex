@@ -5,7 +5,7 @@ import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import {
   LayoutDashboard, Bot, Workflow, Brain, Puzzle,
-  Passport, Menu, X, ChevronRight, Sparkles,
+  Passport, Menu, X, ChevronRight, Sparkles, MessageSquare,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useAuthStore } from "@/store/auth-store";
@@ -13,6 +13,7 @@ import { useAuthStore } from "@/store/auth-store";
 const navItems = [
   { href: "/admin/kai", label: "Dashboard", icon: LayoutDashboard },
   { href: "/admin/kai?tab=agents", label: "AI Employee", icon: Bot },
+  { href: "/business/ai", label: "Ask KAI", icon: MessageSquare },
   { href: "/business/studio", label: "Workflow Studio", icon: Workflow },
   { href: "/business/brain", label: "Company Brain", icon: Brain },
   { href: "/business/skills", label: "Skills Marketplace", icon: Puzzle },
